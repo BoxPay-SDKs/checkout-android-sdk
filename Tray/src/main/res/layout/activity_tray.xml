@@ -1,41 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/bottom_sheet_bg"
+    android:id="@+id/clayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="1"
+    android:background="@drawable/bottom_sheet_bg"
     android:orientation="vertical"
-    tools:context=".TrayActivity">
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.06"
-
-        android:gravity="center"
-        android:text="Payment Methods"
-        android:textColor="@android:color/black"
-        android:textSize="16sp"
-        android:textStyle="bold" />
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.84"
-        android:fillViewport="true"
-        tools:ignore="SpeakableTextPresentCheck">
-
-
-    </ScrollView>
-
-    <Button
-        android:id="@+id/button"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.1"
-        android:text="Proceed" />
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
 </LinearLayout>
