@@ -78,10 +78,9 @@ class CircularProgressBar(context: Context, attrs: AttributeSet? = null) : View(
             0xFFBADFFF.toInt()
         )
 
-        // Calculate the adjusted starting angle for the gradient
+
         val adjustedStartAngle = startAngle - 90f
 
-        // Check the Android version and use the appropriate constructor
         return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             SweepGradient(centerX, centerY, gradientColors, null)
         } else {

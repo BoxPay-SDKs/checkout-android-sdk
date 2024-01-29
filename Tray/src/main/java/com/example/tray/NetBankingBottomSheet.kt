@@ -65,6 +65,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         // Inflate the layout for this fragment
         binding = FragmentNetBankingBottomSheetBinding.inflate(layoutInflater,container,false)
         banksDetailsOriginal = arrayListOf()
+        banksDetailsOriginal.add(NetbankingDataClass("Punjab National Bank \nCorporate Banking",R.drawable.netbanking_sample_logo))
 
 
         allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered,binding.banksRecyclerView)
