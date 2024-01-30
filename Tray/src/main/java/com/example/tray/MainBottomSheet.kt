@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -117,26 +118,33 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         binding.addNewUPIIDConstraint.setOnClickListener() {
 
             // Show the new BottomSheet
-            showOverlayInCurrentBottomSheet()
-            val newBottomSheet = AddUPIID()
-            newBottomSheet.show(childFragmentManager, "ModalBottomSheet")
+//            val childFragmentManager = childFragmentManager
+//
+//// Begin a FragmentTransaction to add, replace, or remove child fragments
+//            val transaction = childFragmentManager.beginTransaction()
+//
+//// Example: Adding a child fragment
+//            val childFragment = AddUPIID()
+//            transaction.add(R.id.coordinatorMainBottomSheet, childFragment) // R.id.container is the ID of the layout container in the parent fragment
+//// Commit the transaction
+//            transaction.commit()
+            val bottomSheet = AddUPIID()
+            bottomSheet.show(parentFragmentManager,"ModalBottomSheet")
         }
 
         binding.cardConstraint.setOnClickListener() {
-            showOverlayInCurrentBottomSheet()
+
             val bottomSheet = AddCardBottomSheet()
-            bottomSheet.show(childFragmentManager, "ModalBottomSheet")
+            bottomSheet.show(parentFragmentManager, "ModalBottomSheet")
         }
         binding.walletConstraint.setOnClickListener(){
-            showOverlayInCurrentBottomSheet()
             val bottomSheet = WalletBottomSheet()
-            bottomSheet.show(childFragmentManager, "ModalBottomSheet")
+            bottomSheet.show(parentFragmentManager, "ModalBottomSheet")
         }
 
         binding.netBankingConstraint.setOnClickListener(){
-            showOverlayInCurrentBottomSheet()
             val bottomSheet = NetBankingBottomSheet()
-            bottomSheet.show(childFragmentManager,"ModalBottomSheet")
+            bottomSheet.show(parentFragmentManager,"ModalBottomSheet")
         }
 
 
@@ -294,6 +302,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             if (bottomSheetBehavior == null)
                 Log.d("bottomSheetBehavior is null", "check here")
 
+
             val screenHeight = resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.9 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
@@ -303,7 +312,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 //        layoutParams.height = desiredHeight
 //        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
-            bottomSheetBehavior?.peekHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
 
 
@@ -320,11 +328,11 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                         }
                         BottomSheetBehavior.STATE_DRAGGING -> {
                             // The BottomSheet is being dragged
-                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
                         BottomSheetBehavior.STATE_SETTLING -> {
                             // The BottomSheet is settling
-                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden

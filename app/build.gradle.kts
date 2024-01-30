@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.dependencybottomsheet"
+    namespace = "com.example.AndroidCheckOutSDK"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.dependencybottomsheet"
+        applicationId = "com.example.AndroidCheckOutSDK"
         minSdk = 24
         targetSdk = 33
         versionCode = 1

@@ -141,7 +141,7 @@ class AddUPIID : BottomSheetDialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        binding.editTextText.requestFocus()
+//        binding.editTextText.requestFocus()
     }
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed

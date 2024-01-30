@@ -48,9 +48,10 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation ("com.google.android.material:material:1.3.0-alpha04")
-    implementation ("com.android.volley:volley:1.2.1")
     implementation ("androidx.fragment:fragment-ktx:1.3.6")
+    implementation ("com.android.volley:volley:1.2.1")
     implementation ("com.mikhaellopez:circularprogressbar:3.1.0")
+    implementation ("com.airbnb.android:lottie:4.2.0")
 
 }
 

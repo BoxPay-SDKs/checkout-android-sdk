@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDelegate
 import com.example.tray.databinding.FragmentUPITimerBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -23,6 +24,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
         binding = FragmentUPITimerBottomSheetBinding.inflate(layoutInflater,container,false)
         binding.circularProgressBar.startAngle=90f

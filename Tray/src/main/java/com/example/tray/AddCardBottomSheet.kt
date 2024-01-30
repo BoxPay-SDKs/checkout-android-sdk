@@ -20,6 +20,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.example.tray.databinding.FragmentAddCardBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -39,6 +40,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
         binding =  FragmentAddCardBottomSheetBinding.inflate(inflater,container,false)
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
@@ -81,7 +83,6 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
                 binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
             }, 3000)
-
         }
 
 

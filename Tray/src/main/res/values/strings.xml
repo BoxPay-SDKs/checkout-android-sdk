@@ -20,5 +20,6 @@
     </style>
 
     <color name="custom_progress_color">#FF4081</color>
+    <dimen name="heightOfRecyclerViewIndp">160dp</dimen>
 
 </resources>

@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "DependencyBottomSheet"
+rootProject.name = "AndroidCheckOutSDK"
 include(":app")
 include(":Tray")

@@ -1,4 +1,4 @@
-package com.example.dependencybottomsheet
+package com.example.AndroidCheckOutSDK
 
 import org.junit.Test
 
