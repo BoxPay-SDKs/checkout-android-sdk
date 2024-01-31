@@ -52,6 +52,7 @@ dependencies {
     implementation ("com.android.volley:volley:1.2.1")
     implementation ("com.mikhaellopez:circularprogressbar:3.1.0")
     implementation ("com.airbnb.android:lottie:4.2.0")
+    implementation("com.google.code.gson:gson:2.8.8")
 
 }
 

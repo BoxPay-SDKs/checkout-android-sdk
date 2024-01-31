@@ -53,7 +53,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     }
     override fun onDismiss(dialog: DialogInterface) {
         // Notify ViewModel to hide the overlay when dismissed
-        Log.d("Overlay", "Bottom sheet dismissed")
         overlayViewModel.setShowOverlay(false)
         super.onDismiss(dialog)
     }
@@ -116,18 +115,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.addNewUPIIDConstraint.setOnClickListener() {
-
-            // Show the new BottomSheet
-//            val childFragmentManager = childFragmentManager
-//
-//// Begin a FragmentTransaction to add, replace, or remove child fragments
-//            val transaction = childFragmentManager.beginTransaction()
-//
-//// Example: Adding a child fragment
-//            val childFragment = AddUPIID()
-//            transaction.add(R.id.coordinatorMainBottomSheet, childFragment) // R.id.container is the ID of the layout container in the parent fragment
-//// Commit the transaction
-//            transaction.commit()
             val bottomSheet = AddUPIID()
             bottomSheet.show(parentFragmentManager,"ModalBottomSheet")
         }
@@ -307,10 +294,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             val percentageOfScreenHeight = 0.9 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
+
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
 
