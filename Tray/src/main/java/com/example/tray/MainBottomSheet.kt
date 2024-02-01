@@ -18,12 +18,18 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.OverlayViewModel
 import com.example.tray.adapters.OrderSummaryItemsAdapter
 import com.example.tray.databinding.FragmentMainBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import org.json.JSONObject
 
 
 class MainBottomSheet : BottomSheetDialogFragment() {
@@ -32,9 +38,14 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private val overlayViewModel: OverlayViewModel by activityViewModels()
     private var overlayViewCurrentBottomSheet: View? = null
+    private var token : String ?= null
+    private var BASE_URL_SESSION = "https://test-apis.boxpay.tech/v0/merchants/gZztXPf8Ag/sessions"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        arguments?.let {
+            token = it.getString("token")
+        }
     }
 
     override fun onStart() {
@@ -68,6 +79,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         hidePriceBreakUp()
 
         dialog?.setCanceledOnTouchOutside(true)
+        getAndSetOrderDetails()
 
         val items = mutableListOf(
             "Truly Madly Monthly Plan",
@@ -83,10 +95,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices)
         binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
-        val totalPrice = extractSum(prices)
-        binding.ItemsPrice.setText(totalPrice)
-        binding.numberOfItems.setText(items.size.toString()+" items")
-        binding.unopenedTotalValue.setText(totalPrice)
 
 
         // Set click listeners
@@ -128,8 +136,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 //            transaction.add(R.id.coordinatorMainBottomSheet, childFragment) // R.id.container is the ID of the layout container in the parent fragment
 //// Commit the transaction
 //            transaction.commit()
-            val bottomSheet = AddUPIID()
-            bottomSheet.show(parentFragmentManager,"ModalBottomSheet")
+            openAddUPIIDBottomSheet()
         }
 
         binding.cardConstraint.setOnClickListener() {
@@ -350,7 +357,105 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         return dialog
     }
-    companion object {
 
+    private fun openAddUPIIDBottomSheet(){
+        val bottomSheetFragment = AddUPIID.newInstance(token)
+        bottomSheetFragment.show(parentFragmentManager, "AddUPIBottomSheet")
+    }
+    private fun getAndSetOrderDetails(){
+        val response = JSONObject("""{
+        "context": {
+            "countryCode": "IN",
+            "legalEntity": {
+                "code": "demo_merchant"
+            },
+            "orderId": "test12"
+        },
+        "paymentType": "A",
+        "money": {
+            "amount": "1",
+            "currencyCode": "INR"
+        },
+        "descriptor": {
+            "line1": "Some descriptor"
+        },
+        "billingAddress": {
+            "address1": "first address line",
+            "address2": "second address line",
+            "city": "Faridabad",
+            "state": "Haryana",
+            "countryCode": "IN",
+            "postalCode": "121004"
+        },
+        "shopper": {
+            "firstName": "test",
+            "lastName": "last",
+            "email": "test123@gmail.com",
+            "uniqueReference": "x123y",
+            "phoneNumber": "",
+            "deliveryAddress": {
+                "address1": "first address line",
+                "address2": "second address line",
+                "city": "Faridabad",
+                "state": "Haryana",
+                "countryCode": "IN",
+                "postalCode": "121004"
+            }
+        },
+        "order": {
+            "originalAmount" : 1697,
+            "shippingAmount" : 500,
+            "voucherCode" : "VOUCHER",
+            "items": [
+                {
+                    "id": "test",
+                    "itemName" : "test_name",
+                    "description": "testProduct",
+                    "quantity": 1,
+                    "imageUrl" : "https://test-merchant.boxpay.tech/boxpay logo.svg",
+                    "amountWithoutTax" : 699.00
+                },
+                {
+                    "id": "test2",
+                    "itemName" : "test_name2",
+                    "description": "testProduct2",
+                    "quantity": 2,
+                    "imageUrl" : "https://test-merchant.boxpay.tech/boxpay logo.svg",
+                    "amountWithoutTax" : 499.00
+                }
+            ]
+        },
+        "frontendReturnUrl": "https://www.boxpay.tech",
+        "frontendBackUrl": "https://www.boxpay.tech",
+        "expiryDurationSec": 7200
+    }""")
+
+        val orderObject = response.getJSONObject("order")
+        val originalAmount = orderObject.getDouble("originalAmount")
+
+        val itemsArray = orderObject.getJSONArray("items")
+        var totalQuantity = 0
+        for (i in 0 until itemsArray.length()) {
+            val itemObject = itemsArray.getJSONObject(i)
+            val quantity = itemObject.getInt("quantity")
+            totalQuantity += quantity
+        }
+
+        // Use the extracted values as needed
+        Log.d("totalQuantity",totalQuantity.toString())
+        Log.d("originalAmount",originalAmount.toString())
+
+        binding.unopenedTotalValue.text = "₹"+originalAmount.toString()
+        binding.numberOfItems.text = totalQuantity.toString()+" items"
+        binding.ItemsPrice.text = "₹"+originalAmount.toString()
+    }
+    companion object {
+        fun newInstance(data: String?): MainBottomSheet {
+            val fragment = MainBottomSheet()
+            val args = Bundle()
+            args.putString("token", data)
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

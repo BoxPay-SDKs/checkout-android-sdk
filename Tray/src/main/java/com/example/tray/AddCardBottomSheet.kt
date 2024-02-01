@@ -26,6 +26,7 @@ import com.example.tray.databinding.FragmentAddCardBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import org.json.JSONObject
 
 class AddCardBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentAddCardBottomSheetBinding
@@ -350,6 +351,61 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
             return filteredStringBuilder.toString()
         }
+    }
+    fun createRequestBody(): JSONObject {
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+            // Shopper
+            val shopperObject = JSONObject().apply {
+                // Delivery Address
+                val deliveryAddressObject = JSONObject().apply {
+                    put("countryCode", "IN")
+                    put("postalCode", "247554")
+                    put("city", "Saharanpur")
+                    put("state", "Uttar Pradesh")
+                    put("address1", "aksdjchvb")
+                }
+                put("firstName", "isha")
+                put("lastName", "last")
+                put("gender", JSONObject.NULL)
+                put("phoneNumber", "+911265412654")
+                put("email", "iagarwal@boxpay.tech")
+                put("uniqueReference", "+911265412654")
+                put("deliveryAddress", deliveryAddressObject)
+            }
+            put("shopper", shopperObject)
+
+            // Instrument Details
+            val instrumentDetailsObject = JSONObject().apply {
+                val cardObject = JSONObject().apply {
+                    put("number", "4111111111111111")
+                    put("expiry", "2030-03")
+                    put("cvc", "737")
+                    put("holderName", "ishaa")
+                }
+                put("type", "card/plain")
+                put("card", cardObject)
+            }
+            put("instrumentDetails", instrumentDetailsObject)
+
+            // Browser Data
+            val browserDataObject = JSONObject().apply {
+                put("userAgentHeader", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                put("browserLanguage", "en-US")
+            }
+            put("browserData", browserDataObject)
+
+            // Billing Address
+            val billingAddressObject = JSONObject().apply {
+                put("countryCode", "IN")
+                put("postalCode", "247554")
+                put("city", "Saharanpur")
+                put("state", "Uttar Pradesh")
+                put("address1", "aksdjchvb")
+            }
+            put("billingAddress", billingAddressObject)
+        }
+        return requestBody
     }
 
     companion object {
