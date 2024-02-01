@@ -58,50 +58,47 @@ class AddUPIID : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentAddUPIIDBinding.inflate(inflater, container, false)
+        binding = FragmentAddUPIIDBinding.inflate(inflater,container,false)
         var checked = false
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding.progressBar.visibility = View.INVISIBLE
-        binding.imageView3.setOnClickListener() {
-            if (!checked) {
+        binding.imageView3.setOnClickListener(){
+            if(!checked) {
                 binding.imageView3.setImageResource(R.drawable.checkbox)
                 checked = true
-            } else {
+            }
+            else {
                 binding.imageView3.setImageResource(0)
                 checked = false
             }
         }
-        binding.imageView2.setOnClickListener() {
+        binding.imageView2.setOnClickListener(){
             dismiss()
         }
-        proceedButtonIsEnabled.observe(this, Observer { newValue ->
-            if (newValue) {
-                enableProceedButton()
-            } else {
-                disableProceedButton()
-            }
-        })
-        proceedButtonIsEnabled.value = false
+        binding.proceedButton.isEnabled = false
 
-        binding.editTextText.addTextChangedListener(object : TextWatcher {
+        binding.editTextText.addTextChangedListener(object : TextWatcher{
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                Log.d("beforeTextChanged", s.toString())
+                Log.d("beforeTextChanged",s.toString())
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textNow = s.toString()
-                Log.d("onTextChanged", s.toString())
-                if (textNow.isNotBlank()) {
-                    proceedButtonIsEnabled.value = true
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                Log.d("onTextChanged",s.toString())
+                if(textNow.isNotBlank()){
+                    binding.proceedButtonRelativeLayout.isEnabled = true
+                    binding.proceedButton.isEnabled = true
+                    binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+                    binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+                    binding.textView6.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {
                 val textNow = s.toString()
-                Log.d("afterTextChanged", s.toString())
-                if (textNow.isBlank()) {
+                Log.d("afterTextChanged",s.toString())
+                if(textNow.isBlank()){
                     binding.proceedButtonRelativeLayout.isEnabled = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
                     binding.ll1InvalidUPI.visibility = View.GONE
@@ -143,9 +140,8 @@ class AddUPIID : BottomSheetDialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        binding.editTextText.requestFocus()
+//        binding.editTextText.requestFocus()
     }
-
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
         (parentFragment as? MainBottomSheet)?.removeOverlayFromCurrentBottomSheet()
@@ -164,7 +160,6 @@ class AddUPIID : BottomSheetDialogFragment() {
             ViewGroup.LayoutParams.MATCH_PARENT
         )
     }
-
     public fun removeOverlayFromCurrentBottomSheet() {
         overlayViewCurrentBottomSheet?.let {
             // Remove the overlay view directly from the root view
@@ -343,7 +338,6 @@ class AddUPIID : BottomSheetDialogFragment() {
             fragment.arguments = args
             return fragment
         }
+
     }
-
-
 }

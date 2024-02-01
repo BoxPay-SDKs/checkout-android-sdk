@@ -27,6 +27,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private lateinit var allBanksAdapter : NetbankingBanksAdapter
     private var banksDetailsOriginal: ArrayList<NetbankingDataClass> = ArrayList()
     private var banksDetailsFiltered : ArrayList<NetbankingDataClass> = ArrayList()
+
     private val requestQueue: RequestQueue by lazy {
         Volley.newRequestQueue(requireContext())
     }
