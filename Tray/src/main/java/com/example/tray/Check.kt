@@ -25,17 +25,14 @@ class Check : AppCompatActivity() {
 
         tokenLiveData.observe(this, Observer { token ->
             // Handle the response after the token has been updated
-            if(!token.isEmpty()) {
+            if(!token.isEmpty() || !token.isBlank()) {
                 handleResponseWithToken()
             }else{
                 Log.d("token is empty","waiting")
             }
         })
 
-        openBottomSheet.setOnClickListener {
-//            val bottomSheet = MainBottomSheet()
-            showBottomSheetWithOverlay()
-        }
+
     }
 
     fun showBottomSheetWithOverlay() {
@@ -51,11 +48,11 @@ class Check : AppCompatActivity() {
         "context": {
             "countryCode": "IN",
             "legalEntity": {
-                "code": "demo_merchant"
+                "code": "test"
             },
             "orderId": "test12"
         },
-        "paymentType": "A",
+        "paymentType": "S",
         "money": {
             "amount": "1",
             "currencyCode": "INR"

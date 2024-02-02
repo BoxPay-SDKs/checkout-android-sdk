@@ -45,6 +45,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
+
         }
     }
 
@@ -124,25 +125,11 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.addNewUPIIDConstraint.setOnClickListener() {
-
-            // Show the new BottomSheet
-//            val childFragmentManager = childFragmentManager
-//
-//// Begin a FragmentTransaction to add, replace, or remove child fragments
-//            val transaction = childFragmentManager.beginTransaction()
-//
-//// Example: Adding a child fragment
-//            val childFragment = AddUPIID()
-//            transaction.add(R.id.coordinatorMainBottomSheet, childFragment) // R.id.container is the ID of the layout container in the parent fragment
-//// Commit the transaction
-//            transaction.commit()
             openAddUPIIDBottomSheet()
         }
 
         binding.cardConstraint.setOnClickListener() {
-
-            val bottomSheet = AddCardBottomSheet()
-            bottomSheet.show(parentFragmentManager, "ModalBottomSheet")
+            openAddCardBottomSheet()
         }
         binding.walletConstraint.setOnClickListener(){
             val bottomSheet = WalletBottomSheet()
@@ -361,6 +348,10 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private fun openAddUPIIDBottomSheet(){
         val bottomSheetFragment = AddUPIID.newInstance(token)
         bottomSheetFragment.show(parentFragmentManager, "AddUPIBottomSheet")
+    }
+    private fun openAddCardBottomSheet(){
+        val bottomSheetFragment = AddCardBottomSheet.newInstance(token)
+        bottomSheetFragment.show(parentFragmentManager, "AddCardBottomSheet")
     }
     private fun getAndSetOrderDetails(){
         val response = JSONObject("""{

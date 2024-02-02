@@ -3,6 +3,7 @@ package com.example.tray
 import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Context
+import android.content.Context.WINDOW_SERVICE
 import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.PixelFormat
@@ -11,14 +12,17 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -37,6 +41,7 @@ import com.google.gson.GsonBuilder
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
+import java.util.TimeZone
 
 
 class AddUPIID : BottomSheetDialogFragment() {
@@ -62,6 +67,7 @@ class AddUPIID : BottomSheetDialogFragment() {
         var checked = false
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding.progressBar.visibility = View.INVISIBLE
+        Log.d("Timezone",TimeZone.getDefault().id)
         binding.imageView3.setOnClickListener(){
             if(!checked) {
                 binding.imageView3.setImageResource(R.drawable.checkbox)
@@ -110,7 +116,6 @@ class AddUPIID : BottomSheetDialogFragment() {
 
         binding.proceedButton.setOnClickListener() {
             val userVPA = binding.editTextText.text.toString()
-
             postRequest(requireContext(), userVPA)
             showLoadingInButton()
         }
@@ -188,16 +193,30 @@ class AddUPIID : BottomSheetDialogFragment() {
             put("billingAddress", billingAddressObject)
 
             // Browser Data
-            val browserDataObject = JSONObject().apply {
-                val browserLanguage = Locale.getDefault().toLanguageTag()
-                put("browserLanguage", browserLanguage)
 
-                // Retrieve User-Agent header
-                val webView = WebView(context)
-                val userAgentHeader = webView.settings.userAgentString
+            // Get the IP address
+
+            // Create the browserData JSON object
+            val browserData = JSONObject().apply {
+
+                val webView = WebView(requireContext())
+
+                // Get the default User-Agent string
+                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+
+                // Get the screen height and width
+                val displayMetrics = resources.displayMetrics
+                put("screenHeight", displayMetrics.heightPixels.toString())
+                put("screenWidth", displayMetrics.widthPixels.toString())
+                put("acceptHeader", "application/json")
                 put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", Locale.getDefault().toString())
+                put("ipAddress", "121.12.23.44")
+                put("colorDepth", 24) // Example value
+                put("javaEnabled", true) // Example value
+                put("timeZoneOffSet", 330) // Example value
             }
-            put("browserData", browserDataObject)
+            put("browserData", browserData)
 
             // Instrument Details
             val instrumentDetailsObject = JSONObject().apply {
@@ -338,6 +357,5 @@ class AddUPIID : BottomSheetDialogFragment() {
             fragment.arguments = args
             return fragment
         }
-
     }
 }
