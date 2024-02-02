@@ -34,6 +34,14 @@ class Check : AppCompatActivity() {
             }
         })
 
+        openBottomSheet.setOnClickListener(){
+            if(!(tokenLiveData.value == null)){
+                showBottomSheetWithOverlay()
+            }else{
+
+            }
+        }
+
 
     }
 
