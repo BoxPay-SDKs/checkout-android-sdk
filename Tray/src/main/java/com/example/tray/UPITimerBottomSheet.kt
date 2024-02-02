@@ -114,6 +114,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
                     if (statusReason.contains("Received by BoxPay for processing",ignoreCase = true) || statusReason.contains("Approved by PSP",ignoreCase = true) || status.contains("PAID",ignoreCase = true)) {
                         val bottomSheet = PaymentStatusBottomSheet()
                         bottomSheet.show(parentFragmentManager,"SuccessBottomSheet")
+                        dismiss()
                     }else if(status.contains("PENDING",ignoreCase = true)) {
                         //do nothing
                     }else if(status.contains("EXPIRED",ignoreCase = true)){
