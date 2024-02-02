@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -63,6 +64,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentWalletBottomSheetBinding.inflate(layoutInflater, container, false)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         walletDetailsOriginal = arrayListOf()
 
 

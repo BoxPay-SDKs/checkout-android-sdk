@@ -21,6 +21,7 @@ import android.view.WindowManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.activityViewModels
@@ -53,6 +54,7 @@ class AddUPIID : BottomSheetDialogFragment() {
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
@@ -64,6 +66,7 @@ class AddUPIID : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentAddUPIIDBinding.inflate(inflater,container,false)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         var checked = false
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding.progressBar.visibility = View.INVISIBLE

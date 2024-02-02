@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.example.tray.databinding.FragmentWalletLoadingBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -25,6 +26,7 @@ class WalletLoadingBottomSheet : BottomSheetDialogFragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentWalletLoadingBottomSheetBinding.inflate(layoutInflater,container,false)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         binding.imageView2.setOnClickListener(){
             dismiss()
         }
