@@ -186,14 +186,12 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             override fun afterTextChanged(s: Editable?) {
                 val textNow = s.toString()
-
                 if (textNow.isBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
                     binding.ll1InvalidUPI.visibility = View.GONE
                 }
             }
-
         })
 
 
@@ -272,7 +270,6 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                     binding.ll1InvalidUPI.visibility = View.GONE
                 }
             }
-
         })
         binding.editTextCardCVV.addTextChangedListener(object : TextWatcher{
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
