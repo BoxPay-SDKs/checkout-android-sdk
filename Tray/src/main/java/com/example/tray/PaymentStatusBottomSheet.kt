@@ -26,7 +26,7 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
         binding = FragmentPaymentStatusBottomSheetBinding.inflate(layoutInflater, container, false)
-        return binding.root
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         val animationView: LottieAnimationView = binding.lottieAnimationView
 
 
@@ -39,6 +39,8 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         animationView.pauseAnimation()
 
         animationView.progress = 0.5f
+        return binding.root
+
     }
 
     companion object {

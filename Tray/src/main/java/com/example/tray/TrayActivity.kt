@@ -12,6 +12,7 @@ import android.view.animation.Animation
 import android.view.animation.Transformation
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.android.volley.Request
@@ -40,6 +41,7 @@ class TrayActivity : BottomSheetDialogFragment()  {
     ): View? {
 
         binding = ActivityTrayBinding.inflate(inflater,container,false)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         url = arguments?.getString("REQUIRED_STRING").toString()
         val view = binding.root
         JsonObject()

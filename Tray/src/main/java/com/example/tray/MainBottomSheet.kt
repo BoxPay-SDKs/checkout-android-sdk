@@ -76,6 +76,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         hideUPIOptions()
         hidePriceBreakUp()
 
