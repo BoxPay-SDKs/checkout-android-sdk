@@ -214,27 +214,67 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 binding.editTextCardValidity.setSelection(formattedText.length)
 
                 binding.editTextCardValidity.addTextChangedListener(this)
+                val textNow = s.toString()
+                Log.d("onTextChanged",s.toString())
+                if(textNow.isNotBlank()){
+                    enableProceedButton()
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        binding.editTextNameOnCard.addTextChangedListener(object : TextWatcher {
+
+        binding.editTextNameOnCard.addTextChangedListener(object : TextWatcher{
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet!!)
+                Log.d("beforeTextChanged",s.toString())
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet!!)
+                val textNow = s.toString()
+                Log.d("onTextChanged",s.toString())
+                if(textNow.isNotBlank()){
+                    enableProceedButton()
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
-                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet!!)
+                val textNow = s.toString()
+                Log.d("afterTextChanged",s.toString())
+                if(textNow.isBlank()){
+                    binding.proceedButtonRelativeLayout.isEnabled = false
+                    binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
+                    binding.ll1InvalidUPI.visibility = View.GONE
+                }
             }
 
         })
 
-        binding.editTextNameOnCard.addTextChangedListener(object : TextWatcher{
+        binding.editTextCardValidity.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                Log.d("beforeTextChanged",s.toString())
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val textNow = s.toString()
+                Log.d("onTextChanged",s.toString())
+                if(textNow.isNotBlank()){
+                    enableProceedButton()
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                val textNow = s.toString()
+                Log.d("afterTextChanged",s.toString())
+                if(textNow.isBlank()){
+                    binding.proceedButtonRelativeLayout.isEnabled = false
+                    binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
+                    binding.ll1InvalidUPI.visibility = View.GONE
+                }
+            }
+
+        })
+        binding.editTextCardCVV.addTextChangedListener(object : TextWatcher{
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 Log.d("beforeTextChanged",s.toString())
             }
