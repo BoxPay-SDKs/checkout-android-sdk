@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -26,12 +27,16 @@ class Check : AppCompatActivity() {
 
         makePaymentRequest(this)
         val openBottomSheet = findViewById<Button>(R.id.openButton)
+        openBottomSheet.text = "Generating Token Please wait..."
+        openBottomSheet.isEnabled = false
 
 
         tokenLiveData.observe(this, Observer { token ->
             // Handle the response after the token has been updated
             if(!(tokenLiveData.value == null)) {
                 handleResponseWithToken()
+                openBottomSheet.text = "Open"
+                openBottomSheet.isEnabled = true
             }else{
                 Log.d("token is empty","waiting")
             }
