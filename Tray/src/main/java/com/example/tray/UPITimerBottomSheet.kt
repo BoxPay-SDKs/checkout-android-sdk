@@ -59,9 +59,6 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
                 // Update ProgressBar
                 val progress = ((millisUntilFinished.toFloat() / 300000) * 100).toInt()
                 binding.circularProgressBar.progress = progress*1.0f
-// or with animation // =1s
-
-// Set Progress Max
                 binding.circularProgressBar.progressMax = 100f
             }
 
@@ -71,7 +68,6 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
                 binding.circularProgressBar.progressMax = 0f
             }
         }
-
         countdownTimer.start()
     }
     private fun startTimerForAPICalls() {
@@ -97,7 +93,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
     }
     private fun fetchStatusAndReason(url: String) {
-        Log.d("fetching called correctly","Fine")
+        Log.d("fetching function called correctly","Fine")
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
@@ -125,10 +121,6 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
                     else if(status.contains("FAILED",ignoreCase = true)){
 
                     }
-//                    }else{
-//                        val bottomSheet = PaymentFailureScreen()
-//                        bottomSheet.show(parentFragmentManager,"FailureBottomSheet")
-//                    }
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
