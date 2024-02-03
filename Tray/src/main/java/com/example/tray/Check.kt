@@ -37,13 +37,18 @@ class Check : AppCompatActivity() {
             }
         })
 
+
         openBottomSheet.setOnClickListener(){
-            if(!(tokenLiveData.value == null)){
+            if(!(tokenLiveData.value.isNullOrEmpty())){
                 showBottomSheetWithOverlay()
             }else{
 
             }
         }
+
+
+
+
 
 
 
@@ -165,8 +170,6 @@ class Check : AppCompatActivity() {
 
     }
     fun handleResponseWithToken() {
-        // Use the token as needed
-        // For example:
         Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
         showBottomSheetWithOverlay()
     }
