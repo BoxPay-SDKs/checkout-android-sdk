@@ -63,7 +63,7 @@ class Check : AppCompatActivity() {
     "context": {
         "countryCode": "IN",
         "legalEntity": {
-            "code": "test"
+            "code": "demo_merchant"
         },
         "orderId": "test12"
     },

@@ -45,7 +45,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
-
         }
     }
 
@@ -228,13 +227,13 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private fun showUPIOptions() {
         binding.upiConstraint.setBackgroundColor(Color.parseColor("#E0F1FF"))
 
-        binding.imageView12.animate()
-            .rotation(180f)
-            .setDuration(500) // Set the duration of the animation in milliseconds
-            .withEndAction {
-                // Code to be executed when the animation ends
-            }
-            .start()
+//        binding.imageView12.animate()
+//            .rotation(180f)
+//            .setDuration(500) // Set the duration of the animation in milliseconds
+//            .withEndAction {
+//                // Code to be executed when the animation ends
+//            }
+//            .start()
 
 
         animateIn(binding.upiOptionsLinearLayout)
