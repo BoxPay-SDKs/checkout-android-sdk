@@ -79,7 +79,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
             override fun onTick(millisUntilFinished: Long) {
                 // Update TextView with the remaining time
-                fetchStatusAndReason("https://test-apis.boxpay.tech/v0/checkout/sessions/1db55c0b-a8c3-4aa7-90d6-5ae6c483f715/status")
+                fetchStatusAndReason("https://test-apis.boxpay.tech/v0/checkout/sessions/${token}/status")
             }
 
             override fun onFinish() {
