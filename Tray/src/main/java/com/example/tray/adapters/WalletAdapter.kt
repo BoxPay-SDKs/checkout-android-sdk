@@ -3,6 +3,7 @@ package com.example.tray.adapters
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tray.R
 import com.example.tray.databinding.WalletItemBinding
@@ -14,6 +15,7 @@ class WalletAdapter(
     private val recyclerView: RecyclerView
 ) : RecyclerView.Adapter<WalletAdapter.WalletAadpterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
+    var checkPositionLiveData = MutableLiveData<Int>()
     inner class WalletAadpterViewHolder(val binding: WalletItemBinding) :
         RecyclerView.ViewHolder(binding.root){
 
@@ -38,7 +40,6 @@ class WalletAdapter(
                 )
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
-                    Log.d("Click successful","binding.root")
                     handleRadioButtonClick(adapterPosition)
                 }
             }
@@ -81,7 +82,11 @@ class WalletAdapter(
 
             // Update the checked position
             checkedPosition = position
+            checkPositionLiveData.value = checkedPosition
         }
+    }
+    fun getCheckedPosition() : Int{
+        return checkedPosition
     }
 
 }

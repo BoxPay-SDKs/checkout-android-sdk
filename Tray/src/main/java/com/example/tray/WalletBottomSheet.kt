@@ -1,7 +1,9 @@
 package com.example.tray
 
 import android.animation.ObjectAnimator
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -10,33 +12,51 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebSettings
+import android.webkit.WebView
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.adapters.WalletAdapter
 import com.example.tray.databinding.FragmentWalletBottomSheetBinding
 import com.example.tray.dataclasses.WalletDataClass
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.GsonBuilder
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
+import java.util.Locale
 
 
 class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentWalletBottomSheetBinding
-    private lateinit var allBanksAdapter: WalletAdapter
+    private lateinit var allWalletAdapter: WalletAdapter
     private var walletDetailsOriginal: ArrayList<WalletDataClass> = ArrayList()
     private var walletDetailsFiltered: ArrayList<WalletDataClass> = ArrayList()
     private var overlayViewCurrentBottomSheet: View? = null
-    private var buttonEnabledOrNot : Boolean = false
+    private var token: String? = null
+    private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
+    private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
+    private var checkedPosition : Int ?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        arguments?.let {
+            token = it.getString("token")
+        }
+
     }
 
     private val requestQueue: RequestQueue by lazy {
@@ -68,12 +88,13 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         walletDetailsOriginal = arrayListOf()
 
 
-        allBanksAdapter = WalletAdapter(walletDetailsFiltered, binding.walletsRecyclerView)
+        allWalletAdapter = WalletAdapter(walletDetailsFiltered, binding.walletsRecyclerView)
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.walletsRecyclerView.adapter = allBanksAdapter
+        binding.walletsRecyclerView.adapter = allWalletAdapter
 
 
         disableProceedButton()
+        hideLoadingInButton()
 
 
 
@@ -89,10 +110,12 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                 for (netBankingObject in walletMethodsObjects) {
                     // Extract information from the NetBanking object
                     val id = netBankingObject.optString("id")
-                    val brand = netBankingObject.optString("title")
+                    val walletName = netBankingObject.optString("title")
+                    val walletBrand = netBankingObject.optString("brand")
+                    val instrumentTypeValue = netBankingObject.optString("instrumentTypeValue")
 
                     // Do something with the extracted information
-                    walletDetailsOriginal.add(WalletDataClass(brand, R.drawable.wallet_sample_logo))
+                    walletDetailsOriginal.add(WalletDataClass(walletName, R.drawable.wallet_sample_logo,walletBrand,instrumentTypeValue))
                 }
                 showAllWallets()
 
@@ -140,40 +163,38 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.proceedButton.isEnabled = false
-        binding.textView2.setOnClickListener(){
-            if(buttonEnabledOrNot){
+
+        binding.checkingTextView.setOnClickListener() {
+            var enabled = false
+            if (!enabled)
+                enableProceedButton()
+            else
+                disableProceedButton()
+
+            enabled = !enabled
+        }
+        proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
+            if (enableProceedButton) {
+                enableProceedButton()
+            } else {
+                disableProceedButton()
+            }
+        })
+        allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
+            if(checkPositionObserved == null){
                 disableProceedButton()
             }else{
                 enableProceedButton()
+                checkedPosition = checkPositionObserved
             }
-        }
-
+        })
         binding.proceedButton.setOnClickListener(){
-
-
-            binding.textView6.visibility = View.INVISIBLE
-            binding.progressBar.visibility = View.VISIBLE
-            val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
-            rotateAnimation.duration = 3000 // Set the duration of the rotation in milliseconds
-            rotateAnimation.repeatCount = ObjectAnimator.INFINITE // Set to repeat indefinitely
-            binding.proceedButton.isEnabled = false
-
-            rotateAnimation.start()
-
-            Handler(Looper.getMainLooper()).postDelayed({
-                binding.progressBar.visibility = View.INVISIBLE
-                binding.textView6.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
-                binding.textView6.visibility = View.VISIBLE
-                binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
-                binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
-
-                showOverlayInCurrentBottomSheet()
-                val bottomSheet = WalletLoadingBottomSheet()
-                bottomSheet.show(childFragmentManager, "LoadingBottomSheet")
-            }, 2000)
-
+            val instrumentTypeValue = walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
+            Log.d("Selected wallet is : ",instrumentTypeValue)
+            showLoadingInButton()
+            postRequest(requireContext(),instrumentTypeValue)
         }
+
 
         return binding.root
     }
@@ -190,14 +211,14 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             if (query.toString().isBlank() || query.toString().isBlank()) {
                 showAllWallets()
             } else if (wallet.walletName.contains(query.toString(), ignoreCase = true)) {
-                walletDetailsFiltered.add(WalletDataClass(wallet.walletName, wallet.walletImage))
+                walletDetailsFiltered.add(WalletDataClass(wallet.walletName, wallet.walletImage,wallet.walletBrand,wallet.instrumentTypeValue))
             }
         }
 
 
 
 
-        allBanksAdapter.notifyDataSetChanged()
+        allWalletAdapter.notifyDataSetChanged()
     }
 
     fun showAllWallets() {
@@ -205,11 +226,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         for (bank in walletDetailsOriginal) {
             walletDetailsFiltered.add(bank)
         }
-        allBanksAdapter.notifyDataSetChanged()
-    }
-
-    companion object {
-
+        allWalletAdapter.notifyDataSetChanged()
     }
 
     fun makeRecyclerViewJustBelowEditText(){
@@ -245,20 +262,211 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             binding.root.removeView(it)
         }
     }
-    private fun enableProceedButton(){
+    fun postRequest(context: Context, instrumentTypeValue : String) {
+        Log.d("postRequestCalled", System.currentTimeMillis().toString())
+        val requestQueue = Volley.newRequestQueue(context)
+
+
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+            // Billing Address
+            val billingAddressObject = JSONObject().apply {
+                put("address1", "delivery address for the delivery")
+                put("address2", "delivery")
+                put("address3", JSONObject.NULL)
+                put("city", "Saharanpur")
+                put("countryCode", "IN")
+                put("countryName", "India")
+                put("postalCode", "247554")
+                put("state", "Uttar Pradesh")
+            }
+            put("billingAddress", billingAddressObject)
+
+            // Browser Data
+
+            // Get the IP address
+
+            // Create the browserData JSON object
+            val browserData = JSONObject().apply {
+
+                val webView = WebView(requireContext())
+
+                // Get the default User-Agent string
+                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+
+                // Get the screen height and width
+                val displayMetrics = resources.displayMetrics
+                put("screenHeight", displayMetrics.heightPixels.toString())
+                put("screenWidth", displayMetrics.widthPixels.toString())
+                put("acceptHeader", "application/json")
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", Locale.getDefault().toString())
+                put("ipAddress", "121.12.23.44")
+                put("colorDepth", 24) // Example value
+                put("javaEnabled", true) // Example value
+                put("timeZoneOffSet", 330) // Example value
+            }
+            put("browserData", browserData)
+
+            // Instrument Details
+            val instrumentDetailsObject = JSONObject().apply {
+                put("type", instrumentTypeValue)
+
+                val tokenObject = JSONObject().apply {
+                    put("token", token) // Replace with the actual shopper VPA value
+                }
+                put("wallet", tokenObject)
+            }
+            put("instrumentDetails", instrumentDetailsObject)
+            // Shopper
+            val shopperObject = JSONObject().apply {
+                val deliveryAddressObject = JSONObject().apply {
+                    put("address1", "delivery address for the delivery")
+                    put("address2", "delivery")
+                    put("address3", JSONObject.NULL)
+                    put("city", "Saharanpur")
+                    put("countryCode", "IN")
+                    put("countryName", "India")
+                    put("postalCode", "247554")
+                    put("state", "Uttar Pradesh")
+                }
+                put("deliveryAddress", deliveryAddressObject)
+                put("email", "test123@gmail.com")
+                put("firstName", "test")
+                put("gender", JSONObject.NULL)
+                put("lastName", "last")
+                put("phoneNumber", "919656262256")
+                put("uniqueReference", "x123y")
+            }
+            put("shopper", shopperObject)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, Base_Session_API_URL + token, requestBody,
+            Response.Listener { response ->
+                // Handle response
+                logJsonObject(response)
+                hideLoadingInButton()
+
+                try {
+                    // Parse the JSON response
+                    val jsonObject = response
+
+                    // Retrieve the "actions" array
+                    val actionsArray = jsonObject.getJSONArray("actions")
+                    var url = ""
+                    // Loop through the actions array to find the URL
+                    for (i in 0 until actionsArray.length()) {
+                        val actionObject = actionsArray.getJSONObject(i)
+                        url = actionObject.getString("url")
+                        // Do something with the URL
+                        Log.d("URL", url)
+                    }
+
+
+                    val intent = Intent(requireContext(),OTPScreenWebView :: class.java)
+                    intent.putExtra("url", url)
+                    startActivity(intent)
+
+                } catch (e: JSONException) {
+                    e.printStackTrace()
+                }
+
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                Log.e("Error", "Error occurred: ${error.message}")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    Log.e("Error", "Detailed error response: $errorResponse")
+                    binding.errorField.visibility = View.VISIBLE
+                    binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
+                    hideLoadingInButton()
+                }
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = token.toString()
+                return headers
+            }
+        }.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
+    }
+    fun logJsonObject(jsonObject: JSONObject) {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        val jsonStr = gson.toJson(jsonObject)
+        Log.d("Request Body", jsonStr)
+    }
+    private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
-        binding.textView6.visibility = View.VISIBLE
-        binding.progressBar.visibility = View.INVISIBLE
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+        binding.textView6.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
+            )
+        )
     }
-    private fun disableProceedButton(){
-        binding.proceedButton.isEnabled = false
+
+    private fun disableProceedButton() {
         binding.textView6.visibility = View.VISIBLE
-        binding.progressBar.visibility = View.INVISIBLE
+        binding.proceedButton.isEnabled = false
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
         binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
+    }
+    fun hideLoadingInButton() {
+        binding.progressBar.visibility = View.INVISIBLE
+        binding.textView6.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
+            )
+        )
+        binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
+        binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
+        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
+    }
+
+    fun showLoadingInButton() {
+        binding.textView6.visibility = View.INVISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+        val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
+        rotateAnimation.duration = 3000
+        rotateAnimation.repeatCount = ObjectAnimator.INFINITE
+        binding.proceedButton.isEnabled = false
+        rotateAnimation.start()
+    }
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+            e.printStackTrace()
+        }
+        return null
+    }
+    companion object {
+        fun newInstance(data: String?): WalletBottomSheet {
+            val fragment = WalletBottomSheet()
+            val args = Bundle()
+            args.putString("token", data)
+            fragment.arguments = args
+            return fragment
+        }
     }
 }
