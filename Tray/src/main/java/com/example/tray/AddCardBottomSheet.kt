@@ -479,6 +479,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                 try {
                     val jsonObject = response
+                    logJsonObject(response)
 
                     val status = jsonObject.getJSONObject("status").getString("status")
                     val reason = jsonObject.getJSONObject("status").getString("reason")
@@ -491,14 +492,11 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                     }else{
                         Log.d("why is it coming here","whyy")
                         val url = jsonObject
-                            .getJSONObject("actions")
-                            .getJSONArray("values")
-                            .getJSONObject(0) // Assuming there's only one action, change index if needed
-                            .getJSONObject("nameValuePairs")
+                            .getJSONArray("actions")
+                            .getJSONObject(0)
                             .getString("url")
-
-
-
+                        Log.d("url is fetched",url)
+                    // Assuming there's only one action, change index if needed
                     }
 
 
@@ -513,7 +511,6 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         intent.putExtra("token", token)
                         startActivity(intent)
                     }
-
                 } catch (e: JSONException) {
                     Log.d("status check error",e.toString())
                 }
@@ -661,7 +658,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         Log.d("Reason 123","statusReasonCheck")
 
         // Extract status object
-        val statusObject = jsonObject.getJSONObject("nameValuePairs").getJSONObject("status")
+        val statusObject = jsonObject.getJSONObject("status")
 
         // Extract status reason
         val statusReason = statusObject.getString("reason")
