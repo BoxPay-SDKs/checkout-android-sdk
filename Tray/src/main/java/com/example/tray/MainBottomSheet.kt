@@ -132,13 +132,11 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             openAddCardBottomSheet()
         }
         binding.walletConstraint.setOnClickListener(){
-            val bottomSheet = WalletBottomSheet()
-            bottomSheet.show(parentFragmentManager, "ModalBottomSheet")
+            openWalletBottomSheet()
         }
 
         binding.netBankingConstraint.setOnClickListener(){
-            val bottomSheet = NetBankingBottomSheet()
-            bottomSheet.show(parentFragmentManager,"ModalBottomSheet")
+            openNetBankingBottomSheet()
         }
 
 
@@ -352,6 +350,14 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private fun openAddCardBottomSheet(){
         val bottomSheetFragment = AddCardBottomSheet.newInstance(token)
         bottomSheetFragment.show(parentFragmentManager, "AddCardBottomSheet")
+    }
+    private fun openNetBankingBottomSheet(){
+        val bottomSheetFragment = NetBankingBottomSheet.newInstance(token)
+        bottomSheetFragment.show(parentFragmentManager, "NetBankingBottomSheet")
+    }
+    private fun openWalletBottomSheet(){
+        val bottomSheetFragment = WalletBottomSheet.newInstance(token)
+        bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
     }
     private fun getAndSetOrderDetails(){
         val response = JSONObject("""{

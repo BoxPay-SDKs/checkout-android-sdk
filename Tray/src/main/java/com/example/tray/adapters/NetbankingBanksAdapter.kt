@@ -4,6 +4,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tray.R
 import com.example.tray.databinding.NetbankingBanksItemBinding
@@ -15,6 +16,7 @@ class NetbankingBanksAdapter(
     private val recyclerView: RecyclerView
 ) : RecyclerView.Adapter<NetbankingBanksAdapter.NetBankingAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
+    var checkPositionLiveData = MutableLiveData<Int>()
     inner class NetBankingAdapterViewHolder(val binding: NetbankingBanksItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
@@ -81,6 +83,10 @@ class NetbankingBanksAdapter(
 
             // Update the checked position
             checkedPosition = position
+            checkPositionLiveData.value = checkedPosition
         }
+    }
+    fun getCheckedPosition() : Int{
+        return checkedPosition
     }
 }

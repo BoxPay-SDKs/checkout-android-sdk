@@ -22,11 +22,13 @@ import android.view.WindowManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
+import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
@@ -80,8 +82,8 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         var checked = false
         binding.progressBar.visibility = View.INVISIBLE
-        binding.ll1InvalidUPI.visibility = View.GONE
-        binding.invalidCardNumber.visibility = View.GONE
+        binding.ll1InvalidCardNumber.visibility = View.GONE
+        binding.invalidCardValidity.visibility = View.GONE
         binding.invalidCVV.visibility = View.GONE
         binding.imageView3.setOnClickListener() {
             if (!checked) {
@@ -107,7 +109,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             Handler(Looper.getMainLooper()).postDelayed({
                 binding.progressBar.visibility = View.INVISIBLE
-                binding.ll1InvalidUPI.visibility = View.VISIBLE
+                binding.ll1InvalidCardNumber.visibility = View.VISIBLE
                 binding.textView6.setTextColor(
                     ContextCompat.getColor(
                         requireContext(),
@@ -169,6 +171,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 val textNow = s.toString()
                 if (textNow.isNotBlank()) {
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                    enableProceedButton()
                 }
 
                 binding.editTextText.removeTextChangedListener(this)
@@ -189,7 +192,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (textNow.isBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                    binding.ll1InvalidCardNumber.visibility = View.GONE
                 }
             }
         })
@@ -213,84 +216,92 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                 binding.editTextCardValidity.addTextChangedListener(this)
                 val textNow = s.toString()
-                Log.d("onTextChanged",s.toString())
-                if(textNow.isNotBlank()){
-                    enableProceedButton()
-                }
-            }
-
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
-
-        binding.editTextNameOnCard.addTextChangedListener(object : TextWatcher{
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                Log.d("beforeTextChanged",s.toString())
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val textNow = s.toString()
-                Log.d("onTextChanged",s.toString())
-                if(textNow.isNotBlank()){
+                Log.d("onTextChanged", s.toString())
+                if (textNow.isNotBlank()) {
                     enableProceedButton()
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {
                 val textNow = s.toString()
-                Log.d("afterTextChanged",s.toString())
-                if(textNow.isBlank()){
+                Log.d("afterTextChanged", s.toString())
+                if (textNow.isBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                    binding.ll1InvalidCardNumber.visibility = View.GONE
                 }
             }
-
         })
 
-        binding.editTextCardValidity.addTextChangedListener(object : TextWatcher{
+
+        binding.editTextCardValidity.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                Log.d("beforeTextChanged",s.toString())
+                Log.d("beforeTextChanged", s.toString())
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textNow = s.toString()
-                Log.d("onTextChanged",s.toString())
-                if(textNow.isNotBlank()){
+                Log.d("onTextChanged", s.toString())
+                if (textNow.isNotBlank()) {
                     enableProceedButton()
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {
                 val textNow = s.toString()
-                Log.d("afterTextChanged",s.toString())
-                if(textNow.isBlank()){
+                Log.d("afterTextChanged", s.toString())
+                if (textNow.isBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                    binding.ll1InvalidCardNumber.visibility = View.GONE
                 }
             }
         })
-        binding.editTextCardCVV.addTextChangedListener(object : TextWatcher{
+        binding.editTextCardCVV.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                Log.d("beforeTextChanged",s.toString())
+                Log.d("beforeTextChanged", s.toString())
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textNow = s.toString()
-                Log.d("onTextChanged",s.toString())
-                if(textNow.isNotBlank()){
+                Log.d("onTextChanged", s.toString())
+                if (textNow.isNotBlank()) {
                     enableProceedButton()
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {
                 val textNow = s.toString()
-                Log.d("afterTextChanged",s.toString())
-                if(textNow.isBlank()){
+                Log.d("afterTextChanged", s.toString())
+                if (textNow.isBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                    binding.ll1InvalidCardNumber.visibility = View.GONE
+                }
+            }
+
+        })
+
+        binding.editTextNameOnCard.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                Log.d("beforeTextChanged", s.toString())
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val textNow = s.toString()
+                Log.d("onTextChanged", s.toString())
+                if (textNow.isNotBlank()) {
+                    enableProceedButton()
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                val textNow = s.toString()
+                Log.d("afterTextChanged", s.toString())
+                if (textNow.isBlank()) {
+                    binding.proceedButtonRelativeLayout.isEnabled = false
+                    binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
+                    binding.ll1InvalidCardNumber.visibility = View.GONE
                 }
             }
 
@@ -299,19 +310,44 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardCVV.setTransformationMethod(AsteriskPasswordTransformationMethod())
 
-
-
-        val originalCVV = StringBuilder()
-
         binding.proceedButton.setOnClickListener() {
+            removeErrors()
             cardNumber = deformatCardNumber(binding.editTextText.text.toString())
             Log.d("card number", cardNumber!!)
             cardExpiryYYYY_MM = addDashInsteadOfSlash(binding.editTextCardValidity.text.toString())
-            Log.d("card expiryr", cardExpiryYYYY_MM!!)
+            if (cardExpiryYYYY_MM.isNullOrEmpty()) {
+                return@setOnClickListener
+            }
+            Log.d("card expiry", cardExpiryYYYY_MM!!)
             cvv = binding.editTextCardCVV.text.toString()
             Log.d("card cvv", cvv!!)
             cardHolderName = binding.editTextNameOnCard.text.toString()
             Log.d("card holder name", cardHolderName!!)
+            var anyFieldEmpty = false
+
+            if(cardNumber.isNullOrEmpty()){
+                binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                binding.textView4.text = "Enter card number"
+                anyFieldEmpty = true
+            }
+            if(cardExpiryYYYY_MM.isNullOrEmpty()){
+                binding.invalidCardValidity.visibility = View.VISIBLE
+                binding.textView7.text = "Enter card validity"
+                anyFieldEmpty = true
+            }
+            if(cardHolderName.isNullOrEmpty()){
+                Toast.makeText(requireContext(), "Enter name on card", Toast.LENGTH_SHORT).show()
+                anyFieldEmpty = true
+            }
+            if(cvv.isNullOrEmpty()){
+                binding.invalidCVV.visibility = View.VISIBLE
+                binding.textView8.text = "Enter CVV"
+                anyFieldEmpty = true
+            }
+
+            if(anyFieldEmpty){
+                return@setOnClickListener
+            }
 
             postRequest(requireContext())
             showLoadingInButton()
@@ -341,14 +377,14 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun removeErrors() {
-        binding.ll1InvalidUPI.visibility = View.GONE
-        binding.invalidCardNumber.visibility = View.GONE
+        binding.ll1InvalidCardNumber.visibility = View.GONE
+        binding.invalidCardValidity.visibility = View.GONE
         binding.invalidCVV.visibility = View.GONE
     }
 
     private fun giveErrors() {
-        binding.ll1InvalidUPI.visibility = View.VISIBLE
-        binding.invalidCardNumber.visibility = View.VISIBLE
+        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+        binding.invalidCardValidity.visibility = View.VISIBLE
         binding.invalidCVV.visibility = View.VISIBLE
     }
 
@@ -479,7 +515,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("firstName", "test")
                 put("gender", JSONObject.NULL)
                 put("lastName", "last")
-                put("phoneNumber", "919656262256")
+                put("phoneNumber", "+919711668479")
                 put("uniqueReference", "x123y")
             }
             put("shopper", shopperObject)
@@ -490,31 +526,43 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
                 // Handle response
-                logJsonObject(response)
                 hideLoadingInButton()
 
                 try {
-                    // Parse the JSON response
                     val jsonObject = response
+                    logJsonObject(response)
 
-                    // Retrieve the "actions" array
-                    val actionsArray = jsonObject.getJSONArray("actions")
+                    val status = jsonObject.getJSONObject("status").getString("status")
+                    val reason = jsonObject.getJSONObject("status").getString("reason")
+                    Log.d("status and reason",status+" due to "+reason)
                     var url = ""
-                    // Loop through the actions array to find the URL
-                    for (i in 0 until actionsArray.length()) {
-                        val actionObject = actionsArray.getJSONObject(i)
-                        url = actionObject.getString("url")
-                        // Do something with the URL
-                        Log.d("URL", url)
+
+                    if (status.contains("Rejected", ignoreCase = true)) {
+                        Log.d("reason check","here")
+                        getStatusReasonFromResponse(response.toString())
+
+                    }else{
+                        Log.d("why is it coming here","whyy")
+                        val url = jsonObject
+                            .getJSONArray("actions")
+                            .getJSONObject(0)
+                            .getString("url")
+                        Log.d("url is fetched",url)
+
+                        if (status.contains("Approved", ignoreCase = true)) {
+                            val bottomSheet = PaymentStatusBottomSheet()
+                            bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheet")
+                            dismiss()
+                        } else {
+                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                            intent.putExtra("url", url)
+                            intent.putExtra("token", token)
+                            startActivity(intent)
+                        }
+                    // Assuming there's only one action, change index if needed
                     }
-
-
-                    val intent = Intent(requireContext(),OTPScreenWebView :: class.java)
-                    intent.putExtra("url", url)
-                    startActivity(intent)
-
                 } catch (e: JSONException) {
-                    e.printStackTrace()
+                    Log.d("status check error",e.toString())
                 }
 
             },
@@ -524,8 +572,9 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
-                    binding.ll1InvalidUPI.visibility = View.VISIBLE
+                    binding.ll1InvalidCardNumber.visibility = View.VISIBLE
                     binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
+                    getMessageForFieldErrorItems(errorResponse)
                     hideLoadingInButton()
                 }
 
@@ -606,10 +655,15 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun addDashInsteadOfSlash(date: String): String {
-        val mm = date.substring(0, 2)
-        val yyyy = "20"+date.substring(3, 5)
+        try {
+            val mm = date.substring(0, 2)
+            val yyyy = "20" + date.substring(3, 5)
+            return yyyy + "-" + mm
+        } catch (e: Exception) {
+            binding.textView7.text = "Invalid Validity"
+            return ""
+        }
 
-        return yyyy+ "-" + mm
     }
 
     fun logJsonObject(jsonObject: JSONObject) {
@@ -617,6 +671,58 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         val jsonStr = gson.toJson(jsonObject)
         Log.d("Request Body", jsonStr)
     }
+
+    fun getMessageForFieldErrorItems(errorString: String) {
+
+        // Parse JSON response
+        val jsonObject = JSONObject(errorString)
+
+
+        // Extract field error items array
+        val fieldErrorItems = jsonObject.getJSONArray("fieldErrorItems")
+
+        // Iterate over field error items
+        for (i in 0 until fieldErrorItems.length()) {
+            // Extract message from each item
+            val errorMessage = fieldErrorItems.getJSONObject(i).getString("message")
+            Log.d("errorMessage", errorMessage)
+
+            if (errorMessage.contains("Invalid instrumentDetails.card.expiry", ignoreCase = true)) {
+                binding.invalidCardValidity.visibility = View.VISIBLE
+                binding.textView7.text = "Invalid Validity"
+            }
+            if (errorMessage.contains(
+                    "instrumentDetails.card.number is invalid",
+                    ignoreCase = true
+                )
+            ) {
+                binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                binding.textView4.text = "Invalid Card Number"
+            }
+        }
+    }
+
+
+    fun getStatusReasonFromResponse(response: String) {
+        val jsonObject = JSONObject(response)
+        Log.d("Reason 123","statusReasonCheck")
+
+        // Extract status object
+        val statusObject = jsonObject.getJSONObject("status")
+
+        // Extract status reason
+        val statusReason = statusObject.getString("reason")
+        Log.d("Reason xyz",statusReason)
+
+        if (statusReason.contains("Invalid Card Expiry", ignoreCase = true)) {
+            binding.invalidCardValidity.visibility = View.VISIBLE
+            binding.textView7.text = "Invalid Validity"
+        } else if (statusReason.contains("Invalid CVV", ignoreCase = true)) {
+            binding.invalidCVV.visibility = View.VISIBLE
+            binding.textView8.text = "Invalid CVV"
+        }
+    }
+
 
     companion object {
         fun newInstance(data: String?): AddCardBottomSheet {
