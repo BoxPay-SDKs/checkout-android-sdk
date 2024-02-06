@@ -10,6 +10,7 @@ class OTPScreenWebView : AppCompatActivity() {
     private val binding by lazy{
         ActivityOtpscreenWebViewBinding.inflate(layoutInflater)
     }
+    private val token : String?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -17,7 +18,6 @@ class OTPScreenWebView : AppCompatActivity() {
 
         val receivedUrl= intent.getStringExtra("url")
         Log.d("url",receivedUrl.toString())
-
         binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
     }
 }

@@ -325,7 +325,6 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         Log.d("URL", url)
                     }
 
-
                     val intent = Intent(requireContext(),OTPScreenWebView :: class.java)
                     intent.putExtra("url", url)
                     startActivity(intent)

@@ -21,6 +21,7 @@ class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_check)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -51,23 +52,16 @@ class Check : AppCompatActivity() {
             }
         }
 
-
-
-
-
-
-
-
     }
 
     fun showBottomSheetWithOverlay() {
         // Show the BottomSheetDialogFragment
         val bottomSheetFragment = MainBottomSheet.newInstance(tokenLiveData.value)
-        bottomSheetFragment.show(supportFragmentManager, "YourBottomSheetTag")
+        bottomSheetFragment.show(supportFragmentManager, "MainBottomSheet")
     }
     fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/gZztXPf8Ag/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/hK3JrVc6ys/sessions"
 
         val jsonData = JSONObject("""{
     "context": {
@@ -79,7 +73,7 @@ class Check : AppCompatActivity() {
     },
     "paymentType": "S",
     "money": {
-        "amount": "1",
+        "amount": "2197",
         "currencyCode": "INR"
     },
     "descriptor": {
@@ -87,53 +81,53 @@ class Check : AppCompatActivity() {
     },
     "billingAddress": {
         "address1": "first address line",
-        "address2": "second address line",
-        "city": "Faridabad",
-        "state": "Haryana",
-        "countryCode": "IN",
-        "postalCode": "121004"
+            "address2": "second address line",
+            "city": "Faridabad",
+            "state": "Haryana",
+            "countryCode": "IN",
+            "postalCode": "121004"
     },
     "shopper": {
         "firstName": "test",
         "lastName": "last",
         "email": "test123@gmail.com",
         "uniqueReference": "x123y",
-        "phoneNumber": "",
+        "phoneNumber": "911234567890",
         "deliveryAddress": {
-            "address1": "first address line",
-            "address2": "second address line",
-            "city": "Faridabad",
-            "state": "Haryana",
-            "countryCode": "IN",
-            "postalCode": "121004"
+            "address1": "first line",
+        "address2": "second line",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "countryCode": "IN",
+        "postalCode": "123456"
         }
     },
     "order": {
-        "originalAmount" : 1697,
-        "shippingAmount" : 500,
-        "voucherCode" : "VOUCHER",
+        "originalAmount": 1697,
+        "shippingAmount": 500,
+        "voucherCode": "VOUCHER",
         "items": [
             {
                 "id": "test",
-                "itemName" : "test_name",
+                "itemName": "test_name",
                 "description": "testProduct",
                 "quantity": 1,
-                "imageUrl" : "https://test-merchant.boxpay.tech/boxpay logo.svg",
-                "amountWithoutTax" : 699.00
+                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
+                "amountWithoutTax": 699.00
             },
             {
                 "id": "test2",
-                "itemName" : "test_name2",
+                "itemName": "test_name2",
                 "description": "testProduct2",
                 "quantity": 2,
-                "imageUrl" : "22",
-                "amountWithoutTax" : 499.00
+                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
+                "amountWithoutTax": 499.00
             }
         ]
     },
+    "statusNotifyUrl": "https://www.boxpay.tech",
     "frontendReturnUrl": "https://www.boxpay.tech",
-    "frontendBackUrl": "https://www.boxpay.tech",
-    "expiryDurationSec": 7200
+    "frontendBackUrl": "https://www.boxpay.tech"
 }""")
 
 
@@ -166,13 +160,11 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer 6Zioq6AqRt0gdF6PVr08ynfQWmWIDshSRmNGnzKuSgqXEj9xPwoDFGjF895CGBv4FFt3z740l4CY4uZ2xv9HR"
+                headers["Authorization"] =  "Bearer afcGgCv6mOVIIpnFPWBL44RRciVU8oMteV5ZhC2nwjjjuw8z0obKMjdK8ShcwLOU6uRNjQryLKl1pLAsLAXSI"
                 return headers
             }
         }
         queue.add(request)
-
-
     }
     fun handleResponseWithToken() {
         Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")

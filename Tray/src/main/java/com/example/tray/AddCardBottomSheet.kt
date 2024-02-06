@@ -27,6 +27,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
+import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
@@ -499,19 +500,24 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     // Retrieve the "actions" array
                     val actionsArray = jsonObject.getJSONArray("actions")
+                    val status = jsonObject.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
                     for (i in 0 until actionsArray.length()) {
                         val actionObject = actionsArray.getJSONObject(i)
                         url = actionObject.getString("url")
                         // Do something with the URL
-                        Log.d("URL", url)
+                        Log.d("url and status", url+"\n"+status)
                     }
 
-
-                    val intent = Intent(requireContext(),OTPScreenWebView :: class.java)
-                    intent.putExtra("url", url)
-                    startActivity(intent)
+                    if(status.equals("RequiresAction")) {
+                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                        intent.putExtra("url", url)
+                        startActivity(intent)
+                    }else{
+                        val bottomSheet = PaymentStatusBottomSheet()
+                        bottomSheet.show(parentFragmentManager,"PaymentStatusBottomSheet")
+                    }
 
                 } catch (e: JSONException) {
                     e.printStackTrace()
