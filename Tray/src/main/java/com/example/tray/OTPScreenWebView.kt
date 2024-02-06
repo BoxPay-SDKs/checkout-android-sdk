@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.ActivityOtpscreenWebViewBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,16 +29,14 @@ class OTPScreenWebView : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        requestQueue = Volley.newRequestQueue(this)
 
         val receivedUrl = intent.getStringExtra("url")
         Log.d("url", receivedUrl.toString())
         token = intent.getStringExtra("token")
         Log.d("token logged from webView", "token")
         binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
-
         startFunctionCalls()
-
-
     }
 
     private fun fetchStatusAndReason(url: String) {

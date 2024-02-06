@@ -30,6 +30,7 @@ import com.android.volley.toolbox.Volley
 import com.example.tray.adapters.NetbankingBanksAdapter
 import com.example.tray.databinding.FragmentNetBankingBottomSheetBinding
 import com.example.tray.dataclasses.NetbankingDataClass
+import com.example.tray.dataclasses.WalletDataClass
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
 import org.json.JSONArray
@@ -112,27 +113,33 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 checkedPosition = checkPositionObserved
             }
         })
-        val url = "https://test-apis.boxpay.tech/v0/platform/payment-methods"
-        val queue : RequestQueue = Volley.newRequestQueue(requireContext())
-        val jsonArrayAll = JsonArrayRequest(Request.Method.GET, url, null, { response ->
+        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
             try {
-                val netBankingObjects = filterNetBankingMethods(response)
+                val jsonObject = response
 
-                // Process NetBanking objects as needed
-                for (netBankingObject in netBankingObjects) {
-                    // Extract information from the NetBanking object
-                    val id = netBankingObject.optString("id")
-                    val name = netBankingObject.optString("title")
-                    val brand = netBankingObject.optString("brand")
+                // Get the payment methods array
+                val paymentMethodsArray = jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
 
-                    // Do something with the extracted information
-                    banksDetailsOriginal.add(NetbankingDataClass(name,R.drawable.netbanking_sample_logo,brand))
+                // Filter payment methods based on type equal to "Wallet"
+                for (i in 0 until paymentMethodsArray.length()) {
+                    val paymentMethod = paymentMethodsArray.getJSONObject(i)
+                    if (paymentMethod.getString("type") == "NetBanking") {
+                        val bankName = paymentMethod.getString("title")
+                        val bankImage = R.drawable.wallet_sample_logo
+                        val bankBrand = paymentMethod.getString("brand")
+                        val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
+                        banksDetailsOriginal.add(NetbankingDataClass(bankName,bankImage,bankBrand,bankInstrumentTypeValue))
+                    }
                 }
+
+                // Print the filtered wallet payment methods
                 showAllBanks()
 
             } catch (e: Exception) {
-                Log.d("Error Occured",e.toString())
+                Log.d("Error Occured", e.toString())
                 e.printStackTrace()
             }
 
@@ -142,14 +149,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
             Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
                 .show()
         })
-        queue.add(jsonArrayAll)
-
-
-//        val searchView = binding.searchView
-//        val searchEditText =
-//            searchView.findViewById<View>(androidx.appcompat.R.id.search_src_text) as EditText
-//        searchEditText.setTextColor(Color.parseColor("#000000"))
-//        searchEditText.setHintTextColor(Color.parseColor("#000000"))
+        queue.add(jsonObjectAll)
 
 
 
@@ -180,11 +180,10 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.proceedButton.setOnClickListener(){
-            val bankBrand = banksDetailsFiltered[checkedPosition!!].bankBrand
-            Log.d("Selected bank is : ",bankBrand)
+            val bankInstrumentTypeValue = banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
+            Log.d("Selected bank is : ",bankInstrumentTypeValue)
             showLoadingInButton()
-            postRequest(requireContext(),bankBrand)
-
+            postRequest(requireContext(),bankInstrumentTypeValue)
         }
 
         return binding.root
@@ -197,7 +196,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 showAllBanks()
             }
             else if(bank.bankName.contains(query.toString(), ignoreCase = true)){
-                banksDetailsFiltered.add(NetbankingDataClass(bank.bankName,bank.bankImage,bank.bankBrand))
+                banksDetailsFiltered.add(NetbankingDataClass(bank.bankName,bank.bankImage,bank.bankBrand, bank.bankInstrumentTypeValue))
             }
         }
         allBanksAdapter.notifyDataSetChanged()
@@ -228,7 +227,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.linearLayout2.visibility = View.VISIBLE
 
     }
-    fun postRequest(context: Context, bankBrand : String) {
+    fun postRequest(context: Context, bankInstrumentTypeValue : String) {
         Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -276,7 +275,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
             // Instrument Details
             val instrumentDetailsObject = JSONObject().apply {
-                put("type", "netbanking/$bankBrand")
+                put("type", bankInstrumentTypeValue)
             }
             put("instrumentDetails", instrumentDetailsObject)
             // Shopper
@@ -330,6 +329,8 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     startActivity(intent)
 
                 } catch (e: JSONException) {
+                    binding.errorField.visibility = View.VISIBLE
+                    binding.textView4.text = e.toString()
                     e.printStackTrace()
                 }
 

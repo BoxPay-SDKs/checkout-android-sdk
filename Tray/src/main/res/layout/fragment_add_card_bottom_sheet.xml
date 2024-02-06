@@ -136,7 +136,7 @@
                             tools:ignore="TouchTargetSizeCheck" />
 
                         <LinearLayout
-                            android:id="@+id/invalidCardNumber"
+                            android:id="@+id/invalidCardValidity"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:gravity="center_vertical"
@@ -336,7 +336,7 @@
                         </LinearLayout>
 
                         <LinearLayout
-                            android:id="@+id/ll1InvalidUPI"
+                            android:id="@+id/ll1InvalidCardNumber"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="4dp"

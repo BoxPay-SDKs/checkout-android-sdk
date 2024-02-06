@@ -99,24 +99,29 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
 
-        val url = "https://test-apis.boxpay.tech/v0/platform/payment-methods"
+        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
-        val jsonArrayAll = JsonArrayRequest(Request.Method.GET, url, null, { response ->
+        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
             try {
-                val walletMethodsObjects = filterWalletMethods(response)
+                val jsonObject = response
 
-                // Process NetBanking objects as needed
-                for (netBankingObject in walletMethodsObjects) {
-                    // Extract information from the NetBanking object
-                    val id = netBankingObject.optString("id")
-                    val walletName = netBankingObject.optString("title")
-                    val walletBrand = netBankingObject.optString("brand")
-                    val instrumentTypeValue = netBankingObject.optString("instrumentTypeValue")
+                // Get the payment methods array
+                val paymentMethodsArray = jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
 
-                    // Do something with the extracted information
-                    walletDetailsOriginal.add(WalletDataClass(walletName, R.drawable.wallet_sample_logo,walletBrand,instrumentTypeValue))
+                // Filter payment methods based on type equal to "Wallet"
+                for (i in 0 until paymentMethodsArray.length()) {
+                    val paymentMethod = paymentMethodsArray.getJSONObject(i)
+                    if (paymentMethod.getString("type") == "Wallet") {
+                        val walletName = paymentMethod.getString("title")
+                        val walletImage = R.drawable.wallet_sample_logo
+                        val walletBrand = paymentMethod.getString("brand")
+                        val walletInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
+                        walletDetailsOriginal.add(WalletDataClass(walletName,walletImage,walletBrand,walletInstrumentTypeValue))
+                    }
                 }
+
+                // Print the filtered wallet payment methods
                 showAllWallets()
 
             } catch (e: Exception) {
@@ -130,9 +135,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
                 .show()
         })
-        queue.add(jsonArrayAll)
-
-
+        queue.add(jsonObjectAll)
 
 
         binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
@@ -355,21 +358,31 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
                     // Retrieve the "actions" array
                     val actionsArray = jsonObject.getJSONArray("actions")
+                    val status = jsonObject.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
                     for (i in 0 until actionsArray.length()) {
                         val actionObject = actionsArray.getJSONObject(i)
                         url = actionObject.getString("url")
                         // Do something with the URL
-                        Log.d("URL", url)
+                        Log.d("url and status", url+"\n"+status)
                     }
 
 
-                    val intent = Intent(requireContext(),OTPScreenWebView :: class.java)
-                    intent.putExtra("url", url)
-                    startActivity(intent)
+                    if(status.equals("Approved")) {
+                        val bottomSheet = PaymentStatusBottomSheet()
+                        bottomSheet.show(parentFragmentManager,"PaymentStatusBottomSheet")
+                        dismiss()
+                    }else{
+                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                        intent.putExtra("url", url)
+                        intent.putExtra("token",token)
+                        startActivity(intent)
+                    }
 
                 } catch (e: JSONException) {
+                    binding.errorField.visibility = View.VISIBLE
+                    binding.textView4.text = e.toString()
                     e.printStackTrace()
                 }
 
@@ -404,7 +417,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body", jsonStr)
+        Log.d("Request Body Wallet", jsonStr)
     }
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
