@@ -22,6 +22,7 @@ import android.view.WindowManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
@@ -281,6 +282,31 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         })
 
+        binding.editTextNameOnCard.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                Log.d("beforeTextChanged", s.toString())
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val textNow = s.toString()
+                Log.d("onTextChanged", s.toString())
+                if (textNow.isNotBlank()) {
+                    enableProceedButton()
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                val textNow = s.toString()
+                Log.d("afterTextChanged", s.toString())
+                if (textNow.isBlank()) {
+                    binding.proceedButtonRelativeLayout.isEnabled = false
+                    binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
+                    binding.ll1InvalidCardNumber.visibility = View.GONE
+                }
+            }
+
+        })
+
 
         binding.editTextCardCVV.setTransformationMethod(AsteriskPasswordTransformationMethod())
 
@@ -297,6 +323,31 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
             Log.d("card cvv", cvv!!)
             cardHolderName = binding.editTextNameOnCard.text.toString()
             Log.d("card holder name", cardHolderName!!)
+            var anyFieldEmpty = false
+
+            if(cardNumber.isNullOrEmpty()){
+                binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                binding.textView4.text = "Enter card number"
+                anyFieldEmpty = true
+            }
+            if(cardExpiryYYYY_MM.isNullOrEmpty()){
+                binding.invalidCardValidity.visibility = View.VISIBLE
+                binding.textView7.text = "Enter card validity"
+                anyFieldEmpty = true
+            }
+            if(cardHolderName.isNullOrEmpty()){
+                Toast.makeText(requireContext(), "Enter name on card", Toast.LENGTH_SHORT).show()
+                anyFieldEmpty = true
+            }
+            if(cvv.isNullOrEmpty()){
+                binding.invalidCVV.visibility = View.VISIBLE
+                binding.textView8.text = "Enter CVV"
+                anyFieldEmpty = true
+            }
+
+            if(anyFieldEmpty){
+                return@setOnClickListener
+            }
 
             postRequest(requireContext())
             showLoadingInButton()
@@ -489,6 +540,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                     if (status.contains("Rejected", ignoreCase = true)) {
                         Log.d("reason check","here")
                         getStatusReasonFromResponse(response.toString())
+
                     }else{
                         Log.d("why is it coming here","whyy")
                         val url = jsonObject
@@ -496,20 +548,18 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                             .getJSONObject(0)
                             .getString("url")
                         Log.d("url is fetched",url)
+
+                        if (status.contains("Approved", ignoreCase = true)) {
+                            val bottomSheet = PaymentStatusBottomSheet()
+                            bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheet")
+                            dismiss()
+                        } else {
+                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                            intent.putExtra("url", url)
+                            intent.putExtra("token", token)
+                            startActivity(intent)
+                        }
                     // Assuming there's only one action, change index if needed
-                    }
-
-
-
-                    if (status.contains("Approved", ignoreCase = true)) {
-                        val bottomSheet = PaymentStatusBottomSheet()
-                        bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheet")
-                        dismiss()
-                    } else {
-                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                        intent.putExtra("url", url)
-                        intent.putExtra("token", token)
-                        startActivity(intent)
                     }
                 } catch (e: JSONException) {
                     Log.d("status check error",e.toString())
@@ -667,6 +717,9 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         if (statusReason.contains("Invalid Card Expiry", ignoreCase = true)) {
             binding.invalidCardValidity.visibility = View.VISIBLE
             binding.textView7.text = "Invalid Validity"
+        } else if (statusReason.contains("Invalid CVV", ignoreCase = true)) {
+            binding.invalidCVV.visibility = View.VISIBLE
+            binding.textView8.text = "Invalid CVV"
         }
     }
 
