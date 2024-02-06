@@ -480,7 +480,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("firstName", "test")
                 put("gender", JSONObject.NULL)
                 put("lastName", "last")
-                put("phoneNumber", "919656262256")
+                put("phoneNumber", "+919711668479")
                 put("uniqueReference", "x123y")
             }
             put("shopper", shopperObject)
@@ -510,13 +510,15 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         Log.d("url and status", url+"\n"+status)
                     }
 
-                    if(status.equals("RequiresAction")) {
-                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                        intent.putExtra("url", url)
-                        startActivity(intent)
-                    }else{
+                    if(status.equals("Approved")) {
                         val bottomSheet = PaymentStatusBottomSheet()
                         bottomSheet.show(parentFragmentManager,"PaymentStatusBottomSheet")
+                        dismiss()
+                    }else{
+                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                        intent.putExtra("url", url)
+                        intent.putExtra("token",token)
+                        startActivity(intent)
                     }
 
                 } catch (e: JSONException) {
@@ -623,6 +625,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         val jsonStr = gson.toJson(jsonObject)
         Log.d("Request Body", jsonStr)
     }
+
 
     companion object {
         fun newInstance(data: String?): AddCardBottomSheet {

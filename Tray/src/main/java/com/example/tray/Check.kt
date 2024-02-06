@@ -165,6 +165,8 @@ class Check : AppCompatActivity() {
             }
         }
         queue.add(request)
+
+
     }
     fun handleResponseWithToken() {
         Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
