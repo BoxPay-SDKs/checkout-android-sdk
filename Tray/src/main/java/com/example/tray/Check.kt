@@ -106,6 +106,7 @@ class Check : AppCompatActivity() {
         "originalAmount": 1697,
         "shippingAmount": 500,
         "voucherCode": "VOUCHER",
+        "totalAmountWithoutTax": 699.00,
         "items": [
             {
                 "id": "test",

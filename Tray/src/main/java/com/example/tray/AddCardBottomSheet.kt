@@ -490,10 +490,15 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         getStatusReasonFromResponse(response.toString())
                     }else{
                         Log.d("why is it coming here","whyy")
-                        var urlob = jsonObject
+                        val url = jsonObject
                             .getJSONObject("actions")
-////                        Log.d("output of actions","Nothgsdfg")
-                        logJsonObject(urlob)
+                            .getJSONArray("values")
+                            .getJSONObject(0) // Assuming there's only one action, change index if needed
+                            .getJSONObject("nameValuePairs")
+                            .getString("url")
+
+
+
                     }
 
 
@@ -510,8 +515,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                     }
 
                 } catch (e: JSONException) {
-                    Log.d("status check failed",e.toString())
-                    e.printStackTrace()
+                    Log.d("status check error",e.toString())
                 }
 
             },
