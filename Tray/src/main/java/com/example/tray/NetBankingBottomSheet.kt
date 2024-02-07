@@ -6,6 +6,8 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -49,24 +51,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var checkedPosition : Int ?= null
 
-    private val requestQueue: RequestQueue by lazy {
-        Volley.newRequestQueue(requireContext())
-    }
 
-    fun filterNetBankingMethods(paymentMethodsArray: JSONArray): List<JSONObject> {
-        val netBankingMethods = mutableListOf<JSONObject>()
-
-        for (i in 0 until paymentMethodsArray.length()) {
-            val paymentMethodObject = paymentMethodsArray.optJSONObject(i)
-
-            // Check if the payment method has type "NetBanking"
-            if (paymentMethodObject?.optString("type") == "NetBanking") {
-                netBankingMethods.add(paymentMethodObject)
-            }
-        }
-
-        return netBankingMethods
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,6 +60,51 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
             token = it.getString("token")
         }
 
+    }
+    private fun fetchBanksDetails(){
+        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
+
+            try {
+                val jsonObject = response
+
+                // Get the payment methods array
+                val paymentMethodsArray = jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
+
+                // Filter payment methods based on type equal to "Wallet"
+                for (i in 0 until paymentMethodsArray.length()) {
+                    val paymentMethod = paymentMethodsArray.getJSONObject(i)
+                    if (paymentMethod.getString("type") == "NetBanking") {
+                        val bankName = paymentMethod.getString("title")
+                        val bankImage = R.drawable.wallet_sample_logo
+                        val bankBrand = paymentMethod.getString("brand")
+                        val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
+                        banksDetailsOriginal.add(NetbankingDataClass(bankName,bankImage,bankBrand,bankInstrumentTypeValue))
+                    }
+                }
+
+                // Print the filtered wallet payment methods
+
+
+                val delayMillis = 5000L
+                val handler = Handler(Looper.getMainLooper())
+                handler.postDelayed({
+                    showAllBanks()
+                }, delayMillis)
+
+            } catch (e: Exception) {
+                Log.d("Error Occured", e.toString())
+                e.printStackTrace()
+            }
+
+        }, { error ->
+
+            Log.e("error here", "RESPONSE IS $error")
+            Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
+                .show()
+        })
+        queue.add(jsonObjectAll)
     }
 
     override fun onCreateView(
@@ -88,6 +118,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered,binding.banksRecyclerView)
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
+        fetchBanksDetails()
         hideLoadingInButton()
         var enabled = false
         binding.checkingTextView.setOnClickListener() {
@@ -113,43 +144,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 checkedPosition = checkPositionObserved
             }
         })
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
-        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
-        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
-            try {
-                val jsonObject = response
-
-                // Get the payment methods array
-                val paymentMethodsArray = jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
-
-                // Filter payment methods based on type equal to "Wallet"
-                for (i in 0 until paymentMethodsArray.length()) {
-                    val paymentMethod = paymentMethodsArray.getJSONObject(i)
-                    if (paymentMethod.getString("type") == "NetBanking") {
-                        val bankName = paymentMethod.getString("title")
-                        val bankImage = R.drawable.wallet_sample_logo
-                        val bankBrand = paymentMethod.getString("brand")
-                        val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
-                        banksDetailsOriginal.add(NetbankingDataClass(bankName,bankImage,bankBrand,bankInstrumentTypeValue))
-                    }
-                }
-
-                // Print the filtered wallet payment methods
-                showAllBanks()
-
-            } catch (e: Exception) {
-                Log.d("Error Occured", e.toString())
-                e.printStackTrace()
-            }
-
-        }, { error ->
-
-            Log.e("error here", "RESPONSE IS $error")
-            Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
-                .show()
-        })
-        queue.add(jsonObjectAll)
 
 
 

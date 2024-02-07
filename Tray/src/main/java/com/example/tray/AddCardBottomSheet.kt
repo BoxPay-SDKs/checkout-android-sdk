@@ -95,34 +95,6 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-        binding.proceedButton.setOnClickListener() {
-
-
-            binding.textView6.visibility = View.INVISIBLE
-            binding.progressBar.visibility = View.VISIBLE
-            val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
-            rotateAnimation.duration = 3000 // Set the duration of the rotation in milliseconds
-            rotateAnimation.repeatCount = ObjectAnimator.INFINITE // Set to repeat indefinitely
-            binding.proceedButton.isEnabled = false
-
-            rotateAnimation.start()
-
-            Handler(Looper.getMainLooper()).postDelayed({
-                binding.progressBar.visibility = View.INVISIBLE
-                binding.ll1InvalidCardNumber.visibility = View.VISIBLE
-                binding.textView6.setTextColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        android.R.color.white
-                    )
-                )
-                binding.textView6.visibility = View.VISIBLE
-                binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
-                binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
-            }, 3000)
-        }
-
 
         ////JUST FOR CHECKING PURPOSE....................................................................................................................................................................................................................................................................................................................................................................................................................................
 

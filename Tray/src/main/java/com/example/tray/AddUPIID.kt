@@ -3,16 +3,12 @@ package com.example.tray
 import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Context
-import android.content.Context.WINDOW_SERVICE
 import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Color
-import android.graphics.PixelFormat
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -23,23 +19,17 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.example.tray.ViewModels.OverlayViewModel
 import com.example.tray.databinding.FragmentAddUPIIDBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
-import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
 import java.util.TimeZone
@@ -54,7 +44,6 @@ class AddUPIID : BottomSheetDialogFragment() {
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
@@ -262,7 +251,6 @@ class AddUPIID : BottomSheetDialogFragment() {
                 // Log.d("Response of Successful Post API call", response.toString())
                 openUPITimerBottomSheet()
                 hideLoadingInButton()
-
             },
             Response.ErrorListener { error ->
                 // Handle error
@@ -359,6 +347,22 @@ class AddUPIID : BottomSheetDialogFragment() {
             args.putString("token", data)
             fragment.arguments = args
             return fragment
+        }
+    }
+
+    private fun launchSuccessScreen(context: Context) {
+        try {
+            val intent = Intent().apply {
+                setClassName(context.packageName, "com.example.AndroidCheckOutSDK.SuccessScreen")
+                // You may need to adjust the package name and class name accordingly
+                // if SuccessScreenActivity is in a different package or has a different name
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Log.d("Exception in launching success screen : ",e.toString())
+            // Handle the exception if the activity cannot be launched
+            e.printStackTrace()
         }
     }
 }

@@ -66,6 +66,8 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
                 // Handle onFinish event if needed
                 binding.progressTextView.text = "00:00"
                 binding.circularProgressBar.progressMax = 0f
+                val bottomSheet = PaymentFailureScreen()
+                bottomSheet.show(parentFragmentManager,"Payment Failed due to timeout")
             }
         }
         countdownTimer.start()
@@ -80,7 +82,6 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
             override fun onFinish() {
                 // Handle onFinish event if needed
-
             }
         }
 
@@ -91,6 +92,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
         (parentFragment as? AddUPIID)?.removeOverlayFromCurrentBottomSheet()
         super.onDismiss(dialog)
+        dismiss()
     }
     private fun fetchStatusAndReason(url: String) {
         Log.d("fetching function called correctly","Fine")
@@ -133,8 +135,6 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
-
-
     companion object {
         fun newInstance(data: String?): UPITimerBottomSheet {
             val fragment = UPITimerBottomSheet()

@@ -40,9 +40,8 @@
             android:layout_marginStart="12dp"
             android:fontFamily="@font/poppins"
             android:gravity="center"
-            android:textSize="14sp"
-            android:text="Bank Name"
             android:textColor="#7F7D83"
+            android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="@+id/bankLogo"
             app:layout_constraintStart_toEndOf="@+id/bankLogo"
             app:layout_constraintTop_toTopOf="@+id/bankLogo" />

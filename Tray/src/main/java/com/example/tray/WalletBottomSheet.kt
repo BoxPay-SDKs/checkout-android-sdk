@@ -1,6 +1,7 @@
 package com.example.tray
 
 import android.animation.ObjectAnimator
+import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -14,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.FrameLayout
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
@@ -33,13 +35,14 @@ import com.android.volley.toolbox.Volley
 import com.example.tray.adapters.WalletAdapter
 import com.example.tray.databinding.FragmentWalletBottomSheetBinding
 import com.example.tray.dataclasses.WalletDataClass
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
-
 
 class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentWalletBottomSheetBinding
@@ -51,12 +54,30 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var checkedPosition : Int ?= null
+    private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
+    private var bottomSheet: FrameLayout? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
         }
 
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
+            val d = dialog as BottomSheetDialog
+            bottomSheet =
+                d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
+            if (bottomSheet != null) {
+//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet!!)
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                bottomSheetBehavior?.isDraggable = false
+            }
+        }
+        return dialog
     }
 
     private val requestQueue: RequestQueue by lazy {
