@@ -137,9 +137,9 @@
 
                         <LinearLayout
                             android:id="@+id/invalidCardValidity"
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
+                            android:gravity="center_vertical|top"
                             android:orientation="horizontal">
 
                             <ImageView
@@ -155,8 +155,8 @@
                                 android:layout_marginStart="2dp"
                                 android:enabled="false"
                                 android:fontFamily="@font/poppins"
-                                android:gravity="center"
-                                android:text="Enter Validity"
+                                android:gravity="center_vertical|left"
+                                android:text="Invalid card validity.\nPlease check"
                                 android:textColor="#B9232F"
                                 android:textSize="12sp" />
 
@@ -204,7 +204,7 @@
                             android:id="@+id/invalidCVV"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:gravity="center_vertical"
+                            android:gravity="center_vertical|top"
                             android:orientation="horizontal">
 
                             <ImageView
@@ -308,28 +308,49 @@
                                 tools:ignore="TouchTargetSizeCheck" />
 
                             <LinearLayout
+                                android:id="@+id/cardNetworkDrawableLinearLayout"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
                                 android:orientation="horizontal"
                                 android:paddingEnd="12dp">
-
-                                <ImageView
+                                <LinearLayout
+                                    android:id="@+id/defaultCardNetworkLinearLayout"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:src="@drawable/mastercard" />
+                                    android:gravity="center"
+                                    android:orientation="horizontal">
+                                    <ImageView
+                                        android:id="@+id/cardNetwork1"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:src="@drawable/mastercard" />
 
-                                <ImageView
+                                    <ImageView
+                                        android:id="@+id/cardNetwork2"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="2dp"
+                                        android:src="@drawable/visa" />
+
+                                    <ImageView
+                                        android:id="@+id/cardNetwork3"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="2dp"
+                                        android:src="@drawable/discover" />
+                                </LinearLayout>
+                                <LinearLayout
+                                    android:id="@+id/fetchedCardNetwork"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="2dp"
-                                    android:src="@drawable/visa" />
+                                    android:gravity="center"
+                                    android:orientation="horizontal"
+                                    android:visibility="gone">
 
-                                <ImageView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="2dp"
-                                    android:src="@drawable/discover" />
+                                </LinearLayout>
+
+
                             </LinearLayout>
 
 
@@ -340,7 +361,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="4dp"
-                            android:gravity="center_vertical"
+                            android:gravity="center_vertical|top"
                             android:orientation="horizontal"
                             android:paddingStart="4dp">
 

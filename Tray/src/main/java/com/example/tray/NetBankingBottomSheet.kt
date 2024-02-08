@@ -1,6 +1,7 @@
 package com.example.tray
 
 import android.animation.ObjectAnimator
+import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -14,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.FrameLayout
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
@@ -33,6 +35,8 @@ import com.example.tray.adapters.NetbankingBanksAdapter
 import com.example.tray.databinding.FragmentNetBankingBottomSheetBinding
 import com.example.tray.dataclasses.NetbankingDataClass
 import com.example.tray.dataclasses.WalletDataClass
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
 import org.json.JSONArray
@@ -44,6 +48,7 @@ import java.util.Locale
 class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentNetBankingBottomSheetBinding
     private lateinit var allBanksAdapter : NetbankingBanksAdapter
+    private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var banksDetailsOriginal: ArrayList<NetbankingDataClass> = ArrayList()
     private var banksDetailsFiltered : ArrayList<NetbankingDataClass> = ArrayList()
     private var token: String? = null
@@ -60,6 +65,25 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
             token = it.getString("token")
         }
 
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
+            val d = dialog as BottomSheetDialog
+            val bottomSheet =
+                d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
+            if (bottomSheet != null) {
+//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+            }
+
+            bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+        }
+
+
+        return dialog
     }
     private fun fetchBanksDetails(){
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
@@ -84,14 +108,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     }
                 }
 
-                // Print the filtered wallet payment methods
-
-
-                val delayMillis = 5000L
-                val handler = Handler(Looper.getMainLooper())
-                handler.postDelayed({
-                    showAllBanks()
-                }, delayMillis)
+                showAllBanks()
 
             } catch (e: Exception) {
                 Log.d("Error Occured", e.toString())

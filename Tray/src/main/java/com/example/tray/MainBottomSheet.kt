@@ -43,8 +43,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private val overlayViewModel: OverlayViewModel by activityViewModels()
     private var overlayViewCurrentBottomSheet: View? = null
     private var token : String ?= null
-    private var banksDetailsOriginal: ArrayList<NetbankingDataClass> = ArrayList()
-    private var BASE_URL_SESSION = "https://test-apis.boxpay.tech/v0/merchants/gZztXPf8Ag/sessions"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,14 +86,12 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         getAndSetOrderDetails()
 
         val items = mutableListOf(
-            "Truly Madly Monthly Plan",
-            "Truly Madly Monthly Plan",
             "Truly Madly Monthly Plan"
         )
-        val prices = mutableListOf("₹599.00", "₹599.00", "₹599.00")
+        val prices = mutableListOf(
+            "₹599.00"
+        )
         val images = mutableListOf(
-            R.drawable.truly_madly_logo,
-            R.drawable.truly_madly_logo,
             R.drawable.truly_madly_logo
         )
         val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices)
@@ -451,52 +447,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         binding.numberOfItems.text = totalQuantity.toString()+" items"
         binding.ItemsPrice.text = "₹"+originalAmount.toString()
     }
-    private fun fetchBankDetails() {
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
-        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
-        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
-            try {
-
-                // Get the payment methods array
-                val paymentMethodsArray =
-                    response.getJSONObject("configs").getJSONArray("paymentMethods")
-
-                // Filter payment methods based on type equal to "Wallet"
-                Log.d("payment Methods array length", paymentMethodsArray.length().toString())
-                for (i in 0 until paymentMethodsArray.length()) {
-                    val paymentMethod = paymentMethodsArray.getJSONObject(i)
-                    if (paymentMethod.getString("type") == "NetBanking") {
-                        val bankName = paymentMethod.getString("title")
-                        val bankImage = R.drawable.wallet_sample_logo
-                        val bankBrand = paymentMethod.getString("brand")
-                        val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
-                        banksDetailsOriginal.add(
-                            NetbankingDataClass(
-                                bankName,
-                                bankImage,
-                                bankBrand,
-                                bankInstrumentTypeValue
-                            )
-                        )
-                    }
-                }
-
-
-
-            } catch (e: Exception) {
-                Log.d("Error Occured in Net Banking", e.toString())
-                e.printStackTrace()
-            }
-        }, { error ->
-
-            Log.e("error here netbanking", "RESPONSE IS $error")
-            Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
-                .show()
-        })
-        queue.add(jsonObjectAll)
-        Log.d("adapter updation in progress", "here")
-    }
     companion object {
         fun newInstance(data: String?): MainBottomSheet {
             val fragment = MainBottomSheet()

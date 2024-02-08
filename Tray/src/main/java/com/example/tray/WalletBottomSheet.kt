@@ -61,7 +61,6 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         arguments?.let {
             token = it.getString("token")
         }
-
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -82,21 +81,6 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private val requestQueue: RequestQueue by lazy {
         Volley.newRequestQueue(requireContext())
-    }
-
-    private fun filterWalletMethods(paymentMethodsArray: JSONArray): List<JSONObject> {
-        val walletMethods = mutableListOf<JSONObject>()
-
-        for (i in 0 until paymentMethodsArray.length()) {
-            val paymentMethodObject = paymentMethodsArray.optJSONObject(i)
-
-            // Check if the payment method has type "NetBanking"
-            if (paymentMethodObject?.optString("type") == "Wallet") {
-                walletMethods.add(paymentMethodObject)
-            }
-        }
-
-        return walletMethods
     }
 
     override fun onCreateView(

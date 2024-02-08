@@ -7,30 +7,30 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.InputFilter
-import android.text.InputType
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.VolleyError
+import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.FragmentAddCardBottomSheetBinding
@@ -38,8 +38,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.time.LocalDate
+import java.util.Calendar
 import java.util.Locale
 
 
@@ -54,11 +57,147 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var cvv: String? = null
     private var cardHolderName: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
+        }
+    }
+    fun makeCardNetworkIdentificationCall(context: Context,cardNumber: String){
+        val queue = Volley.newRequestQueue(context)
+        val url = "https://test-apis.boxpay.tech/v0/platform/bank-identification-numbers/tokens/${cardNumber}"
+
+        val jsonData = JSONArray("""[{
+    "context": {
+        "countryCode": "IN",
+        "legalEntity": {
+            "code": "demo_merchant"
+        },
+        "orderId": "test12"
+    },
+    "paymentType": "S",
+    "money": {
+        "amount": "2197",
+        "currencyCode": "INR"
+    },
+    "descriptor": {
+        "line1": "Some descriptor"
+    },
+    "billingAddress": {
+        "address1": "first address line",
+            "address2": "second address line",
+            "city": "Faridabad",
+            "state": "Haryana",
+            "countryCode": "IN",
+            "postalCode": "121004"
+    },
+    "shopper": {
+        "firstName": "test",
+        "lastName": "last",
+        "email": "test123@gmail.com",
+        "uniqueReference": "x123y",
+        "phoneNumber": "911234567890",
+        "deliveryAddress": {
+            "address1": "first line",
+        "address2": "second line",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "countryCode": "IN",
+        "postalCode": "123456"
+        }
+    },
+    "order": {
+        "originalAmount": 1697,
+        "shippingAmount": 500,
+        "voucherCode": "VOUCHER",
+        "items": [
+            {
+                "id": "test",
+                "itemName": "test_name",
+                "description": "testProduct",
+                "quantity": 1,
+                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
+                "amountWithoutTax": 699.00
+            },
+            {
+                "id": "test2",
+                "itemName": "test_name2",
+                "description": "testProduct2",
+                "quantity": 2,
+                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
+                "amountWithoutTax": 499.00
+            }
+        ]
+    },
+    "statusNotifyUrl": "https://www.boxpay.tech",
+    "frontendReturnUrl": "https://www.boxpay.tech",
+    "frontendBackUrl": "https://www.boxpay.tech"
+}]""")
+
+
+        var token = ""
+
+//        val credentials = "your_username:your_password"
+//        val base64Credentials = Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
+//        val headers = HashMap<String, String>()
+//        headers["Content-Type"] = "application/json"
+//        headers["Authorization"] = "Basic $base64Credentials"
+        val brands = mutableListOf<String>()
+
+        val request = object : JsonArrayRequest(Method.POST, url, jsonData,
+            { response ->
+                for(i in 0 until response.length()){
+                    brands.add(response.getJSONObject(i).getString("brand"))
+                }
+                Log.d("size of brands",brands.size.toString())
+                updateCardNetwork(brands)
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                Log.e("Error", "Error occurred: ${error.message}")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    Log.e("Error", "Detailed error response: $errorResponse")
+                    Log.d("","")
+                }
+            }) {
+            override fun getHeaders(): Map<String, String> {
+                val headers = HashMap<String, String>()
+                headers["Content-Type"] = "application/json"
+                headers["Authorization"] =  "Bearer afcGgCv6mOVIIpnFPWBL44RRciVU8oMteV5ZhC2nwjjjuw8z0obKMjdK8ShcwLOU6uRNjQryLKl1pLAsLAXSI"
+                return headers
+            }
+        }
+        queue.add(request)
+    }
+    private fun getImageDrawableForItem(item: String): Int {
+        return when (item) {
+            "VISA" -> R.drawable.visa // Replace with your VISA image resource
+            "Maestro" -> R.drawable.maestro // Replace with your MAESTRO image resource
+            "Mastercard" -> R.drawable.mastercard
+            else -> R.drawable.card_02 // Default image resource
+        }
+    }
+    private fun removeAndAddImageCardNetworks(cardNetworkName : String){
+        binding.defaultCardNetworkLinearLayout.visibility = View.GONE
+        val imageView = ImageView(requireContext())
+        val layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        imageView.layoutParams = layoutParams
+        val imageDrawable = getImageDrawableForItem(cardNetworkName)
+        imageView.setImageResource(imageDrawable)
+        binding.cardNetworkDrawableLinearLayout.addView(imageView)
+    }
+
+
+    private fun updateCardNetwork(brands: MutableList<String>){
+        if(brands.size == 1){
+            removeAndAddImageCardNetworks(brands[0])
+        }else{
+            binding.fetchedCardNetwork.removeAllViews()
+            binding.defaultCardNetworkLinearLayout.visibility = View.VISIBLE
         }
     }
 
@@ -96,36 +235,6 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
 
 
-        ////JUST FOR CHECKING PURPOSE....................................................................................................................................................................................................................................................................................................................................................................................................................................
-
-        var enabled = false
-        binding.textView2.setOnClickListener() {
-            if (!enabled)
-                enableProceedButton()
-            else
-                disableProceedButton()
-
-            enabled = !enabled
-        }
-        var errorsEnabled = false
-        binding.imageView3.setOnClickListener() {
-
-            if (!errorsEnabled) {
-                giveErrors()
-                //Useful
-                binding.imageView3.setImageResource(R.drawable.checkbox)
-            } else {
-                removeErrors()
-                binding.imageView3.setImageResource(0)
-            }
-
-            errorsEnabled = !errorsEnabled
-        }
-
-
-        //....................................................................................................................................................................................................................................................................................................................................................................................................................................
-
-
         binding.imageView2.setOnClickListener() {
             dismiss()
         }
@@ -155,8 +264,12 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 binding.editTextText.setSelection(formattedText.length)
 
                 binding.editTextText.addTextChangedListener(this)
+                val cardNumberWithOutSpaces = textNow.replace(" ", "")
 
-
+                if(cardNumberWithOutSpaces.length <= 6){
+                    Log.d("makeCardNetworkIdentificationCall","called")
+                    makeCardNetworkIdentificationCall(requireContext(),cardNumberWithOutSpaces)
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -325,7 +438,116 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
             showLoadingInButton()
         }
 
+
+        binding.editTextText.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+//                Toast.makeText(requireContext(), "Got the focus", Toast.LENGTH_LONG).show()
+            } else {
+                val cardNumber = binding.editTextText.text.toString()
+                if(!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))){
+                    binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                    binding.textView4.text = "Invalid card number. Please check"
+                }
+//                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
+            }
+        })
+
+        binding.editTextCardValidity.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+//                Toast.makeText(requireContext(), "Got the focus", Toast.LENGTH_LONG).show()
+            } else {
+                val cardValidity = binding.editTextCardValidity.text.toString()
+                try {
+                    if (!(isValidExpirationDate(
+                            cardValidity.substring(0, 2).toInt(),
+                            cardValidity.substring(3, 5).toInt()
+                        ))
+                    ) {
+                        binding.invalidCardValidity.visibility = View.VISIBLE
+                        binding.textView7.text = "Invalid card validity\n Please check"
+                    }
+                }catch (e : Exception){
+                    binding.invalidCardValidity.visibility = View.VISIBLE
+                    binding.textView7.text = "Invalid card validity\n Please check"
+                }
+//                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
+            }
+        })
+        binding.editTextCardCVV.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+
+            } else {
+                try {
+                    val cardCVV = binding.editTextCardCVV.text.toString()
+                    if (!isValidCVC(cardCVV.toInt())) {
+                        binding.invalidCVV.visibility = View.VISIBLE
+                        binding.textView8.text = "Invalid CVV. Please check"
+                    }
+                } catch (e : Exception){
+                    binding.invalidCVV.visibility = View.VISIBLE
+                    binding.textView7.text = "Invalid CVV. Please check"
+                }
+            }
+        })
+
         return binding.root
+    }
+    fun isValidExpirationDate(inputExpMonth : Int, inputExpYear: Int) : Boolean {
+        val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+        val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
+        val isValidMonthRange =
+            ((inputExpMonth >= currentMonth))
+        val isValidYearValue = (inputExpYear > 0)
+        val isValidYearLength = (inputExpYear.toString().length == 2)
+
+        val isFutureYear = (inputExpYear > currentYear)
+        val isSameYear_FutureOrCurrentMonth =
+            ((inputExpYear == currentYear) && (inputExpMonth >= currentMonth))
+
+        val result = ((isValidMonthRange && isValidYearLength && isValidYearValue) &&
+                (isFutureYear || isSameYear_FutureOrCurrentMonth))
+
+        return result
+    }
+    fun isValidCVC(inputCVC : Int) : Boolean {
+        val stringInputCVC = inputCVC.toString()
+        val result : Boolean = ((stringInputCVC.length >= 3) &&
+                (stringInputCVC.length <= 4))
+
+        return result
+    }
+    private fun isValidCardNumberByLuhn(stringInputCardNumber: String): Boolean {
+        var sum = 0
+        var isSecondDigit = false
+
+        for (i in stringInputCardNumber.length - 1 downTo 0) {
+            var d = stringInputCardNumber[i] - '0'
+
+            if (isSecondDigit) {
+                d = d * 2
+            }
+
+            sum += d / 10
+            sum += d % 10
+
+            isSecondDigit = !isSecondDigit
+        }
+
+        val result : Boolean = ((sum % 10) == 0)
+
+        if(!result)
+            Log.d("Invalid by luhn","here")
+
+
+
+        return result
+    }
+
+    private fun isValidCardNumberLength(inputCardNumber: String) : Boolean {
+        val result : Boolean =
+            ((inputCardNumber.length >= 15) &&
+                    (inputCardNumber.length <= 16))
+        return result
     }
 
     override fun onDismiss(dialog: DialogInterface) {

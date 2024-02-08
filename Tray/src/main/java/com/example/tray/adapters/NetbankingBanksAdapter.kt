@@ -4,11 +4,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import android.widget.Filterable
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tray.R
 import com.example.tray.databinding.NetbankingBanksItemBinding
 import com.example.tray.dataclasses.NetbankingDataClass
+import java.util.Locale
 
 
 class NetbankingBanksAdapter(
@@ -17,6 +20,7 @@ class NetbankingBanksAdapter(
 ) : RecyclerView.Adapter<NetbankingBanksAdapter.NetBankingAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
+    private var filteredBankList: List<NetbankingDataClass> = banksDetails
     inner class NetBankingAdapterViewHolder(val binding: NetbankingBanksItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
@@ -24,9 +28,9 @@ class NetbankingBanksAdapter(
                 val bankName = banksDetails[position].bankName
                 val bankImage = banksDetails[position].bankImage
                 if (bankName.length >= 21) {
-                    bankName.substring(0, 21) + "..."
+                    bankNameTextView.text = bankName.substring(0, 21) + "..."
                 } else {
-                    bankNameTextView.text = bankName
+                    bankNameTextView.text = bankName // You were missing this assignment
                 }
                 bankLogo.setImageResource(bankImage)
 

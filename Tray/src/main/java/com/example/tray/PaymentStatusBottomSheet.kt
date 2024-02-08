@@ -14,7 +14,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentPaymentStatusBottomSheetBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
