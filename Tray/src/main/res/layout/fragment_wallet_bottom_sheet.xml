@@ -137,7 +137,9 @@
 
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:layout_width="wrap_content"
-                                    android:layout_height="match_parent">
+                                    android:layout_height="match_parent"
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularWalletConstraintLayout1">
 
                                     <ImageView
                                         android:id="@+id/popularWalletImageView1"
@@ -145,30 +147,30 @@
                                         android:layout_height="50dp"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/icici" />
+                                        app:layout_constraintTop_toTopOf="parent" />
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:layout_width="wrap_content"
-                                    android:layout_height="match_parent">
+                                    android:layout_height="match_parent"
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularWalletConstraintLayout2">
 
                                     <ImageView
                                         android:id="@+id/popularWalletImageView2"
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
-                                        android:layout_marginStart="14dp"
-                                        android:layout_marginEnd="14dp"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/sbi" />
+                                        app:layout_constraintTop_toTopOf="parent" />
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:layout_width="wrap_content"
-                                    android:layout_height="match_parent">
+                                    android:layout_height="match_parent"
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularWalletConstraintLayout3">
 
                                     <ImageView
                                         android:id="@+id/popularWalletImageView3"
@@ -176,23 +178,21 @@
                                         android:layout_height="50dp"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/icici" />
+                                        app:layout_constraintTop_toTopOf="parent" />
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    android:layout_marginStart="16dp">
-
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularWalletConstraintLayout4">
                                     <ImageView
                                         android:id="@+id/popularWalletImageView4"
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        app:srcCompat="@drawable/icici" />
+                                        app:layout_constraintTop_toTopOf="parent" />
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 

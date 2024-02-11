@@ -19,6 +19,7 @@ import android.widget.FrameLayout
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
@@ -56,6 +57,11 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     private var checkedPosition : Int ?= null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
+    val liveDataPopularWalletSelectedOrNot: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
+        value = false
+    }
+    private var popularWalletsSelected: Boolean = false
+    private var popularWalletsSelectedIndex: Int = -1
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -78,10 +84,64 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         }
         return dialog
     }
+    private fun unselectItemsInPopularLayout(){
+        if(popularWalletsSelectedIndex != -1) {
+            fetchConstraintLayout(popularWalletsSelectedIndex).setBackgroundResource(0)
+        }
+
+        popularWalletsSelected = false
+    }
+    private fun fetchAndUpdateApiInPopularBanks() {
+        binding.apply {
+            walletDetailsOriginal.forEachIndexed { index, walletDetail ->
+                val constraintLayout = fetchConstraintLayout(index)
+                val imageView = when (index) {
+                    0 -> popularWalletImageView1
+                    1 -> popularWalletImageView2
+                    2 -> popularWalletImageView3
+                    3 -> popularWalletImageView4
+                    else -> null
+                }
+                imageView?.setImageResource(walletDetail.walletImage)
+                constraintLayout.setOnClickListener {
+                    liveDataPopularWalletSelectedOrNot.value = true
+                    if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
+                        // If the same constraint layout is clicked again
+                        constraintLayout.setBackgroundResource(0)
+                        popularWalletsSelected = false
+                    } else {
+                        // Remove background from the previously selected constraint layout
+                        if (popularWalletsSelectedIndex != -1)
+                            fetchConstraintLayout(popularWalletsSelectedIndex).setBackgroundResource(0)
+                        // Set background for the clicked constraint layout
+                        constraintLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                        popularWalletsSelected = true
+                        popularWalletsSelectedIndex = index
+                    }
+                }
+            }
+        }
+    }
+
+    private fun fetchConstraintLayout(num: Int): ConstraintLayout {
+        val constraintLayout: ConstraintLayout = when (num) {
+            0 ->
+                binding.popularWalletConstraintLayout1
+            1 ->
+                binding.popularWalletConstraintLayout2
+            2 ->
+                binding.popularWalletConstraintLayout3
+            3 ->
+                binding.popularWalletConstraintLayout4
+            else -> throw IllegalArgumentException("Invalid number")
+        }
+        return constraintLayout
+    }
 
     private val requestQueue: RequestQueue by lazy {
         Volley.newRequestQueue(requireContext())
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

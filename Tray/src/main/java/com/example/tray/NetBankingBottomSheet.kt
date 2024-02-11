@@ -138,9 +138,10 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         queue.add(jsonObjectAll)
     }
     private fun unselectItemsInPopularLayout(){
-        if(popularBanksSelectedIndex != -1)
-        fetchConstraintLayout(popularBanksSelectedIndex).setBackgroundResource(0)
-        
+        if(popularBanksSelectedIndex != -1) {
+            fetchConstraintLayout(popularBanksSelectedIndex).setBackgroundResource(0)
+        }
+
         popularBanksSelected = false
     }
 
