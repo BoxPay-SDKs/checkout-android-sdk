@@ -12,7 +12,8 @@ import com.example.tray.dataclasses.WalletDataClass
 
 class WalletAdapter(
     private val walletDetails: ArrayList<WalletDataClass>,
-    private val recyclerView: RecyclerView
+    private val recyclerView: RecyclerView,
+    private var liveDataPopularItemSelectedOrNot : MutableLiveData<Boolean>
 ) : RecyclerView.Adapter<WalletAdapter.WalletAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
@@ -41,6 +42,7 @@ class WalletAdapter(
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
                     handleRadioButtonClick(adapterPosition)
+                    liveDataPopularItemSelectedOrNot.value = false
                 }
             }
         }
@@ -83,6 +85,17 @@ class WalletAdapter(
             // Update the checked position
             checkedPosition = position
             checkPositionLiveData.value = checkedPosition
+        }
+    }
+    fun deselectSelectedItem() {
+        if (checkedPosition != RecyclerView.NO_POSITION) {
+            val previousCheckedViewHolder =
+                recyclerView.findViewHolderForAdapterPosition(checkedPosition) as? WalletAdapter.WalletAdapterViewHolder
+            previousCheckedViewHolder?.binding?.radioButton?.setBackgroundResource(
+                R.drawable.custom_radio_unchecked
+            )
+            checkedPosition = RecyclerView.NO_POSITION
+            checkPositionLiveData.value = RecyclerView.NO_POSITION
         }
     }
     fun getCheckedPosition() : Int{

@@ -58,7 +58,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var checkedPosition: Int? = null
-    val liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
+    var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
         value = false
     }
     var popularBanksSelected: Boolean = false
@@ -219,10 +219,17 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.proceedButton.setOnClickListener() {
-            val bankInstrumentTypeValue =
-                banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
-            Log.d("Selected bank is : ", bankInstrumentTypeValue)
             showLoadingInButton()
+            var bankInstrumentTypeValue = ""
+            if(!!liveDataPopularBankSelectedOrNot.value!!) {
+                bankInstrumentTypeValue =
+                    banksDetailsOriginal[popularBanksSelectedIndex].bankInstrumentTypeValue
+            }else{
+                bankInstrumentTypeValue =
+                    banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
+            }
+            Log.d("Selected bank is : ", bankInstrumentTypeValue)
+
             postRequest(requireContext(), bankInstrumentTypeValue)
         }
 
@@ -288,10 +295,12 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 imageView?.setImageResource(bankDetail.bankImage)
                 constraintLayout.setOnClickListener {
                     liveDataPopularBankSelectedOrNot.value = true
+
                     if (popularBanksSelected && popularBanksSelectedIndex == index) {
                         // If the same constraint layout is clicked again
                         constraintLayout.setBackgroundResource(0)
                         popularBanksSelected = false
+                        proceedButtonIsEnabled.value = false
                     } else {
                         // Remove background from the previously selected constraint layout
                         if (popularBanksSelectedIndex != -1)
@@ -299,6 +308,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         // Set background for the clicked constraint layout
                         constraintLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
                         popularBanksSelected = true
+                        proceedButtonIsEnabled.value = true
                         popularBanksSelectedIndex = index
                     }
                 }

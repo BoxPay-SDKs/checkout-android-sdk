@@ -57,7 +57,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     private var checkedPosition : Int ?= null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
-    val liveDataPopularWalletSelectedOrNot: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
+    var liveDataPopularWalletSelectedOrNot: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
         value = false
     }
     private var popularWalletsSelected: Boolean = false
@@ -109,6 +109,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                         // If the same constraint layout is clicked again
                         constraintLayout.setBackgroundResource(0)
                         popularWalletsSelected = false
+                        proceedButtonIsEnabled.value = false
                     } else {
                         // Remove background from the previously selected constraint layout
                         if (popularWalletsSelectedIndex != -1)
@@ -116,6 +117,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                         // Set background for the clicked constraint layout
                         constraintLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
                         popularWalletsSelected = true
+                        proceedButtonIsEnabled.value = true
                         popularWalletsSelectedIndex = index
                     }
                 }
@@ -153,7 +155,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         walletDetailsOriginal = arrayListOf()
 
 
-        allWalletAdapter = WalletAdapter(walletDetailsFiltered, binding.walletsRecyclerView)
+        allWalletAdapter = WalletAdapter(walletDetailsFiltered, binding.walletsRecyclerView,liveDataPopularWalletSelectedOrNot)
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.walletsRecyclerView.adapter = allWalletAdapter
 
@@ -188,6 +190,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
                 // Print the filtered wallet payment methods
                 showAllWallets()
+                fetchAndUpdateApiInPopularBanks()
 
             } catch (e: Exception) {
                 Log.d("Error Occured", e.toString())
@@ -257,11 +260,26 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             }
         })
         binding.proceedButton.setOnClickListener(){
-            val instrumentTypeValue = walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
-            Log.d("Selected wallet is : ",instrumentTypeValue)
             showLoadingInButton()
-            postRequest(requireContext(),instrumentTypeValue)
+            var walletInstrumentTypeValue = ""
+            if(!!liveDataPopularWalletSelectedOrNot.value!!) {
+                walletInstrumentTypeValue =
+                    walletDetailsOriginal[popularWalletsSelectedIndex].instrumentTypeValue
+            }else{
+                walletInstrumentTypeValue =
+                    walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
+            }
+            Log.d("Selected bank is : ", walletInstrumentTypeValue)
+
+            postRequest(requireContext(), walletInstrumentTypeValue)
         }
+        liveDataPopularWalletSelectedOrNot.observe(this, Observer {
+            if(it){
+                allWalletAdapter.deselectSelectedItem()
+            }else{
+                unselectItemsInPopularLayout()
+            }
+        })
 
 
         return binding.root
