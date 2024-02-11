@@ -9,7 +9,7 @@
     <FrameLayout
         android:id="@+id/frameLayout1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -56,7 +56,6 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/cardViewMain"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingStart="14dp"
@@ -96,220 +95,177 @@
                         android:background="@drawable/edittext_bg"
                         android:iconifiedByDefault="false"
                         android:queryBackground="@null"
-                        android:queryHint="Search wallet"
+                        android:queryHint="Search for banks"
                         android:searchIcon="@drawable/searchicon"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="@+id/imageView"
                         app:layout_constraintTop_toBottomOf="@+id/checkingTextView" />
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/walletsRecyclerView"
+                    <androidx.core.widget.NestedScrollView
+                        android:id="@+id/nestedScrollView"
                         android:layout_width="match_parent"
-                        android:layout_height="160dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@android:color/transparent"
-                        app:layout_constraintBottom_toTopOf="@+id/errorField"
-                        app:layout_constraintEnd_toEndOf="@+id/searchView"
-                        app:layout_constraintStart_toStartOf="@+id/linearLayout2"
-                        app:layout_constraintTop_toBottomOf="@+id/textView24"
-                        app:layout_goneMarginTop="16dp"
-                        android:layout_marginBottom="12dp"
-                        tools:itemCount="10"
-                        tools:listitem="@layout/wallet_item" />
-                    <LinearLayout
+                        android:layout_height="400dp"
+                        android:layout_marginTop="16dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="@+id/searchView"
+                        app:layout_constraintTop_toBottomOf="@+id/searchView">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <TextView
+                                android:id="@+id/textView19"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:text="Popular Wallets"
+                                android:textColor="#2D2B32"
+                                android:textSize="12sp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <LinearLayout
+                                android:id="@+id/linearLayout2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:orientation="horizontal"
+                                android:weightSum="4"
+                                app:layout_constraintStart_toStartOf="@+id/textView19"
+                                app:layout_constraintTop_toBottomOf="@+id/textView19">
+
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularWalletConstraintLayout1">
+
+                                    <ImageView
+                                        android:id="@+id/popularWalletImageView1"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
+
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularWalletConstraintLayout2">
+
+                                    <ImageView
+                                        android:id="@+id/popularWalletImageView2"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
+
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularWalletConstraintLayout3">
+
+                                    <ImageView
+                                        android:id="@+id/popularWalletImageView3"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
+
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularWalletConstraintLayout4">
+                                    <ImageView
+                                        android:id="@+id/popularWalletImageView4"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
+
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/textView24"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="16dp"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:text="All Wallets"
+                                android:textColor="#2D2B32"
+                                android:textSize="12sp"
+                                app:layout_constraintStart_toStartOf="@+id/linearLayout2"
+                                app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/walletsRecyclerView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                app:layout_constraintStart_toStartOf="@+id/linearLayout2"
+                                app:layout_constraintTop_toBottomOf="@+id/textView24"
+                                app:layout_goneMarginBottom="8dp"
+                                tools:itemCount="10"
+                                tools:listitem="@layout/netbanking_banks_item" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </androidx.core.widget.NestedScrollView>
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/errorField"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="0.5"
+                        android:visibility="gone"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        android:visibility="gone">
+                        app:layout_constraintTop_toBottomOf="@+id/nestedScrollView">
 
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/constraintLayout2"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_weight="0.5">
-
-                            <ImageView
-                                android:id="@+id/imageView5"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="2dp"
-                                android:src="@drawable/error_outline"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="@+id/textView4" />
-
-                            <TextView
-                                android:id="@+id/textView4"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="5dp"
-                                android:enabled="false"
-                                android:fontFamily="@font/poppins"
-                                android:gravity="center"
-                                android:text=""
-                                android:textColor="#B9232F"
-                                android:textSize="12sp"
-                                app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintStart_toEndOf="@+id/imageView5"
-                                app:layout_constraintTop_toTopOf="parent" />
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/textView19"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="Popular Wallet"
-                        android:textColor="#2D2B32"
-                        android:textSize="12sp"
-                        app:layout_constraintStart_toStartOf="@+id/searchView"
-                        app:layout_constraintTop_toBottomOf="@+id/searchView" />
-                    <LinearLayout
-                        android:id="@+id/linearLayout2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal"
-                        android:weightSum="4"
-                        app:layout_constraintStart_toStartOf="@+id/textView19"
-                        app:layout_constraintTop_toBottomOf="@+id/textView19">
-
-                        <androidx.constraintlayout.widget.ConstraintLayout
+                        <ImageView
+                            android:id="@+id/imageView5"
                             android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_marginEnd="10dp">
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="2dp"
+                            android:src="@drawable/error_outline"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@+id/textView4" />
 
-                            <ImageView
-                                android:id="@+id/imageView14"
-                                android:layout_width="50dp"
-                                android:layout_height="50dp"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:srcCompat="@drawable/paytm" />
-
-                            <TextView
-                                android:id="@+id/popularWalletNameTextView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:fontFamily="@font/poppins"
-                                android:text="Paytm"
-                                android:textColor="#383838"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/imageView14" />
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-
-                        <androidx.constraintlayout.widget.ConstraintLayout
+                        <TextView
+                            android:id="@+id/textView4"
                             android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_marginEnd="10dp">
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:enabled="false"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center"
+                            android:text="Invalid UPI ID. Please check and retry.  "
+                            android:textColor="#B9232F"
+                            android:textSize="12sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toEndOf="@+id/imageView5"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
-                            <ImageView
-                                android:id="@+id/imageView19"
-                                android:layout_width="50dp"
-                                android:layout_height="50dp"
-                                android:layout_marginStart="14dp"
-                                android:layout_marginEnd="14dp"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:srcCompat="@drawable/phonepe"/>
-
-                            <TextView
-                                android:id="@+id/textView23"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:fontFamily="@font/poppins"
-                                android:text="PhonePe"
-                                android:textColor="#383838"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/imageView19" />
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_marginEnd="8dp"
-                            >
-
-                            <ImageView
-                                android:id="@+id/imageView15"
-                                android:layout_width="50dp"
-                                android:layout_height="50dp"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:srcCompat="@drawable/gpay" />
-
-                            <TextView
-                                android:id="@+id/popularWalletNameTextView2"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:fontFamily="@font/poppins"
-                                android:text="GPay"
-                                android:textColor="#383838"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/imageView15" />
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent">
-
-                            <ImageView
-                                android:id="@+id/imageView20"
-                                android:layout_width="50dp"
-                                android:layout_height="50dp"
-                                android:layout_marginStart="14dp"
-                                android:layout_marginEnd="14dp"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:srcCompat="@drawable/amazonpay" />
-
-                            <TextView
-                                android:id="@+id/textView33"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:fontFamily="@font/poppins"
-                                android:text="Amazon Pay"
-                                android:textColor="#383838"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/imageView20" />
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/textView24"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="All Wallets"
-                        android:layout_marginTop="16dp"
-                        android:textColor="#2D2B32"
-                        app:layout_constraintStart_toStartOf="@+id/linearLayout2"
-                        app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
 
             </androidx.cardview.widget.CardView>
-
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/proceedButton"
@@ -354,7 +310,7 @@
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
