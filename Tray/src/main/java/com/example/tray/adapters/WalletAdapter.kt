@@ -13,10 +13,10 @@ import com.example.tray.dataclasses.WalletDataClass
 class WalletAdapter(
     private val walletDetails: ArrayList<WalletDataClass>,
     private val recyclerView: RecyclerView
-) : RecyclerView.Adapter<WalletAdapter.WalletAadpterViewHolder>() {
+) : RecyclerView.Adapter<WalletAdapter.WalletAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
-    inner class WalletAadpterViewHolder(val binding: WalletItemBinding) :
+    inner class WalletAdapterViewHolder(val binding: WalletItemBinding) :
         RecyclerView.ViewHolder(binding.root){
 
         fun bind(position: Int) {
@@ -47,8 +47,8 @@ class WalletAdapter(
 
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WalletAadpterViewHolder {
-        return WalletAadpterViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WalletAdapterViewHolder {
+        return WalletAdapterViewHolder(
             WalletItemBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
@@ -61,21 +61,21 @@ class WalletAdapter(
         return walletDetails.size
     }
 
-    override fun onBindViewHolder(holder: WalletAadpterViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: WalletAdapterViewHolder, position: Int) {
         holder.bind(position)
     }
     private fun handleRadioButtonClick(position: Int) {
         if (checkedPosition != position) {
             // Change the background of the previously checked RadioButton
             val previousCheckedViewHolder =
-                recyclerView.findViewHolderForAdapterPosition(checkedPosition) as? WalletAdapter.WalletAadpterViewHolder
+                recyclerView.findViewHolderForAdapterPosition(checkedPosition) as? WalletAdapter.WalletAdapterViewHolder
             previousCheckedViewHolder?.binding?.radioButton?.setBackgroundResource(
                 R.drawable.custom_radio_unchecked
             )
 
             // Change the background of the clicked RadioButton
             val clickedViewHolder =
-                recyclerView.findViewHolderForAdapterPosition(position) as? WalletAdapter.WalletAadpterViewHolder
+                recyclerView.findViewHolderForAdapterPosition(position) as? WalletAdapter.WalletAdapterViewHolder
             clickedViewHolder?.binding?.radioButton?.setBackgroundResource(
                 R.drawable.custom_radio_checked
             )
