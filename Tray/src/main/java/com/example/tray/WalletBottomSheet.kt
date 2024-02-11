@@ -360,6 +360,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                 try {
                     // Parse the JSON response
                     val jsonObject = response
+                    logJsonObject(response)
 
                     // Retrieve the "actions" array
                     val actionsArray = jsonObject.getJSONArray("actions")

@@ -16,11 +16,11 @@ import java.util.Locale
 
 class NetbankingBanksAdapter(
     private val banksDetails: ArrayList<NetbankingDataClass>,
-    private val recyclerView: RecyclerView
+    private val recyclerView: RecyclerView,
+    private var liveDataPopularItemSelectedOrNot : MutableLiveData<Boolean>
 ) : RecyclerView.Adapter<NetbankingBanksAdapter.NetBankingAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
-    private var filteredBankList: List<NetbankingDataClass> = banksDetails
     inner class NetBankingAdapterViewHolder(val binding: NetbankingBanksItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
@@ -45,6 +45,7 @@ class NetbankingBanksAdapter(
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
                     handleRadioButtonClick(adapterPosition)
+                    liveDataPopularItemSelectedOrNot.value = false
                 }
             }
         }
@@ -64,6 +65,7 @@ class NetbankingBanksAdapter(
     override fun getItemCount(): Int {
         return banksDetails.size
     }
+
 
     override fun onBindViewHolder(holder: NetBankingAdapterViewHolder, position: Int) {
         holder.bind(position)
@@ -90,6 +92,18 @@ class NetbankingBanksAdapter(
             checkPositionLiveData.value = checkedPosition
         }
     }
+    fun deselectSelectedItem() {
+        if (checkedPosition != RecyclerView.NO_POSITION) {
+            val previousCheckedViewHolder =
+                recyclerView.findViewHolderForAdapterPosition(checkedPosition) as? NetBankingAdapterViewHolder
+            previousCheckedViewHolder?.binding?.radioButton?.setBackgroundResource(
+                R.drawable.custom_radio_unchecked
+            )
+            checkedPosition = RecyclerView.NO_POSITION
+            checkPositionLiveData.value = RecyclerView.NO_POSITION
+        }
+    }
+
     fun getCheckedPosition() : Int{
         return checkedPosition
     }
