@@ -84,6 +84,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         dialog?.setCanceledOnTouchOutside(true)
         getAndSetOrderDetails()
+        showUPIOptions()
 
         val items = mutableListOf(
             "Truly Madly Monthly Plan"
@@ -123,6 +124,9 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 upiOptionsShown = false
                 hideUPIOptions()
             }
+        }
+        binding.payUsingAnyUPIConstraint.setOnClickListener {
+
         }
 
         binding.addNewUPIIDConstraint.setOnClickListener() {

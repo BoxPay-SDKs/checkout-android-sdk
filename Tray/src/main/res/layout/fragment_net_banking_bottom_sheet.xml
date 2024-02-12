@@ -137,62 +137,104 @@
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    android:id="@+id/popularBanksConstraintLayout1"
-                                    android:layout_marginEnd="16dp">
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularBanksConstraintLayout1">
 
-                                    <ImageView
-                                        android:id="@+id/popularBanksImageView1"
+                                    <RelativeLayout
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
-                                        android:padding="2dp"
+                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent" />
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:background="@drawable/popular_item_unselected_bg">
+
+                                        <ImageView
+                                            android:id="@+id/popularBanksImageView1"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            app:layout_constraintEnd_toEndOf="parent"
+                                            app:layout_constraintStart_toStartOf="parent"
+                                            app:layout_constraintTop_toTopOf="parent"
+                                            android:layout_centerInParent="true"/>
+                                    </RelativeLayout>
+
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    android:id="@+id/popularBanksConstraintLayout2"
-                                    android:layout_marginEnd="16dp">
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularBanksConstraintLayout2">
 
-                                    <ImageView
-                                        android:id="@+id/popularBanksImageView2"
+                                    <RelativeLayout
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
+                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent" />
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:background="@drawable/popular_item_unselected_bg">
+
+                                        <ImageView
+                                            android:id="@+id/popularBanksImageView2"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            app:layout_constraintEnd_toEndOf="parent"
+                                            app:layout_constraintStart_toStartOf="parent"
+                                            app:layout_constraintTop_toTopOf="parent"
+                                            android:layout_centerInParent="true"/>
+                                    </RelativeLayout>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    android:id="@+id/popularBanksConstraintLayout3"
-                                    android:layout_marginEnd="16dp">
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularBanksConstraintLayout3">
 
-                                    <ImageView
-                                        android:id="@+id/popularBanksImageView3"
+                                    <RelativeLayout
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
+                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent" />
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:background="@drawable/popular_item_unselected_bg">
+
+                                        <ImageView
+                                            android:id="@+id/popularBanksImageView3"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            app:layout_constraintEnd_toEndOf="parent"
+                                            app:layout_constraintStart_toStartOf="parent"
+                                            app:layout_constraintTop_toTopOf="parent"
+                                            android:layout_centerInParent="true"/>
+                                    </RelativeLayout>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    android:id="@+id/popularBanksConstraintLayout4"
-                                    android:layout_marginEnd="16dp">
-
-                                    <ImageView
-                                        android:id="@+id/popularBanksImageView4"
+                                    android:layout_marginEnd="16dp"
+                                    android:id="@+id/popularBanksConstraintLayout4">
+                                    <RelativeLayout
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
+                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent" />
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        android:background="@drawable/popular_item_unselected_bg"
+                                        >
+
+                                        <ImageView
+                                            android:id="@+id/popularBanksImageView4"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_centerInParent="true"/>
+                                    </RelativeLayout>
+
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                             </LinearLayout>

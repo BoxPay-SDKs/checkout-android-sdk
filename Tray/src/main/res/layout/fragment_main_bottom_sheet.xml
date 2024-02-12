@@ -90,14 +90,14 @@
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:background="@drawable/cardview_bg">
+                            android:background="@drawable/cardview_bg"
+                            android:padding = "8dp">
 
                             <TextView
                                 android:id="@+id/textView9"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="16dp"
-                                android:layout_marginTop="10dp"
                                 android:fontFamily="@font/poppins_medium"
                                 android:text="Order Summary"
                                 android:textColor="#010102"
@@ -108,14 +108,12 @@
                                 android:id="@+id/numberOfItems"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
                                 android:fontFamily="@font/poppins_medium"
                                 android:text="2 Items"
                                 android:textColor="#010102"
                                 app:layout_constraintStart_toStartOf="@+id/textView9"
                                 app:layout_constraintTop_toBottomOf="@+id/textView9"
-                                app:layout_goneMarginBottom="16dp"
-                                tools:layout_goneMarginBottom="16dp" />
+                                app:layout_goneMarginBottom="16dp" />
 
                             <TextView
                                 android:id="@+id/unopenedTotalValue"
@@ -146,12 +144,13 @@
                                 android:layout_marginStart="14dp"
                                 android:layout_marginTop="8dp"
                                 android:layout_marginEnd="14dp"
-                                android:visibility="visible"
+                                android:visibility="gone"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toBottomOf="@+id/numberOfItems"
                                 tools:itemCount="1"
-                                tools:listitem="@layout/order_summary_item" />
+                                tools:listitem="@layout/order_summary_item"
+                                />
 
                             <TextView
                                 android:id="@+id/textView18"
@@ -163,7 +162,7 @@
                                 android:text="Total"
                                 android:textColor="#010102"
                                 android:textSize="12sp"
-                                android:visibility="visible"
+                                android:visibility="gone"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintStart_toStartOf="@+id/itemsInOrderRecyclerView"
                                 app:layout_constraintTop_toBottomOf="@+id/itemsInOrderRecyclerView" />
@@ -176,7 +175,7 @@
                                 android:text="₹1198.00"
                                 android:textColor="#010102"
                                 android:textSize="18sp"
-                                android:visibility="visible"
+                                android:visibility="gone"
                                 app:layout_constraintBottom_toBottomOf="@+id/textView18"
                                 app:layout_constraintEnd_toEndOf="@+id/itemsInOrderRecyclerView"
                                 app:layout_constraintTop_toTopOf="@+id/textView18" />
@@ -687,5 +686,5 @@
             </FrameLayout>
         </androidx.core.widget.NestedScrollView>
     </LinearLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+/</androidx.coordinatorlayout.widget.CoordinatorLayout>
 

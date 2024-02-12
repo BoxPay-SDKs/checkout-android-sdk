@@ -13,6 +13,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.TranslateAnimation
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
@@ -42,6 +44,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.delay
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -72,6 +75,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
 
     }
+
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -236,6 +240,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         return binding.root
     }
 
+
     private fun filterBanks(query: String?) {
         banksDetailsFiltered.clear()
         for (bank in banksDetailsOriginal) {
@@ -274,7 +279,6 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.textView24.visibility = View.GONE
         binding.linearLayout2.visibility = View.GONE
     }
-
     fun removeRecyclerViewFromBelowEditText() {
         binding.textView19.visibility = View.VISIBLE
         binding.textView24.visibility = View.VISIBLE
