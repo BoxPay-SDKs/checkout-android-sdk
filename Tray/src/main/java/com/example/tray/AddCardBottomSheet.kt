@@ -263,9 +263,14 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textNow = s.toString()
+                Log.d("textNow length",textNow.length.toString())
                 if (textNow.isNotBlank()) {
                     isCardNumberValid = true
                     proceedButtonIsEnabled.value = true
+                }
+                if(textNow.length == 19){
+                    Log.d("16 digits","crossed")
+                    binding.editTextCardValidity.requestFocus()
                 }
 
                 binding.editTextText.removeTextChangedListener(this)
@@ -309,6 +314,10 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 val text = s.toString().replace("/", "")
                 val formattedText = formatMMYY(text)
 
+                if(text.length == 5){
+                    binding.editTextCardCVV.requestFocus()
+                }
+
                 binding.editTextCardValidity.setText(formattedText)
                 binding.editTextCardValidity.setSelection(formattedText.length)
 
@@ -342,6 +351,10 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (textNow.isNotBlank()) {
                     isCardCVVValid = true
                     proceedButtonIsEnabled.value = true
+                }
+
+                if(textNow.length == 4){
+                    binding.editTextNameOnCard.requestFocus()
                 }
             }
 
@@ -496,7 +509,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         val isValidYearValue = (inputExpYear.toInt() > 0)
         val isValidYearLength = (inputExpYear.length == 2)
 
-        val isFutureYear = (("20"+inputExpYear).toInt() > currentYear)
+        val isFutureYear = (("20"+inputExpYear).toInt() >= currentYear)
         val isSameYear_FutureOrCurrentMonth =
             ((inputExpYear.toInt() == currentYear) && (inputExpMonth.toInt() >= currentMonth))
 
