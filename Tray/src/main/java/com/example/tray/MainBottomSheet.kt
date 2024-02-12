@@ -414,6 +414,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         "expiryDurationSec": 7200
     }""")
 
+
         val orderObject = response.getJSONObject("order")
         val originalAmount = orderObject.getDouble("originalAmount")
 
@@ -425,7 +426,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             totalQuantity += quantity
         }
 
-        // Use the extracted values as needed
+
         Log.d("totalQuantity",totalQuantity.toString())
         Log.d("originalAmount",originalAmount.toString())
 
