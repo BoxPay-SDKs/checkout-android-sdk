@@ -468,13 +468,13 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         ))
                     ) {
                         binding.invalidCardValidity.visibility = View.VISIBLE
-                        binding.textView7.text = "Invalid card validity\nPlease check"
+                        binding.textView7.text = "Invalid card validity"
                     }else{
                         binding.invalidCardValidity.visibility = View.GONE
                     }
                 }catch (e : Exception){
                     binding.invalidCardValidity.visibility = View.VISIBLE
-                    binding.textView7.text = "Invalid card validity\nPlease check"
+                    binding.textView7.text = "Invalid card validity"
                 }
 //                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
             }
