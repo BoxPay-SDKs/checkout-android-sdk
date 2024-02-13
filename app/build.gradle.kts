@@ -46,5 +46,13 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    implementation ("com.mikhaellopez:circularprogressbar:3.1.0")
+}
+allprojects{
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://www.jitpack.io")
+            credentials { username = "jp_l40tne0p9r7vrirj2rus5l3tmo" }
+        }
+    }
 }
