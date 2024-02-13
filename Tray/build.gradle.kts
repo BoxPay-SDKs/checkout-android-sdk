@@ -10,7 +10,6 @@ android {
 
     defaultConfig {
         minSdk = 24
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -38,7 +37,6 @@ android {
 }
 
 dependencies {
-
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
@@ -56,16 +54,26 @@ dependencies {
     implementation ("com.google.code.gson:gson:2.10.1")
 }
 
+
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "com.github.pssharma1410"
-            artifactId = "BottomTrayCheckOut"
-            version = "1.0.0"
+            groupId = "com.example.AndroidCheckOutSDK"
+            artifactId = "AndroidCheckOutSDK"
+            version = "1.0.0.0"
 
             afterEvaluate {
                 from(components["release"])
             }
+        }
+    }
+}
+allprojects{
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://www.jitpack.io")
+            credentials { username = "jp_l40tne0p9r7vrirj2rus5l3tmo" }
         }
     }
 }
