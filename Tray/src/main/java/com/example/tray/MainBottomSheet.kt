@@ -84,6 +84,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         dialog?.setCanceledOnTouchOutside(true)
         getAndSetOrderDetails()
+        showUPIOptions()
 
         val items = mutableListOf(
             "Truly Madly Monthly Plan"
@@ -123,6 +124,9 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 upiOptionsShown = false
                 hideUPIOptions()
             }
+        }
+        binding.payUsingAnyUPIConstraint.setOnClickListener {
+
         }
 
         binding.addNewUPIIDConstraint.setOnClickListener() {
@@ -225,20 +229,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
     private fun showUPIOptions() {
         binding.upiConstraint.setBackgroundColor(Color.parseColor("#E0F1FF"))
-
-//        binding.imageView12.animate()
-//            .rotation(180f)
-//            .setDuration(500) // Set the duration of the animation in milliseconds
-//            .withEndAction {
-//                // Code to be executed when the animation ends
-//            }
-//            .start()
-
-
-        animateIn(binding.upiOptionsLinearLayout)
-
-        binding.textView20.typeface =
-            ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
+        binding.upiOptionsLinearLayout.visibility = View.VISIBLE
+        binding.textView20.typeface = ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
     }
 
     private fun hideUPIOptions() {
@@ -252,10 +244,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 // Code to be executed when the animation ends
             }
             .start()
-    }
-
-    private fun animateIn(view: View) {
-        view.visibility = View.VISIBLE
     }
 
     fun extractSum(prices: MutableList<String>): String {
@@ -277,8 +265,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val bottomSheetContent = binding.frameLayout1
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -428,6 +414,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         "expiryDurationSec": 7200
     }""")
 
+
         val orderObject = response.getJSONObject("order")
         val originalAmount = orderObject.getDouble("originalAmount")
 
@@ -439,7 +426,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             totalQuantity += quantity
         }
 
-        // Use the extracted values as needed
+
         Log.d("totalQuantity",totalQuantity.toString())
         Log.d("originalAmount",originalAmount.toString())
 
