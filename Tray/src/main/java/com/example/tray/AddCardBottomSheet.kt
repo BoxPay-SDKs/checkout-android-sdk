@@ -179,6 +179,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
     }
     private fun removeAndAddImageCardNetworks(cardNetworkName : String){
+        Log.d("came here also","cardNetworks")
         binding.defaultCardNetworkLinearLayout.visibility = View.GONE
         val imageView = ImageView(requireContext())
         val layoutParams = LinearLayout.LayoutParams(
@@ -188,7 +189,9 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         imageView.layoutParams = layoutParams
         val imageDrawable = getImageDrawableForItem(cardNetworkName)
         imageView.setImageResource(imageDrawable)
-        binding.cardNetworkDrawableLinearLayout.addView(imageView)
+        binding.fetchedCardNetwork.removeAllViews()
+        binding.fetchedCardNetwork.addView(imageView)
+        binding.fetchedCardNetwork.visibility = View.VISIBLE
     }
 
 
@@ -197,6 +200,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
             removeAndAddImageCardNetworks(brands[0])
         }else{
             binding.fetchedCardNetwork.removeAllViews()
+            binding.fetchedCardNetwork.visibility = View.GONE
             binding.defaultCardNetworkLinearLayout.visibility = View.VISIBLE
         }
     }
@@ -464,11 +468,11 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         ))
                     ) {
                         binding.invalidCardValidity.visibility = View.VISIBLE
-                        binding.textView7.text = "Invalid card validity\n Please check"
+                        binding.textView7.text = "Invalid card validity"
                     }
                 }catch (e : Exception){
                     binding.invalidCardValidity.visibility = View.VISIBLE
-                    binding.textView7.text = "Invalid card validity\n Please check"
+                    binding.textView7.text = "Invalid card validity"
                 }
 //                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
             }
