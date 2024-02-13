@@ -208,7 +208,7 @@
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/invalidCVV"
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:gravity="center_vertical|top">
 
@@ -227,7 +227,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="2dp"
-                                android:enabled="false"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center"
                                 android:text="Invalid CVV"
@@ -477,7 +476,6 @@
 
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
-
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

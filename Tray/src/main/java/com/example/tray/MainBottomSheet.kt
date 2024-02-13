@@ -43,11 +43,13 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private val overlayViewModel: OverlayViewModel by activityViewModels()
     private var overlayViewCurrentBottomSheet: View? = null
     private var token : String ?= null
+    private var successScreenFullReferencePath : String ?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
+            successScreenFullReferencePath= it.getString("successScreenFullReferencePath")
         }
     }
 
@@ -335,7 +337,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         bottomSheetFragment.show(parentFragmentManager, "AddUPIBottomSheet")
     }
     private fun openAddCardBottomSheet(){
-        val bottomSheetFragment = AddCardBottomSheet.newInstance(token)
+        val bottomSheetFragment = AddCardBottomSheet.newInstance(token,successScreenFullReferencePath)
         bottomSheetFragment.show(parentFragmentManager, "AddCardBottomSheet")
     }
     private fun openNetBankingBottomSheet(){
@@ -436,10 +438,11 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     companion object {
-        fun newInstance(data: String?): MainBottomSheet {
+        fun newInstance(data: String?, successScreenFullReferencePath : String?): MainBottomSheet {
             val fragment = MainBottomSheet()
             val args = Bundle()
             args.putString("token", data)
+            args.putString("successScreenFullReferencePath",successScreenFullReferencePath)
             fragment.arguments = args
             return fragment
         }
