@@ -19,6 +19,7 @@ import org.json.JSONObject
 
 class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
+    private var successScreenFullReferencePath : String ?= null
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -31,6 +32,7 @@ class Check : AppCompatActivity() {
         openBottomSheet.text = "Generating Token Please wait..."
         openBottomSheet.isEnabled = false
 
+        successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
 
         tokenLiveData.observe(this, Observer { token ->
             // Handle the response after the token has been updated
@@ -55,8 +57,7 @@ class Check : AppCompatActivity() {
     }
 
     fun showBottomSheetWithOverlay() {
-        // Show the BottomSheetDialogFragment
-        val bottomSheetFragment = MainBottomSheet.newInstance(tokenLiveData.value)
+        val bottomSheetFragment = MainBottomSheet.newInstance(tokenLiveData.value,successScreenFullReferencePath)
         bottomSheetFragment.show(supportFragmentManager, "MainBottomSheet")
     }
     fun makePaymentRequest(context: Context){
@@ -130,16 +131,7 @@ class Check : AppCompatActivity() {
     "frontendReturnUrl": "https://www.boxpay.tech",
     "frontendBackUrl": "https://www.boxpay.tech"
 }""")
-
-
         var token = ""
-
-//        val credentials = "your_username:your_password"
-//        val base64Credentials = Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
-//        val headers = HashMap<String, String>()
-//        headers["Content-Type"] = "application/json"
-//        headers["Authorization"] = "Basic $base64Credentials"
-
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
                 val tokenFetched = response.getString("token")
@@ -166,8 +158,6 @@ class Check : AppCompatActivity() {
             }
         }
         queue.add(request)
-
-
     }
     fun handleResponseWithToken() {
         Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")

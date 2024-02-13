@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bottom_sheet_bg">
@@ -18,18 +17,24 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bottom_sheet_bg"
             android:paddingBottom="64dp">
-
-            <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/lottieAnimationView"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:id="@+id/lottieAnimationViewConstraint"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView"
-                app:lottie_autoPlay="true"
-                app:lottie_fileName="complete_json.json"
-                app:lottie_loop="true" />
+                app:layout_constraintTop_toBottomOf="@+id/textView">
+
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/lottieAnimationView"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerInParent="true"
+                    app:lottie_autoPlay="true"
+                    app:lottie_fileName="complete_json.json"
+                    app:lottie_loop="true" />
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/textView"
@@ -54,9 +59,9 @@
                 android:text="Payment successful !"
                 android:textColor="#2D2B32"
                 android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="@+id/lottieAnimationView"
-                app:layout_constraintStart_toStartOf="@+id/lottieAnimationView"
-                app:layout_constraintTop_toBottomOf="@+id/lottieAnimationView" />
+                app:layout_constraintEnd_toEndOf="@+id/lottieAnimationViewConstraint"
+                app:layout_constraintStart_toStartOf="@+id/lottieAnimationViewConstraint"
+                app:layout_constraintTop_toBottomOf="@+id/lottieAnimationViewConstraint" />
 
             <TextView
                 android:id="@+id/textView34"
@@ -71,11 +76,7 @@
                 app:layout_constraintEnd_toEndOf="@+id/textView11"
                 app:layout_constraintStart_toStartOf="@+id/textView11"
                 app:layout_constraintTop_toBottomOf="@+id/textView11" />
-
-
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-
     </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

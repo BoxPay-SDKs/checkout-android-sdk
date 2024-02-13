@@ -60,10 +60,12 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var isCardNumberValid : Boolean = false
     private var isCardValidityValid : Boolean = false
     private var isCardCVVValid : Boolean = false
+    private var successScreenFullReferencePath : String ?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
+            successScreenFullReferencePath= it.getString("successScreenFullReferencePath")
         }
     }
     fun makeCardNetworkIdentificationCall(context: Context,cardNumber: String){
@@ -141,11 +143,6 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         var token = ""
 
-//        val credentials = "your_username:your_password"
-//        val base64Credentials = Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
-//        val headers = HashMap<String, String>()
-//        headers["Content-Type"] = "application/json"
-//        headers["Authorization"] = "Basic $base64Credentials"
         val brands = mutableListOf<String>()
 
         val request = object : JsonArrayRequest(Method.POST, url, jsonData,
@@ -314,10 +311,9 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 val text = s.toString().replace("/", "")
                 val formattedText = formatMMYY(text)
 
-                if(text.length == 5){
+                if(text.length == 4){
                     binding.editTextCardCVV.requestFocus()
                 }
-
                 binding.editTextCardValidity.setText(formattedText)
                 binding.editTextCardValidity.setSelection(formattedText.length)
 
@@ -468,13 +464,13 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         ))
                     ) {
                         binding.invalidCardValidity.visibility = View.VISIBLE
-                        binding.textView7.text = "Invalid card validity\nPlease check"
+                        binding.textView7.text = "Invalid card validity"
                     }else{
                         binding.invalidCardValidity.visibility = View.GONE
                     }
                 }catch (e : Exception){
                     binding.invalidCardValidity.visibility = View.VISIBLE
-                    binding.textView7.text = "Invalid card validity\nPlease check"
+                    binding.textView7.text = "Invalid card validity"
                 }
 //                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
             }
@@ -487,14 +483,19 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                     val cardCVV = binding.editTextCardCVV.text.toString()
                     if (!isValidCVC(cardCVV.toInt())) {
                         binding.invalidCVV.visibility = View.VISIBLE
-                        binding.textView8.text = "Invalid CVV. Please check"
+                        binding.textView8.text = "Invalid CVV"
                     }else{
                         binding.invalidCVV.visibility = View.GONE
                     }
                 } catch (e : Exception){
                     binding.invalidCVV.visibility = View.VISIBLE
-                    binding.textView8.text = "Invalid CVV. Please check"
+                    binding.textView8.text = "Invalid CVV"
                 }
+            }
+        })
+        binding.editTextNameOnCard.setOnFocusChangeListener(OnFocusChangeListener{view,hasFocus ->
+            if(hasFocus){
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             }
         })
 
@@ -764,7 +765,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         Log.d("url is fetched",url)
 
                         if (status.contains("Approved", ignoreCase = true)) {
-                            val bottomSheet = PaymentStatusBottomSheet()
+                            val bottomSheet = PaymentStatusBottomSheet.newInstance(token,successScreenFullReferencePath)
                             bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheet")
                             dismiss()
                         } else {
@@ -940,10 +941,11 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
     }
     companion object {
-        fun newInstance(data: String?): AddCardBottomSheet {
+        fun newInstance(data: String?, successScreenFullReferencePath : String?): AddCardBottomSheet {
             val fragment = AddCardBottomSheet()
             val args = Bundle()
             args.putString("token", data)
+            args.putString("successScreenFullReferencePath",successScreenFullReferencePath)
             fragment.arguments = args
             return fragment
         }
