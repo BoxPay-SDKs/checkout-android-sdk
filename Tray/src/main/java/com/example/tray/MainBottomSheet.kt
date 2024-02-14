@@ -507,7 +507,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         binding.unopenedTotalValue.text = "₹" + originalAmount.toString()
         binding.numberOfItems.text = totalQuantity.toString() + " items"
-        binding.ItemsPrice.text = "₹" + originalAmount.toString()
+        binding.ItemsPrice.text = "₹${originalAmount.toString()}"
     }
 
     companion object {
