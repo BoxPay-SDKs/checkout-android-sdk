@@ -1,39 +1,41 @@
 package com.example.tray
 
 
+import android.app.Activity
 import android.app.Dialog
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.android.volley.Request
-import com.android.volley.RequestQueue
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.OverlayViewModel
 import com.example.tray.adapters.OrderSummaryItemsAdapter
 import com.example.tray.databinding.FragmentMainBottomSheetBinding
-import com.example.tray.dataclasses.NetbankingDataClass
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+import org.w3c.dom.Text
 
 
 class MainBottomSheet : BottomSheetDialogFragment() {
@@ -42,14 +44,17 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private val overlayViewModel: OverlayViewModel by activityViewModels()
     private var overlayViewCurrentBottomSheet: View? = null
-    private var token : String ?= null
-    private var successScreenFullReferencePath : String ?= null
+    private var token: String? = null
+    private var successScreenFullReferencePath: String? = null
+    private val UPIAppsPackageNameList: MutableList<String> = mutableListOf()
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
-            successScreenFullReferencePath= it.getString("successScreenFullReferencePath")
+            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
         }
     }
 
@@ -67,11 +72,65 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         })
         overlayViewModel.setShowOverlay(true)
     }
+
     override fun onDismiss(dialog: DialogInterface) {
         // Notify ViewModel to hide the overlay when dismissed
         Log.d("Overlay", "Bottom sheet dismissed")
         overlayViewModel.setShowOverlay(false)
         super.onDismiss(dialog)
+    }
+    fun getAllInstalledApps(packageManager: PackageManager) {
+        Log.d("getAllInstalledApps", "here")
+        val apps = packageManager.getInstalledApplications(PackageManager.GET_GIDS)
+
+        for (app in apps) {
+            val appName = packageManager.getApplicationLabel(app).toString()
+
+            // Check if the app supports UPI transactions
+            val upiIntent = Intent(Intent.ACTION_VIEW)
+            upiIntent.data = Uri.parse("upi://pay")
+            upiIntent.setPackage(app.packageName)
+            val upiApps = packageManager.queryIntentActivities(upiIntent, 0)
+
+            // If the app can handle the UPI intent, it's a UPI app
+            if (!upiApps.isEmpty()) {
+                Log.d("UPI App", appName)
+                Log.d("UPI App Package Name", app.packageName)
+                UPIAppsPackageNameList.add(app.packageName)
+            }
+
+            if (packageManager.getLaunchIntentForPackage(app.packageName) != null) {
+                // apps with launcher intent
+                if (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0) {
+                    // updated system apps
+                } else if (app.flags and ApplicationInfo.FLAG_SYSTEM != 0) {
+                    // system apps
+                } else {
+                    // user installed apps
+                }
+            }
+        }
+    }
+
+    fun launchUPIPayment(context: Context, packageName: String) {
+        // UPI payment data
+        val uri = Uri.parse("upi://pay")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage(packageName)
+        intent.putExtra("pa", "7986266095@paytm") // UPI ID of the recipient
+        intent.putExtra("pn", "Piyush Sharma") // Name of the recipient
+        intent.putExtra("mc", "yourmerchantcode") // Merchant code
+        intent.putExtra("tr", "123456789") // Transaction ID
+        intent.putExtra("tn", "Test Transaction") // Transaction note
+        intent.putExtra("am", "10.00") // Transaction amount
+        intent.putExtra("cu", "INR") // Currency code
+
+        try {
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            // Handle case where UPI app is not installed or could not handle the intent
+            Toast.makeText(context, "UPI app not found", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreateView(
@@ -87,6 +146,23 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         dialog?.setCanceledOnTouchOutside(true)
         getAndSetOrderDetails()
         showUPIOptions()
+        val packageManager = requireContext().packageManager
+        getAllInstalledApps(packageManager)
+        activityResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                val resultCode = result.resultCode
+                val data = result.data
+                Log.d("data of activityResultLauncher",data.toString())
+                Log.d("successScreenReference",successScreenFullReferencePath!!)
+                if (resultCode == Activity.RESULT_OK) {
+                    val bottomSheet = PaymentStatusBottomSheet.newInstance(token, successScreenFullReferencePath)
+                    bottomSheet.show(parentFragmentManager,"Payment Success Screen")
+                } else {
+                    val bottomSheet = PaymentFailureScreen()
+                    bottomSheet.show(parentFragmentManager,"Payment Failure Screen")
+                }
+            }
+
 
         val items = mutableListOf(
             "Truly Madly Monthly Plan"
@@ -128,7 +204,9 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             }
         }
         binding.payUsingAnyUPIConstraint.setOnClickListener {
+//            launchUPIPayment(requireContext(),UPIAppsPackageNameList[1])
 
+            openDefaultUPIIntentBottomSheetFromAndroid()
         }
 
         binding.addNewUPIIDConstraint.setOnClickListener() {
@@ -138,25 +216,50 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         binding.cardConstraint.setOnClickListener() {
             openAddCardBottomSheet()
         }
-        binding.walletConstraint.setOnClickListener(){
+        binding.walletConstraint.setOnClickListener() {
             openWalletBottomSheet()
         }
 
-        binding.netBankingConstraint.setOnClickListener(){
+        binding.netBankingConstraint.setOnClickListener() {
             openNetBankingBottomSheet()
         }
 
-
         return binding.root
     }
+
+    private fun openDefaultUPIIntentBottomSheetFromAndroid() {
+        val upiPaymentUri = Uri.Builder()
+            .scheme("upi")
+            .authority("pay")
+            .appendQueryParameter("pa", "9711668479@xxx")
+            .appendQueryParameter("pn", "Piyush Sharma")
+            .appendQueryParameter("mc", "12345678")
+            .appendQueryParameter("tr", "12345678")
+            .appendQueryParameter("tn", "Testing Payment")
+            .appendQueryParameter("am", "10.0")
+            .appendQueryParameter("cu", "INR")
+            .build()
+
+        val genericUpiPaymentIntent = Intent.createChooser(
+            Intent().apply {
+                action = Intent.ACTION_VIEW
+                data = upiPaymentUri
+            },
+            "Pay with"
+        )
+        activityResultLauncher.launch(genericUpiPaymentIntent)
+
+    }
+
     private fun addOverlayToActivity() {
-        Log.d("Overlay","overlay added......")
+        Log.d("Overlay", "overlay added......")
         // Create a translucent overlay view
         overlayViewMainBottomSheet = View(requireContext())
         overlayViewMainBottomSheet?.setBackgroundColor(Color.parseColor("#80000000")) // Adjust the color and transparency as needed
 
         // Get WindowManager from the parent activity's context
-        val windowManager = requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val windowManager =
+            requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
         // Set layout parameters for the overlay view
         val layoutParams = WindowManager.LayoutParams(
@@ -174,7 +277,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private fun removeOverlayFromActivity() {
         // Remove the overlay view from the parent activity
         overlayViewMainBottomSheet?.let {
-            val windowManager = requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val windowManager =
+                requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
             windowManager.removeView(it)
         }
         overlayViewMainBottomSheet = null
@@ -232,7 +336,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private fun showUPIOptions() {
         binding.upiConstraint.setBackgroundColor(Color.parseColor("#E0F1FF"))
         binding.upiOptionsLinearLayout.visibility = View.VISIBLE
-        binding.textView20.typeface = ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
+        binding.textView20.typeface =
+            ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
     }
 
     private fun hideUPIOptions() {
@@ -285,7 +390,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
 
             val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.9 // 90%
+            val percentageOfScreenHeight = 0.7 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
 //        // Adjust the height of the bottom sheet content view
@@ -294,27 +399,33 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 //        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
 
 
-            bottomSheetBehavior?.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            bottomSheetBehavior?.addBottomSheetCallback(object :
+                BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // Handle state changes
                     when (newState) {
                         BottomSheetBehavior.STATE_EXPANDED -> {
                             // Fully expanded
                         }
+
                         BottomSheetBehavior.STATE_COLLAPSED -> {
                             // Collapsed
                         }
+
                         BottomSheetBehavior.STATE_DRAGGING -> {
                             // The BottomSheet is being dragged
 //                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
+
                         BottomSheetBehavior.STATE_SETTLING -> {
                             // The BottomSheet is settling
 //                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
+
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
                             dismiss()
@@ -332,24 +443,30 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         return dialog
     }
 
-    private fun openAddUPIIDBottomSheet(){
+    private fun openAddUPIIDBottomSheet() {
         val bottomSheetFragment = AddUPIID.newInstance(token)
         bottomSheetFragment.show(parentFragmentManager, "AddUPIBottomSheet")
     }
-    private fun openAddCardBottomSheet(){
-        val bottomSheetFragment = AddCardBottomSheet.newInstance(token,successScreenFullReferencePath)
+
+    private fun openAddCardBottomSheet() {
+        val bottomSheetFragment =
+            AddCardBottomSheet.newInstance(token, successScreenFullReferencePath)
         bottomSheetFragment.show(parentFragmentManager, "AddCardBottomSheet")
     }
-    private fun openNetBankingBottomSheet(){
+
+    private fun openNetBankingBottomSheet() {
         val bottomSheetFragment = NetBankingBottomSheet.newInstance(token)
         bottomSheetFragment.show(parentFragmentManager, "NetBankingBottomSheet")
     }
-    private fun openWalletBottomSheet(){
+
+    private fun openWalletBottomSheet() {
         val bottomSheetFragment = WalletBottomSheet.newInstance(token)
         bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
     }
-    private fun getAndSetOrderDetails(){
-        val response = JSONObject("""{
+
+    private fun getAndSetOrderDetails() {
+        val response = JSONObject(
+            """{
         "context": {
             "countryCode": "IN",
             "legalEntity": {
@@ -414,7 +531,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         "frontendReturnUrl": "https://www.boxpay.tech",
         "frontendBackUrl": "https://www.boxpay.tech",
         "expiryDurationSec": 7200
-    }""")
+    }"""
+        )
 
 
         val orderObject = response.getJSONObject("order")
@@ -429,20 +547,20 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         }
 
 
-        Log.d("totalQuantity",totalQuantity.toString())
-        Log.d("originalAmount",originalAmount.toString())
+        Log.d("totalQuantity", totalQuantity.toString())
+        Log.d("originalAmount", originalAmount.toString())
 
-        binding.unopenedTotalValue.text = "₹"+originalAmount.toString()
-        binding.numberOfItems.text = totalQuantity.toString()+" items"
-        binding.ItemsPrice.text = "₹"+originalAmount.toString()
+        binding.unopenedTotalValue.text = "₹" + originalAmount.toString()
+        binding.numberOfItems.text = totalQuantity.toString() + " items"
+        binding.ItemsPrice.text = "₹${originalAmount.toString()}"
     }
 
     companion object {
-        fun newInstance(data: String?, successScreenFullReferencePath : String?): MainBottomSheet {
+        fun newInstance(data: String?, successScreenFullReferencePath: String?): MainBottomSheet {
             val fragment = MainBottomSheet()
             val args = Bundle()
             args.putString("token", data)
-            args.putString("successScreenFullReferencePath",successScreenFullReferencePath)
+            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
             fragment.arguments = args
             return fragment
         }
