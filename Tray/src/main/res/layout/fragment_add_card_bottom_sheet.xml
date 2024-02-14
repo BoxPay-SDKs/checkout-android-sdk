@@ -215,6 +215,7 @@
                             <ImageView
                                 android:id="@+id/imageView7"
                                 android:layout_width="wrap_content"
+
                                 android:layout_height="wrap_content"
                                 android:src="@drawable/error_outline"
                                 app:layout_constraintStart_toStartOf="parent"
@@ -225,8 +226,10 @@
                             <TextView
                                 android:id="@+id/textView8"
                                 android:layout_width="wrap_content"
+
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="2dp"
+
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center"
                                 android:text="Invalid CVV"
@@ -384,7 +387,6 @@
                                 app:layout_constraintTop_toTopOf="@+id/textView4"
                                 app:layout_constraintBottom_toBottomOf="@+id/textView4"
                                 android:layout_marginBottom="3dp"/>
-
                             <TextView
                                 android:id="@+id/textView4"
                                 android:layout_width="wrap_content"
@@ -396,10 +398,10 @@
                                 android:text="Invalid Card Number"
                                 android:textColor="#B9232F"
                                 android:textSize="12sp"
+
                                 app:layout_constraintStart_toEndOf="@+id/imageView5"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintTop_toTopOf="parent"/>
-
                         </androidx.constraintlayout.widget.ConstraintLayout>
                     </LinearLayout>
 
