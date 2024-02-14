@@ -2,12 +2,15 @@ package com.example.tray
 
 
 import android.app.Dialog
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
@@ -67,15 +71,24 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
     }
     fun getAllInstalledApps(packageManager: PackageManager) {
-        Log.d("getAllInstalledApps","here")
-        val pm: PackageManager = requireContext().getPackageManager()
-        val apps = pm.getInstalledApplications(PackageManager.GET_GIDS)
+        Log.d("getAllInstalledApps", "here")
+        val apps = packageManager.getInstalledApplications(PackageManager.GET_GIDS)
 
         for (app in apps) {
             val appName = packageManager.getApplicationLabel(app).toString()
 
-            Log.d("Inside Loop",appName)
-            if (pm.getLaunchIntentForPackage(app.packageName) != null) {
+            // Check if the app supports UPI transactions
+            val upiIntent = Intent(Intent.ACTION_VIEW)
+            upiIntent.data = Uri.parse("upi://pay")
+            upiIntent.setPackage(app.packageName)
+            val upiApps = packageManager.queryIntentActivities(upiIntent, 0)
+
+            // If the app can handle the UPI intent, it's a UPI app
+            if (!upiApps.isEmpty()) {
+                Log.d("UPI App", appName)
+            }
+
+            if (packageManager.getLaunchIntentForPackage(app.packageName) != null) {
                 // apps with launcher intent
                 if (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0) {
                     // updated system apps
@@ -86,34 +99,26 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 }
             }
         }
-//        val packages = packageManager.getInstalledApplications(PackageManager.MATCH_ALL)
-//
-//
-//        for (packageInfo in packages) {
-//            // Extract information about each installed app
-//            val appName = packageInfo.loadLabel(packageManager).toString()
-//            val packageName = packageInfo.packageName
-//            val sourceDir = packageInfo.sourceDir
-//            // Add more information as needed
-//
-//            // Log the information
-//            Log.d("AppInfo", "AppInfo$appName")
-//            Log.d("AppInfo", "Package Name: $packageName")
-//            Log.d("AppInfo", "Source Directory: $sourceDir")
-//            Log.d("AppInfo", "------------------------------------")
-//        }
     }
-    private fun isUpiApp(name: String): Boolean {
-        // Keywords related to UPI or payments
-        val upiKeywords = arrayOf("upi", "payment", "pay", "bank", "cash", "money", "transfer")
+    fun launchUpiPayment(context: Context, packageName: String) {
+        // UPI payment data
+        val uri = Uri.parse("upi://pay")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage(packageName)
+        intent.putExtra("pa", "7986266095@paytm") // UPI ID of the recipient
+        intent.putExtra("pn", "Piyush Sharma") // Name of the recipient
+        intent.putExtra("mc", "yourmerchantcode") // Merchant code
+        intent.putExtra("tr", "123456789") // Transaction ID
+        intent.putExtra("tn", "Test Transaction") // Transaction note
+        intent.putExtra("am", "10.00") // Transaction amount
+        intent.putExtra("cu", "INR") // Currency code
 
-        // Check if the name contains any of the keywords
-        for (keyword in upiKeywords) {
-            if (name.contains(keyword, ignoreCase = true)) {
-                return true
-            }
+        try {
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            // Handle case where UPI app is not installed or could not handle the intent
+            Toast.makeText(context, "UPI app not found", Toast.LENGTH_SHORT).show()
         }
-        return false
     }
 
     override fun onCreateView(
