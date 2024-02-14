@@ -8,6 +8,7 @@ import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
@@ -41,7 +42,12 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         animationView.playAnimation()
         val handler = Handler()
         val startAnimationRunnable = Runnable {
-            openActivity(successScreenFullReferencePath!!,requireContext())
+            try{
+                openActivity(successScreenFullReferencePath!!,requireContext())
+            }
+            catch (e : Exception){
+                Toast.makeText(requireContext(), "Failed to open\nmerchants success screen", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // Delay execution by 1000 milliseconds (1 second)
@@ -67,6 +73,7 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
                 }
             } catch (e: ClassNotFoundException) {
                 // Log an error or handle the case where the activity class cannot be found
+                Toast.makeText(requireContext(), "Failed to open\nmerchants success screen", Toast.LENGTH_SHORT).show()
             }
         } else {
             // Log an error or handle the case where the context is not an AppCompatActivity
