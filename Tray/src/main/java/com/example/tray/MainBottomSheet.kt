@@ -1,6 +1,7 @@
 package com.example.tray
 
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -17,8 +18,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
@@ -31,6 +35,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
+import org.w3c.dom.Text
 
 
 class MainBottomSheet : BottomSheetDialogFragment() {
@@ -42,6 +47,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private var token: String? = null
     private var successScreenFullReferencePath: String? = null
     private val UPIAppsPackageNameList: MutableList<String> = mutableListOf()
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,7 +112,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    fun launchUpiPayment(context: Context, packageName: String) {
+    fun launchUPIPayment(context: Context, packageName: String) {
         // UPI payment data
         val uri = Uri.parse("upi://pay")
         val intent = Intent(Intent.ACTION_VIEW, uri)
@@ -117,7 +124,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         intent.putExtra("tn", "Test Transaction") // Transaction note
         intent.putExtra("am", "10.00") // Transaction amount
         intent.putExtra("cu", "INR") // Currency code
-
 
         try {
             context.startActivity(intent)
@@ -142,6 +148,20 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         showUPIOptions()
         val packageManager = requireContext().packageManager
         getAllInstalledApps(packageManager)
+        activityResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                val resultCode = result.resultCode
+                val data = result.data
+                Log.d("data of activityResultLauncher",data.toString())
+                Log.d("successScreenReference",successScreenFullReferencePath!!)
+                if (resultCode == Activity.RESULT_OK) {
+                    val bottomSheet = PaymentStatusBottomSheet.newInstance(token, successScreenFullReferencePath)
+                    bottomSheet.show(parentFragmentManager,"Payment Success Screen")
+                } else {
+                    val bottomSheet = PaymentFailureScreen()
+                    bottomSheet.show(parentFragmentManager,"Payment Failure Screen")
+                }
+            }
 
 
         val items = mutableListOf(
@@ -184,7 +204,9 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             }
         }
         binding.payUsingAnyUPIConstraint.setOnClickListener {
-            launchUpiPayment(requireContext(),UPIAppsPackageNameList[1])
+//            launchUPIPayment(requireContext(),UPIAppsPackageNameList[1])
+
+            openDefaultUPIIntentBottomSheetFromAndroid()
         }
 
         binding.addNewUPIIDConstraint.setOnClickListener() {
@@ -202,8 +224,31 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             openNetBankingBottomSheet()
         }
 
-
         return binding.root
+    }
+
+    private fun openDefaultUPIIntentBottomSheetFromAndroid() {
+        val upiPaymentUri = Uri.Builder()
+            .scheme("upi")
+            .authority("pay")
+            .appendQueryParameter("pa", "9711668479@xxx")
+            .appendQueryParameter("pn", "Piyush Sharma")
+            .appendQueryParameter("mc", "12345678")
+            .appendQueryParameter("tr", "12345678")
+            .appendQueryParameter("tn", "Testing Payment")
+            .appendQueryParameter("am", "10.0")
+            .appendQueryParameter("cu", "INR")
+            .build()
+
+        val genericUpiPaymentIntent = Intent.createChooser(
+            Intent().apply {
+                action = Intent.ACTION_VIEW
+                data = upiPaymentUri
+            },
+            "Pay with"
+        )
+        activityResultLauncher.launch(genericUpiPaymentIntent)
+
     }
 
     private fun addOverlayToActivity() {
