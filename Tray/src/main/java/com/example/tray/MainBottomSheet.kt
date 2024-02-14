@@ -72,7 +72,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         overlayViewModel.setShowOverlay(false)
         super.onDismiss(dialog)
     }
-
     fun getAllInstalledApps(packageManager: PackageManager) {
         Log.d("getAllInstalledApps", "here")
         val apps = packageManager.getInstalledApplications(PackageManager.GET_GIDS)
@@ -185,7 +184,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             }
         }
         binding.payUsingAnyUPIConstraint.setOnClickListener {
-            launchUpiPayment(requireContext(),UPIAppsPackageNameList[4])
+            launchUpiPayment(requireContext(),UPIAppsPackageNameList[1])
         }
 
         binding.addNewUPIIDConstraint.setOnClickListener() {

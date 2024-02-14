@@ -91,7 +91,9 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:background="@drawable/cardview_bg"
-                            android:padding = "8dp">
+                            android:paddingBottom="8dp"
+                            android:paddingTop="8dp"
+                            >
 
                             <TextView
                                 android:id="@+id/textView9"
@@ -172,7 +174,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/poppins_semibold"
-                                android:text="₹698.00"
+                                android:text="₹1198.00"
                                 android:textColor="#010102"
                                 android:textSize="18sp"
                                 android:visibility="visible"
@@ -686,5 +688,4 @@
             </FrameLayout>
         </androidx.core.widget.NestedScrollView>
     </LinearLayout>
-/</androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>

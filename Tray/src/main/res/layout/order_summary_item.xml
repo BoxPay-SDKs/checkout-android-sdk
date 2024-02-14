@@ -12,12 +12,12 @@
         android:layout_height="wrap_content"
         android:background="#EEF7FF"
         app:cardCornerRadius="8dp"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="1dp">
+        app:cardElevation="0dp"
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@drawable/order_summary_item_constraint_background">
 
             <ImageView
@@ -63,6 +63,7 @@
                 android:id="@+id/textView15"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
                 android:fontFamily="@font/poppins_semibold"
                 android:text="Every Month"
                 android:textColor="#010102"
