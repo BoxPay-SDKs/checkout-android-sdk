@@ -4,6 +4,8 @@ package com.example.tray
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Bundle
@@ -13,26 +15,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.android.volley.Request
-import com.android.volley.RequestQueue
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.OverlayViewModel
 import com.example.tray.adapters.OrderSummaryItemsAdapter
 import com.example.tray.databinding.FragmentMainBottomSheetBinding
-import com.example.tray.dataclasses.NetbankingDataClass
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 
 
@@ -73,6 +66,55 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         overlayViewModel.setShowOverlay(false)
         super.onDismiss(dialog)
     }
+    fun getAllInstalledApps(packageManager: PackageManager) {
+        Log.d("getAllInstalledApps","here")
+        val pm: PackageManager = requireContext().getPackageManager()
+        val apps = pm.getInstalledApplications(PackageManager.GET_GIDS)
+
+        for (app in apps) {
+            val appName = packageManager.getApplicationLabel(app).toString()
+
+            Log.d("Inside Loop",appName)
+            if (pm.getLaunchIntentForPackage(app.packageName) != null) {
+                // apps with launcher intent
+                if (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0) {
+                    // updated system apps
+                } else if (app.flags and ApplicationInfo.FLAG_SYSTEM != 0) {
+                    // system apps
+                } else {
+                    // user installed apps
+                }
+            }
+        }
+//        val packages = packageManager.getInstalledApplications(PackageManager.MATCH_ALL)
+//
+//
+//        for (packageInfo in packages) {
+//            // Extract information about each installed app
+//            val appName = packageInfo.loadLabel(packageManager).toString()
+//            val packageName = packageInfo.packageName
+//            val sourceDir = packageInfo.sourceDir
+//            // Add more information as needed
+//
+//            // Log the information
+//            Log.d("AppInfo", "AppInfo$appName")
+//            Log.d("AppInfo", "Package Name: $packageName")
+//            Log.d("AppInfo", "Source Directory: $sourceDir")
+//            Log.d("AppInfo", "------------------------------------")
+//        }
+    }
+    private fun isUpiApp(name: String): Boolean {
+        // Keywords related to UPI or payments
+        val upiKeywords = arrayOf("upi", "payment", "pay", "bank", "cash", "money", "transfer")
+
+        // Check if the name contains any of the keywords
+        for (keyword in upiKeywords) {
+            if (name.contains(keyword, ignoreCase = true)) {
+                return true
+            }
+        }
+        return false
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -87,6 +129,10 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         dialog?.setCanceledOnTouchOutside(true)
         getAndSetOrderDetails()
         showUPIOptions()
+        val packageManager = requireContext().packageManager
+        getAllInstalledApps(packageManager)
+
+
 
         val items = mutableListOf(
             "Truly Madly Monthly Plan"
@@ -285,7 +331,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
 
             val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.9 // 90%
+            val percentageOfScreenHeight = 0.7 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
 //        // Adjust the height of the bottom sheet content view
@@ -294,6 +340,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 //        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
 
 

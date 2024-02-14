@@ -27,7 +27,6 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
             successScreenFullReferencePath= it.getString("successScreenFullReferencePath")
         }
     }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
