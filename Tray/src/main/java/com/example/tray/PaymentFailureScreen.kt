@@ -12,6 +12,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class PaymentFailureScreen : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentPaymentFailureScreenBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

@@ -57,6 +57,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     private var checkedPosition : Int ?= null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
+    private var successScreenFullReferencePath: String? = null
     var liveDataPopularWalletSelectedOrNot: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
         value = false
     }
@@ -66,6 +67,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
+            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
         }
     }
 
@@ -154,6 +156,9 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         walletDetailsOriginal = arrayListOf()
 
+        if(successScreenFullReferencePath != null){
+            Log.d("WalletBottomSheetReference",successScreenFullReferencePath!!)
+        }
 
         allWalletAdapter = WalletAdapter(walletDetailsFiltered, binding.walletsRecyclerView,liveDataPopularWalletSelectedOrNot)
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -461,6 +466,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                         val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                         intent.putExtra("url", url)
                         intent.putExtra("token",token)
+                        intent.putExtra("successScreenFullReferencePath",successScreenFullReferencePath)
                         startActivity(intent)
                     }
 
@@ -558,10 +564,11 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         return null
     }
     companion object {
-        fun newInstance(data: String?): WalletBottomSheet {
+        fun newInstance(data: String?, successScreenFullReferencePath: String?): WalletBottomSheet {
             val fragment = WalletBottomSheet()
             val args = Bundle()
             args.putString("token", data)
+            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
             fragment.arguments = args
             return fragment
         }

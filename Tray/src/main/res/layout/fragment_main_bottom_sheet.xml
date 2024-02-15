@@ -310,7 +310,7 @@
                                         />
 
                                     <LinearLayout
-                                        android:id="@+id/gPayUPILinearLayout"
+                                        android:id="@+id/PopularUPILinearLayout1"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:gravity="center"
@@ -344,15 +344,15 @@
                                         app:layout_constraintBottom_toBottomOf="parent"/>
 
                                     <LinearLayout
-                                        android:id="@+id/CredUPILinearLayout"
+                                        android:id="@+id/PopularUPILinearLayout2"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:gravity="center"
                                         android:orientation="vertical"
                                         android:layout_marginStart="32dp"
-                                        app:layout_constraintTop_toTopOf="@+id/gPayUPILinearLayout"
-                                        app:layout_constraintBottom_toBottomOf="@+id/gPayUPILinearLayout"
-                                        app:layout_constraintStart_toEndOf="@+id/gPayUPILinearLayout">
+                                        app:layout_constraintTop_toTopOf="@+id/PopularUPILinearLayout1"
+                                        app:layout_constraintBottom_toBottomOf="@+id/PopularUPILinearLayout1"
+                                        app:layout_constraintStart_toEndOf="@+id/PopularUPILinearLayout1">
 
                                         <ImageView
                                             android:id="@+id/popularUPIImageView2"
@@ -368,15 +368,15 @@
                                     </LinearLayout>
 
                                     <LinearLayout
-                                        android:id="@+id/phonePeUPILinearLayout"
+                                        android:id="@+id/PopularUPILinearLayout3"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:gravity="center"
                                         android:orientation="vertical"
                                         android:layout_marginStart="32dp"
-                                        app:layout_constraintTop_toTopOf="@+id/CredUPILinearLayout"
-                                        app:layout_constraintBottom_toBottomOf="@+id/CredUPILinearLayout"
-                                        app:layout_constraintStart_toEndOf="@+id/CredUPILinearLayout">
+                                        app:layout_constraintTop_toTopOf="@+id/PopularUPILinearLayout2"
+                                        app:layout_constraintBottom_toBottomOf="@+id/PopularUPILinearLayout2"
+                                        app:layout_constraintStart_toEndOf="@+id/PopularUPILinearLayout2">
 
                                         <ImageView
                                             android:id="@+id/popularUPIImageView3"
@@ -392,15 +392,15 @@
                                     </LinearLayout>
 
                                     <LinearLayout
-                                        android:id="@+id/paytmUPILinearLayout"
+                                        android:id="@+id/PopularUPILinearLayout4"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:gravity="center"
                                         android:orientation="vertical"
                                         android:layout_marginStart="32dp"
-                                        app:layout_constraintTop_toTopOf="@+id/phonePeUPILinearLayout"
-                                        app:layout_constraintBottom_toBottomOf="@+id/phonePeUPILinearLayout"
-                                        app:layout_constraintStart_toEndOf="@+id/phonePeUPILinearLayout">
+                                        app:layout_constraintTop_toTopOf="@+id/PopularUPILinearLayout3"
+                                        app:layout_constraintBottom_toBottomOf="@+id/PopularUPILinearLayout3"
+                                        app:layout_constraintStart_toEndOf="@+id/PopularUPILinearLayout3">
 
                                         <ImageView
                                             android:id="@+id/popularUPIImageView4"

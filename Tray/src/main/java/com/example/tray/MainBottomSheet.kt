@@ -20,11 +20,13 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -46,8 +48,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private var overlayViewCurrentBottomSheet: View? = null
     private var token: String? = null
     private var successScreenFullReferencePath: String? = null
-    private val UPIAppsPackageNameList: MutableList<String> = mutableListOf()
-    private val UPIAppsNameList: MutableList<String> = mutableListOf()
+    private var UPIAppsAndPackageMap : MutableMap<String,String> = mutableMapOf()
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var i = 1
 
@@ -95,17 +96,17 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
             if(appName == "PhonePe"){
                 Log.d("UPI App", appName)
-                UPIAppsNameList.add(appName)
                 Log.d("UPI App Package Name", app.packageName)
-                UPIAppsPackageNameList.add(app.packageName)
+
+                UPIAppsAndPackageMap[appName] = app.packageName
             }
 
             // If the app can handle the UPI intent, it's a UPI app
             if (!upiApps.isEmpty()) {
                 Log.d("UPI App", appName)
-                UPIAppsNameList.add(appName)
                 Log.d("UPI App Package Name", app.packageName)
-                UPIAppsPackageNameList.add(app.packageName)
+
+                UPIAppsAndPackageMap[appName] = app.packageName
             }
 
             if (packageManager.getLaunchIntentForPackage(app.packageName) != null) {
@@ -128,7 +129,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         intent.setPackage(packageName)
         intent.putExtra("pa", "7986266095@paytm") // UPI ID of the recipient
         intent.putExtra("pn", "Piyush Sharma") // Name of the recipient
-        intent.putExtra("mc", "yourmerchantcode") // Merchant code
+        intent.putExtra("mc", "hK3JrVc6ys") // Merchant code
         intent.putExtra("tr", "123456789") // Transaction ID
         intent.putExtra("tn", "Test Transaction") // Transaction note
         intent.putExtra("am", "10.00") // Transaction amount
@@ -216,7 +217,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             }
         }
         binding.payUsingAnyUPIConstraint.setOnClickListener {
-//            launchUPIPayment(requireContext(),UPIAppsPackageNameList[1])
 
             openDefaultUPIIntentBottomSheetFromAndroid()
         }
@@ -243,45 +243,58 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         }
 
 
-
-
         return binding.root
     }
 
     private fun populatePopularUPIApps(){
         var i = 1
-        for(app in UPIAppsNameList){
+        for((appName, appPackage) in UPIAppsAndPackageMap){
             if(i >= 5)
                 break
-            Log.d("App in loop",app)
-            if(app == "CRED"){
+            Log.d("App in loop",appName)
+            if(appName == "CRED"){
                 val imageView = getPopularImageViewByNum(i)
                 val textView = getPopularTextViewByNum(i)
                 imageView.setImageResource(R.drawable.cred_upi_logo)
                 textView.text = "Cred"
+
+                getPopularConstraintLayoutByNum(i).setOnClickListener(){
+                    launchUPIPayment(requireContext(),appPackage)
+                }
+
+                Log.d("i and app inside if statement","$i and app = $appName")
                 i++
-                Log.d("i and app inside if statement","$i and app = $app")
-            }else if(app == "Paytm"){
+            }else if(appName == "Paytm"){
                 val imageView = getPopularImageViewByNum(i)
                 val textView = getPopularTextViewByNum(i)
                 imageView.setImageResource(R.drawable.paytm_upi_logo)
                 textView.text = "Paytm"
+
+                getPopularConstraintLayoutByNum(i).setOnClickListener(){
+                    launchUPIPayment(requireContext(),appPackage)
+                }
+                Log.d("i and app inside if statement","$i and app = $appName")
                 i++
-                Log.d("i and app inside if statement","$i and app = $app")
-            }else if(app =="PhonePe"){
+            }else if(appName =="PhonePe"){
                 val imageView = getPopularImageViewByNum(i)
                 val textView = getPopularTextViewByNum(i)
                 imageView.setImageResource(R.drawable.phonepe_logo)
                 textView.text = "PhonePe"
+                getPopularConstraintLayoutByNum(i).setOnClickListener(){
+                    launchUPIPayment(requireContext(),appPackage)
+                }
+                Log.d("i and app inside if statement","$i and app = $appName")
                 i++
-                Log.d("i and app inside if statement","$i and app = $app")
-            }else if(app == "GPay"){
+            }else if(appName == "GPay"){
                 val imageView = getPopularImageViewByNum(i)
                 val textView = getPopularTextViewByNum(i)
                 imageView.setImageResource(R.drawable.google_pay_seeklogo)
                 textView.text = "GPay"
+                getPopularConstraintLayoutByNum(i).setOnClickListener(){
+                    launchUPIPayment(requireContext(),appPackage)
+                }
+                Log.d("i and app inside if statement","$i and app = $appName")
                 i++
-                Log.d("i and app inside if statement","$i and app = $app")
             }
         }
         if(i == 1){
@@ -294,6 +307,15 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             2 -> binding.popularUPIImageView2
             3 -> binding.popularUPIImageView3
             4 -> binding.popularUPIImageView4
+            else -> throw IllegalArgumentException("Invalid number: $num")
+        }
+    }
+    private fun getPopularConstraintLayoutByNum(num : Int) : LinearLayout{
+        return when (num) {
+            1 -> binding.PopularUPILinearLayout1
+            2 -> binding.PopularUPILinearLayout2
+            3 -> binding.PopularUPILinearLayout3
+            4 -> binding.PopularUPILinearLayout4
             else -> throw IllegalArgumentException("Invalid number: $num")
         }
     }
@@ -420,7 +442,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
 
         if(i > 1)
-        binding.popularUPIAppsConstraint.visibility = View.VISIBLE
+            binding.popularUPIAppsConstraint.visibility = View.VISIBLE
     }
 
 
@@ -484,6 +506,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 //        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.isHideable = false
 
 
 
@@ -528,7 +551,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun openAddUPIIDBottomSheet() {
-        val bottomSheetFragment = AddUPIID.newInstance(token)
+        val bottomSheetFragment = AddUPIID.newInstance(token,successScreenFullReferencePath)
         bottomSheetFragment.show(parentFragmentManager, "AddUPIBottomSheet")
     }
 
@@ -539,12 +562,12 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun openNetBankingBottomSheet() {
-        val bottomSheetFragment = NetBankingBottomSheet.newInstance(token)
+        val bottomSheetFragment = NetBankingBottomSheet.newInstance(token,successScreenFullReferencePath)
         bottomSheetFragment.show(parentFragmentManager, "NetBankingBottomSheet")
     }
 
     private fun openWalletBottomSheet() {
-        val bottomSheetFragment = WalletBottomSheet.newInstance(token)
+        val bottomSheetFragment = WalletBottomSheet.newInstance(token,successScreenFullReferencePath)
         bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
     }
 

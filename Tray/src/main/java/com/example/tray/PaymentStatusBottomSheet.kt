@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,15 +44,20 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         val handler = Handler()
         val startAnimationRunnable = Runnable {
             try{
+                if(successScreenFullReferencePath == null){
+                    Log.d("error in opening success screen of merchant","here")
+                }else{
+                    Log.d("successScreenFullReferencePath",successScreenFullReferencePath!!)
+                }
                 openActivity(successScreenFullReferencePath!!,requireContext())
             }
             catch (e : Exception){
-                Toast.makeText(requireContext(), "Failed to open\nmerchants success screen", Toast.LENGTH_SHORT).show()
+
             }
         }
 
         // Delay execution by 1000 milliseconds (1 second)
-        handler.postDelayed(startAnimationRunnable, 3000)
+        handler.postDelayed(startAnimationRunnable, 2000)
 
         return binding.root
 
