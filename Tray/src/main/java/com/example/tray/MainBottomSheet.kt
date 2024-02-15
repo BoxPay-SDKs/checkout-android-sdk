@@ -18,8 +18,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,7 +36,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
-import org.w3c.dom.Text
 
 
 class MainBottomSheet : BottomSheetDialogFragment() {
@@ -47,7 +47,9 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private var token: String? = null
     private var successScreenFullReferencePath: String? = null
     private val UPIAppsPackageNameList: MutableList<String> = mutableListOf()
+    private val UPIAppsNameList: MutableList<String> = mutableListOf()
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    private var i = 1
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,8 +63,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     override fun onStart() {
         super.onStart()
 
-
-        // Observe the LiveData and show/hide overlay accordingly
         overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
             if (showOverlay) {
                 addOverlayToActivity()
@@ -85,6 +85,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         for (app in apps) {
             val appName = packageManager.getApplicationLabel(app).toString()
+            Log.d("all apps","allapps"+appName)
 
             // Check if the app supports UPI transactions
             val upiIntent = Intent(Intent.ACTION_VIEW)
@@ -92,9 +93,17 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             upiIntent.setPackage(app.packageName)
             val upiApps = packageManager.queryIntentActivities(upiIntent, 0)
 
+            if(appName == "PhonePe"){
+                Log.d("UPI App", appName)
+                UPIAppsNameList.add(appName)
+                Log.d("UPI App Package Name", app.packageName)
+                UPIAppsPackageNameList.add(app.packageName)
+            }
+
             // If the app can handle the UPI intent, it's a UPI app
             if (!upiApps.isEmpty()) {
                 Log.d("UPI App", appName)
+                UPIAppsNameList.add(appName)
                 Log.d("UPI App Package Name", app.packageName)
                 UPIAppsPackageNameList.add(app.packageName)
             }
@@ -140,12 +149,10 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         // Inflate the layout for this fragment
         binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        hideUPIOptions()
         hidePriceBreakUp()
 
         dialog?.setCanceledOnTouchOutside(true)
         getAndSetOrderDetails()
-        showUPIOptions()
         val packageManager = requireContext().packageManager
         getAllInstalledApps(packageManager)
         activityResultLauncher =
@@ -163,6 +170,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 }
             }
 
+        showUPIOptions()
+
 
         val items = mutableListOf(
             "Truly Madly Monthly Plan"
@@ -173,9 +182,12 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         val images = mutableListOf(
             R.drawable.truly_madly_logo
         )
+
+
         val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices)
         binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
+
 
 
         // Set click listeners
@@ -193,7 +205,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         binding.imageView222.setOnClickListener() {
             dismiss()
         }
-        var upiOptionsShown = false
+        var upiOptionsShown = true
         binding.upiLinearLayout.setOnClickListener() {
             if (!upiOptionsShown) {
                 upiOptionsShown = true
@@ -224,7 +236,75 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             openNetBankingBottomSheet()
         }
 
+        populatePopularUPIApps()
+
+        binding.popularUPIAppsConstraint.setOnClickListener {
+            // Do nothing , Just for the sake that it doesnt close the UPI options
+        }
+
+
+
+
         return binding.root
+    }
+
+    private fun populatePopularUPIApps(){
+        var i = 1
+        for(app in UPIAppsNameList){
+            if(i >= 5)
+                break
+            Log.d("App in loop",app)
+            if(app == "CRED"){
+                val imageView = getPopularImageViewByNum(i)
+                val textView = getPopularTextViewByNum(i)
+                imageView.setImageResource(R.drawable.cred_upi_logo)
+                textView.text = "Cred"
+                i++
+                Log.d("i and app inside if statement","$i and app = $app")
+            }else if(app == "Paytm"){
+                val imageView = getPopularImageViewByNum(i)
+                val textView = getPopularTextViewByNum(i)
+                imageView.setImageResource(R.drawable.paytm_upi_logo)
+                textView.text = "Paytm"
+                i++
+                Log.d("i and app inside if statement","$i and app = $app")
+            }else if(app =="PhonePe"){
+                val imageView = getPopularImageViewByNum(i)
+                val textView = getPopularTextViewByNum(i)
+                imageView.setImageResource(R.drawable.phonepe_logo)
+                textView.text = "PhonePe"
+                i++
+                Log.d("i and app inside if statement","$i and app = $app")
+            }else if(app == "GPay"){
+                val imageView = getPopularImageViewByNum(i)
+                val textView = getPopularTextViewByNum(i)
+                imageView.setImageResource(R.drawable.google_pay_seeklogo)
+                textView.text = "GPay"
+                i++
+                Log.d("i and app inside if statement","$i and app = $app")
+            }
+        }
+        if(i == 1){
+            binding.popularUPIAppsConstraint.visibility = View.GONE
+        }
+    }
+    private fun getPopularImageViewByNum(num : Int) : ImageView{
+        return when (num) {
+            1 -> binding.popularUPIImageView1
+            2 -> binding.popularUPIImageView2
+            3 -> binding.popularUPIImageView3
+            4 -> binding.popularUPIImageView4
+            else -> throw IllegalArgumentException("Invalid number: $num")
+        }
+    }
+    private fun getPopularTextViewByNum(num : Int) : TextView {
+        return when (num) {
+            1 -> binding.popularUPITextView1
+            2 -> binding.popularUPITextView2
+            3 -> binding.popularUPITextView3
+            4 -> binding.popularUPITextView4
+            else -> throw IllegalArgumentException("Invalid number: $num")
+        }
     }
 
     private fun openDefaultUPIIntentBottomSheetFromAndroid() {
@@ -338,12 +418,17 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         binding.upiOptionsLinearLayout.visibility = View.VISIBLE
         binding.textView20.typeface =
             ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
+
+        if(i > 1)
+        binding.popularUPIAppsConstraint.visibility = View.VISIBLE
     }
+
 
     private fun hideUPIOptions() {
         binding.upiConstraint.setBackgroundColor(Color.parseColor("#FFFFFF"))
         binding.upiOptionsLinearLayout.visibility = View.GONE
         binding.textView20.typeface = ResourcesCompat.getFont(requireContext(), R.font.poppins)
+        binding.popularUPIAppsConstraint.visibility = View.GONE
         binding.imageView12.animate()
             .rotation(0f)
             .setDuration(500) // Set the duration of the animation in milliseconds
@@ -399,7 +484,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 //        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
-            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
 
 
