@@ -61,6 +61,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var checkedPosition: Int? = null
+    private var successScreenFullReferencePath: String? = null
     var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
         value = false
     }
@@ -72,6 +73,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
+            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
         }
 
     }
@@ -162,6 +164,10 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.banksRecyclerView.adapter = allBanksAdapter
         fetchBanksDetails()
         hideLoadingInButton()
+
+        if(successScreenFullReferencePath != null){
+            Log.d("NetbankingBottomSheetReference",successScreenFullReferencePath!!)
+        }
         var enabled = false
         binding.checkingTextView.setOnClickListener() {
             if (!enabled)
@@ -434,6 +440,8 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                     val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                     intent.putExtra("url", url)
+                    intent.putExtra("token",token)
+                    intent.putExtra("successScreenFullReferencePath",successScreenFullReferencePath)
                     startActivity(intent)
 
                 } catch (e: JSONException) {
@@ -535,10 +543,11 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     companion object {
-        fun newInstance(data: String?): NetBankingBottomSheet {
+        fun newInstance(data: String?, successScreenFullReferencePath: String?): NetBankingBottomSheet {
             val fragment = NetBankingBottomSheet()
             val args = Bundle()
             args.putString("token", data)
+            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
             fragment.arguments = args
             return fragment
         }

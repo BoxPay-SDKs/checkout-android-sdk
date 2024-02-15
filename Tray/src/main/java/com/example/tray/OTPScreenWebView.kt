@@ -2,10 +2,13 @@ package com.example.tray
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatDelegate
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.ActivityOtpscreenWebViewBinding
@@ -25,6 +28,7 @@ class OTPScreenWebView : AppCompatActivity() {
     private var job: Job? = null
     private var token: String? = null
     private lateinit var requestQueue: RequestQueue
+    private var successScreenFullReferencePath: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -35,6 +39,7 @@ class OTPScreenWebView : AppCompatActivity() {
         Log.d("url", receivedUrl.toString())
         token = intent.getStringExtra("token")
         Log.d("token logged from webView", "token")
+        successScreenFullReferencePath = intent.getStringExtra("successScreenFullReferencePath")
         binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
         startFunctionCalls()
     }
@@ -50,7 +55,7 @@ class OTPScreenWebView : AppCompatActivity() {
 
                     // Do something with status and statusReason
                     // For example, log them
-                    Log.d("Status", status)
+                    Log.d("WebView Status", status)
                     Log.d("Status Reason", statusReason)
 
                     // Check if status is success, if yes, dismiss the bottom sheet
@@ -65,9 +70,14 @@ class OTPScreenWebView : AppCompatActivity() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
-                        val bottomSheet = PaymentStatusBottomSheet()
+                        val bottomSheet = PaymentStatusBottomSheet.newInstance(token,successScreenFullReferencePath)
                         bottomSheet.show(supportFragmentManager, "SuccessBottomSheet")
-                        finish()
+                        val endAllTheBottomSheets = Runnable {
+                            finish()
+                        }
+                        val handler = Handler()
+                        // Delay execution by 1000 milliseconds (1 second)
+                        handler.postDelayed(endAllTheBottomSheets, 3000)
                     } else if (status.contains("PENDING", ignoreCase = true)) {
                         //do nothing
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
@@ -75,14 +85,19 @@ class OTPScreenWebView : AppCompatActivity() {
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
                     } else if (status.contains("FAILED", ignoreCase = true)) {
-
+                        val bottomSheet = PaymentFailureScreen()
+                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
             }) { error ->
-            Log.d("Error here", error.toString())
-            error.printStackTrace()
+            Log.e("Error", "Error occurred: ${error.message}")
+            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                val errorResponse = String(error.networkResponse.data)
+                Log.e("Error", "Detailed error response: $errorResponse")
+
+            }
 
             // Handle errors here
         }
@@ -95,7 +110,7 @@ class OTPScreenWebView : AppCompatActivity() {
             while (isActive) {
                 fetchStatusAndReason("https://test-apis.boxpay.tech/v0/checkout/sessions/${token}/status")
                 // Delay for 5 seconds
-                delay(5000)
+                delay(4000)
             }
         }
     }
@@ -104,5 +119,8 @@ class OTPScreenWebView : AppCompatActivity() {
         super.onDestroy()
         // Cancel the coroutine when the activity is destroyed
         job?.cancel()
+    }
+    companion object{
+
     }
 }

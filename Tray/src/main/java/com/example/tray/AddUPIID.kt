@@ -42,11 +42,13 @@ class AddUPIID : BottomSheetDialogFragment() {
     private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var token : String ?= null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
+    private var successScreenFullReferencePath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             token = it.getString("token")
+            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
         }
     }
 
@@ -323,7 +325,7 @@ class AddUPIID : BottomSheetDialogFragment() {
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
     private fun openUPITimerBottomSheet(){
-        val bottomSheetFragment = UPITimerBottomSheet.newInstance(token)
+        val bottomSheetFragment = UPITimerBottomSheet.newInstance(token,successScreenFullReferencePath)
         bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
     }
     fun extractMessageFromErrorResponse(response: String): String? {
@@ -341,10 +343,11 @@ class AddUPIID : BottomSheetDialogFragment() {
 
 
     companion object {
-        fun newInstance(data: String?): AddUPIID {
+        fun newInstance(data: String?, successScreenFullReferencePath: String?): AddUPIID {
             val fragment = AddUPIID()
             val args = Bundle()
             args.putString("token", data)
+            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
             fragment.arguments = args
             return fragment
         }

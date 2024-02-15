@@ -3,6 +3,7 @@ package com.example.tray
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -21,12 +22,14 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
     private lateinit var countdownTimer: CountDownTimer
     private lateinit var requestQueue: RequestQueue
     private var token : String ?= null
+    private var successScreenFullReferencePath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestQueue = Volley.newRequestQueue(requireContext())
         arguments?.let {
             token = it.getString("token")
+            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
         }
     }
 
@@ -73,7 +76,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         countdownTimer.start()
     }
     private fun startTimerForAPICalls() {
-        countdownTimer = object : CountDownTimer(300000, 2000) {
+        countdownTimer = object : CountDownTimer(300000, 3000) {
 
             override fun onTick(millisUntilFinished: Long) {
                 // Update TextView with the remaining time
@@ -90,7 +93,6 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
-        (parentFragment as? AddUPIID)?.removeOverlayFromCurrentBottomSheet()
         super.onDismiss(dialog)
         dismiss()
     }
@@ -110,9 +112,12 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
                     // Check if status is success, if yes, dismiss the bottom sheet
                     if (statusReason.contains("Received by BoxPay for processing",ignoreCase = true) || statusReason.contains("Approved by PSP",ignoreCase = true) || status.contains("PAID",ignoreCase = true)) {
-                        val bottomSheet = PaymentStatusBottomSheet()
+                        val bottomSheet = PaymentStatusBottomSheet.newInstance(token,successScreenFullReferencePath)
                         bottomSheet.show(parentFragmentManager,"SuccessBottomSheet")
-                        dismiss()
+                        countdownTimer.cancel()
+                            dismiss()
+
+
                     }else if(status.contains("PENDING",ignoreCase = true)) {
                         //do nothing
                     }else if(status.contains("EXPIRED",ignoreCase = true)){
@@ -136,10 +141,11 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         requestQueue.add(jsonObjectRequest)
     }
     companion object {
-        fun newInstance(data: String?): UPITimerBottomSheet {
+        fun newInstance(data: String?, successScreenFullReferencePath: String?): UPITimerBottomSheet {
             val fragment = UPITimerBottomSheet()
             val args = Bundle()
             args.putString("token", data)
+            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
             fragment.arguments = args
             return fragment
         }

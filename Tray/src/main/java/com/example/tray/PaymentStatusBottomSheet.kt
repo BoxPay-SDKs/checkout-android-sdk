@@ -5,9 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
@@ -41,11 +43,21 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         animationView.playAnimation()
         val handler = Handler()
         val startAnimationRunnable = Runnable {
-            openActivity(successScreenFullReferencePath!!,requireContext())
+            try{
+                if(successScreenFullReferencePath == null){
+                    Log.d("error in opening success screen of merchant","here")
+                }else{
+                    Log.d("successScreenFullReferencePath",successScreenFullReferencePath!!)
+                }
+                openActivity(successScreenFullReferencePath!!,requireContext())
+            }
+            catch (e : Exception){
+
+            }
         }
 
         // Delay execution by 1000 milliseconds (1 second)
-        handler.postDelayed(startAnimationRunnable, 3000)
+        handler.postDelayed(startAnimationRunnable, 2000)
 
         return binding.root
 
@@ -67,6 +79,7 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
                 }
             } catch (e: ClassNotFoundException) {
                 // Log an error or handle the case where the activity class cannot be found
+                Toast.makeText(requireContext(), "Failed to open\nmerchants success screen", Toast.LENGTH_SHORT).show()
             }
         } else {
             // Log an error or handle the case where the context is not an AppCompatActivity

@@ -2,8 +2,8 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
     android:id="@+id/coordinatorMainBottomSheet"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bottom_sheet_bg">
 
@@ -91,9 +91,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:background="@drawable/cardview_bg"
-                            android:paddingBottom="8dp"
                             android:paddingTop="8dp"
-                            >
+                            android:paddingBottom="8dp">
 
                             <TextView
                                 android:id="@+id/textView9"
@@ -151,8 +150,7 @@
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toBottomOf="@+id/numberOfItems"
                                 tools:itemCount="1"
-                                tools:listitem="@layout/order_summary_item"
-                                />
+                                tools:listitem="@layout/order_summary_item" />
 
                             <TextView
                                 android:id="@+id/textView18"
@@ -212,15 +210,14 @@
                         <LinearLayout
                             android:id="@+id/upiLinearLayout"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:orientation="vertical"
-                            android:weightSum="2">
+                            android:weightSum="1">
 
                             <androidx.constraintlayout.widget.ConstraintLayout
                                 android:id="@+id/upiConstraint"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
                                 android:background="#FFFFFF"
                                 android:paddingTop="12dp"
                                 android:paddingEnd="12dp"
@@ -277,7 +274,6 @@
                                     android:id="@+id/imageView12"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-
                                     app:layout_constraintBottom_toBottomOf="@+id/imageView8"
                                     app:layout_constraintEnd_toEndOf="parent"
                                     app:layout_constraintTop_toTopOf="@+id/imageView8"
@@ -289,20 +285,150 @@
                             <LinearLayout
                                 android:id="@+id/upiOptionsLinearLayout"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
                                 android:background="@android:color/white"
                                 android:orientation="vertical"
-                                android:weightSum="1">
+                                android:weightSum="2"
+                                android:visibility="visible">
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/popularUPIAppsConstraint"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
+                                    <TextView
+                                        android:id="@+id/popularAppsTextView"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Popular Apps"
+                                        android:fontFamily="@font/poppins"
+                                        android:textColor="#595E6A"
+                                        android:textSize="14sp"
+                                        android:layout_marginTop="10dp"
+                                        android:layout_marginStart="12dp"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        />
+
+                                    <LinearLayout
+                                        android:id="@+id/PopularUPILinearLayout1"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:layout_marginTop="10dp"
+                                        android:layout_marginBottom="10dp"
+                                        app:layout_constraintStart_toStartOf="@+id/popularAppsTextView"
+                                        app:layout_constraintTop_toBottomOf="@+id/popularAppsTextView"
+                                        app:layout_constraintBottom_toTopOf="@+id/dashedLine1">
+
+
+                                        <ImageView
+                                            android:id="@+id/popularUPIImageView1"
+                                            android:layout_width="40dp"
+                                            android:layout_height="40dp" />
+
+                                        <TextView
+                                            android:id="@+id/popularUPITextView1"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:fontFamily="@font/poppins"
+                                            android:textColor="#595E6A" />
+                                    </LinearLayout>
+                                    <View
+                                        android:id="@+id/dashedLine1"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="2dp"
+                                        android:background="@drawable/dashed_line"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintBottom_toBottomOf="parent"/>
+
+                                    <LinearLayout
+                                        android:id="@+id/PopularUPILinearLayout2"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:layout_marginStart="32dp"
+                                        app:layout_constraintTop_toTopOf="@+id/PopularUPILinearLayout1"
+                                        app:layout_constraintBottom_toBottomOf="@+id/PopularUPILinearLayout1"
+                                        app:layout_constraintStart_toEndOf="@+id/PopularUPILinearLayout1">
+
+                                        <ImageView
+                                            android:id="@+id/popularUPIImageView2"
+                                            android:layout_width="40dp"
+                                            android:layout_height="40dp" />
+
+                                        <TextView
+                                            android:id="@+id/popularUPITextView2"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:fontFamily="@font/poppins"
+                                            android:textColor="#595E6A" />
+                                    </LinearLayout>
+
+                                    <LinearLayout
+                                        android:id="@+id/PopularUPILinearLayout3"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:layout_marginStart="32dp"
+                                        app:layout_constraintTop_toTopOf="@+id/PopularUPILinearLayout2"
+                                        app:layout_constraintBottom_toBottomOf="@+id/PopularUPILinearLayout2"
+                                        app:layout_constraintStart_toEndOf="@+id/PopularUPILinearLayout2">
+
+                                        <ImageView
+                                            android:id="@+id/popularUPIImageView3"
+                                            android:layout_width="40dp"
+                                            android:layout_height="40dp" />
+
+                                        <TextView
+                                            android:id="@+id/popularUPITextView3"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:fontFamily="@font/poppins"
+                                            android:textColor="#595E6A" />
+                                    </LinearLayout>
+
+                                    <LinearLayout
+                                        android:id="@+id/PopularUPILinearLayout4"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:orientation="vertical"
+                                        android:layout_marginStart="32dp"
+                                        app:layout_constraintTop_toTopOf="@+id/PopularUPILinearLayout3"
+                                        app:layout_constraintBottom_toBottomOf="@+id/PopularUPILinearLayout3"
+                                        app:layout_constraintStart_toEndOf="@+id/PopularUPILinearLayout3">
+
+                                        <ImageView
+                                            android:id="@+id/popularUPIImageView4"
+                                            android:layout_width="40dp"
+                                            android:layout_height="40dp" />
+
+                                        <TextView
+                                            android:id="@+id/popularUPITextView4"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:fontFamily="@font/poppins"
+                                            android:textColor="#595E6A" />
+                                    </LinearLayout>
+
+
+
+
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:id="@+id/payUsingAnyUPIConstraint"
                                     android:layout_width="match_parent"
                                     android:layout_height="0dp"
-                                    android:layout_weight="0.5"
+                                    android:layout_weight="1"
                                     android:paddingTop="12dp"
                                     android:paddingEnd="12dp"
-
                                     android:paddingBottom="12dp">
 
                                     <ImageView
@@ -311,7 +437,6 @@
                                         android:layout_height="16dp"
                                         android:layout_marginStart="12dp"
                                         android:layout_marginTop="2dp"
-
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent"
                                         app:srcCompat="@drawable/upi_icon_2" />
@@ -354,7 +479,7 @@
                                     android:id="@+id/addNewUPIIDConstraint"
                                     android:layout_width="match_parent"
                                     android:layout_height="0dp"
-                                    android:layout_weight="0.5"
+                                    android:layout_weight="1"
                                     android:paddingTop="12dp"
                                     android:paddingEnd="12dp"
                                     android:paddingBottom="12dp">
@@ -688,4 +813,4 @@
             </FrameLayout>
         </androidx.core.widget.NestedScrollView>
     </LinearLayout>
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
