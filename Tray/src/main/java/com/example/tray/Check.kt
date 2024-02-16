@@ -20,6 +20,7 @@ import org.json.JSONObject
 class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
     private var successScreenFullReferencePath : String ?= null
+    private var tokenFetchedAndOpen = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -160,7 +161,12 @@ class Check : AppCompatActivity() {
         queue.add(request)
     }
     fun handleResponseWithToken() {
+        if(tokenFetchedAndOpen)
+            return
+
+
         Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
         showBottomSheetWithOverlay()
+        tokenFetchedAndOpen = true
     }
 }

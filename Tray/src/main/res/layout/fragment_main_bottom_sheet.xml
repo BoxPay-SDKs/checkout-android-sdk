@@ -88,6 +88,7 @@
                         app:layout_constraintTop_toTopOf="parent">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/orderSummaryConstraintLayout"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:background="@drawable/cardview_bg"
@@ -110,7 +111,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/poppins_medium"
-                                android:text="2 Items"
+                                android:text="1 Items"
                                 android:textColor="#010102"
                                 app:layout_constraintStart_toStartOf="@+id/textView9"
                                 app:layout_constraintTop_toBottomOf="@+id/textView9"
@@ -120,7 +121,7 @@
                                 android:id="@+id/unopenedTotalValue"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/poppins_semibold"
+                                android:fontFamily="@font/inter_semibold"
                                 android:text="₹1198.00"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
@@ -171,7 +172,7 @@
                                 android:id="@+id/ItemsPrice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/poppins_semibold"
+                                android:fontFamily="@font/inter_semibold"
                                 android:text="₹1198.00"
                                 android:textColor="#010102"
                                 android:textSize="18sp"
@@ -254,7 +255,7 @@
                                     app:layout_constraintBottom_toBottomOf="@+id/textView21"
                                     app:layout_constraintEnd_toStartOf="@+id/textView21"
                                     app:layout_constraintTop_toTopOf="@+id/textView21"
-                                    app:srcCompat="@drawable/upi_apps_png" />
+                                    app:srcCompat="@drawable/upis_logo_main_bottom_sheet" />
 
                                 <TextView
                                     android:id="@+id/textView21"
@@ -262,7 +263,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginEnd="12dp"
                                     android:fontFamily="@font/poppins"
-                                    android:text="+11 more"
+                                    android:text="+ more"
                                     android:textColor="#474B55"
                                     android:textSize="10sp"
                                     app:layout_constraintBottom_toBottomOf="@+id/imageView12"
@@ -447,7 +448,7 @@
                                         android:layout_height="wrap_content"
                                         android:layout_marginStart="6dp"
                                         android:fontFamily="@font/poppins"
-                                        android:text="Pay using any UPI apps"
+                                        android:text="Pay using other UPI apps"
                                         android:textColor="#595E6A"
                                         android:textSize="16sp"
                                         app:layout_constraintBottom_toBottomOf="@+id/itemImage"
@@ -587,7 +588,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="12dp"
                                 android:fontFamily="@font/poppins"
-                                android:text="+11 more"
+                                android:text="+ more"
                                 android:textColor="#474B55"
                                 android:textSize="10sp"
                                 app:layout_constraintBottom_toBottomOf="@+id/imageView27"
@@ -662,7 +663,7 @@
                                 app:layout_constraintBottom_toBottomOf="@+id/textView31"
                                 app:layout_constraintEnd_toStartOf="@+id/textView31"
                                 app:layout_constraintTop_toTopOf="@+id/textView31"
-                                app:srcCompat="@drawable/wallets_logos" />
+                                app:srcCompat="@drawable/wallets_logo_main_bottom_sheet" />
 
                             <TextView
                                 android:id="@+id/textView31"
@@ -670,7 +671,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="12dp"
                                 android:fontFamily="@font/poppins"
-                                android:text="+11 more"
+                                android:text="+ more"
                                 android:textColor="#474B55"
                                 android:textSize="10sp"
                                 app:layout_constraintBottom_toBottomOf="@+id/imageView28"
@@ -723,7 +724,7 @@
                                 android:layout_marginTop="2dp"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toTopOf="parent"
-                                app:srcCompat="@drawable/netbanking" />
+                                app:srcCompat="@drawable/netbanking"/>
 
                             <TextView
                                 android:id="@+id/textView36"
@@ -746,7 +747,7 @@
                                 app:layout_constraintBottom_toBottomOf="@+id/textView37"
                                 app:layout_constraintEnd_toStartOf="@+id/textView37"
                                 app:layout_constraintTop_toTopOf="@+id/textView37"
-                                app:srcCompat="@drawable/internet_banking_logos" />
+                                app:srcCompat="@drawable/bank_logos" />
 
                             <TextView
                                 android:id="@+id/textView37"
@@ -754,7 +755,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="12dp"
                                 android:fontFamily="@font/poppins"
-                                android:text="+11 more"
+                                android:text="+ more"
                                 android:textColor="#474B55"
                                 android:textSize="10sp"
                                 app:layout_constraintBottom_toBottomOf="@+id/imageView39"
