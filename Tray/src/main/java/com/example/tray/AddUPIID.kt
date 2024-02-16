@@ -40,7 +40,7 @@ class AddUPIID : BottomSheetDialogFragment() {
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var overlayViewCurrentBottomSheet: View? = null
     private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
-    private var token : String ?= null
+    private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private var successScreenFullReferencePath: String? = null
 
@@ -56,49 +56,53 @@ class AddUPIID : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentAddUPIIDBinding.inflate(inflater,container,false)
+        binding = FragmentAddUPIIDBinding.inflate(inflater, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         var checked = false
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding.progressBar.visibility = View.INVISIBLE
-        Log.d("Timezone",TimeZone.getDefault().id)
-        binding.imageView3.setOnClickListener(){
-            if(!checked) {
+        Log.d("Timezone", TimeZone.getDefault().id)
+        binding.imageView3.setOnClickListener() {
+            if (!checked) {
                 binding.imageView3.setImageResource(R.drawable.checkbox)
                 checked = true
-            }
-            else {
+            } else {
                 binding.imageView3.setImageResource(0)
                 checked = false
             }
         }
-        binding.imageView2.setOnClickListener(){
+        binding.imageView2.setOnClickListener() {
             dismiss()
         }
         binding.proceedButton.isEnabled = false
 
-        binding.editTextText.addTextChangedListener(object : TextWatcher{
+        binding.editTextText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                Log.d("beforeTextChanged",s.toString())
+                Log.d("beforeTextChanged", s.toString())
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textNow = s.toString()
-                Log.d("onTextChanged",s.toString())
-                if(textNow.isNotBlank()){
+                Log.d("onTextChanged", s.toString())
+                if (textNow.isNotBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = true
                     binding.proceedButton.isEnabled = true
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
                     binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-                    binding.textView6.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                    binding.textView6.setTextColor(
+                        ContextCompat.getColor(
+                            requireContext(),
+                            android.R.color.white
+                        )
+                    )
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {
                 val textNow = s.toString()
-                Log.d("afterTextChanged",s.toString())
-                if(textNow.isBlank()){
+                Log.d("afterTextChanged", s.toString())
+                if (textNow.isBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
                     binding.ll1InvalidUPI.visibility = View.GONE
@@ -141,6 +145,7 @@ class AddUPIID : BottomSheetDialogFragment() {
         super.onStart()
 //        binding.editTextText.requestFocus()
     }
+
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
         (parentFragment as? MainBottomSheet)?.removeOverlayFromCurrentBottomSheet()
@@ -159,6 +164,7 @@ class AddUPIID : BottomSheetDialogFragment() {
             ViewGroup.LayoutParams.MATCH_PARENT
         )
     }
+
     public fun removeOverlayFromCurrentBottomSheet() {
         overlayViewCurrentBottomSheet?.let {
             // Remove the overlay view directly from the root view
@@ -166,8 +172,8 @@ class AddUPIID : BottomSheetDialogFragment() {
         }
     }
 
-    fun postRequest(context: Context,userVPA : String){
-        Log.d("postRequestCalled",System.currentTimeMillis().toString())
+    fun postRequest(context: Context, userVPA: String) {
+        Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
 
 
@@ -261,7 +267,17 @@ class AddUPIID : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
                     binding.ll1InvalidUPI.visibility = View.VISIBLE
-                    binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
+                    Log.d("Error message", errorMessage)
+                    if (errorMessage.contains(
+                            "Session is no longer accepting the payment as payment is already completed",
+                            ignoreCase = true
+                        )
+                    ) {
+                        binding.textView4.text = "Payment is already done"
+                    } else {
+                        binding.textView4.text = "Invalid UPI"
+                    }
                     hideLoadingInButton()
                 }
 
@@ -283,12 +299,14 @@ class AddUPIID : BottomSheetDialogFragment() {
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
+
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
         Log.d("Request Body", jsonStr)
     }
-    fun hideLoadingInButton(){
+
+    fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
         binding.textView6.setTextColor(
             ContextCompat.getColor(
@@ -301,33 +319,45 @@ class AddUPIID : BottomSheetDialogFragment() {
         binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
-    fun showLoadingInButton(){
+
+    fun showLoadingInButton() {
         binding.textView6.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.VISIBLE
-        val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
+        val rotateAnimation =
+            ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
         rotateAnimation.duration = 3000 // Set the duration of the rotation in milliseconds
         rotateAnimation.repeatCount = ObjectAnimator.INFINITE // Set to repeat indefinitely
         binding.proceedButton.isEnabled = false
 
         rotateAnimation.start()
     }
-    private fun enableProceedButton(){
+
+    private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+        binding.textView6.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
+            )
+        )
     }
-    private fun disableProceedButton(){
+
+    private fun disableProceedButton() {
         binding.textView6.visibility = View.VISIBLE
         binding.proceedButton.isEnabled = false
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
         binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
-    private fun openUPITimerBottomSheet(){
-        val bottomSheetFragment = UPITimerBottomSheet.newInstance(token,successScreenFullReferencePath)
+
+    private fun openUPITimerBottomSheet() {
+        val bottomSheetFragment =
+            UPITimerBottomSheet.newInstance(token, successScreenFullReferencePath)
         bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
     }
+
     fun extractMessageFromErrorResponse(response: String): String? {
         try {
             // Parse the JSON string
@@ -356,14 +386,17 @@ class AddUPIID : BottomSheetDialogFragment() {
     private fun launchSuccessScreen(context: Context) {
         try {
             val intent = Intent().apply {
-                setClassName(context.packageName, "com.example.AndroidCheckOutSDK.SuccessScreen")
+                setClassName(
+                    context.packageName,
+                    "com.example.AndroidCheckOutSDK.SuccessScreen"
+                )
                 // You may need to adjust the package name and class name accordingly
                 // if SuccessScreenActivity is in a different package or has a different name
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(intent)
         } catch (e: Exception) {
-            Log.d("Exception in launching success screen : ",e.toString())
+            Log.d("Exception in launching success screen : ", e.toString())
             // Handle the exception if the activity cannot be launched
             e.printStackTrace()
         }

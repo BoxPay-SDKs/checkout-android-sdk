@@ -50,6 +50,7 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
                     Log.d("successScreenFullReferencePath",successScreenFullReferencePath!!)
                 }
                 openActivity(successScreenFullReferencePath!!,requireContext())
+                dismiss()
             }
             catch (e : Exception){
 

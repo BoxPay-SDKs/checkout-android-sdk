@@ -757,7 +757,6 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         getStatusReasonFromResponse(response.toString())
 
                     }else{
-                        Log.d("why is it coming here","whyy")
                         val url = jsonObject
                             .getJSONArray("actions")
                             .getJSONObject(0)
@@ -791,6 +790,11 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                     binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
                     getMessageForFieldErrorItems(errorResponse)
                     hideLoadingInButton()
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
+                    Log.d("Error message", errorMessage)
+                    if (errorMessage.contains("Session is no longer accepting the payment as payment is already completed",ignoreCase = true)){
+                        binding.textView4.text = "Payment is already done"
+                    }
                 }
 
 
