@@ -1,5 +1,6 @@
 package com.example.tray
 
+import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -8,12 +9,15 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.FragmentUPITimerBottomSheetBinding
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONException
 
@@ -23,6 +27,8 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
     private lateinit var requestQueue: RequestQueue
     private var token : String ?= null
     private var successScreenFullReferencePath: String? = null
+    private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
+    private var bottomSheet: FrameLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +39,20 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
+            val d = dialog as BottomSheetDialog
+            val bottomSheet =
+                d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
+            if (bottomSheet != null) {
+//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+                bottomSheetBehavior?.isDraggable = false
+            }
+        }
+        return dialog
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -46,6 +66,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         }
         startTimer()
         startTimerForAPICalls()
+        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
         return binding.root
     }

@@ -52,6 +52,7 @@ dependencies {
     implementation ("com.mikhaellopez:circularprogressbar:3.1.0")
     implementation ("com.airbnb.android:lottie:4.2.0")
     implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("io.supercharge:shimmerlayout:2.1.0")
 }
 
 

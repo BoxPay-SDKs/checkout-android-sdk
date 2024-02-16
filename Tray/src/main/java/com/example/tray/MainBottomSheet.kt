@@ -13,6 +13,8 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -178,7 +180,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             "Truly Madly Monthly Plan"
         )
         val prices = mutableListOf(
-            "₹599.00"
+            "₹1697.00"
         )
         val images = mutableListOf(
             R.drawable.truly_madly_logo
@@ -193,7 +195,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         // Set click listeners
         var priceBreakUpVisible = false
-        binding.arrowIcon.setOnClickListener { // Toggle visibility of the price break-up card
+        binding.orderSummaryConstraintLayout.setOnClickListener { // Toggle visibility of the price break-up card
             if (!priceBreakUpVisible) {
                 showPriceBreakUp()
                 priceBreakUpVisible = true
@@ -202,8 +204,12 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 priceBreakUpVisible = false
             }
         }
+        binding.itemsInOrderRecyclerView.setOnClickListener(){
+            //Just to preventing user from clicking here and closing the order summary
+        }
 
         binding.imageView222.setOnClickListener() {
+            removeOverlayFromActivity()
             dismiss()
         }
         var upiOptionsShown = true
@@ -247,7 +253,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun populatePopularUPIApps(){
-        var i = 1
+        i = 1
         for((appName, appPackage) in UPIAppsAndPackageMap){
             if(i >= 5)
                 break
@@ -440,9 +446,11 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         binding.upiOptionsLinearLayout.visibility = View.VISIBLE
         binding.textView20.typeface =
             ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
+        Log.d("made visible",i.toString())
 
-        if(i > 1)
+        if(i > 1) {
             binding.popularUPIAppsConstraint.visibility = View.VISIBLE
+        }
     }
 
 
@@ -551,7 +559,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun openAddUPIIDBottomSheet() {
-        val bottomSheetFragment = AddUPIID.newInstance(token,successScreenFullReferencePath)
+        val bottomSheetFragment = AddUPIID.newInstance(token, successScreenFullReferencePath)
         bottomSheetFragment.show(parentFragmentManager, "AddUPIBottomSheet")
     }
 
@@ -629,7 +637,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                     "id": "test2",
                     "itemName" : "test_name2",
                     "description": "testProduct2",
-                    "quantity": 2,
+                    "quantity": 0,
                     "imageUrl" : "https://test-merchant.boxpay.tech/boxpay logo.svg",
                     "amountWithoutTax" : 499.00
                 }

@@ -7,24 +7,18 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
-import android.view.animation.TranslateAnimation
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.SearchView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -33,19 +27,15 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
-import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.adapters.NetbankingBanksAdapter
 import com.example.tray.databinding.FragmentNetBankingBottomSheetBinding
 import com.example.tray.dataclasses.NetbankingDataClass
-import com.example.tray.dataclasses.WalletDataClass
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
-import kotlinx.coroutines.delay
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
@@ -147,8 +137,10 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         if(popularBanksSelectedIndex != -1) {
             fetchConstraintLayout(popularBanksSelectedIndex).setBackgroundResource(0)
         }
-
         popularBanksSelected = false
+    }
+    private fun showSkeletonLoading(){
+
     }
 
     override fun onCreateView(
@@ -156,12 +148,13 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        // Inflate the layout for this fragment
         binding = FragmentNetBankingBottomSheetBinding.inflate(layoutInflater, container, false)
+
         banksDetailsOriginal = arrayListOf()
         allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered, binding.banksRecyclerView,liveDataPopularBankSelectedOrNot)
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
+        binding.shimmerRecyclerView.startShimmerAnimation()
         fetchBanksDetails()
         hideLoadingInButton()
 
