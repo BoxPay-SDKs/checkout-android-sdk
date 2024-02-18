@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><!-- ring_loading_view.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background (Transparent) -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#00000000" /> <!-- Transparent color -->
+        </shape>
+    </item>
+    <!-- Ring -->
+    <item>
+        <shape
+            android:innerRadius="20dp"
+            android:shape="ring"
+            android:thickness="4dp"
+            android:useLevel="false">
+            <solid android:color="#0D8EFF" /> <!-- Set the desired color here -->
+        </shape>
+    </item>
+</layer-list>
+

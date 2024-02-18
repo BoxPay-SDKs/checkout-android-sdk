@@ -135,104 +135,110 @@
                                 app:layout_constraintTop_toBottomOf="@+id/textView19">
 
                                 <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/popularBanksConstraintLayout1"
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp"
-                                    android:id="@+id/popularBanksConstraintLayout1">
+                                    android:background="@drawable/loading_state">
 
                                     <RelativeLayout
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
+                                        android:background="@drawable/popular_item_unselected_bg"
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        android:background="@drawable/popular_item_unselected_bg">
+                                        app:layout_constraintTop_toTopOf="parent">
 
                                         <ImageView
                                             android:id="@+id/popularBanksImageView1"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
+                                            android:layout_centerInParent="true"
                                             app:layout_constraintEnd_toEndOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toTopOf="parent"
-                                            android:layout_centerInParent="true"/>
+                                            app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                                 <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/popularBanksConstraintLayout2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp"
-                                    android:id="@+id/popularBanksConstraintLayout2">
+                                    android:background="@drawable/loading_state">
 
                                     <RelativeLayout
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
+                                        android:background="@drawable/popular_item_unselected_bg"
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        android:background="@drawable/popular_item_unselected_bg">
+                                        app:layout_constraintTop_toTopOf="parent">
 
                                         <ImageView
                                             android:id="@+id/popularBanksImageView2"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
+                                            android:layout_centerInParent="true"
                                             app:layout_constraintEnd_toEndOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toTopOf="parent"
-                                            android:layout_centerInParent="true"/>
+                                            app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
+
                                 <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/popularBanksConstraintLayout3"
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp"
-                                    android:id="@+id/popularBanksConstraintLayout3">
+                                    android:background="@drawable/loading_state">
 
                                     <RelativeLayout
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
+                                        android:background="@drawable/popular_item_unselected_bg"
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        android:background="@drawable/popular_item_unselected_bg">
+                                        app:layout_constraintTop_toTopOf="parent">
 
                                         <ImageView
                                             android:id="@+id/popularBanksImageView3"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
+                                            android:layout_centerInParent="true"
                                             app:layout_constraintEnd_toEndOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toTopOf="parent"
-                                            android:layout_centerInParent="true"/>
+                                            app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
+
                                 <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:id="@+id/popularBanksConstraintLayout4"
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp"
-                                    android:id="@+id/popularBanksConstraintLayout4">
+                                    android:background="@drawable/loading_state">
+
                                     <RelativeLayout
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
+                                        android:background="@drawable/popular_item_unselected_bg"
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
-                                        android:background="@drawable/popular_item_unselected_bg"
-                                        >
+                                        app:layout_constraintTop_toTopOf="parent">
 
                                         <ImageView
                                             android:id="@+id/popularBanksImageView4"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
-                                            android:layout_centerInParent="true"/>
+                                            android:layout_centerInParent="true" />
                                     </RelativeLayout>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -252,58 +258,47 @@
                                 android:textSize="12sp"
                                 app:layout_constraintStart_toStartOf="@+id/linearLayout2"
                                 app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
-                            <io.supercharge.shimmerlayout.ShimmerLayout
-                                android:id="@+id/shimmerRecyclerView"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                app:layout_constraintStart_toStartOf="@+id/linearLayout2"
-                                app:layout_constraintTop_toBottomOf="@+id/textView24"
-                                app:layout_goneMarginBottom="8dp"
-                                app:shimmer_animation_duration="1200"
-                                app:shimmer_angle="0"
-                                app:shimmer_color="#EFECEC">
-<!--                                <androidx.constraintlayout.widget.ConstraintLayout-->
-<!--                                    android:id="@+id/skeletonRecyclerViewLinearLayout"-->
-<!--                                    android:layout_width="match_parent"-->
-<!--                                    android:layout_height="match_parent"-->
-<!--                                    android:orientation="vertical">-->
-<!--                                    <androidx.cardview.widget.CardView-->
-<!--                                        android:layout_width="200dp"-->
-<!--                                        android:layout_height="50dp"-->
-<!--                                        android:background="@drawable/skeleton_view_item"-->
-<!--                                        android:layout_marginTop="32dp"-->
-<!--                                        android:elevation="0dp"/>-->
-<!--                                    <androidx.cardview.widget.CardView-->
-<!--                                        android:layout_width="200dp"-->
-<!--                                        android:layout_height="50dp"-->
-<!--                                        android:layout_marginTop="32dp"-->
-<!--                                        android:elevation="0dp"-->
-<!--                                        android:background="@android:color/transparent"/>-->
-<!--                                    <androidx.cardview.widget.CardView-->
-<!--                                        android:layout_width="200dp"-->
-<!--                                        android:layout_height="50dp"-->
-<!--                                        android:background="@android:color/transparent"-->
-<!--                                        android:layout_marginTop="32dp"-->
-<!--                                        android:elevation="0dp"-->
-<!--                                        />-->
-<!--                                    <androidx.cardview.widget.CardView-->
-<!--                                        android:layout_width="200dp"-->
-<!--                                        android:layout_height="50dp"-->
-<!--                                        android:background="@android:color/transparent"-->
-<!--                                        android:layout_marginTop="32dp"-->
-<!--                                        android:elevation="0dp"-->
-<!--                                        />-->
 
-<!--                                </androidx.constraintlayout.widget.ConstraintLayout>-->
+                            <RelativeLayout
+                                android:id="@+id/loading_relative_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="400dp"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="0.0"
+                                app:layout_constraintStart_toStartOf="parent">
+
+                                <ProgressBar
+                                    android:id="@+id/loading_progress_bar"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_centerInParent="true"
+                                    android:indeterminateTint="#0D8EFF"
+                                    app:layout_constraintBottom_toBottomOf="parent"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_below="@+id/loading_progress_bar"
+                                    android:layout_centerInParent="true"
+                                    android:layout_marginTop="8dp"
+                                    android:fontFamily="@font/poppins"
+                                    android:text="Loading..."
+                                    android:textColor="#4F4D55" />
+                            </RelativeLayout>
 
                             <androidx.recyclerview.widget.RecyclerView
                                 android:id="@+id/banksRecyclerView"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 tools:itemCount="10"
-                                tools:listitem="@layout/netbanking_banks_item" />
-                            </io.supercharge.shimmerlayout.ShimmerLayout>
+                                tools:listitem="@layout/netbanking_banks_item"
+                                android:visibility="gone"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="@+id/linearLayout2"
+                                app:layout_constraintTop_toBottomOf="@+id/textView24"/>
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
 

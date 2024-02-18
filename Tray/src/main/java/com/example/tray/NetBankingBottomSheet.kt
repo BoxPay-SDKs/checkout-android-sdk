@@ -120,6 +120,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 }
                 showAllBanks()
                 fetchAndUpdateApiInPopularBanks()
+                removeLoadingScreenState()
             } catch (e: Exception) {
                 Log.d("Error Occured", e.toString())
                 e.printStackTrace()
@@ -139,10 +140,17 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
         popularBanksSelected = false
     }
-    private fun showSkeletonLoading(){
+    private fun applyLoadingScreenState(){
 
     }
-
+    private fun removeLoadingScreenState(){
+        binding.banksRecyclerView.visibility = View.VISIBLE
+        binding.loadingProgressBar.visibility = View.GONE
+        binding.popularBanksConstraintLayout1.setBackgroundResource(0)
+        binding.popularBanksConstraintLayout2.setBackgroundResource(0)
+        binding.popularBanksConstraintLayout3.setBackgroundResource(0)
+        binding.popularBanksConstraintLayout4.setBackgroundResource(0)
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -154,7 +162,6 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered, binding.banksRecyclerView,liveDataPopularBankSelectedOrNot)
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
-        binding.shimmerRecyclerView.startShimmerAnimation()
         fetchBanksDetails()
         hideLoadingInButton()
 
