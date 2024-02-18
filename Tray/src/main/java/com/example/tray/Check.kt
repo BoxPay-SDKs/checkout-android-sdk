@@ -26,34 +26,37 @@ class Check : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_check)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
-        makePaymentRequest(this)
-        val openBottomSheet = findViewById<Button>(R.id.openButton)
-        openBottomSheet.text = "Generating Token Please wait..."
-        openBottomSheet.isEnabled = false
-
-        successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
-
-        tokenLiveData.observe(this, Observer { token ->
-            // Handle the response after the token has been updated
-            if(!(tokenLiveData.value == null)) {
-                handleResponseWithToken()
-                openBottomSheet.text = "Open"
-                openBottomSheet.isEnabled = true
-            }else{
-                Log.d("token is empty","waiting")
-            }
-        })
-
-
-        openBottomSheet.setOnClickListener(){
-            if(!(tokenLiveData.value.isNullOrEmpty())){
-                showBottomSheetWithOverlay()
-            }else{
-
-            }
-        }
+        val bottomSheet = NetBankingBottomSheet.newInstance("","")
+        bottomSheet.show(supportFragmentManager,"Checking Card Bottom Sheet")
+//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+//
+//        makePaymentRequest(this)
+//        val openBottomSheet = findViewById<Button>(R.id.openButton)
+//        openBottomSheet.text = "Generating Token Please wait..."
+//        openBottomSheet.isEnabled = false
+//
+//        successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
+//
+//        tokenLiveData.observe(this, Observer { token ->
+//            // Handle the response after the token has been updated
+//            if(!(tokenLiveData.value == null)) {
+//                handleResponseWithToken()
+//                openBottomSheet.text = "Open"
+//                openBottomSheet.isEnabled = true
+//            }else{
+//                Log.d("token is empty","waiting")
+//            }
+//        })
+//
+//
+//        openBottomSheet.setOnClickListener(){
+//            if(!(tokenLiveData.value.isNullOrEmpty())){
+//                showBottomSheetWithOverlay()
+//            }else{
+//
+//            }
+//        }
 
     }
 

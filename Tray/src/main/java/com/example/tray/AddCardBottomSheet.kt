@@ -61,6 +61,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var isCardValidityValid : Boolean = false
     private var isCardCVVValid : Boolean = false
     private var successScreenFullReferencePath : String ?= null
+    private var isAmericanExpressCard = MutableLiveData<Boolean>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -176,10 +177,14 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
             "VISA" -> R.drawable.visa // Replace with your VISA image resource
             "Maestro" -> R.drawable.maestro // Replace with your MAESTRO image resource
             "Mastercard" -> R.drawable.mastercard
+            "AmericanExpress" ->
+                R.drawable.amex_png
             else -> R.drawable.card_02 // Default image resource
         }
     }
     private fun removeAndAddImageCardNetworks(cardNetworkName : String){
+        isAmericanExpressCard.value = cardNetworkName == "AmericanExpress"
+
         Log.d("removeAndAddImageCardNetworksCalled",cardNetworkName)
         binding.defaultCardNetworkLinearLayout.visibility = View.GONE
         val imageView = ImageView(requireContext())
@@ -225,6 +230,15 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 }
             } else {
                 disableProceedButton()
+            }
+        })
+        isAmericanExpressCard.observe(this, Observer { isAmericanExpressCardOrNot ->
+            if(isAmericanExpressCardOrNot){
+                binding.editTextCardCVV.setText("")
+                binding.editTextCardCVV.filters = arrayOf(InputFilter.LengthFilter(4))
+            }else{
+                binding.editTextCardCVV.setText("")
+                binding.editTextCardCVV.filters = arrayOf(InputFilter.LengthFilter(3))
             }
         })
         proceedButtonIsEnabled.value = false
@@ -306,9 +320,19 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                binding.editTextCardValidity.removeTextChangedListener(this)
+
 
                 val text = s.toString().replace("/", "")
+
+                if(text.length > 0 && (text[0].toString().toInt() != 0 && text[0].toString().toInt() != 1)){
+                    Log.d("Invalid month in validity",text[0].toString())
+                    binding.invalidCardValidity.visibility = View.VISIBLE
+                    binding.textView7.text = "Invalid card validity"
+                    proceedButtonIsEnabled.value = false
+                }
+                binding.editTextCardValidity.removeTextChangedListener(this)
+
+//                val text = s.toString().replace("/", "")
                 val formattedText = formatMMYY(text)
 
                 if(text.length == 4){
@@ -413,6 +437,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 binding.textView4.text = "Enter card number"
                 anyFieldEmpty = true
             }
+
             if(cardExpiryYYYY_MM.isNullOrEmpty()){
                 binding.invalidCardValidity.visibility = View.VISIBLE
                 binding.textView7.text = "Enter card validity"
@@ -498,9 +523,10 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             }
         })
-
         return binding.root
     }
+
+
     fun isValidExpirationDate(inputExpMonth : String, inputExpYear: String) : Boolean {
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
         val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
@@ -510,13 +536,14 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         val isValidYearValue = (inputExpYear.toInt() > 0)
         val isValidYearLength = (inputExpYear.length == 2)
 
+        val isMonthValid = (inputExpMonth.toInt() in 1..12)
+
         val isFutureYear = (("20"+inputExpYear).toInt() >= currentYear)
         val isSameYear_FutureOrCurrentMonth =
             ((inputExpYear.toInt() == currentYear) && (inputExpMonth.toInt() >= currentMonth))
 
         val result = ((isValidMonthRange && isValidYearLength && isValidYearValue) &&
-                (isFutureYear || isSameYear_FutureOrCurrentMonth))
-
+                (isFutureYear || isSameYear_FutureOrCurrentMonth) && isMonthValid)
         if(!result)
             proceedButtonIsEnabled.value = false
 

@@ -167,48 +167,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
         disableProceedButton()
         hideLoadingInButton()
+        fetchBankDetails()
 
-
-
-
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
-        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
-        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
-
-            try {
-                val jsonObject = response
-
-                // Get the payment methods array
-                val paymentMethodsArray = jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
-
-                // Filter payment methods based on type equal to "Wallet"
-                for (i in 0 until paymentMethodsArray.length()) {
-                    val paymentMethod = paymentMethodsArray.getJSONObject(i)
-                    if (paymentMethod.getString("type") == "Wallet") {
-                        val walletName = paymentMethod.getString("title")
-                        val walletImage = R.drawable.wallet_sample_logo
-                        val walletBrand = paymentMethod.getString("brand")
-                        val walletInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
-                        walletDetailsOriginal.add(WalletDataClass(walletName,walletImage,walletBrand,walletInstrumentTypeValue))
-                    }
-                }
-
-                // Print the filtered wallet payment methods
-                showAllWallets()
-                fetchAndUpdateApiInPopularBanks()
-
-            } catch (e: Exception) {
-                Log.d("Error Occured", e.toString())
-                e.printStackTrace()
-            }
-
-        }, { error ->
-
-            Log.e("error here", "RESPONSE IS $error")
-            Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
-                .show()
-        })
-        queue.add(jsonObjectAll)
 
 
         binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
@@ -288,6 +248,58 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
         return binding.root
+    }
+    private fun fetchBankDetails(){
+        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
+
+            try {
+                val jsonObject = response
+
+                // Get the payment methods array
+                val paymentMethodsArray = jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
+
+                // Filter payment methods based on type equal to "Wallet"
+                for (i in 0 until paymentMethodsArray.length()) {
+                    val paymentMethod = paymentMethodsArray.getJSONObject(i)
+                    if (paymentMethod.getString("type") == "Wallet") {
+                        val walletName = paymentMethod.getString("title")
+                        val walletImage = R.drawable.wallet_sample_logo
+                        val walletBrand = paymentMethod.getString("brand")
+                        val walletInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
+                        walletDetailsOriginal.add(WalletDataClass(walletName,walletImage,walletBrand,walletInstrumentTypeValue))
+                    }
+                }
+
+                // Print the filtered wallet payment methods
+                showAllWallets()
+                fetchAndUpdateApiInPopularBanks()
+                removeLoadingScreenState()
+
+            } catch (e: Exception) {
+                Log.d("Error Occured", e.toString())
+                e.printStackTrace()
+            }
+
+        }, { error ->
+
+            Log.e("error here", "RESPONSE IS $error")
+            Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
+                .show()
+        })
+        queue.add(jsonObjectAll)
+    }
+    private fun applyLoadingScreenState(){
+
+    }
+    private fun removeLoadingScreenState(){
+        binding.walletsRecyclerView.visibility = View.VISIBLE
+        binding.loadingProgressBar.visibility = View.GONE
+        binding.popularWalletConstraintLayout1.setBackgroundResource(0)
+        binding.popularWalletConstraintLayout2.setBackgroundResource(0)
+        binding.popularWalletConstraintLayout3.setBackgroundResource(0)
+        binding.popularWalletConstraintLayout4.setBackgroundResource(0)
     }
 
     override fun onDismiss(dialog: DialogInterface) {
