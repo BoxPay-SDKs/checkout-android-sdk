@@ -19,12 +19,14 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.tray.ViewModels.SharedViewModelTransactionDetails
 import com.example.tray.databinding.FragmentAddUPIIDBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -36,6 +38,7 @@ import java.util.TimeZone
 
 
 class AddUPIID : BottomSheetDialogFragment() {
+    val sharedViewModel: SharedViewModelTransactionDetails by viewModels()
     private lateinit var binding: FragmentAddUPIIDBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var overlayViewCurrentBottomSheet: View? = null
@@ -70,6 +73,17 @@ class AddUPIID : BottomSheetDialogFragment() {
                 binding.imageView3.setImageResource(0)
                 checked = false
             }
+        }
+        sharedViewModel.getTransactionData().observe(viewLifecycleOwner) { data ->
+
+            val token = data.token
+            Log.d("token using viewmodel", token)
+            val successReferenceScreenFullPath = data.successReferenceScreenFullPath
+            Log.d("full path using viewmodel", successReferenceScreenFullPath)
+            val transactionId = data.transactionId
+            Log.d("transactionId using viewmodel", successReferenceScreenFullPath)
+            val transactionAmount = data.transactionAmount
+            Log.d("transaction amount using viewmodel", transactionAmount)
         }
         binding.imageView2.setOnClickListener() {
             dismiss()

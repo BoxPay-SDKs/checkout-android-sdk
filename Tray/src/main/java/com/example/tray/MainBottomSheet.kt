@@ -31,11 +31,14 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.tray.ViewModels.OverlayViewModel
+import com.example.tray.ViewModels.SharedViewModelTransactionDetails
 import com.example.tray.adapters.OrderSummaryItemsAdapter
 import com.example.tray.databinding.FragmentMainBottomSheetBinding
+import com.example.tray.dataclasses.TransactionData
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -43,6 +46,7 @@ import org.json.JSONObject
 
 
 class MainBottomSheet : BottomSheetDialogFragment() {
+    val sharedViewModel: SharedViewModelTransactionDetails by viewModels()
     private var overlayViewMainBottomSheet: View? = null
     private lateinit var binding: FragmentMainBottomSheetBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
@@ -53,6 +57,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private var UPIAppsAndPackageMap : MutableMap<String,String> = mutableMapOf()
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var i = 1
+    private var transactionAmount : String ?= null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -174,6 +179,21 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             }
 
         showUPIOptions()
+        sharedViewModel.getTransactionData().observe(viewLifecycleOwner) { data ->
+
+            val token = data.token
+            Log.d("token using viewmodel", token)
+            val successReferenceScreenFullPath = data.successReferenceScreenFullPath
+            Log.d("full path using viewmodel", successReferenceScreenFullPath)
+            val transactionId = data.transactionId
+            Log.d("transactionId using viewmodel", successReferenceScreenFullPath)
+            val transactionAmount = data.transactionAmount
+            Log.d("transaction amount using viewmodel", transactionAmount)
+        }
+
+
+        val data = TransactionData(token.toString(), successScreenFullReferencePath.toString(),"AB12345", transactionAmount.toString())
+        sharedViewModel.setTransactionData(data)
 
 
         val items = mutableListOf(
@@ -664,6 +684,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         Log.d("totalQuantity", totalQuantity.toString())
         Log.d("originalAmount", originalAmount.toString())
+
+        transactionAmount = originalAmount.toString()
 
         binding.unopenedTotalValue.text = "₹" + originalAmount.toString()
         binding.numberOfItems.text = totalQuantity.toString() + " items"
