@@ -93,9 +93,10 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
         popularWalletsSelected = false
     }
-    private fun fetchAndUpdateApiInPopularBanks() {
+    private fun fetchAndUpdateApiInPopularWallets() {
         binding.apply {
-            walletDetailsOriginal.forEachIndexed { index, walletDetail ->
+            for(index in 0 until 4){
+                val walletDetail = walletDetailsOriginal[index]
                 val constraintLayout = fetchConstraintLayout(index)
                 val imageView = when (index) {
                     0 -> popularWalletImageView1
@@ -128,6 +129,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchConstraintLayout(num: Int): ConstraintLayout {
+        Log.d("Number Called",num.toString())
         val constraintLayout: ConstraintLayout = when (num) {
             0 ->
                 binding.popularWalletConstraintLayout1
@@ -167,7 +169,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
         disableProceedButton()
         hideLoadingInButton()
-        fetchBankDetails()
+        fetchWalletDetails()
 
 
 
@@ -249,7 +251,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
         return binding.root
     }
-    private fun fetchBankDetails(){
+    private fun fetchWalletDetails(){
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
@@ -274,8 +276,9 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
                 // Print the filtered wallet payment methods
                 showAllWallets()
-                fetchAndUpdateApiInPopularBanks()
                 removeLoadingScreenState()
+                fetchAndUpdateApiInPopularWallets()
+
 
             } catch (e: Exception) {
                 Log.d("Error Occured", e.toString())
@@ -284,9 +287,14 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
         }, { error ->
 
-            Log.e("error here", "RESPONSE IS $error")
-            Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
-                .show()
+            Log.e("Error", "Error occurred: ${error.message}")
+            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                val errorResponse = String(error.networkResponse.data)
+                Log.e("Error", " fetching wallets error response: $errorResponse")
+                binding.errorField.visibility = View.VISIBLE
+                binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
+                hideLoadingInButton()
+            }
         })
         queue.add(jsonObjectAll)
     }
@@ -294,8 +302,9 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
     }
     private fun removeLoadingScreenState(){
+        Log.d("removeLoadingScreenState","called")
         binding.walletsRecyclerView.visibility = View.VISIBLE
-        binding.loadingProgressBar.visibility = View.GONE
+        binding.loadingRelativeLayout.visibility = View.GONE
         binding.popularWalletConstraintLayout1.setBackgroundResource(0)
         binding.popularWalletConstraintLayout2.setBackgroundResource(0)
         binding.popularWalletConstraintLayout3.setBackgroundResource(0)

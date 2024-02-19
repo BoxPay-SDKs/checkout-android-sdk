@@ -119,8 +119,9 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     }
                 }
                 showAllBanks()
-                fetchAndUpdateApiInPopularBanks()
                 removeLoadingScreenState()
+                fetchAndUpdateApiInPopularBanks()
+
             } catch (e: Exception) {
                 Log.d("Error Occured", e.toString())
                 e.printStackTrace()
@@ -293,7 +294,8 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     private fun fetchAndUpdateApiInPopularBanks() {
         binding.apply {
-            banksDetailsOriginal.forEachIndexed { index, bankDetail ->
+            for(index in 0 until 4){
+                val bankDetail = banksDetailsOriginal[index]
                 val constraintLayout = fetchConstraintLayout(index)
                 val imageView = when (index) {
                     0 -> popularBanksImageView1
