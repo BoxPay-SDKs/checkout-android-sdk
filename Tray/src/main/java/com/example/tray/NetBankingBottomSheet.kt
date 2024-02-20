@@ -1,6 +1,8 @@
 package com.example.tray
 
+import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -11,6 +13,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
@@ -57,6 +60,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
+    private lateinit var colorAnimation: ValueAnimator
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -145,12 +149,14 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     }
     private fun removeLoadingScreenState(){
+        Log.d("removeLoadingScreenState","called")
         binding.banksRecyclerView.visibility = View.VISIBLE
-        binding.loadingProgressBar.visibility = View.GONE
+        binding.loadingRelativeLayout.visibility = View.GONE
         binding.popularBanksConstraintLayout1.setBackgroundResource(0)
         binding.popularBanksConstraintLayout2.setBackgroundResource(0)
         binding.popularBanksConstraintLayout3.setBackgroundResource(0)
         binding.popularBanksConstraintLayout4.setBackgroundResource(0)
+        colorAnimation.cancel()
     }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -163,6 +169,8 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered, binding.banksRecyclerView,liveDataPopularBankSelectedOrNot)
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
+        binding.boxPayLogoLottieAnimation.playAnimation()
+        startBackgroundAnimation()
         fetchBanksDetails()
         hideLoadingInButton()
 
@@ -270,6 +278,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
         (parentFragment as? MainBottomSheet)?.removeOverlayFromCurrentBottomSheet()
+        colorAnimation.cancel()
         super.onDismiss(dialog)
     }
 
@@ -323,6 +332,34 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         proceedButtonIsEnabled.value = true
                         popularBanksSelectedIndex = index
                     }
+                }
+            }
+        }
+    }
+    private fun startBackgroundAnimation() {
+        val colorStart = resources.getColor(R.color.colorStart)
+        val colorEnd = resources.getColor(R.color.colorEnd)
+
+        colorAnimation = createColorAnimation(colorStart, colorEnd)
+        colorAnimation.start()
+    }
+
+    private fun createColorAnimation(startColor: Int, endColor: Int): ValueAnimator {
+
+        val layouts = Array<ConstraintLayout?>(4) { null }
+        layouts[0] = binding.popularBanksConstraintLayout1
+        layouts[1] = binding.popularBanksConstraintLayout2
+        layouts[2] = binding.popularBanksConstraintLayout3
+        layouts[3] = binding.popularBanksConstraintLayout4
+        return ValueAnimator.ofObject(ArgbEvaluator(), startColor, endColor).apply {
+            duration = 500 // duration in milliseconds
+            interpolator = AccelerateDecelerateInterpolator()
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.REVERSE
+            addUpdateListener { animator ->
+                // Update the background color of all layouts
+                layouts.forEach { layout ->
+                    layout?.setBackgroundColor(animator.animatedValue as Int)
                 }
             }
         }

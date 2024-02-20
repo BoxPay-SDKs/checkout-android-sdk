@@ -142,24 +142,26 @@
                                     android:layout_marginEnd="16dp"
                                     android:background="@drawable/loading_state">
 
-                                    <RelativeLayout
-                                        android:layout_width="50dp"
-                                        android:layout_height="50dp"
-                                        android:background="@drawable/popular_item_unselected_bg"
-                                        app:layout_constraintBottom_toBottomOf="parent"
-                                        app:layout_constraintEnd_toEndOf="parent"
-                                        app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent">
-
-                                        <ImageView
-                                            android:id="@+id/popularWalletImageView1"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_centerInParent="true"
+                                        <RelativeLayout
+                                            android:id="@+id/popularItemRelativeLayout1"
+                                            android:layout_width="50dp"
+                                            android:layout_height="50dp"
+                                            android:background="@drawable/popular_item_unselected_bg"
+                                            app:layout_constraintBottom_toBottomOf="parent"
                                             app:layout_constraintEnd_toEndOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toTopOf="parent" />
-                                    </RelativeLayout>
+                                            app:layout_constraintTop_toTopOf="parent">
+
+                                            <ImageView
+                                                android:id="@+id/popularWalletImageView1"
+                                                android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:layout_centerInParent="true"
+                                                app:layout_constraintEnd_toEndOf="parent"
+                                                app:layout_constraintStart_toStartOf="parent"
+                                                app:layout_constraintTop_toTopOf="parent" />
+                                        </RelativeLayout>
+
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -171,6 +173,7 @@
                                     android:background="@drawable/loading_state">
 
                                     <RelativeLayout
+                                        android:id="@+id/popularItemRelativeLayout2"
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
                                         android:background="@drawable/popular_item_unselected_bg"
@@ -199,6 +202,7 @@
                                     android:background="@drawable/loading_state">
 
                                     <RelativeLayout
+                                        android:id="@+id/popularItemRelativeLayout3"
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
                                         android:background="@drawable/popular_item_unselected_bg"
@@ -227,6 +231,7 @@
                                     android:background="@drawable/loading_state">
 
                                     <RelativeLayout
+                                        android:id="@+id/popularItemRelativeLayout4"
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
                                         android:background="@drawable/popular_item_unselected_bg"
@@ -266,25 +271,24 @@
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="parent">
 
-                                <ProgressBar
-                                    android:id="@+id/loading_progress_bar"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
+                                <com.airbnb.lottie.LottieAnimationView
+                                    android:id="@+id/boxPayLogoLottieAnimation"
+                                    android:layout_width="50dp"
+                                    android:layout_height="50dp"
                                     android:layout_centerInParent="true"
-                                    android:indeterminateTint="#0D8EFF"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    app:layout_constraintEnd_toEndOf="parent"
-                                    app:layout_constraintStart_toStartOf="parent" />
+                                    app:lottie_autoPlay="true"
+                                    app:lottie_fileName="complete_json.json"
+                                    app:lottie_loop="true" />
 
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:layout_below="@+id/loading_progress_bar"
+                                    android:layout_below="@+id/boxPayLogoLottieAnimation"
                                     android:layout_centerInParent="true"
-                                    android:text="Loading..."
-                                    android:textColor="#4F4D55"
+                                    android:layout_marginTop="8dp"
                                     android:fontFamily="@font/poppins"
-                                    android:layout_marginTop="8dp"/>
+                                    android:text="Loading..."
+                                    android:textColor="#4F4D55" />
                             </RelativeLayout>
 
                             <androidx.recyclerview.widget.RecyclerView

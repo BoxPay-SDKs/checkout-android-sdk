@@ -1,26 +1,26 @@
 package com.example.tray
 
+import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import android.widget.RelativeLayout
 import android.widget.SearchView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -30,7 +30,6 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
-import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.adapters.WalletAdapter
@@ -40,10 +39,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
+
 
 class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentWalletBottomSheetBinding
@@ -63,6 +62,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     }
     private var popularWalletsSelected: Boolean = false
     private var popularWalletsSelectedIndex: Int = -1
+    private lateinit var colorAnimation: ValueAnimator
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -166,7 +166,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.walletsRecyclerView.adapter = allWalletAdapter
 
-
+        binding.boxPayLogoLottieAnimation.playAnimation()
+        startBackgroundAnimation()
         disableProceedButton()
         hideLoadingInButton()
         fetchWalletDetails()
@@ -251,6 +252,35 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
         return binding.root
     }
+    private fun startBackgroundAnimation() {
+        val colorStart = resources.getColor(R.color.colorStart)
+        val colorEnd = resources.getColor(R.color.colorEnd)
+
+        colorAnimation = createColorAnimation(colorStart, colorEnd)
+        colorAnimation.start()
+    }
+
+    private fun createColorAnimation(startColor: Int, endColor: Int): ValueAnimator {
+
+        val layouts = Array<ConstraintLayout?>(4) { null }
+        layouts[0] = binding.popularWalletConstraintLayout1
+        layouts[1] = binding.popularWalletConstraintLayout2
+        layouts[2] = binding.popularWalletConstraintLayout3
+        layouts[3] = binding.popularWalletConstraintLayout4
+        return ValueAnimator.ofObject(ArgbEvaluator(), startColor, endColor).apply {
+            duration = 500 // duration in milliseconds
+            interpolator = AccelerateDecelerateInterpolator()
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.REVERSE
+            addUpdateListener { animator ->
+                // Update the background color of all layouts
+                layouts.forEach { layout ->
+                    layout?.setBackgroundColor(animator.animatedValue as Int)
+                }
+            }
+        }
+    }
+
     private fun fetchWalletDetails(){
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
@@ -276,8 +306,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
                 // Print the filtered wallet payment methods
                 showAllWallets()
-                removeLoadingScreenState()
                 fetchAndUpdateApiInPopularWallets()
+                removeLoadingScreenState()
 
 
             } catch (e: Exception) {
@@ -309,11 +339,13 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.popularWalletConstraintLayout2.setBackgroundResource(0)
         binding.popularWalletConstraintLayout3.setBackgroundResource(0)
         binding.popularWalletConstraintLayout4.setBackgroundResource(0)
+        colorAnimation.cancel()
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
         (parentFragment as? MainBottomSheet)?.removeOverlayFromCurrentBottomSheet()
+        colorAnimation.cancel()
         super.onDismiss(dialog)
     }
 
