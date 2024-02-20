@@ -62,12 +62,10 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var isCardCVVValid : Boolean = false
     private var successScreenFullReferencePath : String ?= null
     private var isAmericanExpressCard = MutableLiveData<Boolean>()
+    private var transactionId = MutableLiveData<String>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            token = it.getString("token")
-            successScreenFullReferencePath= it.getString("successScreenFullReferencePath")
-        }
     }
     fun makeCardNetworkIdentificationCall(context: Context,cardNumber: String){
         val queue = Volley.newRequestQueue(context)
@@ -220,6 +218,12 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
         binding = FragmentAddCardBottomSheetBinding.inflate(inflater, container, false)
+
+
+        fetchTransactionDetailsFromSharedPreferences()
+
+
+
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding.progressBar.visibility = View.INVISIBLE
         proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
@@ -459,6 +463,11 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             postRequest(requireContext())
             showLoadingInButton()
+
+            transactionId.observe(this, Observer { transactionIDInObserve ->
+                Log.d("transactionId in observe",transactionIDInObserve)
+                updateTransactionIDInSharedPreferences(transactionIDInObserve)
+            })
         }
 
 
@@ -525,6 +534,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         })
         return binding.root
     }
+
 
 
     fun isValidExpirationDate(inputExpMonth : String, inputExpYear: String) : Boolean {
@@ -679,6 +689,21 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    private fun fetchTransactionDetailsFromSharedPreferences() {
+        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token","empty")
+        Log.d("data fetched from sharedPreferences",token.toString())
+        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+    }
+    private fun updateTransactionIDInSharedPreferences(transactionIdArg : String) {
+        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("transactionId", transactionIdArg)
+        editor.apply()
+    }
+
+
     fun postRequest(context: Context) {
         Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
@@ -752,6 +777,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                     put("postalCode", "247554")
                     put("state", "Uttar Pradesh")
                 }
+
                 put("deliveryAddress", deliveryAddressObject)
                 put("email", "test123@gmail.com")
                 put("firstName", "test")
@@ -776,6 +802,8 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     val status = jsonObject.getJSONObject("status").getString("status")
                     val reason = jsonObject.getJSONObject("status").getString("reason")
+                    transactionId.value = jsonObject.getString("transactionId").toString()
+
                     Log.d("status and reason",status+" due to "+reason)
                     var url = ""
 
@@ -791,7 +819,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         Log.d("url is fetched",url)
 
                         if (status.contains("Approved", ignoreCase = true)) {
-                            val bottomSheet = PaymentStatusBottomSheet.newInstance(token,successScreenFullReferencePath)
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheet")
                             dismiss()
                         } else {
@@ -823,7 +851,6 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         binding.textView4.text = "Payment is already done"
                     }
                 }
-
 
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -972,13 +999,6 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
     }
     companion object {
-        fun newInstance(data: String?, successScreenFullReferencePath : String?): AddCardBottomSheet {
-            val fragment = AddCardBottomSheet()
-            val args = Bundle()
-            args.putString("token", data)
-            args.putString("successScreenFullReferencePath",successScreenFullReferencePath)
-            fragment.arguments = args
-            return fragment
-        }
+
     }
 }

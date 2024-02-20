@@ -65,10 +65,6 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var colorAnimation: ValueAnimator
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            token = it.getString("token")
-            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
-        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -156,6 +152,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         // Inflate the layout for this fragment
         binding = FragmentWalletBottomSheetBinding.inflate(layoutInflater, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+        fetchTransactionDetailsFromSharedPreferences()
         walletDetailsOriginal = arrayListOf()
 
         if(successScreenFullReferencePath != null){
@@ -518,8 +516,6 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                     }else{
                         val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                         intent.putExtra("url", url)
-                        intent.putExtra("token",token)
-                        intent.putExtra("successScreenFullReferencePath",successScreenFullReferencePath)
                         startActivity(intent)
                     }
 
@@ -604,6 +600,15 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.isEnabled = false
         rotateAnimation.start()
     }
+
+    private fun fetchTransactionDetailsFromSharedPreferences() {
+        val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token","empty")
+        Log.d("data fetched from sharedPreferences",token.toString())
+        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+    }
+
     fun extractMessageFromErrorResponse(response: String): String? {
         try {
             // Parse the JSON string
@@ -617,13 +622,6 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         return null
     }
     companion object {
-        fun newInstance(data: String?, successScreenFullReferencePath: String?): WalletBottomSheet {
-            val fragment = WalletBottomSheet()
-            val args = Bundle()
-            args.putString("token", data)
-            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
-            fragment.arguments = args
-            return fragment
-        }
+
     }
 }

@@ -1,5 +1,6 @@
 package com.example.tray
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -37,11 +38,9 @@ class OTPScreenWebView : AppCompatActivity() {
 
         val receivedUrl = intent.getStringExtra("url")
         Log.d("url", receivedUrl.toString())
-        token = intent.getStringExtra("token")
-        Log.d("token logged from webView", "token")
-        successScreenFullReferencePath = intent.getStringExtra("successScreenFullReferencePath")
         binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
         startFunctionCalls()
+        fetchTransactionDetailsFromSharedPreferences()
     }
 
     private fun fetchStatusAndReason(url: String) {
@@ -70,7 +69,7 @@ class OTPScreenWebView : AppCompatActivity() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
-                        val bottomSheet = PaymentStatusBottomSheet.newInstance(token,successScreenFullReferencePath)
+                        val bottomSheet = PaymentStatusBottomSheet()
                         bottomSheet.show(supportFragmentManager, "SuccessBottomSheet")
                         val endAllTheBottomSheets = Runnable {
                             finish()
@@ -113,6 +112,14 @@ class OTPScreenWebView : AppCompatActivity() {
                 delay(4000)
             }
         }
+    }
+
+    private fun fetchTransactionDetailsFromSharedPreferences() {
+        val sharedPreferences = this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token","empty")
+        Log.d("data fetched from sharedPreferences",token.toString())
+        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
     }
 
     override fun onDestroy() {

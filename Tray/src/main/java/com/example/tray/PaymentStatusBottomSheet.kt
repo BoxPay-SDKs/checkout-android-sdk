@@ -24,10 +24,6 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
     private var successScreenFullReferencePath : String ?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            token = it.getString("token")
-            successScreenFullReferencePath= it.getString("successScreenFullReferencePath")
-        }
     }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,7 +33,10 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         // Inflate the layout for this fragment
         binding = FragmentPaymentStatusBottomSheetBinding.inflate(layoutInflater, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+        fetchTransactionDetailsFromSharedPreferences()
         val animationView: LottieAnimationView = binding.lottieAnimationView
+
 
 
         animationView.playAnimation()
@@ -63,7 +62,7 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         return binding.root
 
     }
-    fun openActivity(activityPath: String, context: Context) {
+    private fun openActivity(activityPath: String, context: Context) {
         if (context is AppCompatActivity) {
             try {
                 // Get the class object for the activity using reflection
@@ -87,14 +86,15 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    private fun fetchTransactionDetailsFromSharedPreferences() {
+        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token","empty")
+        Log.d("data fetched from sharedPreferences",token.toString())
+        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+    }
+
     companion object {
-        fun newInstance(data: String?, successScreenFullReferencePath : String?): PaymentStatusBottomSheet {
-            val fragment = PaymentStatusBottomSheet()
-            val args = Bundle()
-            args.putString("token", data)
-            args.putString("successScreenFullReferencePath",successScreenFullReferencePath)
-            fragment.arguments = args
-            return fragment
-        }
+
     }
 }

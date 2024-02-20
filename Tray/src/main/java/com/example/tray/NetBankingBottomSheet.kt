@@ -165,6 +165,8 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         binding = FragmentNetBankingBottomSheetBinding.inflate(layoutInflater, container, false)
 
+        fetchTransactionDetailsFromSharedPreferences()
+
         banksDetailsOriginal = arrayListOf()
         allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered, binding.banksRecyclerView,liveDataPopularBankSelectedOrNot)
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -580,15 +582,15 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
         return null
     }
+    private fun fetchTransactionDetailsFromSharedPreferences() {
+        val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token","empty")
+        Log.d("data fetched from sharedPreferences",token.toString())
+        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+    }
 
     companion object {
-        fun newInstance(data: String?, successScreenFullReferencePath: String?): NetBankingBottomSheet {
-            val fragment = NetBankingBottomSheet()
-            val args = Bundle()
-            args.putString("token", data)
-            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
-            fragment.arguments = args
-            return fragment
-        }
+
     }
 }

@@ -46,13 +46,10 @@ class AddUPIID : BottomSheetDialogFragment() {
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private var successScreenFullReferencePath: String? = null
+    private var userVPA: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            token = it.getString("token")
-            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
-        }
     }
 
     override fun onCreateView(
@@ -74,17 +71,21 @@ class AddUPIID : BottomSheetDialogFragment() {
                 checked = false
             }
         }
-        sharedViewModel.getTransactionData().observe(viewLifecycleOwner) { data ->
 
-            val token = data.token
-            Log.d("token using viewmodel", token)
-            val successReferenceScreenFullPath = data.successReferenceScreenFullPath
-            Log.d("full path using viewmodel", successReferenceScreenFullPath)
-            val transactionId = data.transactionId
-            Log.d("transactionId using viewmodel", successReferenceScreenFullPath)
-            val transactionAmount = data.transactionAmount
-            Log.d("transaction amount using viewmodel", transactionAmount)
-        }
+
+
+
+        fetchTransactionDetailsFromSharedPreferences()
+
+
+
+
+
+
+
+
+
+
         binding.imageView2.setOnClickListener() {
             dismiss()
         }
@@ -127,14 +128,25 @@ class AddUPIID : BottomSheetDialogFragment() {
         binding.ll1InvalidUPI.visibility = View.GONE
 
         binding.proceedButton.setOnClickListener() {
-            val userVPA = binding.editTextText.text.toString()
-            postRequest(requireContext(), userVPA)
+            userVPA = binding.editTextText.text.toString()
+            postRequest(requireContext(), userVPA!!)
             showLoadingInButton()
         }
 
-
-
         return binding.root
+    }
+
+    private fun fetchTransactionDetailsFromSharedPreferences() {
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token", "empty")
+        Log.d("data fetched from sharedPreferences", token.toString())
+        successScreenFullReferencePath =
+            sharedPreferences.getString("successScreenFullReferencePath", "empty")
+        Log.d(
+            "success screen path fetched from sharedPreferences",
+            successScreenFullReferencePath.toString()
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -273,6 +285,7 @@ class AddUPIID : BottomSheetDialogFragment() {
                 // Log.d("Response of Successful Post API call", response.toString())
                 openUPITimerBottomSheet()
                 hideLoadingInButton()
+                logJsonObject(response)
             },
             Response.ErrorListener { error ->
                 // Handle error
@@ -367,8 +380,7 @@ class AddUPIID : BottomSheetDialogFragment() {
     }
 
     private fun openUPITimerBottomSheet() {
-        val bottomSheetFragment =
-            UPITimerBottomSheet.newInstance(token, successScreenFullReferencePath)
+        val bottomSheetFragment = UPITimerBottomSheet.newInstance(userVPA)
         bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
     }
 
@@ -387,16 +399,8 @@ class AddUPIID : BottomSheetDialogFragment() {
 
 
     companion object {
-        fun newInstance(data: String?, successScreenFullReferencePath: String?): AddUPIID {
-            val fragment = AddUPIID()
-            val args = Bundle()
-            args.putString("token", data)
-            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
-            fragment.arguments = args
-            return fragment
-        }
-    }
 
+    }
     private fun launchSuccessScreen(context: Context) {
         try {
             val intent = Intent().apply {

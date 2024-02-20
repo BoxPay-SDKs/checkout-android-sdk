@@ -13,8 +13,6 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,7 +26,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -157,8 +154,16 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         // Inflate the layout for this fragment
         binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        hidePriceBreakUp()
 
+
+
+        putTransactionDetailsInSharedPreferences()
+
+
+
+
+
+        hidePriceBreakUp()
         dialog?.setCanceledOnTouchOutside(true)
         getAndSetOrderDetails()
         val packageManager = requireContext().packageManager
@@ -170,7 +175,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 Log.d("data of activityResultLauncher",data.toString())
                 Log.d("successScreenReference",successScreenFullReferencePath!!)
                 if (resultCode == Activity.RESULT_OK) {
-                    val bottomSheet = PaymentStatusBottomSheet.newInstance(token, successScreenFullReferencePath)
+                    val bottomSheet = PaymentStatusBottomSheet()
                     bottomSheet.show(parentFragmentManager,"Payment Success Screen")
                 } else {
                     val bottomSheet = PaymentFailureScreen()
@@ -178,22 +183,10 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 }
             }
 
+        updateTransactionAmountInSharedPreferences("₹"+transactionAmount.toString())
+
         showUPIOptions()
-        sharedViewModel.getTransactionData().observe(viewLifecycleOwner) { data ->
 
-            val token = data.token
-            Log.d("token using viewmodel", token)
-            val successReferenceScreenFullPath = data.successReferenceScreenFullPath
-            Log.d("full path using viewmodel", successReferenceScreenFullPath)
-            val transactionId = data.transactionId
-            Log.d("transactionId using viewmodel", successReferenceScreenFullPath)
-            val transactionAmount = data.transactionAmount
-            Log.d("transaction amount using viewmodel", transactionAmount)
-        }
-
-
-        val data = TransactionData(token.toString(), successScreenFullReferencePath.toString(),"AB12345", transactionAmount.toString())
-        sharedViewModel.setTransactionData(data)
 
 
         val items = mutableListOf(
@@ -271,6 +264,35 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         return binding.root
     }
+
+
+
+
+
+
+
+
+
+
+    private fun putTransactionDetailsInSharedPreferences() {
+        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("token", token)
+        Log.d("token added to sharedPreferences",token.toString())
+        editor.putString("successScreenFullReferencePath",successScreenFullReferencePath)
+        Log.d("success Screen added to sharedPreferences",successScreenFullReferencePath.toString())
+        editor.apply()
+    }
+
+
+
+
+
+
+
+
+
+
 
     private fun populatePopularUPIApps(){
         i = 1
@@ -573,29 +595,27 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 }
             })
         }
-
-
         return dialog
     }
 
     private fun openAddUPIIDBottomSheet() {
-        val bottomSheetFragment = AddUPIID.newInstance(token, successScreenFullReferencePath)
+        val bottomSheetFragment = AddUPIID()
         bottomSheetFragment.show(parentFragmentManager, "AddUPIBottomSheet")
     }
 
     private fun openAddCardBottomSheet() {
         val bottomSheetFragment =
-            AddCardBottomSheet.newInstance(token, successScreenFullReferencePath)
+            AddCardBottomSheet()
         bottomSheetFragment.show(parentFragmentManager, "AddCardBottomSheet")
     }
 
     private fun openNetBankingBottomSheet() {
-        val bottomSheetFragment = NetBankingBottomSheet.newInstance(token,successScreenFullReferencePath)
+        val bottomSheetFragment = NetBankingBottomSheet()
         bottomSheetFragment.show(parentFragmentManager, "NetBankingBottomSheet")
     }
 
     private fun openWalletBottomSheet() {
-        val bottomSheetFragment = WalletBottomSheet.newInstance(token,successScreenFullReferencePath)
+        val bottomSheetFragment = WalletBottomSheet()
         bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
     }
 
@@ -691,6 +711,30 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         binding.numberOfItems.text = totalQuantity.toString() + " items"
         binding.ItemsPrice.text = "₹${originalAmount.toString()}"
     }
+
+
+
+
+
+
+
+
+
+
+    private fun updateTransactionAmountInSharedPreferences(TransactionAmountArgs : String) {
+        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("transactionAmount", TransactionAmountArgs)
+        editor.apply()
+    }
+
+
+
+
+
+
+
+
 
     companion object {
         fun newInstance(data: String?, successScreenFullReferencePath: String?): MainBottomSheet {
