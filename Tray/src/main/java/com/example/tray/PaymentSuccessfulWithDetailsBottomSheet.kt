@@ -1,67 +1,53 @@
 package com.example.tray
 
-import android.R
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.fragment.app.Fragment
-import com.airbnb.lottie.LottieAnimationView
-import com.example.tray.databinding.FragmentPaymentStatusBottomSheetBinding
+import com.example.tray.databinding.FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import java.text.SimpleDateFormat
+import java.util.Date
 
-
-class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
-    private lateinit var binding: FragmentPaymentStatusBottomSheetBinding
+class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
+    private lateinit var binding : FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
     private var token: String? = null
     private var successScreenFullReferencePath : String ?= null
+    private var transactionID: String? = null
+    private var transactionAmount: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
-        binding = FragmentPaymentStatusBottomSheetBinding.inflate(layoutInflater, container, false)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        binding = FragmentPaymentSuccessfulWithDetailsBottomSheetBinding.inflate(layoutInflater,container,false)
+
+
+
+
+
 
         fetchTransactionDetailsFromSharedPreferences()
-        val animationView: LottieAnimationView = binding.lottieAnimationView
+        binding.transactionAmountTextView.text = transactionAmount
+        binding.transactionIDTextView.text = transactionID
+        binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
 
-
-
-        animationView.playAnimation()
-        val handler = Handler()
-        val startAnimationRunnable = Runnable {
-            try{
-                if(successScreenFullReferencePath == null){
-                    Log.d("error in opening success screen of merchant","here")
-                }else{
-                    Log.d("successScreenFullReferencePath",successScreenFullReferencePath!!)
-                }
-                openActivity(successScreenFullReferencePath!!,requireContext())
-                dismiss()
-            }
-            catch (e : Exception){
-
-            }
+        binding. proceedButton.setOnClickListener(){
+            openActivity(successScreenFullReferencePath.toString(),requireContext())
         }
-
-        // Delay execution by 1000 milliseconds (1 second)
-        handler.postDelayed(startAnimationRunnable, 2000)
-
         return binding.root
-
     }
+
     private fun openActivity(activityPath: String, context: Context) {
         if (context is AppCompatActivity) {
             try {
@@ -86,12 +72,36 @@ class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    private fun getCurrentDateAndTimeInFormattedString() : String{
+        val currentDateTime = Date()
+
+
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+
+
+        return dateFormat.format(currentDateTime)
+    }
+
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token","empty")
         Log.d("data fetched from sharedPreferences",token.toString())
         successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
         Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+        transactionID = sharedPreferences.getString("transactionId","empty")
+        Log.d("transactionID fetched from sharedPreferences",transactionID.toString())
+        transactionAmount = sharedPreferences.getString("transactionAmount","empty")
+        Log.d("success screen path fetched from sharedPreferences",transactionID.toString())
+    }
+
+    object SharedPreferencesHelper {
+
+        private const val SHARED_PREF_NAME = "TransactionDetails"
+
+        fun getAllKeyValuePairs(context: Context): Map<String, *> {
+            val sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
+            return sharedPreferences.all
+        }
     }
 
     companion object {

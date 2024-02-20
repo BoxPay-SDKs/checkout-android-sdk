@@ -1,6 +1,7 @@
 package com.example.tray
 
 import android.app.Dialog
+import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -29,13 +30,13 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
     private var successScreenFullReferencePath: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
+    private var virtualPaymentAddress : String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestQueue = Volley.newRequestQueue(requireContext())
         arguments?.let {
-            token = it.getString("token")
-            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
+            virtualPaymentAddress = it.getString("virtualPaymentAddress")
         }
     }
 
@@ -56,10 +57,15 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ) : View? {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
         binding = FragmentUPITimerBottomSheetBinding.inflate(layoutInflater,container,false)
+
+        fetchTransactionDetailsFromSharedPreferences()
+
+        binding.UPIIDTextView.text = "UPI Id : ${virtualPaymentAddress}"
+
         binding.circularProgressBar.startAngle=90f
         binding.cancelPaymentTextView.setOnClickListener(){
             dismiss()
@@ -69,6 +75,14 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
         return binding.root
+    }
+
+    private fun fetchTransactionDetailsFromSharedPreferences() {
+        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token","empty")
+        Log.d("data fetched from sharedPreferences",token.toString())
+        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
     }
     private fun startTimer() {
         countdownTimer = object : CountDownTimer(300000, 1000) {
@@ -133,8 +147,8 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
                     // Check if status is success, if yes, dismiss the bottom sheet
                     if (statusReason.contains("Received by BoxPay for processing",ignoreCase = true) || statusReason.contains("Approved by PSP",ignoreCase = true) || status.contains("PAID",ignoreCase = true)) {
-                        val bottomSheet = PaymentStatusBottomSheet.newInstance(token,successScreenFullReferencePath)
-                        bottomSheet.show(parentFragmentManager,"SuccessBottomSheet")
+                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                        bottomSheet.show(parentFragmentManager,"SuccessBottomSheetWithDetails")
                         countdownTimer.cancel()
                             dismiss()
 
@@ -162,11 +176,10 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         requestQueue.add(jsonObjectRequest)
     }
     companion object {
-        fun newInstance(data: String?, successScreenFullReferencePath: String?): UPITimerBottomSheet {
+        fun newInstance(virtualPaymentAddress : String?): UPITimerBottomSheet {
             val fragment = UPITimerBottomSheet()
             val args = Bundle()
-            args.putString("token", data)
-            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
+            args.putString("virtualPaymentAddress", virtualPaymentAddress)
             fragment.arguments = args
             return fragment
         }
