@@ -25,6 +25,7 @@ import org.json.JSONException
 class UPITimerBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentUPITimerBottomSheetBinding
     private lateinit var countdownTimer: CountDownTimer
+    private lateinit var countdownTimerForAPI: CountDownTimer
     private lateinit var requestQueue: RequestQueue
     private var token : String ?= null
     private var successScreenFullReferencePath: String? = null
@@ -79,12 +80,16 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
         binding.textView.setOnClickListener(){
             if(goneOrVisible) {
-                binding.proceedButton.visibility = View.VISIBLE
+                binding.retryButton.visibility = View.VISIBLE
             }
             else {
-                binding.proceedButton.visibility = View.GONE
+                binding.retryButton.visibility = View.GONE
             }
             goneOrVisible = !goneOrVisible
+        }
+
+        binding.retryButton.setOnClickListener(){
+            dismiss()
         }
 
         return binding.root
@@ -98,7 +103,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
     }
     private fun startTimer() {
-        countdownTimer = object : CountDownTimer(5000, 1000) {
+        countdownTimer = object : CountDownTimer(300000, 1000) {
 
             override fun onTick(millisUntilFinished: Long) {
                 // Update TextView with the remaining time
@@ -108,9 +113,9 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
                 binding.progressTextView.text = timeString
 
                 // Update ProgressBar
-                val progress = ((millisUntilFinished.toFloat() / 5000) * 100).toInt()
+                val progress = ((millisUntilFinished.toFloat() / 300000) * 100).toInt()
                 binding.circularProgressBar.progress = progress*1.0f
-                binding.circularProgressBar.progressMax = 100f
+//                binding.circularProgressBar.progressMax = 100f
             }
 
             override fun onFinish() {
@@ -122,13 +127,13 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 //                bottomSheet.show(parentFragmentManager,"Payment Failed due to timeout")
 
                 binding.cancelPaymentTextView.visibility = View.GONE
-                binding.proceedButton.visibility = View.VISIBLE
+                binding.retryButton.visibility = View.VISIBLE
             }
         }
         countdownTimer.start()
     }
     private fun startTimerForAPICalls() {
-        countdownTimer = object : CountDownTimer(300000, 3000) {
+        countdownTimerForAPI = object : CountDownTimer(300000, 3000) {
 
             override fun onTick(millisUntilFinished: Long) {
                 // Update TextView with the remaining time
@@ -140,7 +145,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-        countdownTimer.start()
+        countdownTimerForAPI.start()
     }
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -186,10 +191,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
             }) { error ->
             Log.d("Error here",error.toString())
             error.printStackTrace()
-
-            // Handle errors here
         }
-        // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
     companion object {

@@ -1,5 +1,6 @@
 package com.example.tray
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -14,6 +15,8 @@ import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.tray.databinding.ActivityCheckBinding
+import com.example.tray.databinding.CustomRadioButtonLayoutBinding
 import org.json.JSONObject
 
 
@@ -21,18 +24,20 @@ class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
     private var successScreenFullReferencePath : String ?= null
     private var tokenFetchedAndOpen = false
+    private val binding : ActivityCheckBinding by lazy {
+        ActivityCheckBinding.inflate(layoutInflater)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_check)
+        setContentView(binding.root)
 
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         makePaymentRequest(this)
-        val openBottomSheet = findViewById<Button>(R.id.openButton)
-        openBottomSheet.text = "Generating Token Please wait..."
-        openBottomSheet.isEnabled = false
+
+        binding.textView6.text = "Generating Token Please wait..."
 
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
 
@@ -40,23 +45,63 @@ class Check : AppCompatActivity() {
             // Handle the response after the token has been updated
             if(!(tokenLiveData.value == null)) {
                 handleResponseWithToken()
-                openBottomSheet.text = "Open"
-                openBottomSheet.isEnabled = true
+                binding.textView6.text = "Open"
+                binding.openButton.isEnabled = true
             }else{
                 Log.d("token is empty","waiting")
             }
         })
 
+        var actionInProgress = false
+        binding.openButton.setOnClickListener(){
 
-        openBottomSheet.setOnClickListener(){
-            if(!(tokenLiveData.value.isNullOrEmpty())){
+            // Disable the button
+            if (actionInProgress) {
+                return@setOnClickListener
+            }
+
+
+            actionInProgress = true
+
+            // Disable the button
+            binding.openButton.isEnabled = false
+            binding.openButton.visibility = View.GONE
+
+            if (!(tokenLiveData.value.isNullOrEmpty())) {
                 showBottomSheetWithOverlay()
-            }else{
-
+                // Enable the button after the action is completed
+                // You can remove this if you want to enable the button after a certain delay
+                actionInProgress = false
+                binding.openButton.isEnabled = true
             }
         }
-
     }
+    fun removeLoadingAndEnabledProceedButton(){
+        binding.openButton.isEnabled = true
+        binding.progressBar.visibility = View.GONE
+        Log.d("text will be updated here","here")
+        binding.textView6.text = "Open Bottom Sheet"
+        binding.textView6.visibility = View.VISIBLE
+        binding.openButton.visibility = View.VISIBLE
+    }
+
+    fun showLoadingInButton() {
+        binding.textView6.visibility = View.INVISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+        val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
+        rotateAnimation.duration = 3000
+        rotateAnimation.repeatCount = ObjectAnimator.INFINITE
+        binding.openButton.isEnabled = false
+        rotateAnimation.start()
+    }
+    fun handleResponseWithToken() {
+        if(tokenFetchedAndOpen)
+            return
+        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
+        showBottomSheetWithOverlay()
+        tokenFetchedAndOpen = true
+    }
+
 
     fun showBottomSheetWithOverlay() {
         val bottomSheetFragment = MainBottomSheet.newInstance(tokenLiveData.value,successScreenFullReferencePath)
@@ -161,13 +206,6 @@ class Check : AppCompatActivity() {
         }
         queue.add(request)
     }
-    fun handleResponseWithToken() {
-        if(tokenFetchedAndOpen)
-            return
 
 
-        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
-        showBottomSheetWithOverlay()
-        tokenFetchedAndOpen = true
-    }
 }
