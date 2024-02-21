@@ -132,6 +132,7 @@ class AddUPIID : BottomSheetDialogFragment() {
 
         binding.proceedButton.setOnClickListener() {
             userVPA = binding.editTextText.text.toString()
+            closeKeyboard(this)
             postRequest(requireContext(), userVPA!!)
             showLoadingInButton()
         }
@@ -383,7 +384,6 @@ class AddUPIID : BottomSheetDialogFragment() {
     }
 
     private fun openUPITimerBottomSheet() {
-        closeKeyboard(this)
         val bottomSheetFragment = UPITimerBottomSheet.newInstance(userVPA)
         bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
     }
