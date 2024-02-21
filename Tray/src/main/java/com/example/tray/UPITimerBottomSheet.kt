@@ -40,6 +40,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
@@ -49,6 +50,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
             if (bottomSheet != null) {
 //                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 bottomSheetBehavior?.isDraggable = false
             }
         }
@@ -64,7 +66,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
         fetchTransactionDetailsFromSharedPreferences()
 
-        binding.UPIIDTextView.text = "UPI Id : ${virtualPaymentAddress}"
+        binding.UPIIDTextView.text = "UPI ID : ${virtualPaymentAddress}"
 
         binding.circularProgressBar.startAngle=90f
         binding.cancelPaymentTextView.setOnClickListener(){
@@ -72,7 +74,18 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         }
         startTimer()
         startTimerForAPICalls()
-        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
+        var goneOrVisible = false
+
+        binding.textView.setOnClickListener(){
+            if(goneOrVisible) {
+                binding.proceedButton.visibility = View.VISIBLE
+            }
+            else {
+                binding.proceedButton.visibility = View.GONE
+            }
+            goneOrVisible = !goneOrVisible
+        }
 
         return binding.root
     }
@@ -85,7 +98,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
     }
     private fun startTimer() {
-        countdownTimer = object : CountDownTimer(300000, 1000) {
+        countdownTimer = object : CountDownTimer(5000, 1000) {
 
             override fun onTick(millisUntilFinished: Long) {
                 // Update TextView with the remaining time
@@ -95,7 +108,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
                 binding.progressTextView.text = timeString
 
                 // Update ProgressBar
-                val progress = ((millisUntilFinished.toFloat() / 300000) * 100).toInt()
+                val progress = ((millisUntilFinished.toFloat() / 5000) * 100).toInt()
                 binding.circularProgressBar.progress = progress*1.0f
                 binding.circularProgressBar.progressMax = 100f
             }
@@ -103,9 +116,13 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
             override fun onFinish() {
                 // Handle onFinish event if needed
                 binding.progressTextView.text = "00:00"
-                binding.circularProgressBar.progressMax = 0f
-                val bottomSheet = PaymentFailureScreen()
-                bottomSheet.show(parentFragmentManager,"Payment Failed due to timeout")
+
+//                val bottomSheet = PaymentFailureScreen
+                binding.circularProgressBar.progress = 0f
+//                bottomSheet.show(parentFragmentManager,"Payment Failed due to timeout")
+
+                binding.cancelPaymentTextView.visibility = View.GONE
+                binding.proceedButton.visibility = View.VISIBLE
             }
         }
         countdownTimer.start()

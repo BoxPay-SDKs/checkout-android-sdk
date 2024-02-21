@@ -43,7 +43,6 @@ import org.json.JSONObject
 
 
 class MainBottomSheet : BottomSheetDialogFragment() {
-    val sharedViewModel: SharedViewModelTransactionDetails by viewModels()
     private var overlayViewMainBottomSheet: View? = null
     private lateinit var binding: FragmentMainBottomSheetBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
@@ -55,8 +54,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var i = 1
     private var transactionAmount : String ?= null
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -296,55 +293,57 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
     private fun populatePopularUPIApps(){
         i = 1
-        for((appName, appPackage) in UPIAppsAndPackageMap){
-            if(i >= 5)
-                break
-            Log.d("App in loop",appName)
-            if(appName == "CRED"){
-                val imageView = getPopularImageViewByNum(i)
-                val textView = getPopularTextViewByNum(i)
-                imageView.setImageResource(R.drawable.cred_upi_logo)
-                textView.text = "Cred"
 
-                getPopularConstraintLayoutByNum(i).setOnClickListener(){
-                    launchUPIPayment(requireContext(),appPackage)
-                }
-
-                Log.d("i and app inside if statement","$i and app = $appName")
-                i++
-            }else if(appName == "Paytm"){
-                val imageView = getPopularImageViewByNum(i)
-                val textView = getPopularTextViewByNum(i)
-                imageView.setImageResource(R.drawable.paytm_upi_logo)
-                textView.text = "Paytm"
-
-                getPopularConstraintLayoutByNum(i).setOnClickListener(){
-                    launchUPIPayment(requireContext(),appPackage)
-                }
-                Log.d("i and app inside if statement","$i and app = $appName")
-                i++
-            }else if(appName =="PhonePe"){
+//            Log.d("App in loop",appName)
+            if(UPIAppsAndPackageMap.containsKey("PhonePe")){
                 val imageView = getPopularImageViewByNum(i)
                 val textView = getPopularTextViewByNum(i)
                 imageView.setImageResource(R.drawable.phonepe_logo)
                 textView.text = "PhonePe"
                 getPopularConstraintLayoutByNum(i).setOnClickListener(){
-                    launchUPIPayment(requireContext(),appPackage)
+                    launchUPIPayment(requireContext(),UPIAppsAndPackageMap["PhonePe"].toString())
                 }
-                Log.d("i and app inside if statement","$i and app = $appName")
+                Log.d("i and app inside if statement","$i and app = PhonePe")
                 i++
-            }else if(appName == "GPay"){
+            }
+
+        if(UPIAppsAndPackageMap.containsKey("GPay")){
                 val imageView = getPopularImageViewByNum(i)
                 val textView = getPopularTextViewByNum(i)
                 imageView.setImageResource(R.drawable.google_pay_seeklogo)
                 textView.text = "GPay"
+
                 getPopularConstraintLayoutByNum(i).setOnClickListener(){
-                    launchUPIPayment(requireContext(),appPackage)
+                    launchUPIPayment(requireContext(),UPIAppsAndPackageMap["GPay"].toString())
                 }
-                Log.d("i and app inside if statement","$i and app = $appName")
+                Log.d("i and app inside if statement","$i and app = GPay")
                 i++
             }
+        if(UPIAppsAndPackageMap.containsKey("Paytm")){
+            val imageView = getPopularImageViewByNum(i)
+            val textView = getPopularTextViewByNum(i)
+            imageView.setImageResource(R.drawable.paytm_upi_logo)
+            textView.text = "Paytm"
+
+            getPopularConstraintLayoutByNum(i).setOnClickListener(){
+                launchUPIPayment(requireContext(),UPIAppsAndPackageMap["Paytm"].toString())
+            }
+            Log.d("i and app inside if statement","$i and app = Paytm")
+            i++
         }
+        if(UPIAppsAndPackageMap.containsKey("CRED")){
+            val imageView = getPopularImageViewByNum(i)
+            val textView = getPopularTextViewByNum(i)
+            imageView.setImageResource(R.drawable.cred_upi_logo)
+            textView.text = "CRED"
+
+            getPopularConstraintLayoutByNum(i).setOnClickListener(){
+                launchUPIPayment(requireContext(),UPIAppsAndPackageMap["CRED"].toString())
+            }
+            Log.d("i and app inside if statement","$i and app = CRED")
+            i++
+        }
+
         if(i == 1){
             binding.popularUPIAppsConstraint.visibility = View.GONE
         }
@@ -713,28 +712,12 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
 
-
-
-
-
-
-
-
-
     private fun updateTransactionAmountInSharedPreferences(TransactionAmountArgs : String) {
         val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.putString("transactionAmount", TransactionAmountArgs)
         editor.apply()
     }
-
-
-
-
-
-
-
-
 
     companion object {
         fun newInstance(data: String?, successScreenFullReferencePath: String?): MainBottomSheet {

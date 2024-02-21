@@ -34,9 +34,6 @@ class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
 
 
 
-
-
-
         fetchTransactionDetailsFromSharedPreferences()
         binding.transactionAmountTextView.text = transactionAmount
         binding.transactionIDTextView.text = transactionID

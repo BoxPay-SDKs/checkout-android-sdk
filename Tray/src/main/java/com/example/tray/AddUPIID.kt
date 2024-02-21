@@ -1,6 +1,7 @@
 package com.example.tray
 
 import android.animation.ObjectAnimator
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -14,11 +15,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import com.android.volley.DefaultRetryPolicy
@@ -380,6 +383,7 @@ class AddUPIID : BottomSheetDialogFragment() {
     }
 
     private fun openUPITimerBottomSheet() {
+        closeKeyboard(this)
         val bottomSheetFragment = UPITimerBottomSheet.newInstance(userVPA)
         bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
     }
@@ -396,7 +400,14 @@ class AddUPIID : BottomSheetDialogFragment() {
         }
         return null
     }
-
+    private fun closeKeyboard(fragment: Fragment) {
+        val activity = fragment.activity
+        val view = fragment.view
+        if (activity != null && view != null) {
+            val imm = ContextCompat.getSystemService(activity, InputMethodManager::class.java)
+            imm?.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
 
     companion object {
 
