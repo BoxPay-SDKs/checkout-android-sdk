@@ -1,5 +1,7 @@
 package com.example.tray.adapters
 
+import android.content.Context
+import android.graphics.Color
 import android.os.Handler
 import android.util.Log
 import android.view.Gravity
@@ -11,12 +13,15 @@ import android.widget.Filterable
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tray.R
 import com.example.tray.databinding.NetbankingBanksItemBinding
 import com.example.tray.dataclasses.NetbankingDataClass
+import com.skydoves.balloon.BalloonAnimation
+import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.newSingleThreadContext
 import java.util.Locale
 
@@ -24,10 +29,12 @@ import java.util.Locale
 class NetbankingBanksAdapter(
     private val banksDetails: ArrayList<NetbankingDataClass>,
     private val recyclerView: RecyclerView,
-    private var liveDataPopularItemSelectedOrNot : MutableLiveData<Boolean>
+    private var liveDataPopularItemSelectedOrNot : MutableLiveData<Boolean>,
+    private val context : Context
 ) : RecyclerView.Adapter<NetbankingBanksAdapter.NetBankingAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
+
     inner class NetBankingAdapterViewHolder(val binding: NetbankingBanksItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
@@ -55,9 +62,27 @@ class NetbankingBanksAdapter(
                     liveDataPopularItemSelectedOrNot.value = false
                 }
 
+                val balloon = createBalloon(context) {
+                    setArrowSize(10)
+                    setWidthRatio(0.3f)
+                    setHeight(65)
+                    setArrowPosition(0.5f)
+                    setCornerRadius(4f)
+                    setAlpha(0.9f)
+                    setText(bankName)
+                    setTextColorResource(R.color.colorEnd)
+//                    setIconDrawable(ContextCompat.getDrawable(context, R.drawable.ic_profile))
+                    setBackgroundColorResource(R.color.tooltip_bg)
+//                    setOnBalloonClickListener(onBalloonClickListener)
+                    setBalloonAnimation(BalloonAnimation.FADE)
+                    setLifecycleOwner(lifecycleOwner)
+                }
+
                 binding.root.setOnLongClickListener { view ->
-                    showTooltip(view, bankName)
+
                     Log.d("long click detected","net banking adapter")
+                    balloon.showAlignTop(binding.root)
+                    balloon.dismissWithDelay(2000L)
                     true // Indicate that the long click event has been consumed
                 }
 

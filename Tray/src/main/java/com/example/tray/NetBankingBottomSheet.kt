@@ -217,7 +217,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         fetchTransactionDetailsFromSharedPreferences()
 
         banksDetailsOriginal = arrayListOf()
-        allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered, binding.banksRecyclerView,liveDataPopularBankSelectedOrNot)
+        allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered, binding.banksRecyclerView,liveDataPopularBankSelectedOrNot,requireContext())
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
         binding.boxPayLogoLottieAnimation.playAnimation()

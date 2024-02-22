@@ -53,6 +53,7 @@ dependencies {
     implementation ("com.airbnb.android:lottie:4.2.0")
     implementation ("com.google.code.gson:gson:2.10.1")
     implementation ("io.supercharge:shimmerlayout:2.1.0")
+    implementation ("com.github.skydoves:balloon:1.4.7")
 }
 
 
