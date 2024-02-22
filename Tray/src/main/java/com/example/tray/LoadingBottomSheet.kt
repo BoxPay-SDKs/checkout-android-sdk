@@ -28,6 +28,7 @@ class LoadingBottomSheet : BottomSheetDialogFragment()  {
         return binding.root
     }
 
+
     companion object {
 
     }

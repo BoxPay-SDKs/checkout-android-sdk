@@ -158,7 +158,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
 
         hidePriceBreakUp()
-        dialog?.setCanceledOnTouchOutside(true)
         getAndSetOrderDetails()
         val packageManager = requireContext().packageManager
         getAllInstalledApps(packageManager)

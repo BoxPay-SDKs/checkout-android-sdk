@@ -1,16 +1,23 @@
 package com.example.tray.adapters
 
+import android.os.Handler
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
+import android.widget.PopupWindow
+import android.widget.TextView
+import androidx.appcompat.widget.TooltipCompat
+import androidx.core.view.ViewCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tray.R
 import com.example.tray.databinding.NetbankingBanksItemBinding
 import com.example.tray.dataclasses.NetbankingDataClass
+import kotlinx.coroutines.newSingleThreadContext
 import java.util.Locale
 
 
@@ -47,9 +54,43 @@ class NetbankingBanksAdapter(
                     handleRadioButtonClick(adapterPosition)
                     liveDataPopularItemSelectedOrNot.value = false
                 }
+
+                binding.root.setOnLongClickListener { view ->
+                    showTooltip(view, bankName)
+                    Log.d("long click detected","net banking adapter")
+                    true // Indicate that the long click event has been consumed
+                }
+
             }
         }
 
+    }
+
+    private fun showTooltip(anchorView: View, text: String) {
+        // Inflate your tooltip layout
+        val tooltipView = LayoutInflater.from(anchorView.context).inflate(R.layout.tooltip_wallet_netbanking_layout, null)
+        val textView = tooltipView.findViewById<TextView>(R.id.tooltip_text)
+        textView.text = text
+
+        // Create a PopupWindow
+        val popupWindow = PopupWindow(
+            tooltipView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        )
+        popupWindow.contentView = tooltipView
+
+        // Calculate the position of the anchor view on screen
+        val location = IntArray(2)
+        anchorView.getLocationOnScreen(location)
+
+        // Show tooltip above the anchor view
+        popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, location[0], location[1] - tooltipView.height - anchorView.height)
+
+        Handler().postDelayed({
+            popupWindow.dismiss()
+        }, 3000)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NetBankingAdapterViewHolder {
