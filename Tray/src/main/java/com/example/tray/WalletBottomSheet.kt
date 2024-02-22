@@ -510,8 +510,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
                     if(status.equals("Approved")) {
-                        val bottomSheet = PaymentStatusBottomSheet()
-                        bottomSheet.show(parentFragmentManager,"PaymentStatusBottomSheet")
+                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                        bottomSheet.show(parentFragmentManager,"PaymentSuccessfulWithDetailsBottomSheet")
                         dismiss()
                     }else{
                         val intent = Intent(requireContext(), OTPScreenWebView::class.java)

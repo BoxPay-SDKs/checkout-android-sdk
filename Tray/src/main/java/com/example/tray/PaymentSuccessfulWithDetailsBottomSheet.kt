@@ -41,9 +41,16 @@ class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
 
         binding. proceedButton.setOnClickListener(){
             openActivity(successScreenFullReferencePath.toString(),requireContext())
+//            callFunctionInActivity()
         }
         return binding.root
     }
+//    private fun callFunctionInActivity() {
+//        val activity = activity
+//        if (activity is OTPScreenWebView) {
+//            activity.killOTPWeViewActivity()
+//        }
+//    }
 
     private fun openActivity(activityPath: String, context: Context) {
         if (context is AppCompatActivity) {
