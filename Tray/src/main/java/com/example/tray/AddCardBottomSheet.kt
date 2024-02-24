@@ -210,6 +210,12 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -263,8 +269,8 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
 
 
-        binding.imageView2.setOnClickListener() {
-            dismiss()
+        binding.backButton.setOnClickListener() {
+            dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
 
         binding.proceedButton.isEnabled = false
@@ -379,6 +385,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                 if(textNow.length == 4){
                     binding.editTextNameOnCard.requestFocus()
+
                 }
             }
 
@@ -473,7 +480,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextText.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-//                Toast.makeText(requireContext(), "Got the focus", Toast.LENGTH_LONG).show()
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             } else {
                 val cardNumber = removeSpaces(binding.editTextText.text.toString())
                 if(!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))){
@@ -488,7 +495,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardValidity.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-//                Toast.makeText(requireContext(), "Got the focus", Toast.LENGTH_LONG).show()
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             } else {
                 val cardValidity = binding.editTextCardValidity.text.toString()
                 try {
@@ -511,7 +518,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         })
         binding.editTextCardCVV.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             } else {
                 try {
                     val cardCVV = binding.editTextCardCVV.text.toString()
@@ -617,13 +624,66 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
             val d = dialog as BottomSheetDialog
-            bottomSheet =
+            val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
 //                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet!!)
-                bottomSheetBehavior?.isDraggable = false
+                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
+
+            if (bottomSheetBehavior == null)
+                Log.d("bottomSheetBehavior is null", "check here")
+
+
+            val screenHeight = resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.7 // 90%
+            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+
+//        // Adjust the height of the bottom sheet content view
+//        val layoutParams = bottomSheetContent.layoutParams
+//        layoutParams.height = desiredHeight
+//        bottomSheetContent.layoutParams = layoutParams
+            bottomSheetBehavior?.maxHeight = desiredHeight
+            bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.isHideable = false
+            dialog.setCancelable(false)
+
+
+
+            bottomSheetBehavior?.addBottomSheetCallback(object :
+                BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    // Handle state changes
+                    when (newState) {
+                        BottomSheetBehavior.STATE_EXPANDED -> {
+                            // Fully expanded
+                        }
+
+                        BottomSheetBehavior.STATE_COLLAPSED -> {
+                            // Collapsed
+                        }
+
+                        BottomSheetBehavior.STATE_DRAGGING -> {
+                            // The BottomSheet is being dragged
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_SETTLING -> {
+                            // The BottomSheet is settling
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_HIDDEN -> {
+                            //Hidden
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        }
+                    }
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+                }
+            })
         }
         return dialog
     }
@@ -650,6 +710,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
         return formatted.toString()
     }
+
 
     private fun deformatCardNumber(cardNumber: String): String {
         return cardNumber.replace(" ", "") // Remove all spaces
@@ -821,7 +882,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         if (status.contains("Approved", ignoreCase = true)) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheet")
-                            dismiss()
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)

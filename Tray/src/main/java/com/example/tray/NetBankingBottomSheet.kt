@@ -84,11 +84,60 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
+            if (bottomSheetBehavior == null)
+                Log.d("bottomSheetBehavior is null", "check here")
+
+
+            val screenHeight = resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.7 // 90%
+            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+
+//        // Adjust the height of the bottom sheet content view
+//        val layoutParams = bottomSheetContent.layoutParams
+//        layoutParams.height = desiredHeight
+//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            dialog.setCancelable(false)
+
+
+
+            bottomSheetBehavior?.addBottomSheetCallback(object :
+                BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    // Handle state changes
+                    when (newState) {
+                        BottomSheetBehavior.STATE_EXPANDED -> {
+                            // Fully expanded
+                        }
+
+                        BottomSheetBehavior.STATE_COLLAPSED -> {
+                            // Collapsed
+                        }
+
+                        BottomSheetBehavior.STATE_DRAGGING -> {
+                            // The BottomSheet is being dragged
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_SETTLING -> {
+                            // The BottomSheet is settling
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_HIDDEN -> {
+                            //Hidden
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        }
+                    }
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+                }
+            })
         }
-
-
         return dialog
     }
 
@@ -168,7 +217,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         fetchTransactionDetailsFromSharedPreferences()
 
         banksDetailsOriginal = arrayListOf()
-        allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered, binding.banksRecyclerView,liveDataPopularBankSelectedOrNot)
+        allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered, binding.banksRecyclerView,liveDataPopularBankSelectedOrNot,requireContext())
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
         binding.boxPayLogoLottieAnimation.playAnimation()
@@ -236,8 +285,8 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
             }
         })
 
-        binding.imageView2.setOnClickListener() {
-            dismiss()
+        binding.backButton.setOnClickListener() {
+            dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
         binding.proceedButton.setOnClickListener() {
             showLoadingInButton()
@@ -255,6 +304,11 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
 
         return binding.root
+    }
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
     }
 
 
@@ -467,23 +521,30 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 try {
                     // Parse the JSON response
                     val jsonObject = response
+                    logJsonObject(response)
 
                     // Retrieve the "actions" array
                     val actionsArray = jsonObject.getJSONArray("actions")
+                    val status = jsonObject.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
                     for (i in 0 until actionsArray.length()) {
                         val actionObject = actionsArray.getJSONObject(i)
                         url = actionObject.getString("url")
                         // Do something with the URL
-                        Log.d("URL", url)
+                        Log.d("url and status", url+"\n"+status)
                     }
 
-                    val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                    intent.putExtra("url", url)
-                    intent.putExtra("token",token)
-                    intent.putExtra("successScreenFullReferencePath",successScreenFullReferencePath)
-                    startActivity(intent)
+
+                    if(status.equals("Approved")) {
+                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                        bottomSheet.show(parentFragmentManager,"PaymentSuccessfulWithDetailsBottomSheet")
+                        dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                    }else{
+                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                        intent.putExtra("url", url)
+                        startActivity(intent)
+                    }
 
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE

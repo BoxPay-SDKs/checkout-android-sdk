@@ -89,8 +89,8 @@ class AddUPIID : BottomSheetDialogFragment() {
 
 
 
-        binding.imageView2.setOnClickListener() {
-            dismiss()
+        binding.backButton.setOnClickListener() {
+            dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
         binding.proceedButton.isEnabled = false
 
@@ -157,6 +157,12 @@ class AddUPIID : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
     }
 
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
@@ -167,6 +173,62 @@ class AddUPIID : BottomSheetDialogFragment() {
 //                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
+
+            if (bottomSheetBehavior == null)
+                Log.d("bottomSheetBehavior is null", "check here")
+
+
+            val screenHeight = resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.7 // 90%
+            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+
+//        // Adjust the height of the bottom sheet content view
+//        val layoutParams = bottomSheetContent.layoutParams
+//        layoutParams.height = desiredHeight
+//        bottomSheetContent.layoutParams = layoutParams
+            bottomSheetBehavior?.maxHeight = desiredHeight
+            bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.isHideable = false
+            dialog.setCancelable(false)
+
+
+
+            bottomSheetBehavior?.addBottomSheetCallback(object :
+                BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    // Handle state changes
+                    when (newState) {
+                        BottomSheetBehavior.STATE_EXPANDED -> {
+                            // Fully expanded
+                        }
+
+                        BottomSheetBehavior.STATE_COLLAPSED -> {
+                            // Collapsed
+                        }
+
+                        BottomSheetBehavior.STATE_DRAGGING -> {
+                            // The BottomSheet is being dragged
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_SETTLING -> {
+                            // The BottomSheet is settling
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_HIDDEN -> {
+                            //Hidden
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+
+
+                        }
+                    }
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+                }
+            })
         }
         return dialog
     }

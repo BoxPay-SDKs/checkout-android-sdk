@@ -23,15 +23,15 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONException
 
 class UPITimerBottomSheet : BottomSheetDialogFragment() {
-    private lateinit var binding : FragmentUPITimerBottomSheetBinding
+    private lateinit var binding: FragmentUPITimerBottomSheetBinding
     private lateinit var countdownTimer: CountDownTimer
     private lateinit var countdownTimerForAPI: CountDownTimer
     private lateinit var requestQueue: RequestQueue
-    private var token : String ?= null
+    private var token: String? = null
     private var successScreenFullReferencePath: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
-    private var virtualPaymentAddress : String? = null
+    private var virtualPaymentAddress: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,26 +51,79 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
             if (bottomSheet != null) {
 //                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                bottomSheetBehavior?.isDraggable = false
             }
+
+            if (bottomSheetBehavior == null)
+                Log.d("bottomSheetBehavior is null", "check here")
+
+
+            val screenHeight = resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.7 // 90%
+            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+
+//        // Adjust the height of the bottom sheet content view
+//        val layoutParams = bottomSheetContent.layoutParams
+//        layoutParams.height = desiredHeight
+//        bottomSheetContent.layoutParams = layoutParams
+            bottomSheetBehavior?.maxHeight = desiredHeight
+            bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.isHideable = false
+            dialog.setCancelable(false)
+
+
+
+            bottomSheetBehavior?.addBottomSheetCallback(object :
+                BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    // Handle state changes
+                    when (newState) {
+                        BottomSheetBehavior.STATE_EXPANDED -> {
+                            // Fully expanded
+                        }
+
+                        BottomSheetBehavior.STATE_COLLAPSED -> {
+                            // Collapsed
+                        }
+
+                        BottomSheetBehavior.STATE_DRAGGING -> {
+                            // The BottomSheet is being dragged
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_SETTLING -> {
+                            // The BottomSheet is settling
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_HIDDEN -> {
+                            //Hidden
+                            dismiss()
+                        }
+                    }
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+                }
+            })
         }
         return dialog
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ) : View? {
+    ): View? {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
-        binding = FragmentUPITimerBottomSheetBinding.inflate(layoutInflater,container,false)
+        binding = FragmentUPITimerBottomSheetBinding.inflate(layoutInflater, container, false)
 
         fetchTransactionDetailsFromSharedPreferences()
 
         binding.UPIIDTextView.text = "UPI ID : ${virtualPaymentAddress}"
 
-        binding.circularProgressBar.startAngle=90f
-        binding.cancelPaymentTextView.setOnClickListener(){
+        binding.circularProgressBar.startAngle = 90f
+        binding.cancelPaymentTextView.setOnClickListener() {
             dismiss()
         }
         startTimer()
@@ -78,17 +131,16 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
         var goneOrVisible = false
 
-        binding.textView.setOnClickListener(){
-            if(goneOrVisible) {
+        binding.textView.setOnClickListener() {
+            if (goneOrVisible) {
                 binding.retryButton.visibility = View.VISIBLE
-            }
-            else {
+            } else {
                 binding.retryButton.visibility = View.GONE
             }
             goneOrVisible = !goneOrVisible
         }
 
-        binding.retryButton.setOnClickListener(){
+        binding.retryButton.setOnClickListener() {
             dismiss()
         }
 
@@ -96,12 +148,18 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        token = sharedPreferences.getString("token","empty")
-        Log.d("data fetched from sharedPreferences",token.toString())
-        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
-        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token", "empty")
+        Log.d("data fetched from sharedPreferences", token.toString())
+        successScreenFullReferencePath =
+            sharedPreferences.getString("successScreenFullReferencePath", "empty")
+        Log.d(
+            "success screen path fetched from sharedPreferences",
+            successScreenFullReferencePath.toString()
+        )
     }
+
     private fun startTimer() {
         countdownTimer = object : CountDownTimer(300000, 1000) {
 
@@ -114,7 +172,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
                 // Update ProgressBar
                 val progress = ((millisUntilFinished.toFloat() / 300000) * 100).toInt()
-                binding.circularProgressBar.progress = progress*1.0f
+                binding.circularProgressBar.progress = progress * 1.0f
 //                binding.circularProgressBar.progressMax = 100f
             }
 
@@ -132,6 +190,7 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         }
         countdownTimer.start()
     }
+
     private fun startTimerForAPICalls() {
         countdownTimerForAPI = object : CountDownTimer(300000, 3000) {
 
@@ -153,8 +212,9 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
         dismiss()
     }
+
     private fun fetchStatusAndReason(url: String) {
-        Log.d("fetching function called correctly","Fine")
+        Log.d("fetching function called correctly", "Fine")
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
@@ -168,34 +228,42 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
                     Log.d("Status Reason", statusReason)
 
                     // Check if status is success, if yes, dismiss the bottom sheet
-                    if (statusReason.contains("Received by BoxPay for processing",ignoreCase = true) || statusReason.contains("Approved by PSP",ignoreCase = true) || status.contains("PAID",ignoreCase = true)) {
+                    if (statusReason.contains(
+                            "Received by BoxPay for processing",
+                            ignoreCase = true
+                        ) || statusReason.contains(
+                            "Approved by PSP",
+                            ignoreCase = true
+                        ) || status.contains("PAID", ignoreCase = true)
+                    ) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                        bottomSheet.show(parentFragmentManager,"SuccessBottomSheetWithDetails")
+                        bottomSheet.show(parentFragmentManager, "SuccessBottomSheetWithDetails")
                         countdownTimer.cancel()
-                            dismiss()
+                        countdownTimerForAPI.cancel()
+                        dismiss()
 
 
-                    }else if(status.contains("PENDING",ignoreCase = true)) {
+                    } else if (status.contains("PENDING", ignoreCase = true)) {
                         //do nothing
-                    }else if(status.contains("EXPIRED",ignoreCase = true)){
+                    } else if (status.contains("EXPIRED", ignoreCase = true)) {
 
-                    }else if(status.contains("PROCESSING",ignoreCase = true)){
+                    } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
-                    }
-                    else if(status.contains("FAILED",ignoreCase = true)){
+                    } else if (status.contains("FAILED", ignoreCase = true)) {
 
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
             }) { error ->
-            Log.d("Error here",error.toString())
+            Log.d("Error here", error.toString())
             error.printStackTrace()
         }
         requestQueue.add(jsonObjectRequest)
     }
+
     companion object {
-        fun newInstance(virtualPaymentAddress : String?): UPITimerBottomSheet {
+        fun newInstance(virtualPaymentAddress: String?): UPITimerBottomSheet {
             val fragment = UPITimerBottomSheet()
             val args = Bundle()
             args.putString("virtualPaymentAddress", virtualPaymentAddress)

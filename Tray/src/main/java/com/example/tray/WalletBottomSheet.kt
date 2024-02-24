@@ -71,14 +71,66 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
             val d = dialog as BottomSheetDialog
-            bottomSheet =
+            val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
 //                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
-                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet!!)
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                bottomSheetBehavior?.isDraggable = false
+                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
+
+            if (bottomSheetBehavior == null)
+                Log.d("bottomSheetBehavior is null", "check here")
+
+
+            val screenHeight = resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.7 // 90%
+            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+
+//        // Adjust the height of the bottom sheet content view
+//        val layoutParams = bottomSheetContent.layoutParams
+//        layoutParams.height = desiredHeight
+//        bottomSheetContent.layoutParams = layoutParams
+            bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.isHideable = false
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            dialog.setCancelable(false)
+
+
+
+            bottomSheetBehavior?.addBottomSheetCallback(object :
+                BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    // Handle state changes
+                    when (newState) {
+                        BottomSheetBehavior.STATE_EXPANDED -> {
+                            // Fully expanded
+                        }
+
+                        BottomSheetBehavior.STATE_COLLAPSED -> {
+                            // Collapsed
+                        }
+
+                        BottomSheetBehavior.STATE_DRAGGING -> {
+                            // The BottomSheet is being dragged
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_SETTLING -> {
+                            // The BottomSheet is settling
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_HIDDEN -> {
+                            //Hidden
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        }
+                    }
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+                }
+            })
         }
         return dialog
     }
@@ -122,6 +174,12 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                 }
             }
         }
+    }
+
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
     }
 
     private fun fetchConstraintLayout(num: Int): ConstraintLayout {
@@ -196,8 +254,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         })
 
 
-        binding.imageView2.setOnClickListener() {
-            dismiss()
+        binding.backButton.setOnClickListener() {
+            dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
         binding.proceedButton.isEnabled = false
 
@@ -510,9 +568,9 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
                     if(status.equals("Approved")) {
-                        val bottomSheet = PaymentStatusBottomSheet()
-                        bottomSheet.show(parentFragmentManager,"PaymentStatusBottomSheet")
-                        dismiss()
+                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                        bottomSheet.show(parentFragmentManager,"PaymentSuccessfulWithDetailsBottomSheet")
+                        dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     }else{
                         val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                         intent.putExtra("url", url)

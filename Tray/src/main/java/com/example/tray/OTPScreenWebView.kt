@@ -69,14 +69,9 @@ class OTPScreenWebView : AppCompatActivity() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
-                        val bottomSheet = PaymentStatusBottomSheet()
-                        bottomSheet.show(supportFragmentManager, "SuccessBottomSheet")
-                        val endAllTheBottomSheets = Runnable {
-                            finish()
-                        }
-                        val handler = Handler()
-                        // Delay execution by 1000 milliseconds (1 second)
-                        handler.postDelayed(endAllTheBottomSheets, 3000)
+                        job?.cancel()
+                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                        bottomSheet.show(supportFragmentManager, "PaymentSuccessfulWithDetailsBottomSheet")
                     } else if (status.contains("PENDING", ignoreCase = true)) {
                         //do nothing
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
@@ -103,6 +98,15 @@ class OTPScreenWebView : AppCompatActivity() {
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
+//    fun killOTPWeViewActivity(){
+//        val endAllTheBottomSheets = Runnable {
+//            finish()
+//        }
+//        val handler = Handler()
+//        // Delay execution by 1000 milliseconds (1 second)
+//        handler.postDelayed(endAllTheBottomSheets, 2000)
+//    }
+
 
     private fun startFunctionCalls() {
         job = CoroutineScope(Dispatchers.IO).launch {
@@ -113,7 +117,6 @@ class OTPScreenWebView : AppCompatActivity() {
             }
         }
     }
-
     private fun fetchTransactionDetailsFromSharedPreferences() {
         val sharedPreferences = this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token","empty")
