@@ -161,6 +161,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         getAndSetOrderDetails()
         val packageManager = requireContext().packageManager
         getAllInstalledApps(packageManager)
+
+
         activityResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 val resultCode = result.resultCode
@@ -174,6 +176,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                     val bottomSheet = PaymentFailureScreen()
                     bottomSheet.show(parentFragmentManager, "Payment Failure Screen")
                 }
+                Log.d("Making payusing any other upi apps enabled","here")
+                binding.payUsingAnyUPIConstraint.isEnabled = true
             }
 
         updateTransactionAmountInSharedPreferences("₹" + transactionAmount.toString())
@@ -212,7 +216,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             //Just to preventing user from clicking here and closing the order summary
         }
 
-        binding.imageView222.setOnClickListener() {
+        binding.backButton.setOnClickListener() {
             removeOverlayFromActivity()
             callFunctionInActivity()
             dismiss()
@@ -227,23 +231,30 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                 hideUPIOptions()
             }
         }
+
         binding.payUsingAnyUPIConstraint.setOnClickListener {
 
+            binding.payUsingAnyUPIConstraint.isEnabled = false
             openDefaultUPIIntentBottomSheetFromAndroid()
         }
 
+
         binding.addNewUPIIDConstraint.setOnClickListener() {
+            binding.addNewUPIIDConstraint.isEnabled = false
             openAddUPIIDBottomSheet()
         }
 
         binding.cardConstraint.setOnClickListener() {
+            binding.cardConstraint.isEnabled = false
             openAddCardBottomSheet()
         }
         binding.walletConstraint.setOnClickListener() {
+            binding.walletConstraint.isEnabled = false
             openWalletBottomSheet()
         }
 
         binding.netBankingConstraint.setOnClickListener() {
+            binding.netBankingConstraint.isEnabled = false
             openNetBankingBottomSheet()
         }
 
@@ -255,6 +266,13 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
 
         return binding.root
+    }
+    fun enabledButtonsForAllPaymentMethods(){
+        binding.payUsingAnyUPIConstraint.isEnabled = true
+        binding.addNewUPIIDConstraint.isEnabled = true
+        binding.cardConstraint.isEnabled = true
+        binding.walletConstraint.isEnabled = true
+        binding.netBankingConstraint.isEnabled = true
     }
 
 
@@ -714,6 +732,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             activity.removeLoadingAndEnabledProceedButton()
         }
     }
+
+
 
 
     companion object {

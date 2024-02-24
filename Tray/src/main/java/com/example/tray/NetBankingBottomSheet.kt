@@ -128,7 +128,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
-                            dismiss()
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         }
                     }
                 }
@@ -285,8 +285,8 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
             }
         })
 
-        binding.imageView2.setOnClickListener() {
-            dismiss()
+        binding.backButton.setOnClickListener() {
+            dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
         binding.proceedButton.setOnClickListener() {
             showLoadingInButton()
@@ -304,6 +304,11 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
 
         return binding.root
+    }
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
     }
 
 
@@ -516,23 +521,30 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 try {
                     // Parse the JSON response
                     val jsonObject = response
+                    logJsonObject(response)
 
                     // Retrieve the "actions" array
                     val actionsArray = jsonObject.getJSONArray("actions")
+                    val status = jsonObject.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
                     for (i in 0 until actionsArray.length()) {
                         val actionObject = actionsArray.getJSONObject(i)
                         url = actionObject.getString("url")
                         // Do something with the URL
-                        Log.d("URL", url)
+                        Log.d("url and status", url+"\n"+status)
                     }
 
-                    val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                    intent.putExtra("url", url)
-                    intent.putExtra("token",token)
-                    intent.putExtra("successScreenFullReferencePath",successScreenFullReferencePath)
-                    startActivity(intent)
+
+                    if(status.equals("Approved")) {
+                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                        bottomSheet.show(parentFragmentManager,"PaymentSuccessfulWithDetailsBottomSheet")
+                        dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                    }else{
+                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                        intent.putExtra("url", url)
+                        startActivity(intent)
+                    }
 
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE

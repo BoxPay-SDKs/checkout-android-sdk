@@ -89,8 +89,8 @@ class AddUPIID : BottomSheetDialogFragment() {
 
 
 
-        binding.imageView2.setOnClickListener() {
-            dismiss()
+        binding.backButton.setOnClickListener() {
+            dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
         binding.proceedButton.isEnabled = false
 
@@ -157,6 +157,12 @@ class AddUPIID : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
     }
 
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
@@ -212,7 +218,9 @@ class AddUPIID : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
-                            dismiss()
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+
+
                         }
                     }
                 }

@@ -210,6 +210,12 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -263,8 +269,8 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
 
 
-        binding.imageView2.setOnClickListener() {
-            dismiss()
+        binding.backButton.setOnClickListener() {
+            dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
 
         binding.proceedButton.isEnabled = false
@@ -669,7 +675,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
-                            dismiss()
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         }
                     }
                 }
@@ -876,7 +882,7 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
                         if (status.contains("Approved", ignoreCase = true)) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheet")
-                            dismiss()
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)

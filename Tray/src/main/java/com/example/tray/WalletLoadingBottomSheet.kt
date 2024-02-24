@@ -33,7 +33,7 @@ class WalletLoadingBottomSheet : BottomSheetDialogFragment() {
         // Inflate the layout for this fragment
         binding = FragmentWalletLoadingBottomSheetBinding.inflate(layoutInflater,container,false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        binding.imageView2.setOnClickListener(){
+        binding.backButton.setOnClickListener(){
             dismiss()
         }
 

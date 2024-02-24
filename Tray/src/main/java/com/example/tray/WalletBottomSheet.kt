@@ -122,7 +122,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
-                            dismiss()
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         }
                     }
                 }
@@ -174,6 +174,12 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                 }
             }
         }
+    }
+
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
     }
 
     private fun fetchConstraintLayout(num: Int): ConstraintLayout {
@@ -248,8 +254,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         })
 
 
-        binding.imageView2.setOnClickListener() {
-            dismiss()
+        binding.backButton.setOnClickListener() {
+            dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
         binding.proceedButton.isEnabled = false
 
@@ -564,7 +570,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                     if(status.equals("Approved")) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                         bottomSheet.show(parentFragmentManager,"PaymentSuccessfulWithDetailsBottomSheet")
-                        dismiss()
+                        dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     }else{
                         val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                         intent.putExtra("url", url)

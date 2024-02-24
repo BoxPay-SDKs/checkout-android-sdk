@@ -97,6 +97,7 @@ class NetbankingBanksAdapter(
         val textView = tooltipView.findViewById<TextView>(R.id.tooltip_text)
         textView.text = text
 
+
         // Create a PopupWindow
         val popupWindow = PopupWindow(
             tooltipView,
