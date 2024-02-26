@@ -9,19 +9,25 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.TranslateAnimation
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.SearchView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.size
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -53,13 +59,14 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
-    private var checkedPosition : Int ?= null
+    private var checkedPosition: Int? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
     private var successScreenFullReferencePath: String? = null
-    var liveDataPopularWalletSelectedOrNot: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
-        value = false
-    }
+    var liveDataPopularWalletSelectedOrNot: MutableLiveData<Boolean> =
+        MutableLiveData<Boolean>().apply {
+            value = false
+        }
     private var popularWalletsSelected: Boolean = false
     private var popularWalletsSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
@@ -134,68 +141,157 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         }
         return dialog
     }
-    private fun unselectItemsInPopularLayout(){
-        if(popularWalletsSelectedIndex != -1) {
-            fetchConstraintLayout(popularWalletsSelectedIndex).setBackgroundResource(0)
+
+    private fun unselectItemsInPopularLayout() {
+        if (popularWalletsSelectedIndex != -1) {
+            fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(0)
         }
 
         popularWalletsSelected = false
     }
+
     private fun fetchAndUpdateApiInPopularWallets() {
         binding.apply {
-            for(index in 0 until 4){
-                val walletDetail = walletDetailsOriginal[index]
-                val constraintLayout = fetchConstraintLayout(index)
-                val imageView = when (index) {
-                    0 -> popularWalletImageView1
-                    1 -> popularWalletImageView2
-                    2 -> popularWalletImageView3
-                    3 -> popularWalletImageView4
-                    else -> null
-                }
-                imageView?.setImageResource(walletDetail.walletImage)
-                constraintLayout.setOnClickListener {
-                    liveDataPopularWalletSelectedOrNot.value = true
-                    if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
-                        // If the same constraint layout is clicked again
-                        constraintLayout.setBackgroundResource(0)
-                        popularWalletsSelected = false
-                        proceedButtonIsEnabled.value = false
-                    } else {
-                        // Remove background from the previously selected constraint layout
-                        if (popularWalletsSelectedIndex != -1)
-                            fetchConstraintLayout(popularWalletsSelectedIndex).setBackgroundResource(0)
-                        // Set background for the clicked constraint layout
-                        constraintLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
-                        popularWalletsSelected = true
-                        proceedButtonIsEnabled.value = true
-                        popularWalletsSelectedIndex = index
+            for (index in 0 until 4) {
+
+                    val walletDetail = walletDetailsOriginal[index]
+
+
+                    val relativeLayout = fetchRelativeLayout(index)
+                    val imageView = when (index) {
+                        0 -> popularWalletImageView1
+                        1 -> popularWalletImageView2
+                        2 -> popularWalletImageView3
+                        3 -> popularWalletImageView4
+                        else -> null
                     }
-                }
+                    imageView?.setImageResource(walletDetail.walletImage)
+
+                    getPopularTextViewByNum(index+1).text =
+                        walletDetailsOriginal[index].walletName
+
+                    relativeLayout.setOnClickListener {
+                        liveDataPopularWalletSelectedOrNot.value = true
+                        if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
+                            // If the same constraint layout is clicked again
+                            relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+                            popularWalletsSelected = false
+                            proceedButtonIsEnabled.value = false
+                        } else {
+                            // Remove background from the previously selected constraint layout
+                            if (popularWalletsSelectedIndex != -1)
+                                fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(
+                                    R.drawable.popular_item_unselected_bg
+                                )
+                            // Set background for the clicked constraint layout
+                            relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                            popularWalletsSelected = true
+                            proceedButtonIsEnabled.value = true
+                            popularWalletsSelectedIndex = index
+                        }
+                    }
             }
         }
     }
+    private fun removeLoadingScreenState() {
+        Log.d("removeLoadingScreenState", "called")
+        binding.walletsRecyclerView.visibility = View.VISIBLE
+        binding.loadingRelativeLayout.visibility = View.GONE
+        binding.popularItemRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        binding.popularItemRelativeLayout2.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        binding.popularItemRelativeLayout3.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        binding.popularItemRelativeLayout4.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        colorAnimation.cancel()
+    }
 
     private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
-        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        val mainBottomSheetFragment =
+            parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
         mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
         dismiss()
     }
 
-    private fun fetchConstraintLayout(num: Int): ConstraintLayout {
-        Log.d("Number Called",num.toString())
-        val constraintLayout: ConstraintLayout = when (num) {
+    private fun fetchRelativeLayout(num: Int): RelativeLayout {
+        Log.d("Number Called", num.toString())
+        val relativeLayout: RelativeLayout = when (num) {
             0 ->
-                binding.popularWalletConstraintLayout1
+                binding.popularItemRelativeLayout1
+
             1 ->
-                binding.popularWalletConstraintLayout2
+                binding.popularItemRelativeLayout2
+
             2 ->
-                binding.popularWalletConstraintLayout3
+                binding.popularItemRelativeLayout3
+
             3 ->
-                binding.popularWalletConstraintLayout4
-            else -> throw IllegalArgumentException("Invalid number")
+                binding.popularItemRelativeLayout4
+
+            else -> throw IllegalArgumentException("Invalid number Relative layout")
         }
-        return constraintLayout
+        return relativeLayout
+    }
+    private fun getPopularHorizontalMailByNum(num: Int): HorizontalScrollView {
+        return when (num) {
+            1 -> binding.popularItemHorizontalScrollView1
+            2 -> binding.popularItemHorizontalScrollView2
+            3 -> binding.popularItemHorizontalScrollView3
+            4 -> binding.popularItemHorizontalScrollView4
+            else -> throw IllegalArgumentException("Invalid number: $num HorizontalMail")
+        }
+    }
+
+    private fun getPopularTextViewByNum(num: Int): TextView {
+        return when (num) {
+            1 -> binding.popularWalletsNameTextView1
+            2 -> binding.popularWalletsNameTextView2
+            3 -> binding.popularWalletsNameTextView3
+            4 -> binding.popularWalletsNameTextView4
+            else -> throw IllegalArgumentException("Invalid number: $num  TextView1234")
+        }
+    }
+
+    private fun startAutoScroll() {
+        for (iteration in 1 until 5) {
+            val horizontalScrollView = getPopularHorizontalMailByNum(iteration)
+            val textView = getPopularTextViewByNum(iteration)
+            horizontalScrollView.isHorizontalScrollBarEnabled = false
+            val scrollSpeed = 1 // Adjust this value to change scroll speed
+            val handler = Handler()
+            val runnable = object : Runnable {
+                var scrollPosition = 0
+                var direction = 1 // 1 for scrolling right, -1 for scrolling left
+
+                override fun run() {
+                    val maxX = textView.width - horizontalScrollView.width
+
+                    // Check if we've reached either end
+                    if (scrollPosition >= maxX) {
+                        direction = -1 // Change direction to scroll left
+                    } else if (scrollPosition <= 0) {
+                        direction = 1 // Change direction to scroll right
+                    }
+
+                    // Update scroll position based on direction and speed
+
+                    if (direction == -1) {
+                        horizontalScrollView.scrollTo(0, 0)
+                        direction = 1
+                        scrollPosition = 0
+                    }
+                    scrollPosition += scrollSpeed * direction
+                    horizontalScrollView.scrollTo(scrollPosition, 0)
+
+                    // Schedule next scroll
+                    handler.postDelayed(this, 60) // Adjust this value to change scroll interval
+                }
+            }
+
+            // Start scrolling after a delay
+            handler.postDelayed(
+                runnable,
+                2000
+            )// Adjust this value to change delay before scrolling starts
+        }
     }
 
     private val requestQueue: RequestQueue by lazy {
@@ -213,12 +309,23 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
         fetchTransactionDetailsFromSharedPreferences()
         walletDetailsOriginal = arrayListOf()
+        binding.popularItemHorizontalScrollView1.isHorizontalScrollBarEnabled = false
+        binding.popularItemHorizontalScrollView2.isHorizontalScrollBarEnabled = false
+        binding.popularItemHorizontalScrollView3.isHorizontalScrollBarEnabled = false
+        binding.popularItemHorizontalScrollView4.isHorizontalScrollBarEnabled = false
 
-        if(successScreenFullReferencePath != null){
-            Log.d("WalletBottomSheetReference",successScreenFullReferencePath!!)
+
+
+        if (successScreenFullReferencePath != null) {
+            Log.d("WalletBottomSheetReference", successScreenFullReferencePath!!)
         }
 
-        allWalletAdapter = WalletAdapter(walletDetailsFiltered, binding.walletsRecyclerView,liveDataPopularWalletSelectedOrNot)
+
+        allWalletAdapter = WalletAdapter(
+            walletDetailsFiltered,
+            binding.walletsRecyclerView,
+            liveDataPopularWalletSelectedOrNot,requireContext()
+        )
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.walletsRecyclerView.adapter = allWalletAdapter
 
@@ -233,9 +340,9 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
             SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                if(query.isEmpty()){
+                if (query.isEmpty()) {
                     removeRecyclerViewFromBelowEditText()
-                }else {
+                } else {
                     makeRecyclerViewJustBelowEditText()
                 }
                 filterWallets(query)
@@ -243,9 +350,9 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                if(newText.isEmpty()){
+                if (newText.isEmpty()) {
                     removeRecyclerViewFromBelowEditText()
-                }else {
+                } else {
                     makeRecyclerViewJustBelowEditText()
                 }
                 filterWallets(newText)
@@ -276,20 +383,20 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             }
         })
         allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
-            if(checkPositionObserved == null){
+            if (checkPositionObserved == null) {
                 disableProceedButton()
-            }else{
+            } else {
                 enableProceedButton()
                 checkedPosition = checkPositionObserved
             }
         })
-        binding.proceedButton.setOnClickListener(){
+        binding.proceedButton.setOnClickListener() {
             showLoadingInButton()
             var walletInstrumentTypeValue = ""
-            if(!!liveDataPopularWalletSelectedOrNot.value!!) {
+            if (!!liveDataPopularWalletSelectedOrNot.value!!) {
                 walletInstrumentTypeValue =
                     walletDetailsOriginal[popularWalletsSelectedIndex].instrumentTypeValue
-            }else{
+            } else {
                 walletInstrumentTypeValue =
                     walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
             }
@@ -298,9 +405,9 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             postRequest(requireContext(), walletInstrumentTypeValue)
         }
         liveDataPopularWalletSelectedOrNot.observe(this, Observer {
-            if(it){
+            if (it) {
                 allWalletAdapter.deselectSelectedItem()
-            }else{
+            } else {
                 unselectItemsInPopularLayout()
             }
         })
@@ -308,6 +415,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
         return binding.root
     }
+
     private fun startBackgroundAnimation() {
         val colorStart = resources.getColor(R.color.colorStart)
         val colorEnd = resources.getColor(R.color.colorEnd)
@@ -318,11 +426,11 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun createColorAnimation(startColor: Int, endColor: Int): ValueAnimator {
 
-        val layouts = Array<ConstraintLayout?>(4) { null }
-        layouts[0] = binding.popularWalletConstraintLayout1
-        layouts[1] = binding.popularWalletConstraintLayout2
-        layouts[2] = binding.popularWalletConstraintLayout3
-        layouts[3] = binding.popularWalletConstraintLayout4
+        val layouts = Array<RelativeLayout?>(4) { null }
+        layouts[0] = binding.popularItemRelativeLayout1
+        layouts[1] = binding.popularItemRelativeLayout2
+        layouts[2] = binding.popularItemRelativeLayout3
+        layouts[3] = binding.popularItemRelativeLayout4
         return ValueAnimator.ofObject(ArgbEvaluator(), startColor, endColor).apply {
             duration = 500 // duration in milliseconds
             interpolator = AccelerateDecelerateInterpolator()
@@ -337,7 +445,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun fetchWalletDetails(){
+    private fun fetchWalletDetails() {
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
@@ -346,7 +454,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                 val jsonObject = response
 
                 // Get the payment methods array
-                val paymentMethodsArray = jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
+                val paymentMethodsArray =
+                    jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
 
                 // Filter payment methods based on type equal to "Wallet"
                 for (i in 0 until paymentMethodsArray.length()) {
@@ -355,8 +464,16 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                         val walletName = paymentMethod.getString("title")
                         val walletImage = R.drawable.wallet_sample_logo
                         val walletBrand = paymentMethod.getString("brand")
-                        val walletInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
-                        walletDetailsOriginal.add(WalletDataClass(walletName,walletImage,walletBrand,walletInstrumentTypeValue))
+                        val walletInstrumentTypeValue =
+                            paymentMethod.getString("instrumentTypeValue")
+                        walletDetailsOriginal.add(
+                            WalletDataClass(
+                                walletName,
+                                walletImage,
+                                walletBrand,
+                                walletInstrumentTypeValue
+                            )
+                        )
                     }
                 }
 
@@ -364,6 +481,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                 showAllWallets()
                 fetchAndUpdateApiInPopularWallets()
                 removeLoadingScreenState()
+//                startAutoScroll()
 
 
             } catch (e: Exception) {
@@ -384,19 +502,11 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         })
         queue.add(jsonObjectAll)
     }
-    private fun applyLoadingScreenState(){
+
+    private fun applyLoadingScreenState() {
 
     }
-    private fun removeLoadingScreenState(){
-        Log.d("removeLoadingScreenState","called")
-        binding.walletsRecyclerView.visibility = View.VISIBLE
-        binding.loadingRelativeLayout.visibility = View.GONE
-        binding.popularWalletConstraintLayout1.setBackgroundResource(0)
-        binding.popularWalletConstraintLayout2.setBackgroundResource(0)
-        binding.popularWalletConstraintLayout3.setBackgroundResource(0)
-        binding.popularWalletConstraintLayout4.setBackgroundResource(0)
-        colorAnimation.cancel()
-    }
+
 
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
@@ -411,7 +521,14 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             if (query.toString().isBlank() || query.toString().isBlank()) {
                 showAllWallets()
             } else if (wallet.walletName.contains(query.toString(), ignoreCase = true)) {
-                walletDetailsFiltered.add(WalletDataClass(wallet.walletName, wallet.walletImage,wallet.walletBrand,wallet.instrumentTypeValue))
+                walletDetailsFiltered.add(
+                    WalletDataClass(
+                        wallet.walletName,
+                        wallet.walletImage,
+                        wallet.walletBrand,
+                        wallet.instrumentTypeValue
+                    )
+                )
             }
         }
 
@@ -429,21 +546,22 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         allWalletAdapter.notifyDataSetChanged()
     }
 
-    fun makeRecyclerViewJustBelowEditText(){
+    fun makeRecyclerViewJustBelowEditText() {
 
-        Log.d("View will be gone now","working fine")
+        Log.d("View will be gone now", "working fine")
         binding.textView19.visibility = View.GONE
         binding.textView24.visibility = View.GONE
         binding.linearLayout2.visibility = View.GONE
     }
 
-    fun removeRecyclerViewFromBelowEditText(){
-        Log.d("View will be gone now","working fine")
+    fun removeRecyclerViewFromBelowEditText() {
+        Log.d("View will be gone now", "working fine")
         binding.textView19.visibility = View.VISIBLE
         binding.textView24.visibility = View.VISIBLE
         binding.linearLayout2.visibility = View.VISIBLE
 
     }
+
     private fun showOverlayInCurrentBottomSheet() {
         // Create a semi-transparent overlay view
         overlayViewCurrentBottomSheet = View(requireContext())
@@ -456,13 +574,15 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             ViewGroup.LayoutParams.MATCH_PARENT
         )
     }
+
     public fun removeOverlayFromCurrentBottomSheet() {
         overlayViewCurrentBottomSheet?.let {
             // Remove the overlay view directly from the root view
             binding.root.removeView(it)
         }
     }
-    fun postRequest(context: Context, instrumentTypeValue : String) {
+
+    fun postRequest(context: Context, instrumentTypeValue: String) {
         Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -563,15 +683,18 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                         val actionObject = actionsArray.getJSONObject(i)
                         url = actionObject.getString("url")
                         // Do something with the URL
-                        Log.d("url and status", url+"\n"+status)
+                        Log.d("url and status", url + "\n" + status)
                     }
 
 
-                    if(status.equals("Approved")) {
+                    if (status.equals("Approved")) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                        bottomSheet.show(parentFragmentManager,"PaymentSuccessfulWithDetailsBottomSheet")
+                        bottomSheet.show(
+                            parentFragmentManager,
+                            "PaymentSuccessfulWithDetailsBottomSheet"
+                        )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
-                    }else{
+                    } else {
                         val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                         intent.putExtra("url", url)
                         startActivity(intent)
@@ -611,11 +734,14 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
+
+
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
         Log.d("Request Body Wallet", jsonStr)
     }
+
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
@@ -635,6 +761,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
+
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
         binding.textView6.setTextColor(
@@ -660,11 +787,16 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        token = sharedPreferences.getString("token","empty")
-        Log.d("data fetched from sharedPreferences",token.toString())
-        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
-        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+        val sharedPreferences =
+            requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token", "empty")
+        Log.d("data fetched from sharedPreferences", token.toString())
+        successScreenFullReferencePath =
+            sharedPreferences.getString("successScreenFullReferencePath", "empty")
+        Log.d(
+            "success screen path fetched from sharedPreferences",
+            successScreenFullReferencePath.toString()
+        )
     }
 
     fun extractMessageFromErrorResponse(response: String): String? {
@@ -679,6 +811,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         }
         return null
     }
+
     companion object {
 
     }

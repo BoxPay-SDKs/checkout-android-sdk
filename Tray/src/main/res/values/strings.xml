@@ -23,5 +23,5 @@
     <dimen name="heightOfRecyclerViewIndp">160dp</dimen>
     <color name="colorStart">#F1F1F1</color>
     <color name="colorEnd">#FAF9F9</color>
-    <color name = "tooltip_bg">#000000</color>
+    <color name="tooltip_bg">#000000</color>
 </resources>

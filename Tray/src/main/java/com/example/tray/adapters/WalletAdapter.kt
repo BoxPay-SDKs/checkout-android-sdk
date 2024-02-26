@@ -1,5 +1,6 @@
 package com.example.tray.adapters
 
+import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -9,11 +10,14 @@ import com.example.tray.R
 import com.example.tray.databinding.WalletItemBinding
 
 import com.example.tray.dataclasses.WalletDataClass
+import com.skydoves.balloon.BalloonAnimation
+import com.skydoves.balloon.createBalloon
 
 class WalletAdapter(
     private val walletDetails: ArrayList<WalletDataClass>,
     private val recyclerView: RecyclerView,
-    private var liveDataPopularItemSelectedOrNot : MutableLiveData<Boolean>
+    private var liveDataPopularItemSelectedOrNot : MutableLiveData<Boolean>,
+    private val context : Context
 ) : RecyclerView.Adapter<WalletAdapter.WalletAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
@@ -43,6 +47,30 @@ class WalletAdapter(
                 binding.root.setOnClickListener {
                     handleRadioButtonClick(adapterPosition)
                     liveDataPopularItemSelectedOrNot.value = false
+                }
+
+                val balloon = createBalloon(context) {
+                    setArrowSize(10)
+                    setWidthRatio(0.3f)
+                    setHeight(65)
+                    setArrowPosition(0.5f)
+                    setCornerRadius(4f)
+                    setAlpha(0.9f)
+                    setText(walletName)
+                    setTextColorResource(R.color.colorEnd)
+//                    setIconDrawable(ContextCompat.getDrawable(context, R.drawable.ic_profile))
+                    setBackgroundColorResource(R.color.tooltip_bg)
+//                    setOnBalloonClickListener(onBalloonClickListener)
+                    setBalloonAnimation(BalloonAnimation.FADE)
+                    setLifecycleOwner(lifecycleOwner)
+                }
+
+                binding.root.setOnLongClickListener { view ->
+
+                    Log.d("long click detected","net banking adapter")
+                    balloon.showAlignTop(binding.root)
+                    balloon.dismissWithDelay(2000L)
+                    true // Indicate that the long click event has been consumed
                 }
             }
         }
