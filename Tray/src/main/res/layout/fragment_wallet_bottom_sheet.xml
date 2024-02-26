@@ -11,7 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout123"
             android:layout_width="match_parent"
@@ -36,12 +35,13 @@
                 android:id="@+id/backButton"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:orientation="vertical"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="15dp"
+                android:gravity="center"
+                android:orientation="vertical"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:gravity="center">
+                app:layout_constraintTop_toTopOf="parent">
+
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -135,9 +135,9 @@
                                 android:id="@+id/linearLayout2"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
                                 android:orientation="horizontal"
                                 android:weightSum="4"
+                                android:layout_marginTop="12dp"
                                 app:layout_constraintStart_toStartOf="@+id/textView19"
                                 app:layout_constraintTop_toBottomOf="@+id/textView19">
 
@@ -146,27 +146,47 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp"
-                                    android:background="@drawable/loading_state">
+                                    >
 
-                                        <RelativeLayout
-                                            android:id="@+id/popularItemRelativeLayout1"
-                                            android:layout_width="50dp"
-                                            android:layout_height="50dp"
-                                            android:background="@drawable/popular_item_unselected_bg"
-                                            app:layout_constraintBottom_toBottomOf="parent"
+                                    <RelativeLayout
+                                        android:id="@+id/popularItemRelativeLayout1"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        android:background="@drawable/loading_state"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent">
+
+                                        <ImageView
+                                            android:id="@+id/popularWalletImageView1"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:layout_centerInParent="true"
                                             app:layout_constraintEnd_toEndOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toTopOf="parent">
+                                            app:layout_constraintTop_toTopOf="parent" />
+                                    </RelativeLayout>
+                                    <HorizontalScrollView
+                                        android:id="@+id/popularItemHorizontalScrollView1"
+                                        android:layout_width="60dp"
+                                        android:layout_height="wrap_content"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toBottomOf="@+id/popularItemRelativeLayout1">
 
-                                            <ImageView
-                                                android:id="@+id/popularWalletImageView1"
-                                                android:layout_width="wrap_content"
-                                                android:layout_height="wrap_content"
-                                                android:layout_centerInParent="true"
-                                                app:layout_constraintEnd_toEndOf="parent"
-                                                app:layout_constraintStart_toStartOf="parent"
-                                                app:layout_constraintTop_toTopOf="parent" />
-                                        </RelativeLayout>
+                                        <TextView
+                                            android:id="@+id/popularWalletsNameTextView1"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:gravity="center"
+                                            android:maxLines="1"
+                                            android:ellipsize="end"
+                                            android:textColor="#383838"
+                                            android:textSize="12sp"
+                                            android:fontFamily="@font/poppins"
+                                            />
+                                    </HorizontalScrollView>
 
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -175,15 +195,13 @@
                                     android:id="@+id/popularWalletConstraintLayout2"
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    android:layout_marginEnd="16dp"
-                                    android:background="@drawable/loading_state">
+                                    android:layout_marginEnd="16dp">
 
                                     <RelativeLayout
                                         android:id="@+id/popularItemRelativeLayout2"
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
-                                        android:background="@drawable/popular_item_unselected_bg"
-                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        android:background="@drawable/loading_state"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
@@ -197,6 +215,26 @@
                                             app:layout_constraintStart_toStartOf="parent"
                                             app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
+                                    <HorizontalScrollView
+                                        android:id="@+id/popularItemHorizontalScrollView2"
+                                        android:layout_width="60dp"
+                                        android:layout_height="wrap_content"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toBottomOf="@+id/popularItemRelativeLayout2">
+
+                                        <TextView
+                                            android:id="@+id/popularWalletsNameTextView2"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:gravity="center"
+                                            android:maxLines="1"
+                                            android:ellipsize="end"
+                                            android:textColor="#383838"
+                                            android:textSize="12sp"
+                                            android:fontFamily="@font/poppins" />
+                                    </HorizontalScrollView>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -204,15 +242,13 @@
                                     android:id="@+id/popularWalletConstraintLayout3"
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    android:layout_marginEnd="16dp"
-                                    android:background="@drawable/loading_state">
+                                    android:layout_marginEnd="16dp">
 
                                     <RelativeLayout
                                         android:id="@+id/popularItemRelativeLayout3"
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
-                                        android:background="@drawable/popular_item_unselected_bg"
-                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        android:background="@drawable/loading_state"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
@@ -226,6 +262,26 @@
                                             app:layout_constraintStart_toStartOf="parent"
                                             app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
+                                    <HorizontalScrollView
+                                        android:id="@+id/popularItemHorizontalScrollView3"
+                                        android:layout_width="60dp"
+                                        android:layout_height="wrap_content"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toBottomOf="@+id/popularItemRelativeLayout3">
+
+                                        <TextView
+                                            android:id="@+id/popularWalletsNameTextView3"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:gravity="center"
+                                            android:maxLines="1"
+                                            android:ellipsize="end"
+                                            android:textColor="#383838"
+                                            android:textSize="12sp"
+                                            android:fontFamily="@font/poppins"/>
+                                    </HorizontalScrollView>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -233,15 +289,14 @@
                                     android:id="@+id/popularWalletConstraintLayout4"
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
-                                    android:layout_marginEnd="16dp"
-                                    android:background="@drawable/loading_state">
+                                    android:layout_marginEnd="16dp">
 
                                     <RelativeLayout
                                         android:id="@+id/popularItemRelativeLayout4"
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
-                                        android:background="@drawable/popular_item_unselected_bg"
-                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        android:background="@drawable/loading_state"
+
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
@@ -252,8 +307,28 @@
                                             android:layout_height="wrap_content"
                                             android:layout_centerInParent="true" />
                                     </RelativeLayout>
+                                    <HorizontalScrollView
+                                        android:id="@+id/popularItemHorizontalScrollView4"
+                                        android:layout_width="60dp"
+                                        android:layout_height="wrap_content"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toBottomOf="@+id/popularItemRelativeLayout4">
 
+                                    <TextView
+                                        android:id="@+id/popularWalletsNameTextView4"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:maxLines="1"
+                                        android:ellipsize="end"
+                                        android:textColor="#383838"
+                                        android:textSize="12sp"
+                                        android:fontFamily="@font/poppins"/>
+                                    </HorizontalScrollView>
                                 </androidx.constraintlayout.widget.ConstraintLayout>
+
 
                             </LinearLayout>
 
@@ -275,6 +350,7 @@
                                 android:layout_height="400dp"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="0.0"
                                 app:layout_constraintStart_toStartOf="parent">
 
                                 <com.airbnb.lottie.LottieAnimationView

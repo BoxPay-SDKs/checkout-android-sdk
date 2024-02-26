@@ -1,12 +1,19 @@
 package com.example.tray
 
+import android.Manifest
 import android.animation.ObjectAnimator
 import android.app.Activity
 import android.app.Dialog
+import android.content.ActivityNotFoundException
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -19,8 +26,11 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.registerReceiver
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
@@ -30,7 +40,12 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModelTransactionDetails
+import com.example.tray.broadcaster.otpFetcher
 import com.example.tray.databinding.FragmentAddUPIIDBinding
+import com.example.tray.interfaces.OTPReceiveListener
+import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.common.api.Status
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -40,7 +55,7 @@ import java.util.Locale
 import java.util.TimeZone
 
 
-class AddUPIID : BottomSheetDialogFragment() {
+class AddUPIID : BottomSheetDialogFragment(), OTPReceiveListener {
     val sharedViewModel: SharedViewModelTransactionDetails by viewModels()
     private lateinit var binding: FragmentAddUPIIDBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
@@ -50,17 +65,19 @@ class AddUPIID : BottomSheetDialogFragment() {
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private var successScreenFullReferencePath: String? = null
     private var userVPA: String? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentAddUPIIDBinding.inflate(inflater, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+
         var checked = false
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding.progressBar.visibility = View.INVISIBLE
@@ -78,7 +95,19 @@ class AddUPIID : BottomSheetDialogFragment() {
 
 
 
+
         fetchTransactionDetailsFromSharedPreferences()
+
+
+
+        //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        //testing purpose
+
+        binding.textView.setOnClickListener(){
+            val bottomSheet = OTPBottomSheet()
+            bottomSheet.show(parentFragmentManager,"OTPBottomSheet")
+        }
+        //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -137,8 +166,15 @@ class AddUPIID : BottomSheetDialogFragment() {
             showLoadingInButton()
         }
 
+
+
+
+
+
         return binding.root
     }
+
+
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
         val sharedPreferences =
@@ -237,6 +273,13 @@ class AddUPIID : BottomSheetDialogFragment() {
         super.onStart()
 //        binding.editTextText.requestFocus()
     }
+
+//    private fun fetchOTPAutomatically(){
+//        val smsReceiver = otpFetcher(requireContext())
+//        smsReceiver.onReceive()
+//    }
+
+
 
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
@@ -474,6 +517,9 @@ class AddUPIID : BottomSheetDialogFragment() {
     companion object {
 
     }
+
+
+
     private fun launchSuccessScreen(context: Context) {
         try {
             val intent = Intent().apply {
@@ -491,5 +537,9 @@ class AddUPIID : BottomSheetDialogFragment() {
             // Handle the exception if the activity cannot be launched
             e.printStackTrace()
         }
+    }
+
+    override fun fetchOTP(otp: String) {
+        Log.d("fetch otp called",otp)
     }
 }

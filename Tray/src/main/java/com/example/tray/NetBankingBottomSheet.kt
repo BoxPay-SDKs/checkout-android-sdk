@@ -17,7 +17,10 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
+import android.widget.RelativeLayout
 import android.widget.SearchView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -190,7 +193,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
     private fun unselectItemsInPopularLayout(){
         if(popularBanksSelectedIndex != -1) {
-            fetchConstraintLayout(popularBanksSelectedIndex).setBackgroundResource(0)
+            fetchRelativeLayout(popularBanksSelectedIndex).setBackgroundResource(R.drawable.popular_item_unselected_bg)
         }
         popularBanksSelected = false
     }
@@ -201,10 +204,10 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         Log.d("removeLoadingScreenState","called")
         binding.banksRecyclerView.visibility = View.VISIBLE
         binding.loadingRelativeLayout.visibility = View.GONE
-        binding.popularBanksConstraintLayout1.setBackgroundResource(0)
-        binding.popularBanksConstraintLayout2.setBackgroundResource(0)
-        binding.popularBanksConstraintLayout3.setBackgroundResource(0)
-        binding.popularBanksConstraintLayout4.setBackgroundResource(0)
+        binding.popularBanksRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        binding.popularBanksRelativeLayout2.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        binding.popularBanksRelativeLayout3.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        binding.popularBanksRelativeLayout4.setBackgroundResource(R.drawable.popular_item_unselected_bg)
         colorAnimation.cancel()
     }
     override fun onCreateView(
@@ -361,7 +364,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.apply {
             for(index in 0 until 4){
                 val bankDetail = banksDetailsOriginal[index]
-                val constraintLayout = fetchConstraintLayout(index)
+                val constraintLayout = fetchRelativeLayout(index)
                 val imageView = when (index) {
                     0 -> popularBanksImageView1
                     1 -> popularBanksImageView2
@@ -370,18 +373,22 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     else -> null
                 }
                 imageView?.setImageResource(bankDetail.bankImage)
+
+                getPopularTextViewByNum(index+1).text =
+                    banksDetailsOriginal[index].bankName
+
                 constraintLayout.setOnClickListener {
                     liveDataPopularBankSelectedOrNot.value = true
 
                     if (popularBanksSelected && popularBanksSelectedIndex == index) {
                         // If the same constraint layout is clicked again
-                        constraintLayout.setBackgroundResource(0)
+                        constraintLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
                         popularBanksSelected = false
                         proceedButtonIsEnabled.value = false
                     } else {
                         // Remove background from the previously selected constraint layout
                         if (popularBanksSelectedIndex != -1)
-                            fetchConstraintLayout(popularBanksSelectedIndex).setBackgroundResource(0)
+                            fetchRelativeLayout(popularBanksSelectedIndex).setBackgroundResource(R.drawable.popular_item_unselected_bg)
                         // Set background for the clicked constraint layout
                         constraintLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
                         popularBanksSelected = true
@@ -390,6 +397,15 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     }
                 }
             }
+        }
+    }
+    private fun getPopularTextViewByNum(num: Int): TextView {
+        return when (num) {
+            1 -> binding.popularBanksNameTextView1
+            2 -> binding.popularBanksNameTextView2
+            3 -> binding.popularBanksNameTextView3
+            4 -> binding.popularBanksNameTextView4
+            else -> throw IllegalArgumentException("Invalid number: $num  TextView1234")
         }
     }
     private fun startBackgroundAnimation() {
@@ -402,11 +418,11 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     private fun createColorAnimation(startColor: Int, endColor: Int): ValueAnimator {
 
-        val layouts = Array<ConstraintLayout?>(4) { null }
-        layouts[0] = binding.popularBanksConstraintLayout1
-        layouts[1] = binding.popularBanksConstraintLayout2
-        layouts[2] = binding.popularBanksConstraintLayout3
-        layouts[3] = binding.popularBanksConstraintLayout4
+        val layouts = Array<RelativeLayout?>(4) { null }
+        layouts[0] = binding.popularBanksRelativeLayout1
+        layouts[1] = binding.popularBanksRelativeLayout2
+        layouts[2] = binding.popularBanksRelativeLayout3
+        layouts[3] = binding.popularBanksRelativeLayout4
         return ValueAnimator.ofObject(ArgbEvaluator(), startColor, endColor).apply {
             duration = 500 // duration in milliseconds
             interpolator = AccelerateDecelerateInterpolator()
@@ -421,19 +437,24 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun fetchConstraintLayout(num: Int): ConstraintLayout {
-        val constraintLayout: ConstraintLayout = when (num) {
+    private fun fetchRelativeLayout(num: Int): RelativeLayout {
+        Log.d("Number Called", num.toString())
+        val relativeLayout: RelativeLayout = when (num) {
             0 ->
-                binding.popularBanksConstraintLayout1
+                binding.popularBanksRelativeLayout1
+
             1 ->
-                binding.popularBanksConstraintLayout2
+                binding.popularBanksRelativeLayout2
+
             2 ->
-                binding.popularBanksConstraintLayout3
+                binding.popularBanksRelativeLayout3
+
             3 ->
-                binding.popularBanksConstraintLayout4
-            else -> throw IllegalArgumentException("Invalid number")
+                binding.popularBanksRelativeLayout4
+
+            else -> throw IllegalArgumentException("Invalid number Relative layout")
         }
-        return constraintLayout
+        return relativeLayout
     }
 
     fun postRequest(context: Context, bankInstrumentTypeValue: String) {
