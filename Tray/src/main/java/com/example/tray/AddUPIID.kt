@@ -86,10 +86,10 @@ class AddUPIID : BottomSheetDialogFragment() {
         //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //testing purpose
 
-//        binding.textView.setOnClickListener(){
-//            val bottomSheet = OTPBottomSheet()
-//            bottomSheet.show(parentFragmentManager,"OTPBottomSheet")
-//        }
+        binding.textView.setOnClickListener(){
+            val bottomSheet = OTPBottomSheet()
+            bottomSheet.show(parentFragmentManager,"OTPBottomSheet")
+        }
         //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

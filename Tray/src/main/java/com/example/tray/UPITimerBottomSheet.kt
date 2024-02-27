@@ -30,7 +30,6 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
     private var token: String? = null
     private var successScreenFullReferencePath: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
-    private var bottomSheet: FrameLayout? = null
     private var virtualPaymentAddress: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,10 +64,12 @@ class UPITimerBottomSheet : BottomSheetDialogFragment() {
 //        val layoutParams = bottomSheetContent.layoutParams
 //        layoutParams.height = desiredHeight
 //        bottomSheetContent.layoutParams = layoutParams
-            bottomSheetBehavior?.maxHeight = desiredHeight
+//            bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             dialog.setCancelable(false)
+
 
 
 
