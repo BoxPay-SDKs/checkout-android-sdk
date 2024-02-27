@@ -16,14 +16,14 @@ import com.skydoves.balloon.createBalloon
 class WalletAdapter(
     private val walletDetails: ArrayList<WalletDataClass>,
     private val recyclerView: RecyclerView,
-    private var liveDataPopularItemSelectedOrNot : MutableLiveData<Boolean>,
-    private val context : Context
+    private var liveDataPopularItemSelectedOrNot: MutableLiveData<Boolean>,
+    private val context: Context
 ) : RecyclerView.Adapter<WalletAdapter.WalletAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
-    inner class WalletAdapterViewHolder(val binding: WalletItemBinding) :
-        RecyclerView.ViewHolder(binding.root){
 
+    inner class WalletAdapterViewHolder(val binding: WalletItemBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
             binding.apply {
                 val walletName = walletDetails[position].walletName
@@ -66,15 +66,12 @@ class WalletAdapter(
                 }
 
                 binding.root.setOnLongClickListener { view ->
-
-                    Log.d("long click detected","net banking adapter")
                     balloon.showAlignTop(binding.root)
                     balloon.dismissWithDelay(2000L)
                     true // Indicate that the long click event has been consumed
                 }
             }
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WalletAdapterViewHolder {
@@ -94,6 +91,7 @@ class WalletAdapter(
     override fun onBindViewHolder(holder: WalletAdapterViewHolder, position: Int) {
         holder.bind(position)
     }
+
     private fun handleRadioButtonClick(position: Int) {
         if (checkedPosition != position) {
             // Change the background of the previously checked RadioButton
@@ -115,6 +113,7 @@ class WalletAdapter(
             checkPositionLiveData.value = checkedPosition
         }
     }
+
     fun deselectSelectedItem() {
         if (checkedPosition != RecyclerView.NO_POSITION) {
             val previousCheckedViewHolder =
@@ -126,7 +125,8 @@ class WalletAdapter(
             checkPositionLiveData.value = RecyclerView.NO_POSITION
         }
     }
-    fun getCheckedPosition() : Int{
+
+    fun getCheckedPosition(): Int {
         return checkedPosition
     }
 

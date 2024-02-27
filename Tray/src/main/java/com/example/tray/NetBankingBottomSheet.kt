@@ -42,6 +42,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
+import com.skydoves.balloon.BalloonAnimation
+import com.skydoves.balloon.BalloonCenterAlign
+import com.skydoves.balloon.createBalloon
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
@@ -364,7 +367,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.apply {
             for(index in 0 until 4){
                 val bankDetail = banksDetailsOriginal[index]
-                val constraintLayout = fetchRelativeLayout(index)
+                val relativeLayout = fetchRelativeLayout(index)
                 val imageView = when (index) {
                     0 -> popularBanksImageView1
                     1 -> popularBanksImageView2
@@ -377,12 +380,14 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 getPopularTextViewByNum(index+1).text =
                     banksDetailsOriginal[index].bankName
 
+                val constraintLayout = getConstraintLayoutByNum(index)
+
                 constraintLayout.setOnClickListener {
                     liveDataPopularBankSelectedOrNot.value = true
 
                     if (popularBanksSelected && popularBanksSelectedIndex == index) {
                         // If the same constraint layout is clicked again
-                        constraintLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+                        relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
                         popularBanksSelected = false
                         proceedButtonIsEnabled.value = false
                     } else {
@@ -390,14 +395,59 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         if (popularBanksSelectedIndex != -1)
                             fetchRelativeLayout(popularBanksSelectedIndex).setBackgroundResource(R.drawable.popular_item_unselected_bg)
                         // Set background for the clicked constraint layout
-                        constraintLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                        relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
                         popularBanksSelected = true
                         proceedButtonIsEnabled.value = true
                         popularBanksSelectedIndex = index
                     }
                 }
+
+                constraintLayout.setOnLongClickListener(){
+                    showToolTipPopularBanks(constraintLayout, banksDetailsOriginal[index].bankName)
+                    true
+                }
             }
         }
+    }
+    private fun getConstraintLayoutByNum(num: Int): ConstraintLayout {
+        val constraintLayout: ConstraintLayout = when (num) {
+            0 ->
+                binding.popularBanksConstraintLayout1
+
+            1 ->
+                binding.popularBanksConstraintLayout2
+
+            2 ->
+                binding.popularBanksConstraintLayout3
+
+            3 ->
+                binding.popularBanksConstraintLayout4
+
+            else -> throw IllegalArgumentException("Invalid number Relative layout")
+        }
+        return constraintLayout
+    }
+
+    private fun showToolTipPopularBanks(constraintLayout: ConstraintLayout,bankName : String){
+        val balloon = createBalloon(requireContext()) {
+            setArrowSize(10)
+            setWidthRatio(0.3f)
+            setHeight(65)
+            setArrowPosition(0.5f)
+            setCornerRadius(4f)
+            setAlpha(0.9f)
+            setText(bankName)
+            setTextColorResource(R.color.colorEnd)
+//                    setIconDrawable(ContextCompat.getDrawable(context, R.drawable.ic_profile))
+            setBackgroundColorResource(R.color.tooltip_bg)
+//                    setOnBalloonClickListener(onBalloonClickListener)
+            setBalloonAnimation(BalloonAnimation.FADE)
+            setLifecycleOwner(lifecycleOwner)
+        }
+
+        Log.d("long click detected","popular Net banking")
+        balloon.showAtCenter(constraintLayout,0,0, BalloonCenterAlign.TOP)
+        balloon.dismissWithDelay(2000L)
     }
     private fun getPopularTextViewByNum(num: Int): TextView {
         return when (num) {
@@ -671,7 +721,6 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
         Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
     }
-
     companion object {
 
     }

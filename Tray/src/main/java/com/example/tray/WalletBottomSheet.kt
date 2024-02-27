@@ -45,6 +45,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
+import com.skydoves.balloon.BalloonAnimation
+import com.skydoves.balloon.BalloonCenterAlign
+import com.skydoves.balloon.createBalloon
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
@@ -150,49 +153,97 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         popularWalletsSelected = false
     }
 
+    private fun getConstraintLayoutByNum(num: Int): ConstraintLayout {
+        val constraintLayout: ConstraintLayout = when (num) {
+            0 ->
+                binding.popularWalletConstraintLayout1
+
+            1 ->
+                binding.popularWalletConstraintLayout2
+
+            2 ->
+                binding.popularWalletConstraintLayout3
+
+            3 ->
+                binding.popularWalletConstraintLayout4
+
+            else -> throw IllegalArgumentException("Invalid number Relative layout")
+        }
+        return constraintLayout
+    }
+
     private fun fetchAndUpdateApiInPopularWallets() {
         binding.apply {
             for (index in 0 until 4) {
 
-                    val walletDetail = walletDetailsOriginal[index]
+                val walletDetail = walletDetailsOriginal[index]
 
 
-                    val relativeLayout = fetchRelativeLayout(index)
-                    val imageView = when (index) {
-                        0 -> popularWalletImageView1
-                        1 -> popularWalletImageView2
-                        2 -> popularWalletImageView3
-                        3 -> popularWalletImageView4
-                        else -> null
+                val relativeLayout = fetchRelativeLayout(index)
+                val imageView = when (index) {
+                    0 -> popularWalletImageView1
+                    1 -> popularWalletImageView2
+                    2 -> popularWalletImageView3
+                    3 -> popularWalletImageView4
+                    else -> null
+                }
+                imageView?.setImageResource(walletDetail.walletImage)
+
+                getPopularTextViewByNum(index + 1).text =
+                    walletDetailsOriginal[index].walletName
+
+                val constraintLayout = getConstraintLayoutByNum(index)
+
+                constraintLayout.setOnClickListener {
+                    liveDataPopularWalletSelectedOrNot.value = true
+                    if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
+                        // If the same constraint layout is clicked again
+                        relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+                        popularWalletsSelected = false
+                        proceedButtonIsEnabled.value = false
+                    } else {
+                        // Remove background from the previously selected constraint layout
+                        if (popularWalletsSelectedIndex != -1)
+                            fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(
+                                R.drawable.popular_item_unselected_bg
+                            )
+                        // Set background for the clicked constraint layout
+                        relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                        popularWalletsSelected = true
+                        proceedButtonIsEnabled.value = true
+                        popularWalletsSelectedIndex = index
                     }
-                    imageView?.setImageResource(walletDetail.walletImage)
+                }
 
-                    getPopularTextViewByNum(index+1).text =
-                        walletDetailsOriginal[index].walletName
-
-                    relativeLayout.setOnClickListener {
-                        liveDataPopularWalletSelectedOrNot.value = true
-                        if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
-                            // If the same constraint layout is clicked again
-                            relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-                            popularWalletsSelected = false
-                            proceedButtonIsEnabled.value = false
-                        } else {
-                            // Remove background from the previously selected constraint layout
-                            if (popularWalletsSelectedIndex != -1)
-                                fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(
-                                    R.drawable.popular_item_unselected_bg
-                                )
-                            // Set background for the clicked constraint layout
-                            relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
-                            popularWalletsSelected = true
-                            proceedButtonIsEnabled.value = true
-                            popularWalletsSelectedIndex = index
-                        }
-                    }
+                constraintLayout.setOnLongClickListener(){
+                    showToolTipPopularWallets(constraintLayout, walletDetailsOriginal[index].walletName)
+                    true
+                }
             }
         }
     }
+    private fun showToolTipPopularWallets(constraintLayout: ConstraintLayout,walletName : String){
+        val balloon = createBalloon(requireContext()) {
+            setArrowSize(10)
+            setWidthRatio(0.3f)
+            setHeight(65)
+            setArrowPosition(0.5f)
+            setCornerRadius(4f)
+            setAlpha(0.9f)
+            setText(walletName)
+            setTextColorResource(R.color.colorEnd)
+//                    setIconDrawable(ContextCompat.getDrawable(context, R.drawable.ic_profile))
+            setBackgroundColorResource(R.color.tooltip_bg)
+//                    setOnBalloonClickListener(onBalloonClickListener)
+            setBalloonAnimation(BalloonAnimation.FADE)
+            setLifecycleOwner(lifecycleOwner)
+        }
+
+        Log.d("long click detected","popular wallet")
+        balloon.showAtCenter(constraintLayout,0,0,BalloonCenterAlign.TOP)
+        balloon.dismissWithDelay(2000L)
+    }
+
     private fun removeLoadingScreenState() {
         Log.d("removeLoadingScreenState", "called")
         binding.walletsRecyclerView.visibility = View.VISIBLE
@@ -212,7 +263,6 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchRelativeLayout(num: Int): RelativeLayout {
-        Log.d("Number Called", num.toString())
         val relativeLayout: RelativeLayout = when (num) {
             0 ->
                 binding.popularItemRelativeLayout1
@@ -230,15 +280,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         }
         return relativeLayout
     }
-    private fun getPopularHorizontalMailByNum(num: Int): HorizontalScrollView {
-        return when (num) {
-            1 -> binding.popularItemHorizontalScrollView1
-            2 -> binding.popularItemHorizontalScrollView2
-            3 -> binding.popularItemHorizontalScrollView3
-            4 -> binding.popularItemHorizontalScrollView4
-            else -> throw IllegalArgumentException("Invalid number: $num HorizontalMail")
-        }
-    }
+
 
     private fun getPopularTextViewByNum(num: Int): TextView {
         return when (num) {
@@ -250,49 +292,48 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun startAutoScroll() {
-        for (iteration in 1 until 5) {
-            val horizontalScrollView = getPopularHorizontalMailByNum(iteration)
-            val textView = getPopularTextViewByNum(iteration)
-            horizontalScrollView.isHorizontalScrollBarEnabled = false
-            val scrollSpeed = 1 // Adjust this value to change scroll speed
-            val handler = Handler()
-            val runnable = object : Runnable {
-                var scrollPosition = 0
-                var direction = 1 // 1 for scrolling right, -1 for scrolling left
-
-                override fun run() {
-                    val maxX = textView.width - horizontalScrollView.width
-
-                    // Check if we've reached either end
-                    if (scrollPosition >= maxX) {
-                        direction = -1 // Change direction to scroll left
-                    } else if (scrollPosition <= 0) {
-                        direction = 1 // Change direction to scroll right
-                    }
-
-                    // Update scroll position based on direction and speed
-
-                    if (direction == -1) {
-                        horizontalScrollView.scrollTo(0, 0)
-                        direction = 1
-                        scrollPosition = 0
-                    }
-                    scrollPosition += scrollSpeed * direction
-                    horizontalScrollView.scrollTo(scrollPosition, 0)
-
-                    // Schedule next scroll
-                    handler.postDelayed(this, 60) // Adjust this value to change scroll interval
-                }
-            }
-
-            // Start scrolling after a delay
-            handler.postDelayed(
-                runnable,
-                2000
-            )// Adjust this value to change delay before scrolling starts
-        }
-    }
+//    private fun startAutoScroll() {
+//        for (iteration in 1 until 5) {
+//            val horizontalScrollView = getPopularHorizontalMailByNum(iteration)
+//            val textView = getPopularTextViewByNum(iteration)
+//            val scrollSpeed = 1 // Adjust this value to change scroll speed
+//            val handler = Handler()
+//            val runnable = object : Runnable {
+//                var scrollPosition = 0
+//                var direction = 1 // 1 for scrolling right, -1 for scrolling left
+//
+//                override fun run() {
+//                    val maxX = textView.width - horizontalScrollView.width
+//
+//                    // Check if we've reached either end
+//                    if (scrollPosition >= maxX) {
+//                        direction = -1 // Change direction to scroll left
+//                    } else if (scrollPosition <= 0) {
+//                        direction = 1 // Change direction to scroll right
+//                    }
+//
+//                    // Update scroll position based on direction and speed
+//
+//                    if (direction == -1) {
+//                        horizontalScrollView.scrollTo(0, 0)
+//                        direction = 1
+//                        scrollPosition = 0
+//                    }
+//                    scrollPosition += scrollSpeed * direction
+//                    horizontalScrollView.scrollTo(scrollPosition, 0)
+//
+//                    // Schedule next scroll
+//                    handler.postDelayed(this, 60) // Adjust this value to change scroll interval
+//                }
+//            }
+//
+//            // Start scrolling after a delay
+//            handler.postDelayed(
+//                runnable,
+//                2000
+//            )// Adjust this value to change delay before scrolling starts
+//        }
+//    }
 
     private val requestQueue: RequestQueue by lazy {
         Volley.newRequestQueue(requireContext())
@@ -309,10 +350,6 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
         fetchTransactionDetailsFromSharedPreferences()
         walletDetailsOriginal = arrayListOf()
-        binding.popularItemHorizontalScrollView1.isHorizontalScrollBarEnabled = false
-        binding.popularItemHorizontalScrollView2.isHorizontalScrollBarEnabled = false
-        binding.popularItemHorizontalScrollView3.isHorizontalScrollBarEnabled = false
-        binding.popularItemHorizontalScrollView4.isHorizontalScrollBarEnabled = false
 
 
 
@@ -324,7 +361,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         allWalletAdapter = WalletAdapter(
             walletDetailsFiltered,
             binding.walletsRecyclerView,
-            liveDataPopularWalletSelectedOrNot,requireContext()
+            liveDataPopularWalletSelectedOrNot, requireContext()
         )
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.walletsRecyclerView.adapter = allWalletAdapter

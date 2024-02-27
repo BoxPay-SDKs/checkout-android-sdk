@@ -151,7 +151,6 @@
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
                                         android:background="@drawable/loading_state"
-                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
@@ -195,7 +194,6 @@
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
                                         android:background="@drawable/loading_state"
-                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
@@ -238,7 +236,6 @@
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
                                         android:background="@drawable/loading_state"
-                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
@@ -281,7 +278,6 @@
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
                                         android:background="@drawable/loading_state"
-                                        app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
@@ -343,7 +339,7 @@
                                     android:layout_height="50dp"
                                     android:layout_centerInParent="true"
                                     app:lottie_autoPlay="true"
-                                    app:lottie_fileName="complete_json.json"
+                                    app:lottie_fileName="boxpayLogo.json"
                                     app:lottie_loop="true" />
 
                                 <TextView
