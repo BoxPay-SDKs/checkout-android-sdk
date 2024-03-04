@@ -30,9 +30,15 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.VolleyError
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.OverlayViewModel
 import com.example.tray.adapters.OrderSummaryItemsAdapter
 import com.example.tray.databinding.FragmentMainBottomSheetBinding
+import com.example.tray.dataclasses.WalletDataClass
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -50,6 +56,12 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var i = 1
     private var transactionAmount: String? = null
+    private var upiAvailable = false
+    private var upiCollectMethod = false
+    private var upiIntentMethod = false
+    private var cardsMethod = false
+    private var walletMethods = false
+    private var netBankingMethods = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -93,6 +105,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             val upiApps = packageManager.queryIntentActivities(upiIntent, 0)
 
             if (appName == "PhonePe") {
+                i++;
                 Log.d("UPI App", appName)
                 Log.d("UPI App Package Name", app.packageName)
 
@@ -101,6 +114,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
             // If the app can handle the UPI intent, it's a UPI app
             if (!upiApps.isEmpty()) {
+                i++;
                 Log.d("UPI App", appName)
                 Log.d("UPI App Package Name", app.packageName)
 
@@ -159,6 +173,10 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         hidePriceBreakUp()
         getAndSetOrderDetails()
+
+
+
+        fetchAllPaymentMethods()
         val packageManager = requireContext().packageManager
         getAllInstalledApps(packageManager)
 
@@ -267,6 +285,83 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         return binding.root
     }
+    private fun fetchAllPaymentMethods() {
+        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
+
+            try {
+                val jsonObject = response
+
+                // Get the payment methods array
+                val paymentMethodsArray =
+                    jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
+
+                // Filter payment methods based on type equal to "Wallet"
+                for (i in 0 until paymentMethodsArray.length()) {
+                    val paymentMethod = paymentMethodsArray.getJSONObject(i)
+                    val paymentMethodName = paymentMethod.getString("type")
+                    Log.d("paymentMethodName",paymentMethodName)
+                    if(paymentMethodName == "Upi"){
+                        val brand = paymentMethod.getString("brand")
+                        if(brand == "UpiCollect"){
+                            upiCollectMethod = true
+                            upiAvailable = true
+                        }else if(brand == "UpiIntent"){
+                            upiIntentMethod = true
+                            upiAvailable = true
+                        }
+                    }else if(paymentMethodName == "Card"){
+                        cardsMethod = true
+                    }else if(paymentMethodName == "Wallet"){
+                        walletMethods = true
+                    }else if(paymentMethodName == "NetBanking"){
+                        netBankingMethods = true
+                    }
+                }
+
+
+                if(upiAvailable){
+                    binding.cardView4.visibility = View.VISIBLE
+                    if(upiIntentMethod){
+                        binding.payUsingAnyUPIConstraint.visibility = View.VISIBLE
+                    }
+                    if(upiCollectMethod){
+                        binding.addNewUPIIDConstraint.visibility = View.VISIBLE
+                    }
+                }
+                if(cardsMethod){
+                    binding.cardView5.visibility = View.VISIBLE
+                }
+                if(walletMethods){
+                    Log.d("wallet is enabled",walletMethods.toString())
+                    binding.cardView6.visibility = View.VISIBLE
+                }
+                if(netBankingMethods){
+                    binding.cardView7.visibility = View.VISIBLE
+                }
+
+
+
+            } catch (e: Exception) {
+                Log.d("Error Occured", e.toString())
+                e.printStackTrace()
+            }
+
+        }, { error ->
+
+            Log.e("Error", "Error occurred: ${error.message}")
+            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                val errorResponse = String(error.networkResponse.data)
+                Log.e("Error", " fetching wallets error response: $errorResponse")
+//                binding.errorField.visibility = View.VISIBLE
+//                binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
+//                hideLoadingInButton()
+            }
+        })
+        queue.add(jsonObjectAll)
+    }
+
     fun enabledButtonsForAllPaymentMethods(){
         binding.payUsingAnyUPIConstraint.isEnabled = true
         binding.addNewUPIIDConstraint.isEnabled = true

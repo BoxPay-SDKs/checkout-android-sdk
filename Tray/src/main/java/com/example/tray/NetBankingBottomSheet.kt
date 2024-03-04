@@ -61,9 +61,10 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var checkedPosition: Int? = null
     private var successScreenFullReferencePath: String? = null
-    var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> = MutableLiveData<Boolean>().apply {
-        value = false
-    }
+    var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> =
+        MutableLiveData<Boolean>().apply {
+            value = false
+        }
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
@@ -194,17 +195,20 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         })
         queue.add(jsonObjectAll)
     }
-    private fun unselectItemsInPopularLayout(){
-        if(popularBanksSelectedIndex != -1) {
+
+    private fun unselectItemsInPopularLayout() {
+        if (popularBanksSelectedIndex != -1) {
             fetchRelativeLayout(popularBanksSelectedIndex).setBackgroundResource(R.drawable.popular_item_unselected_bg)
         }
         popularBanksSelected = false
     }
-    private fun applyLoadingScreenState(){
+
+    private fun applyLoadingScreenState() {
 
     }
-    private fun removeLoadingScreenState(){
-        Log.d("removeLoadingScreenState","called")
+
+    private fun removeLoadingScreenState() {
+        Log.d("removeLoadingScreenState", "called")
         binding.banksRecyclerView.visibility = View.VISIBLE
         binding.loadingRelativeLayout.visibility = View.GONE
         binding.popularBanksRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
@@ -213,6 +217,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.popularBanksRelativeLayout4.setBackgroundResource(R.drawable.popular_item_unselected_bg)
         colorAnimation.cancel()
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -223,7 +228,12 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         fetchTransactionDetailsFromSharedPreferences()
 
         banksDetailsOriginal = arrayListOf()
-        allBanksAdapter = NetbankingBanksAdapter(banksDetailsFiltered, binding.banksRecyclerView,liveDataPopularBankSelectedOrNot,requireContext())
+        allBanksAdapter = NetbankingBanksAdapter(
+            banksDetailsFiltered,
+            binding.banksRecyclerView,
+            liveDataPopularBankSelectedOrNot,
+            requireContext()
+        )
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
         binding.boxPayLogoLottieAnimation.playAnimation()
@@ -231,8 +241,8 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         fetchBanksDetails()
         hideLoadingInButton()
 
-        if(successScreenFullReferencePath != null){
-            Log.d("NetbankingBottomSheetReference",successScreenFullReferencePath!!)
+        if (successScreenFullReferencePath != null) {
+            Log.d("NetbankingBottomSheetReference", successScreenFullReferencePath!!)
         }
         var enabled = false
         binding.checkingTextView.setOnClickListener() {
@@ -253,9 +263,9 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
 
         liveDataPopularBankSelectedOrNot.observe(this, Observer {
-            if(it){
+            if (it) {
                 allBanksAdapter.deselectSelectedItem()
-            }else{
+            } else {
                 unselectItemsInPopularLayout()
             }
         })
@@ -297,10 +307,10 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.setOnClickListener() {
             showLoadingInButton()
             var bankInstrumentTypeValue = ""
-            if(!!liveDataPopularBankSelectedOrNot.value!!) {
+            if (!!liveDataPopularBankSelectedOrNot.value!!) {
                 bankInstrumentTypeValue =
                     banksDetailsOriginal[popularBanksSelectedIndex].bankInstrumentTypeValue
-            }else{
+            } else {
                 bankInstrumentTypeValue =
                     banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
             }
@@ -311,8 +321,10 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
         return binding.root
     }
+
     private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
-        val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        val mainBottomSheetFragment =
+            parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
         mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
         dismiss()
     }
@@ -357,6 +369,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.textView24.visibility = View.GONE
         binding.linearLayout2.visibility = View.GONE
     }
+
     fun removeRecyclerViewFromBelowEditText() {
         binding.textView19.visibility = View.VISIBLE
         binding.textView24.visibility = View.VISIBLE
@@ -365,50 +378,60 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     private fun fetchAndUpdateApiInPopularBanks() {
         binding.apply {
-            for(index in 0 until 4){
-                val bankDetail = banksDetailsOriginal[index]
-                val relativeLayout = fetchRelativeLayout(index)
-                val imageView = when (index) {
-                    0 -> popularBanksImageView1
-                    1 -> popularBanksImageView2
-                    2 -> popularBanksImageView3
-                    3 -> popularBanksImageView4
-                    else -> null
-                }
-                imageView?.setImageResource(bankDetail.bankImage)
-
-                getPopularTextViewByNum(index+1).text =
-                    banksDetailsOriginal[index].bankName
-
+            for (index in 0 until 4) {
                 val constraintLayout = getConstraintLayoutByNum(index)
 
-                constraintLayout.setOnClickListener {
-                    liveDataPopularBankSelectedOrNot.value = true
-
-                    if (popularBanksSelected && popularBanksSelectedIndex == index) {
-                        // If the same constraint layout is clicked again
-                        relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-                        popularBanksSelected = false
-                        proceedButtonIsEnabled.value = false
-                    } else {
-                        // Remove background from the previously selected constraint layout
-                        if (popularBanksSelectedIndex != -1)
-                            fetchRelativeLayout(popularBanksSelectedIndex).setBackgroundResource(R.drawable.popular_item_unselected_bg)
-                        // Set background for the clicked constraint layout
-                        relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
-                        popularBanksSelected = true
-                        proceedButtonIsEnabled.value = true
-                        popularBanksSelectedIndex = index
+                if (index < banksDetailsOriginal.size) {
+                    val bankDetail = banksDetailsOriginal[index]
+                    val relativeLayout = fetchRelativeLayout(index)
+                    val imageView = when (index) {
+                        0 -> popularBanksImageView1
+                        1 -> popularBanksImageView2
+                        2 -> popularBanksImageView3
+                        3 -> popularBanksImageView4
+                        else -> null
                     }
-                }
+                    imageView?.setImageResource(bankDetail.bankImage)
 
-                constraintLayout.setOnLongClickListener(){
-                    showToolTipPopularBanks(constraintLayout, banksDetailsOriginal[index].bankName)
-                    true
+                    getPopularTextViewByNum(index + 1).text =
+                        banksDetailsOriginal[index].bankName
+
+                    constraintLayout.setOnClickListener {
+                        liveDataPopularBankSelectedOrNot.value = true
+
+                        if (popularBanksSelected && popularBanksSelectedIndex == index) {
+                            // If the same constraint layout is clicked again
+                            relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+                            popularBanksSelected = false
+                            proceedButtonIsEnabled.value = false
+                        } else {
+                            // Remove background from the previously selected constraint layout
+                            if (popularBanksSelectedIndex != -1)
+                                fetchRelativeLayout(popularBanksSelectedIndex).setBackgroundResource(
+                                    R.drawable.popular_item_unselected_bg
+                                )
+                            // Set background for the clicked constraint layout
+                            relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                            popularBanksSelected = true
+                            proceedButtonIsEnabled.value = true
+                            popularBanksSelectedIndex = index
+                        }
+                    }
+
+                    constraintLayout.setOnLongClickListener() {
+                        showToolTipPopularBanks(
+                            constraintLayout,
+                            banksDetailsOriginal[index].bankName
+                        )
+                        true
+                    }
+                }else{
+                    constraintLayout.visibility = View.GONE
                 }
             }
         }
     }
+
     private fun getConstraintLayoutByNum(num: Int): ConstraintLayout {
         val constraintLayout: ConstraintLayout = when (num) {
             0 ->
@@ -428,7 +451,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         return constraintLayout
     }
 
-    private fun showToolTipPopularBanks(constraintLayout: ConstraintLayout,bankName : String){
+    private fun showToolTipPopularBanks(constraintLayout: ConstraintLayout, bankName: String) {
         val balloon = createBalloon(requireContext()) {
             setArrowSize(10)
             setWidthRatio(0.3f)
@@ -445,10 +468,11 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
             setLifecycleOwner(lifecycleOwner)
         }
 
-        Log.d("long click detected","popular Net banking")
-        balloon.showAtCenter(constraintLayout,0,0, BalloonCenterAlign.TOP)
+        Log.d("long click detected", "popular Net banking")
+        balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.TOP)
         balloon.dismissWithDelay(2000L)
     }
+
     private fun getPopularTextViewByNum(num: Int): TextView {
         return when (num) {
             1 -> binding.popularBanksNameTextView1
@@ -458,6 +482,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
             else -> throw IllegalArgumentException("Invalid number: $num  TextView1234")
         }
     }
+
     private fun startBackgroundAnimation() {
         val colorStart = resources.getColor(R.color.colorStart)
         val colorEnd = resources.getColor(R.color.colorEnd)
@@ -603,15 +628,18 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         val actionObject = actionsArray.getJSONObject(i)
                         url = actionObject.getString("url")
                         // Do something with the URL
-                        Log.d("url and status", url+"\n"+status)
+                        Log.d("url and status", url + "\n" + status)
                     }
 
 
-                    if(status.equals("Approved")) {
+                    if (status.equals("Approved")) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                        bottomSheet.show(parentFragmentManager,"PaymentSuccessfulWithDetailsBottomSheet")
+                        bottomSheet.show(
+                            parentFragmentManager,
+                            "PaymentSuccessfulWithDetailsBottomSheet"
+                        )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
-                    }else{
+                    } else {
                         val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                         intent.putExtra("url", url)
                         startActivity(intent)
@@ -714,13 +742,20 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
         return null
     }
+
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        token = sharedPreferences.getString("token","empty")
-        Log.d("data fetched from sharedPreferences",token.toString())
-        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
-        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+        val sharedPreferences =
+            requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token", "empty")
+        Log.d("data fetched from sharedPreferences", token.toString())
+        successScreenFullReferencePath =
+            sharedPreferences.getString("successScreenFullReferencePath", "empty")
+        Log.d(
+            "success screen path fetched from sharedPreferences",
+            successScreenFullReferencePath.toString()
+        )
     }
+
     companion object {
 
     }

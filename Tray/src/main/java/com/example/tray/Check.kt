@@ -17,6 +17,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.ActivityCheckBinding
 import com.example.tray.databinding.CustomRadioButtonLayoutBinding
+import com.google.gson.GsonBuilder
 import org.json.JSONObject
 
 
@@ -181,6 +182,7 @@ class Check : AppCompatActivity() {
         var token = ""
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
+                logJsonObject(response)
                 val tokenFetched = response.getString("token")
                 Log.d("token fetched", token)
                 tokenLiveData.value = tokenFetched
@@ -205,6 +207,11 @@ class Check : AppCompatActivity() {
             }
         }
         queue.add(request)
+    }
+    fun logJsonObject(jsonObject: JSONObject) {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        val jsonStr = gson.toJson(jsonObject)
+        Log.d("Request Body Check", jsonStr)
     }
 
 
