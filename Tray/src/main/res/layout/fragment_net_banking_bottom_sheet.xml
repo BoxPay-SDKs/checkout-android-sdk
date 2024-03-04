@@ -164,21 +164,21 @@
                                             app:layout_constraintStart_toStartOf="parent"
                                             app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
+
                                     <TextView
                                         android:id="@+id/popularBanksNameTextView1"
                                         android:layout_width="60dp"
                                         android:layout_height="wrap_content"
+                                        android:ellipsize="end"
+                                        android:fontFamily="@font/poppins"
                                         android:gravity="center"
                                         android:maxLines="1"
-                                        android:ellipsize="end"
                                         android:textColor="#383838"
                                         android:textSize="12sp"
-                                        android:fontFamily="@font/poppins"
-                                        android:text="Popular Bank Name"
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toBottomOf="@+id/popularBanksRelativeLayout1"/>
+                                        app:layout_constraintTop_toBottomOf="@+id/popularBanksRelativeLayout1" />
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -207,21 +207,21 @@
                                             app:layout_constraintStart_toStartOf="parent"
                                             app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
+
                                     <TextView
                                         android:id="@+id/popularBanksNameTextView2"
                                         android:layout_width="60dp"
                                         android:layout_height="wrap_content"
+                                        android:ellipsize="end"
+                                        android:fontFamily="@font/poppins"
                                         android:gravity="center"
                                         android:maxLines="1"
-                                        android:ellipsize="end"
                                         android:textColor="#383838"
                                         android:textSize="12sp"
-                                        android:fontFamily="@font/poppins"
-                                        android:text="Popular Bank Name"
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toBottomOf="@+id/popularBanksRelativeLayout2"/>
+                                        app:layout_constraintTop_toBottomOf="@+id/popularBanksRelativeLayout2" />
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -249,21 +249,21 @@
                                             app:layout_constraintStart_toStartOf="parent"
                                             app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
+
                                     <TextView
                                         android:id="@+id/popularBanksNameTextView3"
                                         android:layout_width="60dp"
                                         android:layout_height="wrap_content"
+                                        android:ellipsize="end"
+                                        android:fontFamily="@font/poppins"
                                         android:gravity="center"
                                         android:maxLines="1"
-                                        android:ellipsize="end"
                                         android:textColor="#383838"
                                         android:textSize="12sp"
-                                        android:fontFamily="@font/poppins"
-                                        android:text="Popular Bank Name"
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toBottomOf="@+id/popularBanksRelativeLayout3"/>
+                                        app:layout_constraintTop_toBottomOf="@+id/popularBanksRelativeLayout3" />
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -290,21 +290,20 @@
                                     </RelativeLayout>
 
 
-                                        <TextView
-                                            android:id="@+id/popularBanksNameTextView4"
-                                            android:layout_width="60dp"
-                                            android:layout_height="wrap_content"
-                                            android:gravity="center"
-                                            android:maxLines="1"
-                                            android:ellipsize="end"
-                                            android:textColor="#383838"
-                                            android:textSize="12sp"
-                                            android:fontFamily="@font/poppins"
-                                            android:text="Popular Bank Name"
-                                            app:layout_constraintBottom_toBottomOf="parent"
-                                            app:layout_constraintEnd_toEndOf="parent"
-                                            app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toBottomOf="@+id/popularBanksRelativeLayout4"/>
+                                    <TextView
+                                        android:id="@+id/popularBanksNameTextView4"
+                                        android:layout_width="60dp"
+                                        android:layout_height="wrap_content"
+                                        android:ellipsize="end"
+                                        android:fontFamily="@font/poppins"
+                                        android:gravity="center"
+                                        android:maxLines="1"
+                                        android:textColor="#383838"
+                                        android:textSize="12sp"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toBottomOf="@+id/popularBanksRelativeLayout4" />
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -377,7 +376,6 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/nestedScrollView">
-
                         <ImageView
                             android:id="@+id/imageView5"
                             android:layout_width="wrap_content"
@@ -392,16 +390,13 @@
                             android:id="@+id/textView4"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="5dp"
-                            android:enabled="false"
                             android:fontFamily="@font/poppins"
-                            android:gravity="center"
-                            android:text="Invalid UPI ID. Please check and retry.  "
+                            android:gravity="left"
                             android:textColor="#B9232F"
                             android:textSize="12sp"
-                            app:layout_constraintBottom_toBottomOf="parent"
+                            android:layout_marginStart="6dp"
                             app:layout_constraintStart_toEndOf="@+id/imageView5"
-                            app:layout_constraintTop_toTopOf="parent" />
+                            app:layout_constraintTop_toTopOf="@+id/imageView5" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

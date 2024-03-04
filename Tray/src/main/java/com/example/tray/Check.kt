@@ -114,7 +114,7 @@ class Check : AppCompatActivity() {
 
         val jsonData = JSONObject("""{
     "context": {
-        "countryCode": "SG",
+        "countryCode": "IN",
         "legalEntity": {
             "code": "demo_merchant"
         },
@@ -123,7 +123,7 @@ class Check : AppCompatActivity() {
     "paymentType": "S",
     "money": {
         "amount": "2197",
-        "currencyCode": "EUR"
+        "currencyCode": "INR"
     },
     "descriptor": {
         "line1": "Some descriptor"

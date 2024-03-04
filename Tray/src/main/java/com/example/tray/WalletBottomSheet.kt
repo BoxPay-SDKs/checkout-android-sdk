@@ -174,54 +174,60 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     private fun fetchAndUpdateApiInPopularWallets() {
         binding.apply {
             for (index in 0 until 4) {
-
-                val walletDetail = walletDetailsOriginal[index]
-
-
-                val relativeLayout = fetchRelativeLayout(index)
-                val imageView = when (index) {
-                    0 -> popularWalletImageView1
-                    1 -> popularWalletImageView2
-                    2 -> popularWalletImageView3
-                    3 -> popularWalletImageView4
-                    else -> null
-                }
-                imageView?.setImageResource(walletDetail.walletImage)
-
-                getPopularTextViewByNum(index + 1).text =
-                    walletDetailsOriginal[index].walletName
-
                 val constraintLayout = getConstraintLayoutByNum(index)
 
-                constraintLayout.setOnClickListener {
-                    liveDataPopularWalletSelectedOrNot.value = true
-                    if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
-                        // If the same constraint layout is clicked again
-                        relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-                        popularWalletsSelected = false
-                        proceedButtonIsEnabled.value = false
-                    } else {
-                        // Remove background from the previously selected constraint layout
-                        if (popularWalletsSelectedIndex != -1)
-                            fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(
-                                R.drawable.popular_item_unselected_bg
-                            )
-                        // Set background for the clicked constraint layout
-                        relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
-                        popularWalletsSelected = true
-                        proceedButtonIsEnabled.value = true
-                        popularWalletsSelectedIndex = index
-                    }
-                }
+                if (index < walletDetailsOriginal.size) {
+                    val walletDetail = walletDetailsOriginal[index]
 
-                constraintLayout.setOnLongClickListener(){
-                    showToolTipPopularWallets(constraintLayout, walletDetailsOriginal[index].walletName)
-                    true
+                    val relativeLayout = fetchRelativeLayout(index)
+                    val imageView = when (index) {
+                        0 -> popularWalletImageView1
+                        1 -> popularWalletImageView2
+                        2 -> popularWalletImageView3
+                        3 -> popularWalletImageView4
+                        else -> null
+                    }
+                    imageView?.setImageResource(walletDetail.walletImage)
+
+                    getPopularTextViewByNum(index + 1).text =
+                        walletDetailsOriginal[index].walletName
+
+                    constraintLayout.setOnClickListener {
+                        liveDataPopularWalletSelectedOrNot.value = true
+                        if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
+                            // If the same constraint layout is clicked again
+                            relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+                            popularWalletsSelected = false
+                            proceedButtonIsEnabled.value = false
+                        } else {
+                            // Remove background from the previously selected constraint layout
+                            if (popularWalletsSelectedIndex != -1)
+                                fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(
+                                    R.drawable.popular_item_unselected_bg
+                                )
+                            // Set background for the clicked constraint layout
+                            relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                            popularWalletsSelected = true
+                            proceedButtonIsEnabled.value = true
+                            popularWalletsSelectedIndex = index
+                        }
+                    }
+
+                    constraintLayout.setOnLongClickListener() {
+                        showToolTipPopularWallets(
+                            constraintLayout,
+                            walletDetailsOriginal[index].walletName
+                        )
+                        true
+                    }
+                }else{
+                    constraintLayout.visibility = View.GONE
                 }
             }
         }
     }
-    private fun showToolTipPopularWallets(constraintLayout: ConstraintLayout,walletName : String){
+
+    private fun showToolTipPopularWallets(constraintLayout: ConstraintLayout, walletName: String) {
         val balloon = createBalloon(requireContext()) {
             setArrowSize(10)
             setWidthRatio(0.3f)
@@ -238,8 +244,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             setLifecycleOwner(lifecycleOwner)
         }
 
-        Log.d("long click detected","popular wallet")
-        balloon.showAtCenter(constraintLayout,0,0,BalloonCenterAlign.TOP)
+        Log.d("long click detected", "popular wallet")
+        balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.TOP)
         balloon.dismissWithDelay(2000L)
     }
 
@@ -339,7 +345,8 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun hideKeyboard() {
-        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        val imm =
+            requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
     }
 
@@ -453,7 +460,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             }
         })
 
-        binding.searchView.setOnCloseListener(){
+        binding.searchView.setOnCloseListener() {
 
             true
         }
