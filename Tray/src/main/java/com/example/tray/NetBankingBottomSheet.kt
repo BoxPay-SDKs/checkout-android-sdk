@@ -532,7 +532,7 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
         return relativeLayout
     }
 
-    fun postRequest(context: Context, bankInstrumentTypeValue: String) {
+    private fun postRequest(context: Context, bankInstrumentTypeValue: String) {
         Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -640,9 +640,12 @@ class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                        intent.putExtra("url", url)
-                        startActivity(intent)
+//                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+//                        intent.putExtra("url", url)
+//                        startActivity(intent)
+
+                        val bottomSheet = ForceTestPaymentBottomSheet()
+                        bottomSheet.show(parentFragmentManager,"ForceTestPaymentOpenByWallet")
                     }
 
                 } catch (e: JSONException) {

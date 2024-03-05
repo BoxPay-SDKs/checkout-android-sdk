@@ -111,10 +111,9 @@ class Check : AppCompatActivity() {
     fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
         val url = "https://test-apis.boxpay.tech/v0/merchants/hK3JrVc6ys/sessions"
-
         val jsonData = JSONObject("""{
     "context": {
-        "countryCode": "IN",
+        "countryCode": "SG",
         "legalEntity": {
             "code": "demo_merchant"
         },
@@ -123,7 +122,7 @@ class Check : AppCompatActivity() {
     "paymentType": "S",
     "money": {
         "amount": "2197",
-        "currencyCode": "INR"
+        "currencyCode": "EUR"
     },
     "descriptor": {
         "line1": "Some descriptor"

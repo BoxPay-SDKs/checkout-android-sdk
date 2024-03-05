@@ -288,7 +288,7 @@ class AddUPIID : BottomSheetDialogFragment() {
         }
     }
 
-    fun postRequest(context: Context, userVPA: String) {
+    private fun postRequest(context: Context, userVPA: String) {
         Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -420,7 +420,7 @@ class AddUPIID : BottomSheetDialogFragment() {
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body", jsonStr)
+        Log.d("Request Body UPI", jsonStr)
     }
 
     fun hideLoadingInButton() {

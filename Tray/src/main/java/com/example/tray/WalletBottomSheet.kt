@@ -9,7 +9,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,7 +21,6 @@ import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.SearchView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
@@ -48,7 +46,6 @@ import com.skydoves.balloon.BalloonCenterAlign
 import com.skydoves.balloon.createBalloon
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.IOException
 import java.util.Locale
 
 
@@ -103,8 +100,6 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             dialog.setCancelable(false)
-
-
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -635,7 +630,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    fun postRequest(context: Context, instrumentTypeValue: String) {
+    private fun postRequest(context: Context, instrumentTypeValue: String) {
         Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -724,12 +719,13 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
 
                 try {
                     // Parse the JSON response
-                    val jsonObject = response
                     logJsonObject(response)
 
                     // Retrieve the "actions" array
-                    val actionsArray = jsonObject.getJSONArray("actions")
-                    val status = jsonObject.getJSONObject("status").getString("status")
+                    Log.d("error after actionsArray","Wallet")
+                    val actionsArray = response.getJSONArray("actions")
+                    Log.d("error after status","Wallet")
+                    val status = response.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
                     for (i in 0 until actionsArray.length()) {
@@ -740,6 +736,7 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                     }
 
 
+
                     if (status.equals("Approved")) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                         bottomSheet.show(
@@ -748,14 +745,18 @@ class WalletBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                        intent.putExtra("url", url)
-                        startActivity(intent)
+//                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+//                        intent.putExtra("url", url)
+//                        startActivity(intent)
+                        val bottomSheet = ForceTestPaymentBottomSheet()
+                        bottomSheet.show(parentFragmentManager,"ForceTestPaymentOpenByWallet")
                     }
 
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE
                     binding.textView4.text = e.toString()
+
+
                     e.printStackTrace()
                 }
 
