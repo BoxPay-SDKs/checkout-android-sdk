@@ -67,6 +67,7 @@ class Check : AppCompatActivity() {
             // Disable the button
             binding.openButton.isEnabled = false
             binding.openButton.visibility = View.GONE
+            binding.pleaseWaitTextView.visibility = View.VISIBLE
 
             if (!(tokenLiveData.value.isNullOrEmpty())) {
                 showBottomSheetWithOverlay()
@@ -84,6 +85,7 @@ class Check : AppCompatActivity() {
         binding.textView6.text = "Open Bottom Sheet"
         binding.textView6.visibility = View.VISIBLE
         binding.openButton.visibility = View.VISIBLE
+        binding.pleaseWaitTextView.visibility = View.GONE
     }
 
     fun showLoadingInButton() {
@@ -113,7 +115,7 @@ class Check : AppCompatActivity() {
         val url = "https://test-apis.boxpay.tech/v0/merchants/hK3JrVc6ys/sessions"
         val jsonData = JSONObject("""{
     "context": {
-        "countryCode": "SG",
+        "countryCode": "IN",
         "legalEntity": {
             "code": "demo_merchant"
         },
@@ -122,7 +124,7 @@ class Check : AppCompatActivity() {
     "paymentType": "S",
     "money": {
         "amount": "2197",
-        "currencyCode": "EUR"
+        "currencyCode": "INR"
     },
     "descriptor": {
         "line1": "Some descriptor"

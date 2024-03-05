@@ -30,35 +30,39 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/successButton"
-                android:layout_width="150dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="32dp"
-                android:background="@drawable/success_button_test_bg"
-                android:text="Success"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:gravity="center"
-                android:fontFamily="@font/poppins_semibold"
-                app:layout_constraintTop_toBottomOf="@+id/textView"
-                app:layout_constraintStart_toStartOf="parent" />
 
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/failureButton"
-                android:layout_width="150dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="32dp"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:background="@drawable/failure_button_test_bg"
-                android:text="Failure"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:gravity="center"
-                android:fontFamily="@font/poppins_semibold"
-                app:layout_constraintTop_toBottomOf="@+id/textView"
-                app:layout_constraintStart_toEndOf="@+id/successButton" />
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/successButton"
+                    android:layout_width="150dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/success_button_test_bg"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:gravity="center"
+                    android:text="Success"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/failureButton"
+                    android:layout_width="150dp"
+                    android:layout_height="50dp"
+                    android:layout_marginStart="32dp"
+                    android:background="@drawable/failure_button_test_bg"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:gravity="center"
+                    android:text="Failure"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp" />
+            </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
