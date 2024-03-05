@@ -62,6 +62,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private var cardsMethod = false
     private var walletMethods = false
     private var netBankingMethods = false
+    private var overLayPresent = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -72,15 +73,6 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
     override fun onStart() {
         super.onStart()
-
-        overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
-            if (showOverlay) {
-                addOverlayToActivity()
-            } else {
-                removeOverlayFromActivity()
-            }
-        })
-        overlayViewModel.setShowOverlay(true)
     }
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -90,13 +82,13 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         super.onDismiss(dialog)
     }
 
-    fun getAllInstalledApps(packageManager: PackageManager) {
+    private fun getAllInstalledApps(packageManager: PackageManager) {
         Log.d("getAllInstalledApps", "here")
         val apps = packageManager.getInstalledApplications(PackageManager.GET_GIDS)
 
         for (app in apps) {
             val appName = packageManager.getApplicationLabel(app).toString()
-            Log.d("all apps", "allapps" + appName)
+            Log.d("all apps", "allApps $appName")
 
             // Check if the app supports UPI transactions
             val upiIntent = Intent(Intent.ACTION_VIEW)
@@ -134,7 +126,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    fun launchUPIPayment(context: Context, packageName: String) {
+    private fun launchUPIPayment(context: Context, packageName: String) {
         // UPI payment data
         val uri = Uri.parse("upi://pay")
         val intent = Intent(Intent.ACTION_VIEW, uri)
@@ -166,6 +158,14 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
 
         putTransactionDetailsInSharedPreferences()
+        overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
+            if (showOverlay) {
+                addOverlayToActivity()
+            } else {
+                removeOverlayFromActivity()
+            }
+        })
+        overlayViewModel.setShowOverlay(true)
 
 
 
@@ -396,6 +396,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             imageView.setImageResource(R.drawable.phonepe_logo)
             textView.text = "PhonePe"
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
+                overlayViewModel.setShowOverlay(false)
                 launchUPIPayment(requireContext(), UPIAppsAndPackageMap["PhonePe"].toString())
             }
             Log.d("i and app inside if statement", "$i and app = PhonePe")
@@ -409,6 +410,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             textView.text = "GPay"
 
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
+                overlayViewModel.setShowOverlay(false)
                 launchUPIPayment(requireContext(), UPIAppsAndPackageMap["GPay"].toString())
             }
             Log.d("i and app inside if statement", "$i and app = GPay")
@@ -421,6 +423,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             textView.text = "Paytm"
 
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
+                overlayViewModel.setShowOverlay(false)
                 launchUPIPayment(requireContext(), UPIAppsAndPackageMap["Paytm"].toString())
             }
             Log.d("i and app inside if statement", "$i and app = Paytm")
@@ -433,6 +436,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
             textView.text = "CRED"
 
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
+                overlayViewModel.setShowOverlay(false)
                 launchUPIPayment(requireContext(), UPIAppsAndPackageMap["CRED"].toString())
             }
             Log.d("i and app inside if statement", "$i and app = CRED")
@@ -499,6 +503,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun addOverlayToActivity() {
+        overLayPresent = true
         Log.d("Overlay", "overlay added......")
         // Create a translucent overlay view
         overlayViewMainBottomSheet = View(requireContext())
@@ -807,15 +812,15 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
         binding.unopenedTotalValue.text = "₹" + originalAmount.toString()
         binding.numberOfItems.text = totalQuantity.toString() + " items"
-        binding.ItemsPrice.text = "₹${originalAmount.toString()}"
+        binding.ItemsPrice.text = "₹${originalAmount}"
     }
 
 
-    private fun updateTransactionAmountInSharedPreferences(TransactionAmountArgs: String) {
+    private fun updateTransactionAmountInSharedPreferences(transactionAmountArgs: String) {
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-        editor.putString("transactionAmount", TransactionAmountArgs)
+        editor.putString("transactionAmount", transactionAmountArgs)
         editor.apply()
     }
 

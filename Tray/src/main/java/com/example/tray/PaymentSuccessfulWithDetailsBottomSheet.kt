@@ -136,9 +136,9 @@ class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
 //        val layoutParams = bottomSheetContent.layoutParams
 //        layoutParams.height = desiredHeight
 //        bottomSheetContent.layoutParams = layoutParams
-            bottomSheetBehavior?.maxHeight = desiredHeight
-            bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
+            bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             dialog.setCancelable(false)
 
 
