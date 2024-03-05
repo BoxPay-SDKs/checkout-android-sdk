@@ -28,7 +28,6 @@ class Check : AppCompatActivity() {
     private val binding : ActivityCheckBinding by lazy {
         ActivityCheckBinding.inflate(layoutInflater)
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
