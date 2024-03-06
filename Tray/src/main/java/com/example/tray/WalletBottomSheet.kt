@@ -49,7 +49,7 @@ import org.json.JSONObject
 import java.util.Locale
 
 
-class WalletBottomSheet : BottomSheetDialogFragment() {
+internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentWalletBottomSheetBinding
     private lateinit var allWalletAdapter: WalletAdapter
     private var walletDetailsOriginal: ArrayList<WalletDataClass> = ArrayList()

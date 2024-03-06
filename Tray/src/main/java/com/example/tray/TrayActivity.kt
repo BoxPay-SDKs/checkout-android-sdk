@@ -24,7 +24,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
-class TrayActivity : BottomSheetDialogFragment()  {
+internal class TrayActivity : BottomSheetDialogFragment()  {
     private var currencySymbol : String ?= null
     private var currencyCode : String ?= null
     private var price : Int ?= 0

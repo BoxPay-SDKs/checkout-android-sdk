@@ -50,7 +50,7 @@ import org.json.JSONObject
 import java.util.Locale
 
 
-class NetBankingBottomSheet : BottomSheetDialogFragment() {
+internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentNetBankingBottomSheetBinding
     private lateinit var allBanksAdapter: NetbankingBanksAdapter
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null

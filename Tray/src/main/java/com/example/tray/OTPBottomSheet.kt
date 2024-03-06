@@ -19,7 +19,7 @@ import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.Status
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class OTPBottomSheet : BottomSheetDialogFragment() {
+internal class OTPBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentOTPBottomSheetBinding
     private val SMS_CONSENT_REQUEST = 1010
     val smsVerificationReceiver = object : BroadcastReceiver() {

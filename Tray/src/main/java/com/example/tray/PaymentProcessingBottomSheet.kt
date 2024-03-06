@@ -13,7 +13,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class PaymentProcessingBottomSheet :BottomSheetDialogFragment() {
+internal class PaymentProcessingBottomSheet :BottomSheetDialogFragment() {
     private lateinit var binding : FragmentPaymentProcessingBottomSheetBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     override fun onCreate(savedInstanceState: Bundle?) {

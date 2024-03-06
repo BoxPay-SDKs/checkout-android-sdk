@@ -18,7 +18,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.text.SimpleDateFormat
 import java.util.Date
 
-class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
+internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
     private var token: String? = null
     private var successScreenFullReferencePath : String ?= null

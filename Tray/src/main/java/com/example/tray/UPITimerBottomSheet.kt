@@ -22,7 +22,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONException
 
-class UPITimerBottomSheet : BottomSheetDialogFragment() {
+internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentUPITimerBottomSheetBinding
     private lateinit var countdownTimer: CountDownTimer
     private lateinit var countdownTimerForAPI: CountDownTimer
