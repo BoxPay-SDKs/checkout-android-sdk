@@ -9,7 +9,7 @@ import com.example.tray.databinding.FragmentForceTestPaymentBottomSheetBinding
 import com.example.tray.databinding.FragmentNetBankingBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class ForceTestPaymentBottomSheet : BottomSheetDialogFragment(){
+internal class ForceTestPaymentBottomSheet : BottomSheetDialogFragment(){
     private lateinit var binding: FragmentForceTestPaymentBottomSheetBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -11,7 +11,7 @@ import com.example.tray.databinding.FragmentLoadingBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
-class LoadingBottomSheet : BottomSheetDialogFragment()  {
+internal class LoadingBottomSheet : BottomSheetDialogFragment()  {
     private lateinit var binding: FragmentLoadingBottomSheetBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

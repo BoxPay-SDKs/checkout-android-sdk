@@ -20,8 +20,7 @@ import com.example.tray.databinding.CustomRadioButtonLayoutBinding
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
 
-
-class Check : AppCompatActivity() {
+ class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
     private var successScreenFullReferencePath : String ?= null
     private var tokenFetchedAndOpen = false
@@ -36,14 +35,12 @@ class Check : AppCompatActivity() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         makePaymentRequest(this)
-
         binding.textView6.text = "Generating Token Please wait..."
-
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
 
-        tokenLiveData.observe(this, Observer { token ->
+        tokenLiveData.observe(this, Observer { tokenInObserve ->
             // Handle the response after the token has been updated
-            if(!(tokenLiveData.value == null)) {
+            if(tokenInObserve != null) {
                 handleResponseWithToken()
                 binding.textView6.text = "Open"
                 binding.openButton.isEnabled = true
@@ -96,7 +93,7 @@ class Check : AppCompatActivity() {
         binding.openButton.isEnabled = false
         rotateAnimation.start()
     }
-    fun handleResponseWithToken() {
+    private fun handleResponseWithToken() {
         if(tokenFetchedAndOpen)
             return
         Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
@@ -105,11 +102,13 @@ class Check : AppCompatActivity() {
     }
 
 
-    fun showBottomSheetWithOverlay() {
-        val bottomSheetFragment = MainBottomSheet.newInstance(tokenLiveData.value,successScreenFullReferencePath)
-        bottomSheetFragment.show(supportFragmentManager, "MainBottomSheet")
+    private fun showBottomSheetWithOverlay() {
+        val checkout = Checkout()
+        Log.d("Checked","executed showBottomSheetWithOverlay")
+
+        checkout.minView(tokenLiveData.value.toString(),successScreenFullReferencePath.toString(),this)
     }
-    fun makePaymentRequest(context: Context){
+    private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
         val url = "https://test-apis.boxpay.tech/v0/merchants/hK3JrVc6ys/sessions"
         val jsonData = JSONObject("""{
@@ -179,12 +178,11 @@ class Check : AppCompatActivity() {
     "frontendReturnUrl": "https://www.boxpay.tech",
     "frontendBackUrl": "https://www.boxpay.tech"
 }""")
-        var token = ""
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
                 logJsonObject(response)
                 val tokenFetched = response.getString("token")
-                Log.d("token fetched", token)
+                Log.d("token fetched", tokenFetched)
                 tokenLiveData.value = tokenFetched
                 // Call a function that depends on the token
 

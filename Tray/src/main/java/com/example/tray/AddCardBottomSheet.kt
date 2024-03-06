@@ -46,7 +46,7 @@ import java.util.Calendar
 import java.util.Locale
 
 
-class AddCardBottomSheet : BottomSheetDialogFragment() {
+internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentAddCardBottomSheetBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
@@ -881,13 +881,16 @@ class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                         if (status.contains("Approved", ignoreCase = true)) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheet")
+                            bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheetWithDetails")
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
-                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                            intent.putExtra("url", url)
-                            intent.putExtra("token", token)
-                            startActivity(intent)
+//                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+//                            intent.putExtra("url", url)
+//                            intent.putExtra("token", token)
+//                            startActivity(intent)
+
+                            val bottomSheet = ForceTestPaymentBottomSheet()
+                            bottomSheet.show(parentFragmentManager,"ForcedTestPaymentFromCard")
                         }
                     // Assuming there's only one action, change index if needed
                     }

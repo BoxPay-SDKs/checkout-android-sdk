@@ -10,7 +10,7 @@ import com.example.tray.databinding.FragmentPaymentFailureScreenBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
-class PaymentFailureScreen : BottomSheetDialogFragment() {
+internal class PaymentFailureScreen : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentPaymentFailureScreenBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

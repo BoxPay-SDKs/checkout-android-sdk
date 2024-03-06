@@ -21,7 +21,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 
-class OTPScreenWebView : AppCompatActivity() {
+internal class OTPScreenWebView : AppCompatActivity() {
     private val binding by lazy {
         ActivityOtpscreenWebViewBinding.inflate(layoutInflater)
     }

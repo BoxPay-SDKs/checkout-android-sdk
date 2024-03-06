@@ -22,7 +22,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
-class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
+internal class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentPaymentStatusBottomSheetBinding
     private var token: String? = null
     private var successScreenFullReferencePath : String ?= null

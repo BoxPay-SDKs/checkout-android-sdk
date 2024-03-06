@@ -19,7 +19,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class WalletLoadingBottomSheet : BottomSheetDialogFragment() {
+internal class WalletLoadingBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentWalletLoadingBottomSheetBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -39,7 +39,7 @@ import java.util.Locale
 import java.util.TimeZone
 
 
-class AddUPIID : BottomSheetDialogFragment() {
+internal class AddUPIID : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentAddUPIIDBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var overlayViewCurrentBottomSheet: View? = null

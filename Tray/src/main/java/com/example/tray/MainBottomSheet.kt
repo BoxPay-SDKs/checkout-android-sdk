@@ -44,7 +44,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
 
-class MainBottomSheet : BottomSheetDialogFragment() {
+internal class MainBottomSheet : BottomSheetDialogFragment() {
     private var overlayViewMainBottomSheet: View? = null
     private lateinit var binding: FragmentMainBottomSheetBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
@@ -65,10 +65,10 @@ class MainBottomSheet : BottomSheetDialogFragment() {
     private var overLayPresent = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            token = it.getString("token")
-            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
-        }
+//        arguments?.let {
+//            token = it.getString("token")
+//            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
+//        }
     }
 
     override fun onStart() {
@@ -157,7 +157,7 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
 
 
-        putTransactionDetailsInSharedPreferences()
+        fetchTransactionDetailsFromSharedPreferences()
         overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
             if (showOverlay) {
                 addOverlayToActivity()
@@ -310,6 +310,8 @@ class MainBottomSheet : BottomSheetDialogFragment() {
                         }else if(brand == "UpiIntent"){
                             upiIntentMethod = true
                             upiAvailable = true
+                        }else{
+                            upiAvailable = false
                         }
                     }else if(paymentMethodName == "Card"){
                         cardsMethod = true
@@ -814,6 +816,13 @@ class MainBottomSheet : BottomSheetDialogFragment() {
         binding.numberOfItems.text = totalQuantity.toString() + " items"
         binding.ItemsPrice.text = "₹${originalAmount}"
     }
+    private fun fetchTransactionDetailsFromSharedPreferences() {
+        val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token","empty")
+        Log.d("data fetched from sharedPreferences",token.toString())
+        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+    }
 
 
     private fun updateTransactionAmountInSharedPreferences(transactionAmountArgs: String) {
@@ -837,13 +846,14 @@ class MainBottomSheet : BottomSheetDialogFragment() {
 
 
     companion object {
-        fun newInstance(data: String?, successScreenFullReferencePath: String?): MainBottomSheet {
-            val fragment = MainBottomSheet()
-            val args = Bundle()
-            args.putString("token", data)
-            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
-            fragment.arguments = args
-            return fragment
-        }
+//        fun newInstance(data: String?, successScreenFullReferencePath: String?): MainBottomSheet {
+//            val fragment = MainBottomSheet()
+//            val args = Bundle()
+//            args.putString("token", data)
+//            args.putString("successScreenFullReferencePath", successScreenFullReferencePath)
+//            fragment.arguments = args
+//            return fragment
+//        }
+
     }
 }
