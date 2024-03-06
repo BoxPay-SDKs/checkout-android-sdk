@@ -9,7 +9,6 @@ class Checkout{
     fun minView(token: String, successScreenFullReferencePath: String,context: Context) {
         putTransactionDetailsInSharedPreferences(token,successScreenFullReferencePath,context)
         Log.d("Checked","Executed minView Checkout")
-
         if (context is Activity) {
             Log.d("Checked","inside context is activity")
             val activity = context as AppCompatActivity // or FragmentActivity, depending on your activity type
