@@ -247,11 +247,19 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
                     } else if (status.contains("PENDING", ignoreCase = true)) {
                         //do nothing
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
-
+                        val bottomSheet = PaymentFailureScreen()
+                        bottomSheet.show(parentFragmentManager, "Payment Failure")
+                        countdownTimer.cancel()
+                        countdownTimerForAPI.cancel()
+                        dismiss()
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
                     } else if (status.contains("FAILED", ignoreCase = true)) {
-
+                        val bottomSheet = PaymentFailureScreen()
+                        bottomSheet.show(parentFragmentManager, "Payment Failure")
+                        countdownTimer.cancel()
+                        countdownTimerForAPI.cancel()
+                        dismiss()
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
