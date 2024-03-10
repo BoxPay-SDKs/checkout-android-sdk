@@ -42,8 +42,8 @@ import org.json.JSONObject
             // Handle the response after the token has been updated
             if(tokenInObserve != null) {
                 handleResponseWithToken()
-                binding.textView6.text = "Open"
-                binding.openButton.isEnabled = true
+                binding.textView6.text = "Opening"
+                binding.openButton.isEnabled = false
             }else{
                 Log.d("token is empty","waiting")
             }
@@ -103,10 +103,10 @@ import org.json.JSONObject
 
 
     private fun showBottomSheetWithOverlay() {
-        val checkout = Checkout()
+        val checkout = Checkout(tokenLiveData.value.toString(),successScreenFullReferencePath.toString(),this)
         Log.d("Checked","executed showBottomSheetWithOverlay")
 
-        checkout.minView(tokenLiveData.value.toString(),successScreenFullReferencePath.toString(),this)
+        checkout.minView()
     }
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
@@ -163,14 +163,6 @@ import org.json.JSONObject
                 "quantity": 1,
                 "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
                 "amountWithoutTax": 699.00
-            },
-            {
-                "id": "test2",
-                "itemName": "test_name2",
-                "description": "testProduct2",
-                "quantity": 2,
-                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
-                "amountWithoutTax": 499.00
             }
         ]
     },

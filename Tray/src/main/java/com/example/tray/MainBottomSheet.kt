@@ -7,6 +7,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -154,6 +155,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         // Inflate the layout for this fragment
         binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
 
 
@@ -291,11 +293,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
             try {
-                val jsonObject = response
 
                 // Get the payment methods array
                 val paymentMethodsArray =
-                    jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
+                    response.getJSONObject("configs").getJSONArray("paymentMethods")
 
                 // Filter payment methods based on type equal to "Wallet"
                 for (i in 0 until paymentMethodsArray.length()) {
@@ -321,6 +322,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                         netBankingMethods = true
                     }
                 }
+                Log.d("paymentMethods : ",upiAvailable.toString()+cardsMethod.toString())
 
 
                 if(upiAvailable){
@@ -336,9 +338,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                     binding.cardView5.visibility = View.VISIBLE
                 }
                 if(walletMethods){
-                    Log.d("wallet is enabled",walletMethods.toString())
                     binding.cardView6.visibility = View.VISIBLE
                 }
+
                 if(netBankingMethods){
                     binding.cardView7.visibility = View.VISIBLE
                 }
@@ -346,7 +348,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
 
             } catch (e: Exception) {
-                Log.d("Error Occured", e.toString())
+                Log.d("Error Occurred", e.toString())
                 e.printStackTrace()
             }
 
@@ -355,7 +357,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             Log.e("Error", "Error occurred: ${error.message}")
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
-                Log.e("Error", " fetching wallets error response: $errorResponse")
+                Log.e("Error", " fetching MainBottomSheet error response: $errorResponse")
 //                binding.errorField.visibility = View.VISIBLE
 //                binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
 //                hideLoadingInButton()
@@ -725,96 +727,50 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun getAndSetOrderDetails() {
-        val response = JSONObject(
-            """{
-        "context": {
-            "countryCode": "IN",
-            "legalEntity": {
-                "code": "demo_merchant"
-            },
-            "orderId": "test12"
-        },
-        "paymentType": "A",
-        "money": {
-            "amount": "1",
-            "currencyCode": "INR"
-        },
-        "descriptor": {
-            "line1": "Some descriptor"
-        },
-        "billingAddress": {
-            "address1": "first address line",
-            "address2": "second address line",
-            "city": "Faridabad",
-            "state": "Haryana",
-            "countryCode": "IN",
-            "postalCode": "121004"
-        },
-        "shopper": {
-            "firstName": "test",
-            "lastName": "last",
-            "email": "test123@gmail.com",
-            "uniqueReference": "x123y",
-            "phoneNumber": "",
-            "deliveryAddress": {
-                "address1": "first address line",
-                "address2": "second address line",
-                "city": "Faridabad",
-                "state": "Haryana",
-                "countryCode": "IN",
-                "postalCode": "121004"
-            }
-        },
-        "order": {
-            "originalAmount" : 1697,
-            "shippingAmount" : 500,
-            "voucherCode" : "VOUCHER",
-            "items": [
-                {
-                    "id": "test",
-                    "itemName" : "test_name",
-                    "description": "testProduct",
-                    "quantity": 1,
-                    "imageUrl" : "https://test-merchant.boxpay.tech/boxpay logo.svg",
-                    "amountWithoutTax" : 699.00
-                },
-                {
-                    "id": "test2",
-                    "itemName" : "test_name2",
-                    "description": "testProduct2",
-                    "quantity": 0,
-                    "imageUrl" : "https://test-merchant.boxpay.tech/boxpay logo.svg",
-                    "amountWithoutTax" : 499.00
+
+        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
+
+            try {
+
+                val paymentDetailsObject = response.getJSONObject("paymentDetails")
+                val orderObject = paymentDetailsObject.getJSONObject("order")
+                val originalAmount = orderObject.getString("originalAmount")
+
+                val itemsArray = orderObject.getJSONArray("items")
+                var totalQuantity = 0
+                for (i in 0 until itemsArray.length()) {
+                    val itemObject = itemsArray.getJSONObject(i)
+                    val quantity = itemObject.getInt("quantity")
+                    totalQuantity += quantity
                 }
-            ]
-        },
-        "frontendReturnUrl": "https://www.boxpay.tech",
-        "frontendBackUrl": "https://www.boxpay.tech",
-        "expiryDurationSec": 7200
-    }"""
-        )
 
 
-        val orderObject = response.getJSONObject("order")
-        val originalAmount = orderObject.getDouble("originalAmount")
+                Log.d("totalQuantity", totalQuantity.toString())
+                Log.d("originalAmount", originalAmount.toString())
 
-        val itemsArray = orderObject.getJSONArray("items")
-        var totalQuantity = 0
-        for (i in 0 until itemsArray.length()) {
-            val itemObject = itemsArray.getJSONObject(i)
-            val quantity = itemObject.getInt("quantity")
-            totalQuantity += quantity
-        }
+                transactionAmount = originalAmount.toString()
+
+                binding.unopenedTotalValue.text = "₹ ${transactionAmount}"
+                binding.numberOfItems.text = "${totalQuantity} items"
+                binding.ItemsPrice.text = "₹${originalAmount}"
 
 
-        Log.d("totalQuantity", totalQuantity.toString())
-        Log.d("originalAmount", originalAmount.toString())
+            } catch (e: Exception) {
+                Log.d("Error Occurred in MainBottomSheet", e.toString())
+                e.printStackTrace()
+            }
 
-        transactionAmount = originalAmount.toString()
+        }, { error ->
 
-        binding.unopenedTotalValue.text = "₹" + originalAmount.toString()
-        binding.numberOfItems.text = totalQuantity.toString() + " items"
-        binding.ItemsPrice.text = "₹${originalAmount}"
+            Log.e("Error", "Error occurred: ${error.message}")
+            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                val errorResponse = String(error.networkResponse.data)
+                Log.e("Error", " fetching wallets error response: $errorResponse")
+            }
+        })
+        queue.add(jsonObjectAll)
     }
     private fun fetchTransactionDetailsFromSharedPreferences() {
         val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)

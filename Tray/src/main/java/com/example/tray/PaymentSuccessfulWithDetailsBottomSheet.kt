@@ -25,11 +25,9 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private var transactionID: String? = null
     private var transactionAmount: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -83,11 +81,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
 
     private fun getCurrentDateAndTimeInFormattedString() : String{
         val currentDateTime = Date()
-
-
         val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-
-
         return dateFormat.format(currentDateTime)
     }
 

@@ -4,7 +4,7 @@ import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
@@ -41,7 +41,6 @@ import com.google.gson.GsonBuilder
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.time.LocalDate
 import java.util.Calendar
 import java.util.Locale
 
@@ -62,7 +61,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var isCardCVVValid : Boolean = false
     private var successScreenFullReferencePath : String ?= null
     private var isAmericanExpressCard = MutableLiveData<Boolean>()
-    private var transactionId = MutableLiveData<String>()
+    private var transactionId : String ?= null
+    private lateinit var sharedPreferences : SharedPreferences
+    private lateinit var editor : SharedPreferences.Editor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -224,7 +225,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
         binding = FragmentAddCardBottomSheetBinding.inflate(inflater, container, false)
-
+        sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        editor = sharedPreferences.edit()
 
         fetchTransactionDetailsFromSharedPreferences()
 
@@ -470,11 +473,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             postRequest(requireContext())
             showLoadingInButton()
-
-            transactionId.observe(this, Observer { transactionIDInObserve ->
-                Log.d("transactionId in observe",transactionIDInObserve)
-                updateTransactionIDInSharedPreferences(transactionIDInObserve)
-            })
         }
 
 
@@ -751,15 +749,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token","empty")
         Log.d("data fetched from sharedPreferences",token.toString())
         successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
         Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
     }
     private fun updateTransactionIDInSharedPreferences(transactionIdArg : String) {
-        val sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
         editor.putString("transactionId", transactionIdArg)
         editor.apply()
     }
@@ -829,23 +824,29 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             // Shopper
             val shopperObject = JSONObject().apply {
                 val deliveryAddressObject = JSONObject().apply {
-                    put("address1", "delivery address for the delivery")
-                    put("address2", "delivery")
-                    put("address3", JSONObject.NULL)
-                    put("city", "Saharanpur")
-                    put("countryCode", "IN")
-                    put("countryName", "India")
-                    put("postalCode", "247554")
-                    put("state", "Uttar Pradesh")
+
+                    put("address1", sharedPreferences.getString("address1","null"))
+                    put("address2", sharedPreferences.getString("address2","null"))
+                    put("address3", sharedPreferences.getString("address3","null"))
+                    put("city", sharedPreferences.getString("city","null"))
+                    put("countryCode", sharedPreferences.getString("countryCode","null"))
+                    put("countryName", sharedPreferences.getString("countryName","null"))
+                    put("postalCode", sharedPreferences.getString("postalCode","null"))
+                    put("state", sharedPreferences.getString("state","null"))
+
                 }
 
+
                 put("deliveryAddress", deliveryAddressObject)
-                put("email", "test123@gmail.com")
-                put("firstName", "test")
-                put("gender", JSONObject.NULL)
-                put("lastName", "last")
-                put("phoneNumber", "+919711668479")
-                put("uniqueReference", "x123y")
+                put("email", sharedPreferences.getString("email","null"))
+                put("firstName", sharedPreferences.getString("firstName","null"))
+                if(sharedPreferences.getString("gender","null") == "null")
+                    put("gender", JSONObject.NULL)
+                else
+                    put("gender",sharedPreferences.getString("gender","null"))
+                put("lastName", sharedPreferences.getString("lastName","null"))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber","null"))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference","null"))
             }
             put("shopper", shopperObject)
         }
@@ -858,12 +859,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 hideLoadingInButton()
 
                 try {
-                    val jsonObject = response
                     logJsonObject(response)
 
-                    val status = jsonObject.getJSONObject("status").getString("status")
-                    val reason = jsonObject.getJSONObject("status").getString("reason")
-                    transactionId.value = jsonObject.getString("transactionId").toString()
+                    val status = response.getJSONObject("status").getString("status")
+                    val reason = response.getJSONObject("status").getString("reason")
+                    transactionId = response.getString("transactionId").toString()
+                    updateTransactionIDInSharedPreferences(transactionId!!)
 
                     Log.d("status and reason",status+" due to "+reason)
                     var url = ""
@@ -873,7 +874,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         getStatusReasonFromResponse(response.toString())
 
                     }else{
-                        val url = jsonObject
+                        val url = response
                             .getJSONArray("actions")
                             .getJSONObject(0)
                             .getString("url")
