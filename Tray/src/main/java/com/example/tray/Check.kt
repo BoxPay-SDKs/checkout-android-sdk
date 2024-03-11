@@ -157,12 +157,40 @@ import org.json.JSONObject
         "totalAmountWithoutTax": 699.00,
         "items": [
             {
-                "id": "test",
-                "itemName": "test_name",
-                "description": "testProduct",
-                "quantity": 1,
-                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
-                "amountWithoutTax": 699.00
+                "id":"test",
+               "itemName":"test_name",
+               "description":"testProduct",
+               "quantity":1,
+               "manufacturer":null,
+               "brand":null,
+               "color":null,
+               "productUrl":null,
+               "imageUrl":"https://test-merchant.boxpay.tech/boxpay%20logo.svg",
+               "categories":null,
+               "amountWithoutTax":699,
+               "taxAmount":null,
+               "taxPercentage":null,
+               "discountedAmount":null,
+               "amountWithoutTaxLocale":"699",
+               "amountWithoutTaxLocaleFull":"699"
+            },
+            {
+                "id":"test",
+               "itemName":"test_name",
+               "description":"testProduct",
+               "quantity":1,
+               "manufacturer":null,
+               "brand":null,
+               "color":null,
+               "productUrl":null,
+               "imageUrl":"https://test-merchant.boxpay.tech/boxpay%20logo.svg",
+               "categories":null,
+               "amountWithoutTax":1299,
+               "taxAmount":120,
+               "taxPercentage":null,
+               "discountedAmount":null,
+               "amountWithoutTaxLocale":"1299",
+               "amountWithoutTaxLocaleFull":"1299"
             }
         ]
     },

@@ -103,7 +103,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-            dialog.setCancelable(false)
 
 
 
@@ -145,17 +144,21 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         return dialog
     }
 
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        dismissAndMakeButtonsOfMainBottomSheetEnabled()
+    }
+
     private fun fetchBanksDetails() {
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
             try {
-                val jsonObject = response
 
                 // Get the payment methods array
                 val paymentMethodsArray =
-                    jsonObject.getJSONObject("configs").getJSONArray("paymentMethods")
+                    response.getJSONObject("configs").getJSONArray("paymentMethods")
 
                 // Filter payment methods based on type equal to "Wallet"
                 for (i in 0 until paymentMethodsArray.length()) {

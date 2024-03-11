@@ -64,12 +64,25 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     private var walletMethods = false
     private var netBankingMethods = false
     private var overLayPresent = false
+    private var items = mutableListOf<String>()
+    private var images = mutableListOf<Int>()
+    private var taxes = mutableListOf<String>()
+    private var prices = mutableListOf<String>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        arguments?.let {
 //            token = it.getString("token")
 //            successScreenFullReferencePath = it.getString("successScreenFullReferencePath")
 //        }
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        // Handle the back button press here
+        // Dismiss the dialog when the back button is pressed
+        removeOverlayFromActivity()
+        callFunctionInActivity()
+        dismiss()
     }
 
     override fun onStart() {
@@ -196,7 +209,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                     val bottomSheet = PaymentFailureScreen()
                     bottomSheet.show(parentFragmentManager, "Payment Failure Screen")
                 }
-                Log.d("Making payusing any other upi apps enabled","here")
+                Log.d("Making payusing any other upi apps enabled", "here")
                 binding.payUsingAnyUPIConstraint.isEnabled = true
             }
 
@@ -205,18 +218,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         showUPIOptions()
 
 
-        val items = mutableListOf(
-            "Truly Madly Monthly Plan"
-        )
-        val prices = mutableListOf(
-            "₹1697.00"
-        )
-        val images = mutableListOf(
-            R.drawable.truly_madly_logo
-        )
 
-
-        val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices)
+        val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices,taxes)
         binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
@@ -287,6 +290,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
         return binding.root
     }
+
     private fun fetchAllPaymentMethods() {
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
@@ -302,49 +306,48 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 for (i in 0 until paymentMethodsArray.length()) {
                     val paymentMethod = paymentMethodsArray.getJSONObject(i)
                     val paymentMethodName = paymentMethod.getString("type")
-                    Log.d("paymentMethodName",paymentMethodName)
-                    if(paymentMethodName == "Upi"){
+                    Log.d("paymentMethodName", paymentMethodName)
+                    if (paymentMethodName == "Upi") {
                         val brand = paymentMethod.getString("brand")
-                        if(brand == "UpiCollect"){
+                        if (brand == "UpiCollect") {
                             upiCollectMethod = true
                             upiAvailable = true
-                        }else if(brand == "UpiIntent"){
+                        } else if (brand == "UpiIntent") {
                             upiIntentMethod = true
                             upiAvailable = true
-                        }else{
+                        } else {
                             upiAvailable = false
                         }
-                    }else if(paymentMethodName == "Card"){
+                    } else if (paymentMethodName == "Card") {
                         cardsMethod = true
-                    }else if(paymentMethodName == "Wallet"){
+                    } else if (paymentMethodName == "Wallet") {
                         walletMethods = true
-                    }else if(paymentMethodName == "NetBanking"){
+                    } else if (paymentMethodName == "NetBanking") {
                         netBankingMethods = true
                     }
                 }
-                Log.d("paymentMethods : ",upiAvailable.toString()+cardsMethod.toString())
+                Log.d("paymentMethods : ", upiAvailable.toString() + cardsMethod.toString())
 
 
-                if(upiAvailable){
+                if (upiAvailable) {
                     binding.cardView4.visibility = View.VISIBLE
-                    if(upiIntentMethod){
+                    if (upiIntentMethod) {
                         binding.payUsingAnyUPIConstraint.visibility = View.VISIBLE
                     }
-                    if(upiCollectMethod){
+                    if (upiCollectMethod) {
                         binding.addNewUPIIDConstraint.visibility = View.VISIBLE
                     }
                 }
-                if(cardsMethod){
+                if (cardsMethod) {
                     binding.cardView5.visibility = View.VISIBLE
                 }
-                if(walletMethods){
+                if (walletMethods) {
                     binding.cardView6.visibility = View.VISIBLE
                 }
 
-                if(netBankingMethods){
+                if (netBankingMethods) {
                     binding.cardView7.visibility = View.VISIBLE
                 }
-
 
 
             } catch (e: Exception) {
@@ -366,7 +369,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         queue.add(jsonObjectAll)
     }
 
-    fun enabledButtonsForAllPaymentMethods(){
+    fun enabledButtonsForAllPaymentMethods() {
         binding.payUsingAnyUPIConstraint.isEnabled = true
         binding.addNewUPIIDConstraint.isEnabled = true
         binding.cardConstraint.isEnabled = true
@@ -663,7 +666,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
-            dialog.setCancelable(false)
 
 
 
@@ -737,11 +739,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
                 val orderObject = paymentDetailsObject.getJSONObject("order")
                 val originalAmount = orderObject.getString("originalAmount")
-
                 val itemsArray = orderObject.getJSONArray("items")
                 var totalQuantity = 0
                 for (i in 0 until itemsArray.length()) {
                     val itemObject = itemsArray.getJSONObject(i)
+                    items.add(itemObject.getString("itemName"))
+                    images.add(R.drawable.truly_madly_logo)
+                    prices.add(itemObject.getString("amountWithoutTaxLocale"))
+                    taxes.add(itemObject.getString("taxAmount"))
                     val quantity = itemObject.getInt("quantity")
                     totalQuantity += quantity
                 }
@@ -753,7 +758,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 transactionAmount = originalAmount.toString()
 
                 binding.unopenedTotalValue.text = "₹ ${transactionAmount}"
-                binding.numberOfItems.text = "${totalQuantity} items"
+                if (totalQuantity == 1)
+                    binding.numberOfItems.text = "${totalQuantity} item"
+                else
+                    binding.numberOfItems.text = "${totalQuantity} items"
                 binding.ItemsPrice.text = "₹${originalAmount}"
 
 
@@ -772,12 +780,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         })
         queue.add(jsonObjectAll)
     }
+
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        token = sharedPreferences.getString("token","empty")
-        Log.d("data fetched from sharedPreferences",token.toString())
-        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
-        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+        val sharedPreferences =
+            requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        token = sharedPreferences.getString("token", "empty")
+        Log.d("data fetched from sharedPreferences", token.toString())
+        successScreenFullReferencePath =
+            sharedPreferences.getString("successScreenFullReferencePath", "empty")
+        Log.d(
+            "success screen path fetched from sharedPreferences",
+            successScreenFullReferencePath.toString()
+        )
     }
 
 
@@ -797,8 +811,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             activity.removeLoadingAndEnabledProceedButton()
         }
     }
-
-
 
 
     companion object {

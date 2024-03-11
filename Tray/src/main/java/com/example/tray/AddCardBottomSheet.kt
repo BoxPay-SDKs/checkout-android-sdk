@@ -68,6 +68,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        // Handle the back button press here
+        // Dismiss the dialog when the back button is pressed
+        dismissAndMakeButtonsOfMainBottomSheetEnabled()
+    }
     fun makeCardNetworkIdentificationCall(context: Context,cardNumber: String){
         val queue = Volley.newRequestQueue(context)
         Log.d("makeCardNetworkIdentificationCall",cardNumber)
@@ -171,6 +177,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
         queue.add(request)
     }
+
+
+
     private fun getImageDrawableForItem(item: String): Int {
         return when (item) {
             "VISA" -> R.drawable.visa // Replace with your VISA image resource
@@ -229,7 +238,15 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
+
         fetchTransactionDetailsFromSharedPreferences()
+
+        val allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
+        val filter = InputFilter { source, _, _, _, _, _ ->
+            // Filter out characters not present in the allowed characters list
+            source.filter { allowedCharacters.contains(it) }
+        }
+        binding.editTextNameOnCard.filters = arrayOf(filter)
 
 
 
@@ -644,7 +661,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
-            dialog.setCancelable(false)
 
 
 
