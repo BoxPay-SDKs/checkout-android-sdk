@@ -102,7 +102,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-            dialog.setCancelable(false)
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -565,6 +564,13 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun applyLoadingScreenState() {
 
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        // Handle the back button press here
+        // Dismiss the dialog when the back button is pressed
+        dismissAndMakeButtonsOfMainBottomSheetEnabled()
     }
 
 

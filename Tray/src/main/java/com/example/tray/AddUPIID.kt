@@ -113,7 +113,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
         binding.proceedButton.isEnabled = false
 
-        binding.editTextText.addTextChangedListener(object : TextWatcher {
+        binding.editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 Log.d("beforeTextChanged", s.toString())
             }
@@ -150,7 +150,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         binding.ll1InvalidUPI.visibility = View.GONE
 
         binding.proceedButton.setOnClickListener() {
-            userVPA = binding.editTextText.text.toString()
+            userVPA = binding.editText.text.toString()
             closeKeyboard(this)
             postRequest(requireContext(), userVPA!!)
             showLoadingInButton()
@@ -216,7 +216,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
-            dialog.setCancelable(false)
 
 
 
@@ -231,6 +230,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_COLLAPSED -> {
                             // Collapsed
+
                         }
 
                         BottomSheetBehavior.STATE_DRAGGING -> {
@@ -258,6 +258,12 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             })
         }
         return dialog
+    }
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        // Handle the back button press here
+        // Dismiss the dialog when the back button is pressed
+        dismissAndMakeButtonsOfMainBottomSheetEnabled()
     }
 
     override fun onStart() {
@@ -421,7 +427,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     ) {
                         binding.textView4.text = "Payment is already done"
                     } else {
-                        binding.textView4.text = "Invalid UPI"
+                        binding.textView4.text = "Invalid UPI ID"
                     }
                     hideLoadingInButton()
                 }
