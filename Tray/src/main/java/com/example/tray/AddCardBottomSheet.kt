@@ -59,6 +59,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var isCardNumberValid : Boolean = false
     private var isCardValidityValid : Boolean = false
     private var isCardCVVValid : Boolean = false
+    private var isNameOnCardValid : Boolean = false
     private var successScreenFullReferencePath : String ?= null
     private var isAmericanExpressCard = MutableLiveData<Boolean>()
     private var transactionId : String ?= null
@@ -241,7 +242,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         fetchTransactionDetailsFromSharedPreferences()
 
-        val allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
+        val allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890. "
         val filter = InputFilter { source, _, _, _, _, _ ->
             // Filter out characters not present in the allowed characters list
             source.filter { allowedCharacters.contains(it) }
@@ -254,11 +255,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.progressBar.visibility = View.INVISIBLE
         proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
             if (enableProceedButton) {
-                if(isCardNumberValid && isCardValidityValid && isCardCVVValid) {
+                if(isCardNumberValid && isCardValidityValid && isCardCVVValid && isNameOnCardValid) {
                     enableProceedButton()
-                    Log.d("card enabled","after checking the conditions")
+                    Log.d("card enabled",""+isCardNumberValid + isCardValidityValid + isCardCVVValid)
                 }
             } else {
+                Log.d("card enabled false",""+isCardNumberValid + isCardValidityValid + isCardCVVValid)
                 disableProceedButton()
             }
         })
@@ -293,11 +295,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
 
-        binding.proceedButton.isEnabled = false
-        binding.editTextText.filters = arrayOf(InputFilter.LengthFilter(19))
+        binding.editTextCardNumber.filters = arrayOf(InputFilter.LengthFilter(19))
 
 
-        binding.editTextText.addTextChangedListener(object : TextWatcher {
+        binding.editTextCardNumber.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
             }
@@ -306,23 +307,29 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 val textNow = s.toString()
                 Log.d("textNow length",textNow.length.toString())
                 if (textNow.isNotBlank()) {
-                    isCardNumberValid = true
-                    proceedButtonIsEnabled.value = true
+                    if(textNow.length == 19){
+                        isCardNumberValid = true
+                        proceedButtonIsEnabled.value = true
+                        binding.ll1InvalidCardNumber.visibility = View.GONE
+                    }else{
+                        isCardNumberValid = false
+                        proceedButtonIsEnabled.value = false
+                    }
                 }
                 if(textNow.length == 19){
                     Log.d("16 digits","crossed")
                     binding.editTextCardValidity.requestFocus()
                 }
 
-                binding.editTextText.removeTextChangedListener(this)
+                binding.editTextCardNumber.removeTextChangedListener(this)
 
                 val text = s.toString().replace("\\s".toRegex(), "")
                 val formattedText = formatCardNumber(text)
 
-                binding.editTextText.setText(formattedText)
-                binding.editTextText.setSelection(formattedText.length)
+                binding.editTextCardNumber.setText(formattedText)
+                binding.editTextCardNumber.setSelection(formattedText.length)
 
-                binding.editTextText.addTextChangedListener(this)
+                binding.editTextCardNumber.addTextChangedListener(this)
                 val cardNumberWithOutSpaces = textNow.replace(" ", "")
 
                 if(cardNumberWithOutSpaces.length <= 6){
@@ -336,7 +343,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (textNow.isBlank()) {
                     isCardNumberValid = false
                     proceedButtonIsEnabled.value = false
-
                 }
             }
         })
@@ -351,13 +357,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
-
                 val text = s.toString().replace("/", "")
 
-                if(text.length > 0 && (text[0].toString().toInt() != 0 && text[0].toString().toInt() != 1)){
+                if(text.isNotEmpty() && (text[0].toString().toInt() != 0 && text[0].toString().toInt() != 1)){
                     Log.d("Invalid month in validity",text[0].toString())
-                    binding.invalidCardValidity.visibility = View.VISIBLE
-                    binding.textView7.text = "Invalid card validity"
+                    binding.invalidCardValidity.visibility = View.GONE
                     proceedButtonIsEnabled.value = false
                 }
                 binding.editTextCardValidity.removeTextChangedListener(this)
@@ -375,8 +379,29 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 val textNow = s.toString()
                 Log.d("onTextChanged", s.toString())
                 if (textNow.isNotBlank()) {
-                    isCardValidityValid = true
-                    proceedButtonIsEnabled.value = true
+
+                    if(textNow.length == 5) {
+                        Log.d("card validity is made true",textNow.length.toString())
+                        val cardValidity = binding.editTextCardValidity.text.toString()
+                        if (!(isValidExpirationDate(
+                                cardValidity.substring(0, 2),
+                                cardValidity.substring(3, 5)
+                            ))
+                        ) {
+                            isCardValidityValid = false
+                            proceedButtonIsEnabled.value = false
+                            binding.invalidCardValidity.visibility = View.VISIBLE
+                            binding.textView7.text = "Invalid card validity"
+                        }else{
+                            isCardValidityValid = true
+                            proceedButtonIsEnabled.value = true
+                            binding.invalidCardValidity.visibility = View.GONE
+                        }
+                    }
+                    else {
+                        isCardValidityValid = false
+                        proceedButtonIsEnabled.value = false
+                    }
                 }
             }
 
@@ -399,8 +424,15 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 val textNow = s.toString()
                 Log.d("onTextChanged", s.toString())
                 if (textNow.isNotBlank()) {
-                    isCardCVVValid = true
-                    proceedButtonIsEnabled.value = true
+                    if(textNow.length >= 3) {
+                        isCardCVVValid = true
+                        proceedButtonIsEnabled.value = true
+                        binding.invalidCVV.visibility = View.GONE
+                    }
+                    else {
+                        isCardCVVValid = false
+                        proceedButtonIsEnabled.value = false
+                    }
                 }
 
                 if(textNow.length == 4){
@@ -417,7 +449,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     proceedButtonIsEnabled.value = false
                 }
             }
-
         })
 
         binding.editTextNameOnCard.addTextChangedListener(object : TextWatcher {
@@ -427,9 +458,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textNow = s.toString()
-                Log.d("onTextChanged", s.toString())
-                if (textNow.isNotBlank()) {
-                    proceedButtonIsEnabled.value = true
+                if(textNow.isBlank()){
+                    Log.d("inside true of text changed",s.toString())
+                    isNameOnCardValid = false
+                    binding.nameOnCardErrorLayout.visibility = View.GONE
+                    proceedButtonIsEnabled.value = false
                 }
             }
 
@@ -437,9 +470,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 val textNow = s.toString()
                 Log.d("afterTextChanged", s.toString())
                 if (textNow.isBlank()) {
-                    binding.proceedButtonRelativeLayout.isEnabled = false
-                    binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                    binding.ll1InvalidCardNumber.visibility = View.GONE
+                    isNameOnCardValid = false
+                    binding.nameOnCardErrorLayout.visibility = View.VISIBLE
+                    proceedButtonIsEnabled.value = false
+                }else{
+                    isNameOnCardValid = true
+                    binding.nameOnCardErrorLayout.visibility = View.GONE
+                    proceedButtonIsEnabled.value = true
                 }
             }
 
@@ -450,7 +487,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.proceedButton.setOnClickListener() {
             removeErrors()
-            cardNumber = deformatCardNumber(binding.editTextText.text.toString())
+            cardNumber = deformatCardNumber(binding.editTextCardNumber.text.toString())
             Log.d("card number", cardNumber!!)
             cardExpiryYYYY_MM = addDashInsteadOfSlash(binding.editTextCardValidity.text.toString())
             if (cardExpiryYYYY_MM.isNullOrEmpty()) {
@@ -493,11 +530,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
 
 
-        binding.editTextText.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
+        binding.editTextCardNumber.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
                 bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             } else {
-                val cardNumber = removeSpaces(binding.editTextText.text.toString())
+                val cardNumber = removeSpaces(binding.editTextCardNumber.text.toString())
                 if(!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))){
                     binding.ll1InvalidCardNumber.visibility = View.VISIBLE
                     binding.textView4.text = "Invalid card number. Please check"
@@ -552,12 +589,18 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.editTextNameOnCard.setOnFocusChangeListener(OnFocusChangeListener{view,hasFocus ->
             if(hasFocus){
                 bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            }else{
+                if(binding.editTextNameOnCard.text.isNullOrEmpty()){
+                    isNameOnCardValid = false
+                    binding.nameOnCardErrorLayout.visibility = View.VISIBLE
+                }else{
+                    isNameOnCardValid = true
+                    binding.nameOnCardErrorLayout.visibility = View.GONE
+                }
             }
         })
         return binding.root
     }
-
-
 
     fun isValidExpirationDate(inputExpMonth : String, inputExpYear: String) : Boolean {
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)

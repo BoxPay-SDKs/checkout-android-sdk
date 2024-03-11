@@ -113,7 +113,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
         binding.proceedButton.isEnabled = false
 
-        binding.editTextText.addTextChangedListener(object : TextWatcher {
+        binding.editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 Log.d("beforeTextChanged", s.toString())
             }
@@ -150,7 +150,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         binding.ll1InvalidUPI.visibility = View.GONE
 
         binding.proceedButton.setOnClickListener() {
-            userVPA = binding.editTextText.text.toString()
+            userVPA = binding.editText.text.toString()
             closeKeyboard(this)
             postRequest(requireContext(), userVPA!!)
             showLoadingInButton()

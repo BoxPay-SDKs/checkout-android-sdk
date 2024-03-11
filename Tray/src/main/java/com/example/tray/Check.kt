@@ -151,7 +151,7 @@ import org.json.JSONObject
         }
     },
     "order": {
-        "originalAmount": 1697,
+        "originalAmount": 699,
         "shippingAmount": 500,
         "voucherCode": "VOUCHER",
         "totalAmountWithoutTax": 699.00,
@@ -210,7 +210,7 @@ import org.json.JSONObject
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
+                Log.e("Error", "Error occurred: ${error.toString()}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")

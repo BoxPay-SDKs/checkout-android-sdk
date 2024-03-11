@@ -88,7 +88,6 @@
                         android:id="@+id/editTextNameOnCard"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
                         android:background="@drawable/edittext_bg"
                         android:fontFamily="@font/poppins"
                         android:gravity="center_vertical"
@@ -102,6 +101,35 @@
                         app:layout_constraintStart_toStartOf="@+id/nameOnCard"
                         app:layout_constraintTop_toBottomOf="@+id/nameOnCard"
                         tools:ignore="TouchTargetSizeCheck" />
+
+                    <LinearLayout
+                        android:id="@+id/nameOnCardErrorLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:visibility="gone"
+                        app:layout_constraintStart_toStartOf="@+id/editTextNameOnCard"
+                        app:layout_constraintTop_toBottomOf="@+id/editTextNameOnCard">
+
+                        <ImageView
+                            android:id="@+id/imageView10"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/error_outline" />
+
+                        <TextView
+                            android:id="@+id/textView17"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="2dp"
+                            android:layout_marginBottom="3dp"
+                            android:enabled="false"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical|left"
+                            android:text="Invalid name on card"
+                            android:textColor="#B9232F"
+                            android:textSize="12sp" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/linearLayout3"
@@ -168,9 +196,10 @@
                                 android:text="Invalid card validity"
                                 android:textColor="#B9232F"
                                 android:textSize="12sp"
-                                app:layout_constraintTop_toTopOf="parent"
                                 app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintStart_toEndOf="@+id/imageView6"/>
+                                app:layout_constraintStart_toEndOf="@+id/imageView6"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="0.0" />
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
                     </LinearLayout>
@@ -310,7 +339,7 @@
                             app:layout_constraintTop_toBottomOf="@+id/texthead_Enter_UPI">
 
                             <EditText
-                                android:id="@+id/editTextText"
+                                android:id="@+id/edit_text_card_number"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
@@ -416,10 +445,11 @@
                         android:id="@+id/imageView3"
                         android:layout_width="16dp"
                         android:layout_height="16dp"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="8dp"
                         android:background="@drawable/check_box_bg"
-                        app:layout_constraintStart_toStartOf="@+id/editTextNameOnCard"
-                        app:layout_constraintTop_toBottomOf="@+id/editTextNameOnCard" />
+                        app:layout_constraintStart_toStartOf="@+id/nameOnCardErrorLayout"
+                        app:layout_constraintTop_toBottomOf="@+id/nameOnCardErrorLayout"
+                        app:layout_goneMarginBottom="8dp" />
 
                     <TextView
                         android:id="@+id/textView3"
