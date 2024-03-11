@@ -40,7 +40,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
@@ -69,8 +68,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             dialog.setCancelable(false)
-
-
 
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
@@ -242,10 +239,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         dismiss()
-
-
                     } else if (status.contains("PENDING", ignoreCase = true)) {
-                        //do nothing
+
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
                         val bottomSheet = PaymentFailureScreen()
                         bottomSheet.show(parentFragmentManager, "Payment Failure")

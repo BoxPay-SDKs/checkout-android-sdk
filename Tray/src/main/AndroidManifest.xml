@@ -11,16 +11,13 @@
     <application>
         <activity
             android:name=".OTPScreenWebView"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:exported="false" />
         <activity
             android:name=".Check"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:exported="false" />
         <activity
             android:name=".TrayActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:exported="false" />
 
         <meta-data
             android:name="preloaded_fonts"
