@@ -6,6 +6,7 @@ import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -672,12 +673,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-//                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-//                        intent.putExtra("url", url)
-//                        startActivity(intent)
-
-                        val bottomSheet = ForceTestPaymentBottomSheet()
-                        bottomSheet.show(parentFragmentManager, "ForceTestPaymentOpenByWallet")
+                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                        intent.putExtra("url", url)
+                        startActivity(intent)
                     }
 
                 } catch (e: JSONException) {

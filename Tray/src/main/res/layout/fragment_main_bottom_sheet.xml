@@ -414,6 +414,7 @@
                                         android:layout_marginStart="32dp"
                                         android:gravity="center"
                                         android:orientation="vertical"
+                                        android:visibility="gone"
                                         app:layout_constraintBottom_toBottomOf="@+id/PopularUPILinearLayout3"
                                         app:layout_constraintStart_toEndOf="@+id/PopularUPILinearLayout3"
                                         app:layout_constraintTop_toTopOf="@+id/PopularUPILinearLayout3">

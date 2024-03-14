@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -889,13 +890,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheetWithDetails")
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
-//                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-//                            intent.putExtra("url", url)
-//                            intent.putExtra("token", token)
-//                            startActivity(intent)
+                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                            intent.putExtra("url", url)
 
-                            val bottomSheet = ForceTestPaymentBottomSheet()
-                            bottomSheet.show(parentFragmentManager,"ForcedTestPaymentFromCard")
+                            startActivity(intent)
+
+//
+//                            val bottomSheet = ForceTestPaymentBottomSheet()
+//                            bottomSheet.show(parentFragmentManager,"ForcedTestPaymentFromCard")
                         }
                     // Assuming there's only one action, change index if needed
                     }

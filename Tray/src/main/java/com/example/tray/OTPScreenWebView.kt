@@ -1,12 +1,14 @@
 package com.example.tray
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.android.volley.Request
@@ -15,7 +17,6 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.ActivityOtpscreenWebViewBinding
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -96,20 +97,18 @@ internal class OTPScreenWebView : AppCompatActivity() {
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
                         job?.cancel()
+                        val sharedPreferences = this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+                       val successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
 
-                        if (previousBottomSheet != null) {
-                            // Notify the previous bottom sheet or perform any necessary actions
-                            Log.d("not null","previousBottomSheet"+previousBottomSheet)
-                        }else{
-                            Log.d("null","previousBottomSheet"+previousBottomSheet)
-                        }
-//                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-//                        bottomSheet.show(supportFragmentManager, "PaymentSuccessfulWithDetailsBottomSheet")
-//                        finish()
+                        openActivity(successScreenFullReferencePath.toString(),this)
                     } else if (status.contains("PENDING", ignoreCase = true)) {
-                        //do nothing
+//                        val bottomSheet = PaymentFailureScreen()
+//                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+//                        finish()
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
-
+                        val bottomSheet = PaymentFailureScreen()
+                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+                        finish()
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
                     } else if (status.contains("FAILED", ignoreCase = true)) {
@@ -126,7 +125,6 @@ internal class OTPScreenWebView : AppCompatActivity() {
                 val errorResponse = String(error.networkResponse.data)
                 Log.e("Error", "Detailed error response: $errorResponse")
             }
-
             // Handle errors here
         }
         // Add the request to the RequestQueue.
@@ -166,5 +164,27 @@ internal class OTPScreenWebView : AppCompatActivity() {
     }
     companion object{
 
+    }
+    private fun openActivity(activityPath: String, context: Context) {
+        if (context is AppCompatActivity) {
+            try {
+                // Get the class object for the activity using reflection
+                val activityClass = Class.forName(activityPath)
+                // Create an instance of the activity using Kotlin reflection
+                val activityInstance = activityClass.getDeclaredConstructor().newInstance() as AppCompatActivity
+
+                // Check if the activity is a subclass of AppCompatActivity
+                if (activityInstance is AppCompatActivity) {
+                    // Start the activity
+                    context.startActivity(Intent(context, activityClass))
+                } else {
+                    // Log an error or handle the case where the activity is not a subclass of AppCompatActivity
+                }
+            } catch (e: ClassNotFoundException) {
+                // Log an error or handle the case where the activity class cannot be found
+            }
+        } else {
+            // Log an error or handle the case where the context is not an AppCompatActivity
+        }
     }
 }

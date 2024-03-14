@@ -44,6 +44,7 @@ import com.example.tray.dataclasses.WalletDataClass
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.GsonBuilder
 import org.json.JSONObject
 
 internal class MainBottomSheet : BottomSheetDialogFragment() {
@@ -140,41 +141,50 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             }
         }
     }
+    private val paymentActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
-    private fun launchUPIPayment(context: Context, packageName: String) {
-        Log.d("launch UPI Payment",packageName)
-        // UPI payment data
-        val uri = Uri.parse("upi://pay").buildUpon()
-            .appendQueryParameter("pa", "9711668479@paytm")
-            .appendQueryParameter("pn", "Piyush Sharma")
-            .appendQueryParameter("tn","Payment just for testing")
-            .appendQueryParameter("am", "1.00")
-            .appendQueryParameter("cu", "INR")
-            .build()
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data: Intent? = result.data
+            if (data != null) {
+                val response = data.getStringExtra("response")
+                Log.d("data for popular apps",response.toString())
+                if (response == "SUCCESS") {
+                    // Payment successful
+                    Log.d("UPI Payment", "Success")
+                    // Handle success
+                } else {
+                    // Payment failed
+                    Log.d("UPI Payment", "Failed")
+                    // Handle failure
+                }
+            }
+        } else if (result.resultCode == Activity.RESULT_CANCELED) {
+            // Payment canceled
+            Log.d("UPI Payment", "Cancelled")
+            // Handle cancellation
+        } else {
+            // Payment failed
+            Log.d("UPI Payment", "Failed")
+            // Handle failure
+        }
+    }
+
+    private fun launchUPIPayment(context: Context, appName: String) {
+        Log.d("launch UPI Payment",appName)
 
         val intent = Intent(Intent.ACTION_VIEW)
+        var url = ""
+        if(appName == "Paytm")
+            url = "paytmmp://pay?cu=INR&mc=8299&pa=raisingsupersta915.rzp%40axisbank&pn=RaisingSuperstars&tr=NlMQVzjncGsEut&tn=PayviaRazorpay&am=1.00"
+        else if(appName == "GPay")
+            url = "gpay://pay?cu=INR&mc=8299&pa=raisingsupersta915.rzp%40axisbank&pn=RaisingSuperstars&tr=NlMQVzjncGsEut&tn=PayviaRazorpay&am=1.00"
+        else
+            url = "phonepe://pay?cu=INR&mc=8299&pa=raisingsupersta915.rzp%40axisbank&pn=RaisingSuperstars&tr=NlMQVzjncGsEut&tn=PayviaRazorpay&am=1.00"
+
+        val uri = Uri.parse(url)
         intent.data = uri
-        intent.setPackage(packageName)
 
-        try{
-            startActivityForResult(intent,101)
-        }catch (e  : Exception){
-
-        }
-
-//        val payeeName = "Piyush Sharma"
-//        val payeeVpa = "7986266095@paytm"
-//        val amount = "1.00"
-//        val currency = "INR"
-//        val transactionNote = "Test Transaction"
-//
-//        val uriString = "phonepe://upi/pay?pn=$payeeName&pa=$payeeVpa&am=$amount&cu=$currency&tn=$transactionNote"
-//        val uri = Uri.parse(uriString)
-//
-//        val intent = Intent(Intent.ACTION_VIEW)
-//        intent.data = uri
-//
-//        startActivity(intent)
+        paymentActivityResultLauncher.launch(intent)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -186,10 +196,31 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                     val list = arrayListOf<String>()
                     list.add(value.toString())
                     Toast.makeText(requireContext(),"Payment successful",Toast.LENGTH_SHORT).show()
-
                 }
             }else{
                 Toast.makeText(requireContext(), "Payment Failed", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        else if(requestCode == 102){
+            if (resultCode == Activity.RESULT_OK) {
+                // Payment successful
+                Log.d("UPI Payment", "Success")
+                val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                bottomSheet.show(parentFragmentManager,"PaymentSuccessfulWithDetailsBottomSheet")
+                // Handle success
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // Payment canceled
+                Log.d("UPI Payment", "Cancelled")
+                val bottomSheet = PaymentFailureScreen()
+                bottomSheet.show(parentFragmentManager,"PaymentFailureScreen")
+                // Handle cancellation
+            } else {
+                // Payment failed
+                Log.d("UPI Payment", "Failed")
+                val bottomSheet = PaymentFailureScreen()
+                bottomSheet.show(parentFragmentManager,"PaymentFailureScreen")
+                // Handle failure
             }
         }
     }
@@ -236,13 +267,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 Log.d("data of activityResultLauncher", data.toString())
                 Log.d("successScreenReference", successScreenFullReferencePath!!)
                 if (resultCode == Activity.RESULT_OK) {
-                    val bottomSheet = PaymentStatusBottomSheet()
+                    val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                     bottomSheet.show(parentFragmentManager, "Payment Success Screen")
                 } else {
                     val bottomSheet = PaymentFailureScreen()
                     bottomSheet.show(parentFragmentManager, "Payment Failure Screen")
                 }
-                Log.d("Making payusing any other upi apps enabled", "here")
+                Log.d("Making pay using any other upi apps enabled", "here")
                 binding.payUsingAnyUPIConstraint.isEnabled = true
             }
 
@@ -334,6 +365,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
             try {
+                logJsonObject(response)
 
                 // Get the payment methods array
                 val paymentMethodsArray =
@@ -349,17 +381,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                         if (brand == "UpiCollect") {
                             upiCollectMethod = true
                             upiAvailable = true
-                        } else if (brand == "UpiIntent") {
+                        }
+                        if (brand == "UpiIntent") {
                             upiIntentMethod = true
                             upiAvailable = true
-                        } else {
-                            upiAvailable = false
                         }
-                    } else if (paymentMethodName == "Card") {
+                    }
+                    if (paymentMethodName == "Card") {
                         cardsMethod = true
-                    } else if (paymentMethodName == "Wallet") {
+                    }
+                    if (paymentMethodName == "Wallet") {
                         walletMethods = true
-                    } else if (paymentMethodName == "NetBanking") {
+                    }
+                    if (paymentMethodName == "NetBanking") {
                         netBankingMethods = true
                     }
                 }
@@ -439,7 +473,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             textView.text = "PhonePe"
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 overlayViewModel.setShowOverlay(false)
-                launchUPIPayment(requireContext(), UPIAppsAndPackageMap["PhonePe"].toString())
+                launchUPIPayment(requireContext(),"PhonePe")
             }
             Log.d("i and app inside if statement", "$i and app = PhonePe")
             i++
@@ -454,7 +488,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 overlayViewModel.setShowOverlay(false)
-                launchUPIPayment(requireContext(), UPIAppsAndPackageMap["GPay"].toString())
+                launchUPIPayment(requireContext(), "GPay")
             }
             Log.d("i and app inside if statement", "$i and app = GPay")
             i++
@@ -469,24 +503,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 overlayViewModel.setShowOverlay(false)
-                launchUPIPayment(requireContext(), UPIAppsAndPackageMap["Paytm"].toString())
+                launchUPIPayment(requireContext(),"Paytm")
             }
             Log.d("i and app inside if statement", "$i and app = Paytm")
-            i++
-        }
-
-
-        if (UPIAppsAndPackageMap.containsKey("CRED")) {
-            val imageView = getPopularImageViewByNum(i)
-            val textView = getPopularTextViewByNum(i)
-            imageView.setImageResource(R.drawable.cred_upi_logo)
-            textView.text = "CRED"
-
-            getPopularConstraintLayoutByNum(i).setOnClickListener() {
-                overlayViewModel.setShowOverlay(false)
-                launchUPIPayment(requireContext(), UPIAppsAndPackageMap["CRED"].toString())
-            }
-            Log.d("i and app inside if statement", "$i and app = CRED")
             i++
         }
 
@@ -768,6 +787,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         val bottomSheetFragment = WalletBottomSheet()
         bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
     }
+    fun logJsonObject(jsonObject: JSONObject) {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        val jsonStr = gson.toJson(jsonObject)
+        Log.d("Request Body Main Bottom Sheet", jsonStr)
+    }
 
     private fun getAndSetOrderDetails() {
 
@@ -776,6 +800,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
             try {
+
+
 
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
                 val orderObject = paymentDetailsObject.getJSONObject("order")

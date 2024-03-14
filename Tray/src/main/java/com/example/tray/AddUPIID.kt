@@ -100,13 +100,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
 
 
-
-
-
-
-
-
-
         binding.backButton.setOnClickListener() {
             dismissAndMakeButtonsOfMainBottomSheetEnabled()
         }
@@ -246,11 +239,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                             //Hidden
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
 
-
                         }
                     }
                 }
-
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
 
                 }
