@@ -6,8 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -16,7 +14,6 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.ActivityCheckBinding
-import com.example.tray.databinding.CustomRadioButtonLayoutBinding
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
 
@@ -103,10 +100,9 @@ import org.json.JSONObject
 
 
     private fun showBottomSheetWithOverlay() {
-        val checkout = Checkout(tokenLiveData.value.toString(),successScreenFullReferencePath.toString(),this)
+        val boxPayCheckout = BoxPayCheckout(tokenLiveData.value.toString(),successScreenFullReferencePath.toString(),this)
         Log.d("Checked","executed showBottomSheetWithOverlay")
-
-        checkout.minView()
+        boxPayCheckout.minView()
     }
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
@@ -173,24 +169,6 @@ import org.json.JSONObject
                "discountedAmount":null,
                "amountWithoutTaxLocale":"699",
                "amountWithoutTaxLocaleFull":"699"
-            },
-            {
-                "id":"test",
-               "itemName":"test_name",
-               "description":"testProduct",
-               "quantity":1,
-               "manufacturer":null,
-               "brand":null,
-               "color":null,
-               "productUrl":null,
-               "imageUrl":"https://test-merchant.boxpay.tech/boxpay%20logo.svg",
-               "categories":null,
-               "amountWithoutTax":1299,
-               "taxAmount":120,
-               "taxPercentage":null,
-               "discountedAmount":null,
-               "amountWithoutTaxLocale":"1299",
-               "amountWithoutTaxLocaleFull":"1299"
             }
         ]
     },

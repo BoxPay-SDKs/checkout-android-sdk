@@ -441,30 +441,37 @@
                     </LinearLayout>
 
 
+                    <LinearLayout
+                        android:id="@+id/saveCardLinearLayout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:layout_goneMarginBottom="8dp"
+                        android:layout_marginTop="8dp"
+                        app:layout_constraintStart_toStartOf="@+id/nameOnCardErrorLayout"
+                        app:layout_constraintTop_toBottomOf="@+id/nameOnCardErrorLayout"
+                        android:visibility="gone">
+
+
                     <ImageView
                         android:id="@+id/imageView3"
                         android:layout_width="16dp"
                         android:layout_height="16dp"
-                        android:layout_marginTop="8dp"
                         android:background="@drawable/check_box_bg"
-                        app:layout_constraintStart_toStartOf="@+id/nameOnCardErrorLayout"
-                        app:layout_constraintTop_toBottomOf="@+id/nameOnCardErrorLayout"
-                        app:layout_goneMarginBottom="8dp" />
+                         />
 
                     <TextView
                         android:id="@+id/textView3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="2dp"
-                        android:layout_marginTop="3dp"
                         android:fontFamily="@font/poppins"
                         android:gravity="center_vertical"
                         android:text="Save your card"
                         android:textColor="#2D2B32"
                         android:textSize="12sp"
-                        app:layout_constraintBottom_toBottomOf="@+id/imageView3"
-                        app:layout_constraintStart_toEndOf="@+id/imageView3"
-                        app:layout_constraintTop_toTopOf="@+id/imageView3" />
+                        android:layout_marginStart="4dp"
+                        android:layout_marginBottom="2dp"/>
+                    </LinearLayout>
 
 
                 </androidx.constraintlayout.widget.ConstraintLayout>

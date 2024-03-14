@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -17,9 +16,8 @@ import java.net.Inet6Address
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.util.Collections
-import java.util.regex.Pattern
 
-class Checkout(private val token: String, private val successScreenFullReferencePath: String, private val context : Context){
+class BoxPayCheckout(private val token: String, private val successScreenFullReferencePath: String, private val context : Context){
     private lateinit var sharedPreferences : SharedPreferences
     private lateinit var editor : SharedPreferences.Editor
     fun minView() {
@@ -43,9 +41,13 @@ class Checkout(private val token: String, private val successScreenFullReference
     private fun fetchShopperDetailsAndUpdateInSharedPreferences(){
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(context)
+        Log.d("fetchSHopperDetailsAndUpdate","Checkout")
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
             try {
-                val shopperJSONObject = response.getJSONObject("paymentDetails").getJSONObject("shopper")
+
+                val paymentDetailsObject = response.getJSONObject("paymentDetails")
+
+                val shopperJSONObject = paymentDetailsObject.getJSONObject("shopper")
                 Log.d("firstname",shopperJSONObject.getString("firstName"))
                 editor.putString("firstName",shopperJSONObject.getString("firstName"))
                 editor.putString("lastName",shopperJSONObject.getString("lastName"))
@@ -56,6 +58,7 @@ class Checkout(private val token: String, private val successScreenFullReference
 
 
                 val deliveryAddressObject = shopperJSONObject.getJSONObject("deliveryAddress")
+                logJsonObject(deliveryAddressObject)
                 editor.putString("address1",deliveryAddressObject.getString("address1"))
                 editor.putString("address2",deliveryAddressObject.getString("address2"))
                 editor.putString("address3",deliveryAddressObject.getString("address3"))
@@ -63,9 +66,14 @@ class Checkout(private val token: String, private val successScreenFullReference
                 editor.putString("state",deliveryAddressObject.getString("state"))
                 editor.putString("countryCode",deliveryAddressObject.getString("countryCode"))
                 editor.putString("postalCode",deliveryAddressObject.getString("postalCode"))
-                editor.putString("countryName",deliveryAddressObject.getString("countryName"))
                 Log.d("postalCode",deliveryAddressObject.getString("postalCode"))
 
+                val orderObject = paymentDetailsObject.getJSONObject("order")
+                editor.putString("originalAmount",orderObject.getString("originalAmount"))
+
+
+                val moneyObject = paymentDetailsObject.getJSONObject("money")
+                editor.putString("currencySymbol",moneyObject.getString("currencySymbol"))
 
                 val ipAddress = convertIPv6ToIPv4(getLocalIpAddress())
                 Log.d("ipAddress",ipAddress.toString())

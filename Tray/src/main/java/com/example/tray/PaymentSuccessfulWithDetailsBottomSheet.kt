@@ -23,7 +23,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private var token: String? = null
     private var successScreenFullReferencePath : String ?= null
     private var transactionID: String? = null
-    private var transactionAmount: String? = null
+    private var originalAmount: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,10 +35,9 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         // Inflate the layout for this fragment
         binding = FragmentPaymentSuccessfulWithDetailsBottomSheetBinding.inflate(layoutInflater,container,false)
 
-
-
+        binding.lottieAnimationView.playAnimation()
         fetchTransactionDetailsFromSharedPreferences()
-        binding.transactionAmountTextView.text = transactionAmount
+        binding.transactionAmountTextView.text = originalAmount
         binding.transactionIDTextView.text = transactionID
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
 
@@ -93,8 +92,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
         transactionID = sharedPreferences.getString("transactionId","empty")
         Log.d("transactionID fetched from sharedPreferences",transactionID.toString())
-        transactionAmount = sharedPreferences.getString("transactionAmount","empty")
-        Log.d("success screen path fetched from sharedPreferences",transactionID.toString())
+        originalAmount = sharedPreferences.getString("currencySymbol","")+sharedPreferences.getString("originalAmount","empty")
+        Log.d("success screen path fetched from sharedPreferences",originalAmount.toString())
     }
 
     object SharedPreferencesHelper {

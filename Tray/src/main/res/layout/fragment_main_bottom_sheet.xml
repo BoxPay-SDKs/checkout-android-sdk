@@ -159,34 +159,39 @@
                                 app:layout_constraintTop_toBottomOf="@+id/numberOfItems"
                                 tools:itemCount="1"
                                 tools:listitem="@layout/order_summary_item" />
-
-                            <TextView
-                                android:id="@+id/textView18"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:layout_marginBottom="8dp"
-                                android:fontFamily="@font/poppins"
-                                android:text="Total"
-                                android:textColor="#010102"
-                                android:textSize="12sp"
-                                android:visibility="visible"
+                            <RelativeLayout
+                                android:id="@+id/totalValueRelativeLayout"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="horizontal"
+                                android:layout_marginStart="14dp"
+                                android:layout_marginEnd="14dp"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintStart_toStartOf="@+id/itemsInOrderRecyclerView"
-                                app:layout_constraintTop_toBottomOf="@+id/itemsInOrderRecyclerView" />
+                                app:layout_constraintTop_toBottomOf="@+id/itemsInOrderRecyclerView">
 
-                            <TextView
-                                android:id="@+id/ItemsPrice"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/inter_semibold"
-                                android:text="₹1198.00"
-                                android:textColor="#010102"
-                                android:textSize="18sp"
-                                android:visibility="visible"
-                                app:layout_constraintBottom_toBottomOf="@+id/textView18"
-                                app:layout_constraintEnd_toEndOf="@+id/itemsInOrderRecyclerView"
-                                app:layout_constraintTop_toTopOf="@+id/textView18" />
+                                <TextView
+                                    android:id="@+id/textView18"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/poppins"
+                                    android:text="Total"
+                                    android:textColor="#010102"
+                                    android:textSize="12sp"
+                                    android:visibility="visible"
+                                    android:layout_alignParentStart="true"/>
+
+                                <TextView
+                                    android:id="@+id/ItemsPrice"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/inter_semibold"
+                                    android:textColor="#010102"
+                                    android:text="1234"
+                                    android:textSize="18sp"
+                                    android:layout_alignParentEnd="true"
+                                    android:visibility="visible" />
+                            </RelativeLayout>
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
                     </androidx.cardview.widget.CardView>

@@ -122,6 +122,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
         binding.circularProgressBar.startAngle = 90f
         binding.cancelPaymentTextView.setOnClickListener() {
+            countdownTimer.cancel()
+            countdownTimerForAPI.cancel()
             dismiss()
         }
         startTimer()
@@ -139,6 +141,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.retryButton.setOnClickListener() {
+            countdownTimer.cancel()
+            countdownTimerForAPI.cancel()
             dismiss()
         }
 

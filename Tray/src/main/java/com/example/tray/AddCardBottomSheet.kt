@@ -80,74 +80,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         Log.d("makeCardNetworkIdentificationCall",cardNumber)
         val url = "https://test-apis.boxpay.tech/v0/platform/bank-identification-numbers/tokens/${cardNumber}"
 
-        val jsonData = JSONArray("""[{
-    "context": {
-        "countryCode": "IN",
-        "legalEntity": {
-            "code": "demo_merchant"
-        },
-        "orderId": "test12"
-    },
-    "paymentType": "S",
-    "money": {
-        "amount": "2197",
-        "currencyCode": "INR"
-    },
-    "descriptor": {
-        "line1": "Some descriptor"
-    },
-    "billingAddress": {
-        "address1": "first address line",
-            "address2": "second address line",
-            "city": "Faridabad",
-            "state": "Haryana",
-            "countryCode": "IN",
-            "postalCode": "121004"
-    },
-    "shopper": {
-        "firstName": "test",
-        "lastName": "last",
-        "email": "test123@gmail.com",
-        "uniqueReference": "x123y",
-        "phoneNumber": "911234567890",
-        "deliveryAddress": {
-            "address1": "first line",
-        "address2": "second line",
-        "city": "Mumbai",
-        "state": "Maharashtra",
-        "countryCode": "IN",
-        "postalCode": "123456"
-        }
-    },
-    "order": {
-        "originalAmount": 1697,
-        "shippingAmount": 500,
-        "voucherCode": "VOUCHER",
-        "items": [
-            {
-                "id": "test",
-                "itemName": "test_name",
-                "description": "testProduct",
-                "quantity": 1,
-                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
-                "amountWithoutTax": 699.00
-            },
-            {
-                "id": "test2",
-                "itemName": "test_name2",
-                "description": "testProduct2",
-                "quantity": 2,
-                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
-                "amountWithoutTax": 499.00
-            }
-        ]
-    },
-    "statusNotifyUrl": "https://www.boxpay.tech",
-    "frontendReturnUrl": "https://www.boxpay.tech",
-    "frontendBackUrl": "https://www.boxpay.tech"
-}]""")
-
-
+        val jsonData = JSONArray()
         var token = ""
 
         val brands = mutableListOf<String>()
@@ -280,7 +213,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.ll1InvalidCardNumber.visibility = View.GONE
         binding.invalidCardValidity.visibility = View.GONE
         binding.invalidCVV.visibility = View.GONE
-        binding.imageView3.setOnClickListener() {
+        binding.saveCardLinearLayout.setOnClickListener() {
             if (!checked) {
                 binding.imageView3.setImageResource(R.drawable.checkbox)
                 checked = true
@@ -318,7 +251,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 }
                 if(textNow.length == 19){
                     Log.d("16 digits","crossed")
-                    binding.editTextCardValidity.requestFocus()
+                    if(isValidCardNumberByLuhn(removeSpaces(textNow)))
+                        binding.editTextCardValidity.requestFocus()
+                    else{
+                        isCardNumberValid = false
+                        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                        proceedButtonIsEnabled.value = false
+                    }
                 }
 
                 binding.editTextCardNumber.removeTextChangedListener(this)
@@ -357,7 +296,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
-                val text = s.toString().replace("/", "")
+                var text = s.toString().replace("/", "")
 
                 if(text.isNotEmpty() && (text[0].toString().toInt() != 0 && text[0].toString().toInt() != 1)){
                     Log.d("Invalid month in validity",text[0].toString())
@@ -365,6 +304,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     proceedButtonIsEnabled.value = false
                 }
                 binding.editTextCardValidity.removeTextChangedListener(this)
+                if(text.length == 1){
+                    Log.d("textNow card validity",text)
+                    if(text != "0" && text != "1"){
+                        text = "0"+text
+                    }
+                }
 
 //                val text = s.toString().replace("/", "")
                 val formattedText = formatMMYY(text)

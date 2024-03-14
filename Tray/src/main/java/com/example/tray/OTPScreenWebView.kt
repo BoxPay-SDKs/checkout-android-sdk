@@ -1,11 +1,13 @@
 package com.example.tray
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
-import android.view.View
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -13,6 +15,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.ActivityOtpscreenWebViewBinding
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,6 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
+
 
 internal class OTPScreenWebView : AppCompatActivity() {
     private val binding by lazy {
@@ -30,17 +34,39 @@ internal class OTPScreenWebView : AppCompatActivity() {
     private var token: String? = null
     private lateinit var requestQueue: RequestQueue
     private var successScreenFullReferencePath: String? = null
+    private var previousBottomSheet: Context ?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         requestQueue = Volley.newRequestQueue(this)
-
         val receivedUrl = intent.getStringExtra("url")
         Log.d("url", receivedUrl.toString())
         binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
+        binding.webViewForOtpValidation.settings.domStorageEnabled = true
+        binding.webViewForOtpValidation.settings.javaScriptEnabled = true
         startFunctionCalls()
         fetchTransactionDetailsFromSharedPreferences()
+
+
+        binding.webViewForOtpValidation.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                // Page finished loading, you can perform any necessary actions here
+                Log.d("page finished loading",url.toString())
+            }
+
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                super.onReceivedError(view, request, error)
+                // Handle errors here
+                Log.d("page failed loading",error.toString())
+            }
+        }
+    }
+
+    // Method to set the previous bottom sheet reference
+    fun setPreviousBottomSheet(bottomSheet: Context?) {
+        previousBottomSheet = bottomSheet
     }
 
     private fun fetchStatusAndReason(url: String) {
@@ -70,8 +96,16 @@ internal class OTPScreenWebView : AppCompatActivity() {
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
                         job?.cancel()
-                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                        bottomSheet.show(supportFragmentManager, "PaymentSuccessfulWithDetailsBottomSheet")
+
+                        if (previousBottomSheet != null) {
+                            // Notify the previous bottom sheet or perform any necessary actions
+                            Log.d("not null","previousBottomSheet"+previousBottomSheet)
+                        }else{
+                            Log.d("null","previousBottomSheet"+previousBottomSheet)
+                        }
+//                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+//                        bottomSheet.show(supportFragmentManager, "PaymentSuccessfulWithDetailsBottomSheet")
+//                        finish()
                     } else if (status.contains("PENDING", ignoreCase = true)) {
                         //do nothing
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
@@ -81,6 +115,7 @@ internal class OTPScreenWebView : AppCompatActivity() {
                     } else if (status.contains("FAILED", ignoreCase = true)) {
                         val bottomSheet = PaymentFailureScreen()
                         bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+                        finish()
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
@@ -90,7 +125,6 @@ internal class OTPScreenWebView : AppCompatActivity() {
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
                 Log.e("Error", "Detailed error response: $errorResponse")
-
             }
 
             // Handle errors here

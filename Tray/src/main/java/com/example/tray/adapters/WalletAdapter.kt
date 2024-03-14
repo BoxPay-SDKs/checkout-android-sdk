@@ -3,12 +3,13 @@ package com.example.tray.adapters
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tray.R
 import com.example.tray.databinding.WalletItemBinding
-
 import com.example.tray.dataclasses.WalletDataClass
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
@@ -17,7 +18,8 @@ class WalletAdapter(
     private val walletDetails: ArrayList<WalletDataClass>,
     private val recyclerView: RecyclerView,
     private var liveDataPopularItemSelectedOrNot: MutableLiveData<Boolean>,
-    private val context: Context
+    private val context: Context,
+    private val searchView : android.widget.SearchView
 ) : RecyclerView.Adapter<WalletAdapter.WalletAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
@@ -45,6 +47,9 @@ class WalletAdapter(
                 )
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
+                    Log.d("keyboard should hide now","WalletAdapter")
+                    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
                     handleRadioButtonClick(adapterPosition)
                     liveDataPopularItemSelectedOrNot.value = false
                 }

@@ -2,6 +2,7 @@ package com.example.tray
 
 
 import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -141,23 +142,55 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun launchUPIPayment(context: Context, packageName: String) {
+        Log.d("launch UPI Payment",packageName)
         // UPI payment data
-        val uri = Uri.parse("upi://pay")
-        val intent = Intent(Intent.ACTION_VIEW, uri)
-        intent.setPackage(packageName)
-        intent.putExtra("pa", "7986266095@paytm") // UPI ID of the recipient
-        intent.putExtra("pn", "Piyush Sharma") // Name of the recipient
-        intent.putExtra("mc", "hK3JrVc6ys") // Merchant code
-        intent.putExtra("tr", "123456789") // Transaction ID
-        intent.putExtra("tn", "Test Transaction") // Transaction note
-        intent.putExtra("am", "10.00") // Transaction amount
-        intent.putExtra("cu", "INR") // Currency code
+        val uri = Uri.parse("upi://pay").buildUpon()
+            .appendQueryParameter("pa", "9711668479@paytm")
+            .appendQueryParameter("pn", "Piyush Sharma")
+            .appendQueryParameter("tn","Payment just for testing")
+            .appendQueryParameter("am", "1.00")
+            .appendQueryParameter("cu", "INR")
+            .build()
 
-        try {
-            context.startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            // Handle case where UPI app is not installed or could not handle the intent
-            Toast.makeText(context, "UPI app not found", Toast.LENGTH_SHORT).show()
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = uri
+        intent.setPackage(packageName)
+
+        try{
+            startActivityForResult(intent,101)
+        }catch (e  : Exception){
+
+        }
+
+//        val payeeName = "Piyush Sharma"
+//        val payeeVpa = "7986266095@paytm"
+//        val amount = "1.00"
+//        val currency = "INR"
+//        val transactionNote = "Test Transaction"
+//
+//        val uriString = "phonepe://upi/pay?pn=$payeeName&pa=$payeeVpa&am=$amount&cu=$currency&tn=$transactionNote"
+//        val uri = Uri.parse(uriString)
+//
+//        val intent = Intent(Intent.ACTION_VIEW)
+//        intent.data = uri
+//
+//        startActivity(intent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == 1){
+            if(resultCode == RESULT_OK){
+                if(data != null){
+                    val value = data.getStringExtra("response")
+                    val list = arrayListOf<String>()
+                    list.add(value.toString())
+                    Toast.makeText(requireContext(),"Payment successful",Toast.LENGTH_SHORT).show()
+
+                }
+            }else{
+                Toast.makeText(requireContext(), "Payment Failed", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -171,7 +204,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
 
-
         fetchTransactionDetailsFromSharedPreferences()
         overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
             if (showOverlay) {
@@ -181,6 +213,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             }
         })
         overlayViewModel.setShowOverlay(true)
+
 
 
 
@@ -213,6 +246,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 binding.payUsingAnyUPIConstraint.isEnabled = true
             }
 
+
         updateTransactionAmountInSharedPreferences("₹" + transactionAmount.toString())
 
         showUPIOptions()
@@ -236,6 +270,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             }
         }
         binding.itemsInOrderRecyclerView.setOnClickListener() {
+            //Just to preventing user from clicking here and closing the order summary
+        }
+        binding.totalValueRelativeLayout.setOnClickListener(){
             //Just to preventing user from clicking here and closing the order summary
         }
 
@@ -395,8 +432,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
     private fun populatePopularUPIApps() {
         var i = 1
-
-//            Log.d("App in loop",appName)
         if (UPIAppsAndPackageMap.containsKey("PhonePe")) {
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
@@ -409,6 +444,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             Log.d("i and app inside if statement", "$i and app = PhonePe")
             i++
         }
+
 
         if (UPIAppsAndPackageMap.containsKey("GPay")) {
             val imageView = getPopularImageViewByNum(i)
@@ -423,6 +459,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             Log.d("i and app inside if statement", "$i and app = GPay")
             i++
         }
+
+
         if (UPIAppsAndPackageMap.containsKey("Paytm")) {
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
@@ -436,6 +474,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             Log.d("i and app inside if statement", "$i and app = Paytm")
             i++
         }
+
+
         if (UPIAppsAndPackageMap.containsKey("CRED")) {
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
@@ -449,6 +489,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             Log.d("i and app inside if statement", "$i and app = CRED")
             i++
         }
+
 
         if (i == 1) {
             binding.popularUPIAppsConstraint.visibility = View.GONE
@@ -464,6 +505,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             else -> throw IllegalArgumentException("Invalid number: $num")
         }
     }
+
 
     private fun getPopularConstraintLayoutByNum(num: Int): LinearLayout {
         return when (num) {
@@ -489,14 +531,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         val upiPaymentUri = Uri.Builder()
             .scheme("upi")
             .authority("pay")
-            .appendQueryParameter("pa", "9711668479@xxx")
+            .appendQueryParameter("pa", "9999214205@ybl")
             .appendQueryParameter("pn", "Piyush Sharma")
-            .appendQueryParameter("mc", "12345678")
-            .appendQueryParameter("tr", "12345678")
             .appendQueryParameter("tn", "Testing Payment")
-            .appendQueryParameter("am", "10.0")
+            .appendQueryParameter("am", "1.0")
             .appendQueryParameter("cu", "INR")
             .build()
+
 
         val genericUpiPaymentIntent = Intent.createChooser(
             Intent().apply {
@@ -505,8 +546,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             },
             "Pay with"
         )
-        activityResultLauncher.launch(genericUpiPaymentIntent)
 
+        activityResultLauncher.launch(genericUpiPaymentIntent)
     }
 
     private fun addOverlayToActivity() {
@@ -739,6 +780,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
                 val orderObject = paymentDetailsObject.getJSONObject("order")
                 val originalAmount = orderObject.getString("originalAmount")
+                transactionAmount = originalAmount
                 val itemsArray = orderObject.getJSONArray("items")
                 var totalQuantity = 0
                 for (i in 0 until itemsArray.length()) {

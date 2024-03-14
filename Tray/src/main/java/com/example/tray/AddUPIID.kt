@@ -92,7 +92,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
         //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //testing purpose
-
         binding.textView.setOnClickListener(){
             val bottomSheet = OTPBottomSheet()
             bottomSheet.show(parentFragmentManager,"OTPBottomSheet")
@@ -126,6 +125,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     binding.proceedButton.isEnabled = true
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
                     binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+                    binding.ll1InvalidUPI.visibility = View.GONE
                     binding.textView6.setTextColor(
                         ContextCompat.getColor(
                             requireContext(),
@@ -145,7 +145,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     binding.ll1InvalidUPI.visibility = View.GONE
                 }
             }
-
         })
         binding.ll1InvalidUPI.visibility = View.GONE
 
