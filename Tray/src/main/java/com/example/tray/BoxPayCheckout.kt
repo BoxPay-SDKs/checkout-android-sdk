@@ -1,5 +1,6 @@
 package com.example.tray
 
+import SingletonClass
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
@@ -10,6 +11,7 @@ import com.android.volley.RequestQueue
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.tray.ViewModels.CallBackFunctions
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
 import java.net.Inet6Address
@@ -17,10 +19,11 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.util.Collections
 
-class BoxPayCheckout(private val token: String, private val successScreenFullReferencePath: String, private val context : Context){
+class BoxPayCheckout( private val context : Context, private val token: String,val onPaymentResult: (String) -> Unit){
     private lateinit var sharedPreferences : SharedPreferences
     private lateinit var editor : SharedPreferences.Editor
-    fun minView() {
+
+    fun display() {
         sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
         putTransactionDetailsInSharedPreferences()
@@ -28,6 +31,7 @@ class BoxPayCheckout(private val token: String, private val successScreenFullRef
         fetchShopperDetailsAndUpdateInSharedPreferences()
     }
     private fun openBottomSheet(){
+        initializingCallBackFunctions()
         if (context is Activity) {
             Log.d("Checked","inside context if condition")
             val activity = context as AppCompatActivity // or FragmentActivity, depending on your activity type
@@ -36,6 +40,11 @@ class BoxPayCheckout(private val token: String, private val successScreenFullRef
             val bottomSheet = MainBottomSheet()
             bottomSheet.show(fragmentManager, "MainBottomSheet")
         }
+    }
+    fun initializingCallBackFunctions(){
+        Log.d("result for callback","checkingPurpose")
+        val callBackFunctions = CallBackFunctions(onPaymentResult)
+        SingletonClass.getInstance().callBackFunctions = callBackFunctions
     }
 
     private fun fetchShopperDetailsAndUpdateInSharedPreferences(){
@@ -106,10 +115,6 @@ class BoxPayCheckout(private val token: String, private val successScreenFullRef
     private fun putTransactionDetailsInSharedPreferences() {
         editor.putString("token", token)
         Log.d("token added to sharedPreferences", token)
-        editor.putString("successScreenFullReferencePath", successScreenFullReferencePath)
-        Log.d("success Screen added to sharedPreferences", successScreenFullReferencePath)
-
-
         editor.apply()
 
     }

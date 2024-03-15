@@ -14,12 +14,14 @@
         android:background="#6E5B5B"
         android:visibility="gone" />
 
+
     <LinearLayout
         android:id="@+id/linearLayoutMain"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:weightSum="1">
+
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/topConstraint"

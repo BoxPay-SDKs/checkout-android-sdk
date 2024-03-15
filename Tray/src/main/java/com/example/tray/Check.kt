@@ -2,6 +2,7 @@ package com.example.tray
 
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -100,10 +101,22 @@ import org.json.JSONObject
 
 
     private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout = BoxPayCheckout(tokenLiveData.value.toString(),successScreenFullReferencePath.toString(),this)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback)
         Log.d("Checked","executed showBottomSheetWithOverlay")
-        boxPayCheckout.minView()
+        boxPayCheckout.display()
     }
+
+     fun onPaymentResultCallback(result : String){
+         if(result == "Success"){
+             Log.d("onPaymentResultCallback","Success")
+             val intent = Intent(this,SuccessScreenForTesting :: class.java)
+             startActivity(intent)
+         }else{
+             Log.d("onPaymentResultCallback","Failure")
+             val intent = Intent(this,FailureScreenForTesting :: class.java)
+             startActivity(intent)
+         }
+     }
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
         val url = "https://test-apis.boxpay.tech/v0/merchants/gZOlwkSlVe/sessions"

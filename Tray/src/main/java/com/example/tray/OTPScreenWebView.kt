@@ -98,23 +98,41 @@ internal class OTPScreenWebView : AppCompatActivity() {
                     ) {
                         job?.cancel()
                         val sharedPreferences = this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-                       val successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+//                       val successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+//
+//                        openActivity(successScreenFullReferencePath.toString(),this)
 
-                        openActivity(successScreenFullReferencePath.toString(),this)
+                        val callback =  SingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("call back is null","failed")
+                        }else{
+                            callback.onPaymentResult("Success")
+                        }
+
                     } else if (status.contains("PENDING", ignoreCase = true)) {
 //                        val bottomSheet = PaymentFailureScreen()
 //                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
 //                        finish()
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
+                        job?.cancel()
+
                         val bottomSheet = PaymentFailureScreen()
                         bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
                         finish()
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
                     } else if (status.contains("FAILED", ignoreCase = true)) {
-                        val bottomSheet = PaymentFailureScreen()
-                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
-                        finish()
+                        job?.cancel()
+//                        val bottomSheet = PaymentFailureScreen()
+//                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+//                        finish()
+
+                        val callback =  SingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("call back is null","failed")
+                        }else{
+                            callback.onPaymentResult("Failure")
+                        }
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
