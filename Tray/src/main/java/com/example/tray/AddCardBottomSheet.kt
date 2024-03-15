@@ -764,7 +764,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         editor.apply()
     }
 
-
     fun postRequest(context: Context) {
         Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)

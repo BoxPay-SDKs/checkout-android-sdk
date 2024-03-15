@@ -200,6 +200,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             val screenHeight = resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.7 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
 //        // Adjust the height of the bottom sheet content view
 //        val layoutParams = bottomSheetContent.layoutParams

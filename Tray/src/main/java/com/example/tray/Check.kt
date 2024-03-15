@@ -29,13 +29,11 @@ import org.json.JSONObject
 
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-
         makePaymentRequest(this)
+
         binding.textView6.text = "Generating Token Please wait..."
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
-
         tokenLiveData.observe(this, Observer { tokenInObserve ->
             // Handle the response after the token has been updated
             if(tokenInObserve != null) {
@@ -100,9 +98,8 @@ import org.json.JSONObject
     }
 
 
-    private fun showBottomSheetWithOverlay() {
+     private fun showBottomSheetWithOverlay() {
         val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback)
-        Log.d("Checked","executed showBottomSheetWithOverlay")
         boxPayCheckout.display()
     }
 
