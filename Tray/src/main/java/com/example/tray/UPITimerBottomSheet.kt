@@ -122,6 +122,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
 
         binding.circularProgressBar.startAngle = 90f
         binding.cancelPaymentTextView.setOnClickListener() {
+            countdownTimer.cancel()
+            countdownTimerForAPI.cancel()
             dismiss()
         }
         startTimer()
@@ -139,6 +141,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.retryButton.setOnClickListener() {
+            countdownTimer.cancel()
+            countdownTimerForAPI.cancel()
             dismiss()
         }
 
@@ -234,24 +238,45 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
-                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                        bottomSheet.show(parentFragmentManager, "SuccessBottomSheetWithDetails")
+//                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+//                        bottomSheet.show(parentFragmentManager, "SuccessBottomSheetWithDetails")
+                        val callback =  SingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("call back is null","Success")
+                        }else{
+                            callback.onPaymentResult("Success")
+                        }
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         dismiss()
                     } else if (status.contains("PENDING", ignoreCase = true)) {
 
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
-                        val bottomSheet = PaymentFailureScreen()
-                        bottomSheet.show(parentFragmentManager, "Payment Failure")
+//                        val bottomSheet = PaymentFailureScreen()
+//                        bottomSheet.show(parentFragmentManager, "Payment Failure")
+
+                        val callback =  SingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("call back is null","failed")
+                        }else{
+                            callback.onPaymentResult("Failure")
+                        }
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         dismiss()
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
                     } else if (status.contains("FAILED", ignoreCase = true)) {
-                        val bottomSheet = PaymentFailureScreen()
-                        bottomSheet.show(parentFragmentManager, "Payment Failure")
+//                        val bottomSheet = PaymentFailureScreen()
+//                        bottomSheet.show(parentFragmentManager, "Payment Failure")
+
+
+                        val callback =  SingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("call back is null","failed")
+                        }else{
+                            callback.onPaymentResult("Failure")
+                        }
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         dismiss()

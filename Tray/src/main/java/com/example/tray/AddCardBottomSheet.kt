@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -80,74 +81,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         Log.d("makeCardNetworkIdentificationCall",cardNumber)
         val url = "https://test-apis.boxpay.tech/v0/platform/bank-identification-numbers/tokens/${cardNumber}"
 
-        val jsonData = JSONArray("""[{
-    "context": {
-        "countryCode": "IN",
-        "legalEntity": {
-            "code": "demo_merchant"
-        },
-        "orderId": "test12"
-    },
-    "paymentType": "S",
-    "money": {
-        "amount": "2197",
-        "currencyCode": "INR"
-    },
-    "descriptor": {
-        "line1": "Some descriptor"
-    },
-    "billingAddress": {
-        "address1": "first address line",
-            "address2": "second address line",
-            "city": "Faridabad",
-            "state": "Haryana",
-            "countryCode": "IN",
-            "postalCode": "121004"
-    },
-    "shopper": {
-        "firstName": "test",
-        "lastName": "last",
-        "email": "test123@gmail.com",
-        "uniqueReference": "x123y",
-        "phoneNumber": "911234567890",
-        "deliveryAddress": {
-            "address1": "first line",
-        "address2": "second line",
-        "city": "Mumbai",
-        "state": "Maharashtra",
-        "countryCode": "IN",
-        "postalCode": "123456"
-        }
-    },
-    "order": {
-        "originalAmount": 1697,
-        "shippingAmount": 500,
-        "voucherCode": "VOUCHER",
-        "items": [
-            {
-                "id": "test",
-                "itemName": "test_name",
-                "description": "testProduct",
-                "quantity": 1,
-                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
-                "amountWithoutTax": 699.00
-            },
-            {
-                "id": "test2",
-                "itemName": "test_name2",
-                "description": "testProduct2",
-                "quantity": 2,
-                "imageUrl": "https://test-merchant.boxpay.tech/boxpay%20logo.svg",
-                "amountWithoutTax": 499.00
-            }
-        ]
-    },
-    "statusNotifyUrl": "https://www.boxpay.tech",
-    "frontendReturnUrl": "https://www.boxpay.tech",
-    "frontendBackUrl": "https://www.boxpay.tech"
-}]""")
-
-
+        val jsonData = JSONArray()
         var token = ""
 
         val brands = mutableListOf<String>()
@@ -280,7 +214,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.ll1InvalidCardNumber.visibility = View.GONE
         binding.invalidCardValidity.visibility = View.GONE
         binding.invalidCVV.visibility = View.GONE
-        binding.imageView3.setOnClickListener() {
+        binding.saveCardLinearLayout.setOnClickListener() {
             if (!checked) {
                 binding.imageView3.setImageResource(R.drawable.checkbox)
                 checked = true
@@ -318,7 +252,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 }
                 if(textNow.length == 19){
                     Log.d("16 digits","crossed")
-                    binding.editTextCardValidity.requestFocus()
+                    if(isValidCardNumberByLuhn(removeSpaces(textNow)))
+                        binding.editTextCardValidity.requestFocus()
+                    else{
+                        isCardNumberValid = false
+                        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                        proceedButtonIsEnabled.value = false
+                    }
                 }
 
                 binding.editTextCardNumber.removeTextChangedListener(this)
@@ -357,7 +297,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
-                val text = s.toString().replace("/", "")
+                var text = s.toString().replace("/", "")
 
                 if(text.isNotEmpty() && (text[0].toString().toInt() != 0 && text[0].toString().toInt() != 1)){
                     Log.d("Invalid month in validity",text[0].toString())
@@ -365,6 +305,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     proceedButtonIsEnabled.value = false
                 }
                 binding.editTextCardValidity.removeTextChangedListener(this)
+                if(text.length == 1){
+                    Log.d("textNow card validity",text)
+                    if(text != "0" && text != "1"){
+                        text = "0"+text
+                    }
+                }
 
 //                val text = s.toString().replace("/", "")
                 val formattedText = formatMMYY(text)
@@ -828,14 +774,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         val requestBody = JSONObject().apply {
             // Billing Address
             val billingAddressObject = JSONObject().apply {
-                put("address1", "delivery address for the delivery")
-                put("address2", "delivery")
-                put("address3", JSONObject.NULL)
-                put("city", "Saharanpur")
-                put("countryCode", "IN")
-                put("countryName", "India")
-                put("postalCode", "247554")
-                put("state", "Uttar Pradesh")
+                put("address1", sharedPreferences.getString("address1", "null"))
+                put("address2", sharedPreferences.getString("address2", "null"))
+                put("address3", sharedPreferences.getString("address3", "null"))
+                put("city", sharedPreferences.getString("city", "null"))
+                put("countryCode", sharedPreferences.getString("countryCode", "null"))
+                put("countryName", sharedPreferences.getString("countryName", "null"))
+                put("postalCode", sharedPreferences.getString("postalCode", "null"))
+                put("state", sharedPreferences.getString("state", "null"))
             }
             put("billingAddress", billingAddressObject)
 
@@ -858,14 +804,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("acceptHeader", "application/json")
                 put("userAgentHeader", userAgentHeader)
                 put("browserLanguage", Locale.getDefault().toString())
-                put("ipAddress", "121.12.23.44")
+                put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
                 put("colorDepth", 24) // Example value
                 put("javaEnabled", true) // Example value
                 put("timeZoneOffSet", 330) // Example value
             }
             put("browserData", browserData)
-
-            // Instrument Details
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", "card/plain")
 
@@ -879,33 +823,35 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 }
                 put("card", cardObject)
             }
+
+            // Instrument Details
             put("instrumentDetails", instrumentDetailsObject)
             // Shopper
             val shopperObject = JSONObject().apply {
                 val deliveryAddressObject = JSONObject().apply {
 
-                    put("address1", sharedPreferences.getString("address1","null"))
-                    put("address2", sharedPreferences.getString("address2","null"))
-                    put("address3", sharedPreferences.getString("address3","null"))
-                    put("city", sharedPreferences.getString("city","null"))
-                    put("countryCode", sharedPreferences.getString("countryCode","null"))
-                    put("countryName", sharedPreferences.getString("countryName","null"))
-                    put("postalCode", sharedPreferences.getString("postalCode","null"))
-                    put("state", sharedPreferences.getString("state","null"))
+                    put("address1", sharedPreferences.getString("address1", "null"))
+                    put("address2", sharedPreferences.getString("address2", "null"))
+                    put("address3", sharedPreferences.getString("address3", "null"))
+                    put("city", sharedPreferences.getString("city", "null"))
+                    put("countryCode", sharedPreferences.getString("countryCode", "null"))
+                    put("countryName", sharedPreferences.getString("countryName", "null"))
+                    put("postalCode", sharedPreferences.getString("postalCode", "null"))
+                    put("state", sharedPreferences.getString("state", "null"))
 
                 }
 
 
                 put("deliveryAddress", deliveryAddressObject)
-                put("email", sharedPreferences.getString("email","null"))
-                put("firstName", sharedPreferences.getString("firstName","null"))
-                if(sharedPreferences.getString("gender","null") == "null")
+                put("email", sharedPreferences.getString("email", "null"))
+                put("firstName", sharedPreferences.getString("firstName", "null"))
+                if (sharedPreferences.getString("gender", "null") == "null")
                     put("gender", JSONObject.NULL)
                 else
-                    put("gender",sharedPreferences.getString("gender","null"))
-                put("lastName", sharedPreferences.getString("lastName","null"))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber","null"))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference","null"))
+                    put("gender", sharedPreferences.getString("gender", "null"))
+                put("lastName", sharedPreferences.getString("lastName", "null"))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber", "null"))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference", "null"))
             }
             put("shopper", shopperObject)
         }
@@ -944,13 +890,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             bottomSheet.show(parentFragmentManager, "PaymentStatusBottomSheetWithDetails")
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
-//                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-//                            intent.putExtra("url", url)
-//                            intent.putExtra("token", token)
-//                            startActivity(intent)
+                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                            intent.putExtra("url", url)
 
-                            val bottomSheet = ForceTestPaymentBottomSheet()
-                            bottomSheet.show(parentFragmentManager,"ForcedTestPaymentFromCard")
+                            startActivity(intent)
+
+//
+//                            val bottomSheet = ForceTestPaymentBottomSheet()
+//                            bottomSheet.show(parentFragmentManager,"ForcedTestPaymentFromCard")
                         }
                     // Assuming there's only one action, change index if needed
                     }

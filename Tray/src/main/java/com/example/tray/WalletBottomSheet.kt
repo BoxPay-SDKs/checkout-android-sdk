@@ -6,6 +6,7 @@ import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -62,7 +63,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
     private var successScreenFullReferencePath: String? = null
-    private var transactionId : String ?= null
+    private var transactionId: String? = null
     var liveDataPopularWalletSelectedOrNot: MutableLiveData<Boolean> =
         MutableLiveData<Boolean>().apply {
             value = false
@@ -70,13 +71,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private var popularWalletsSelected: Boolean = false
     private var popularWalletsSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
-    private lateinit var sharedPreferences : SharedPreferences
-    private lateinit var editor : SharedPreferences.Editor
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var editor: SharedPreferences.Editor
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
             val d = dialog as BottomSheetDialog
@@ -95,10 +97,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             val percentageOfScreenHeight = 0.7 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -190,6 +188,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         walletDetailsOriginal[index].walletName
 
                     constraintLayout.setOnClickListener {
+                        val inputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        inputMethodManager.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
                         liveDataPopularWalletSelectedOrNot.value = true
                         if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
                             // If the same constraint layout is clicked again
@@ -217,7 +217,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         )
                         true
                     }
-                }else{
+                } else {
                     constraintLayout.visibility = View.GONE
                 }
             }
@@ -337,7 +337,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 //        }
 //    }
 
-    private fun updateTransactionIDInSharedPreferences(transactionIdArg : String) {
+    private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
         editor.putString("transactionId", transactionIdArg)
         editor.apply()
     }
@@ -379,7 +379,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         allWalletAdapter = WalletAdapter(
             walletDetailsFiltered,
             binding.walletsRecyclerView,
-            liveDataPopularWalletSelectedOrNot, requireContext()
+            liveDataPopularWalletSelectedOrNot,
+            requireContext(),
+            binding.searchView
         )
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.walletsRecyclerView.adapter = allWalletAdapter
@@ -437,6 +439,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 disableProceedButton()
             }
         })
+
         allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
             if (checkPositionObserved == null) {
                 disableProceedButton()
@@ -445,6 +448,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 checkedPosition = checkPositionObserved
             }
         })
+
         binding.proceedButton.setOnClickListener() {
             showLoadingInButton()
             var walletInstrumentTypeValue = ""
@@ -459,6 +463,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
             postRequest(requireContext(), walletInstrumentTypeValue)
         }
+
         liveDataPopularWalletSelectedOrNot.observe(this, Observer {
             if (it) {
                 allWalletAdapter.deselectSelectedItem()
@@ -466,11 +471,17 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 unselectItemsInPopularLayout()
             }
         })
+        binding.textView19.setOnClickListener() {
+            val imm =
+                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
+        }
+
 
         binding.searchView.setOnCloseListener() {
-
             true
         }
+
 
 
         return binding.root
@@ -598,9 +609,12 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-
-
-
+        if (walletDetailsFiltered.size == 0) {
+            binding.noResultsFoundTextView.visibility = View.VISIBLE
+        } else {
+            binding.noResultsFoundTextView.visibility = View.GONE
+        }
+        allWalletAdapter.deselectSelectedItem()
         allWalletAdapter.notifyDataSetChanged()
     }
 
@@ -609,6 +623,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         for (bank in walletDetailsOriginal) {
             walletDetailsFiltered.add(bank)
         }
+        allWalletAdapter.deselectSelectedItem()
         allWalletAdapter.notifyDataSetChanged()
     }
 
@@ -708,28 +723,27 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             val shopperObject = JSONObject().apply {
                 val deliveryAddressObject = JSONObject().apply {
 
-                    put("address1", sharedPreferences.getString("address1","null"))
-                    put("address2", sharedPreferences.getString("address2","null"))
-                    put("address3", sharedPreferences.getString("address3","null"))
-                    put("city", sharedPreferences.getString("city","null"))
-                    put("countryCode", sharedPreferences.getString("countryCode","null"))
-                    put("countryName", sharedPreferences.getString("countryName","null"))
-                    put("postalCode", sharedPreferences.getString("postalCode","null"))
-                    put("state", sharedPreferences.getString("state","null"))
-
+                    put("address1", sharedPreferences.getString("address1", "null"))
+                    put("address2", sharedPreferences.getString("address2", "null"))
+                    put("address3", sharedPreferences.getString("address3", "null"))
+                    put("city", sharedPreferences.getString("city", "null"))
+                    put("countryCode", sharedPreferences.getString("countryCode", "null"))
+                    put("countryName", sharedPreferences.getString("countryName", "null"))
+                    put("postalCode", sharedPreferences.getString("postalCode", "null"))
+                    put("state", sharedPreferences.getString("state", "null"))
                 }
 
 
                 put("deliveryAddress", deliveryAddressObject)
-                put("email", sharedPreferences.getString("email","null"))
-                put("firstName", sharedPreferences.getString("firstName","null"))
-                if(sharedPreferences.getString("gender","null") == "null")
+                put("email", sharedPreferences.getString("email", "null"))
+                put("firstName", sharedPreferences.getString("firstName", "null"))
+                if (sharedPreferences.getString("gender", "null") == "null")
                     put("gender", JSONObject.NULL)
                 else
-                    put("gender",sharedPreferences.getString("gender","null"))
-                put("lastName", sharedPreferences.getString("lastName","null"))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber","null"))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference","null"))
+                    put("gender", sharedPreferences.getString("gender", "null"))
+                put("lastName", sharedPreferences.getString("lastName", "null"))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber", "null"))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference", "null"))
             }
             put("shopper", shopperObject)
         }
@@ -751,9 +765,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     logJsonObject(response)
 
                     // Retrieve the "actions" array
-                    Log.d("error after actionsArray","Wallet")
+                    Log.d("error after actionsArray", "Wallet")
                     val actionsArray = response.getJSONArray("actions")
-                    Log.d("error after status","Wallet")
+                    Log.d("error after status", "Wallet")
                     val status = response.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
@@ -774,11 +788,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-//                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-//                        intent.putExtra("url", url)
-//                        startActivity(intent)
-                        val bottomSheet = ForceTestPaymentBottomSheet()
-                        bottomSheet.show(parentFragmentManager,"ForceTestPaymentOpenByWallet")
+
+                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                        intent.putExtra("url", url)
+                        startActivity(intent)
+
+
+//                        val bottomSheet = ForceTestPaymentBottomSheet()
+//                        bottomSheet.show(parentFragmentManager,"ForceTestPaymentOpenByWallet")
                     }
 
                 } catch (e: JSONException) {

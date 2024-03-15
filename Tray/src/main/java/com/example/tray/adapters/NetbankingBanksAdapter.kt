@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Filter
 import android.widget.Filterable
 import android.widget.PopupWindow
@@ -30,7 +31,8 @@ class NetbankingBanksAdapter(
     private val banksDetails: ArrayList<NetbankingDataClass>,
     private val recyclerView: RecyclerView,
     private var liveDataPopularItemSelectedOrNot : MutableLiveData<Boolean>,
-    private val context : Context
+    private val context : Context,
+    private val searchView : android.widget.SearchView
 ) : RecyclerView.Adapter<NetbankingBanksAdapter.NetBankingAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
@@ -58,6 +60,8 @@ class NetbankingBanksAdapter(
                 )
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
+                    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
                     handleRadioButtonClick(adapterPosition)
                     liveDataPopularItemSelectedOrNot.value = false
                 }

@@ -1,11 +1,15 @@
 package com.example.tray
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
-import android.view.View
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -21,6 +25,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 
+
 internal class OTPScreenWebView : AppCompatActivity() {
     private val binding by lazy {
         ActivityOtpscreenWebViewBinding.inflate(layoutInflater)
@@ -30,17 +35,39 @@ internal class OTPScreenWebView : AppCompatActivity() {
     private var token: String? = null
     private lateinit var requestQueue: RequestQueue
     private var successScreenFullReferencePath: String? = null
+    private var previousBottomSheet: Context ?= null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         requestQueue = Volley.newRequestQueue(this)
-
         val receivedUrl = intent.getStringExtra("url")
         Log.d("url", receivedUrl.toString())
         binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
+        binding.webViewForOtpValidation.settings.domStorageEnabled = true
+        binding.webViewForOtpValidation.settings.javaScriptEnabled = true
         startFunctionCalls()
         fetchTransactionDetailsFromSharedPreferences()
+
+
+        binding.webViewForOtpValidation.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                // Page finished loading, you can perform any necessary actions here
+                Log.d("page finished loading",url.toString())
+            }
+
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                super.onReceivedError(view, request, error)
+                // Handle errors here
+                Log.d("page failed loading",error.toString())
+            }
+        }
+    }
+
+    // Method to set the previous bottom sheet reference
+    fun setPreviousBottomSheet(bottomSheet: Context?) {
+        previousBottomSheet = bottomSheet
     }
 
     private fun fetchStatusAndReason(url: String) {
@@ -70,17 +97,42 @@ internal class OTPScreenWebView : AppCompatActivity() {
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
                         job?.cancel()
-                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                        bottomSheet.show(supportFragmentManager, "PaymentSuccessfulWithDetailsBottomSheet")
-                    } else if (status.contains("PENDING", ignoreCase = true)) {
-                        //do nothing
-                    } else if (status.contains("EXPIRED", ignoreCase = true)) {
+                        val sharedPreferences = this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+//                       val successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+//
+//                        openActivity(successScreenFullReferencePath.toString(),this)
 
+                        val callback =  SingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("call back is null","failed")
+                        }else{
+                            callback.onPaymentResult("Success")
+                        }
+
+                    } else if (status.contains("PENDING", ignoreCase = true)) {
+//                        val bottomSheet = PaymentFailureScreen()
+//                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+//                        finish()
+                    } else if (status.contains("EXPIRED", ignoreCase = true)) {
+                        job?.cancel()
+
+                        val bottomSheet = PaymentFailureScreen()
+                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+                        finish()
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
                     } else if (status.contains("FAILED", ignoreCase = true)) {
-                        val bottomSheet = PaymentFailureScreen()
-                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+                        job?.cancel()
+//                        val bottomSheet = PaymentFailureScreen()
+//                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+//                        finish()
+
+                        val callback =  SingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("call back is null","failed")
+                        }else{
+                            callback.onPaymentResult("Failure")
+                        }
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
@@ -90,9 +142,7 @@ internal class OTPScreenWebView : AppCompatActivity() {
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
                 Log.e("Error", "Detailed error response: $errorResponse")
-
             }
-
             // Handle errors here
         }
         // Add the request to the RequestQueue.
@@ -132,5 +182,27 @@ internal class OTPScreenWebView : AppCompatActivity() {
     }
     companion object{
 
+    }
+    private fun openActivity(activityPath: String, context: Context) {
+        if (context is AppCompatActivity) {
+            try {
+                // Get the class object for the activity using reflection
+                val activityClass = Class.forName(activityPath)
+                // Create an instance of the activity using Kotlin reflection
+                val activityInstance = activityClass.getDeclaredConstructor().newInstance() as AppCompatActivity
+
+                // Check if the activity is a subclass of AppCompatActivity
+                if (activityInstance is AppCompatActivity) {
+                    // Start the activity
+                    context.startActivity(Intent(context, activityClass))
+                } else {
+                    // Log an error or handle the case where the activity is not a subclass of AppCompatActivity
+                }
+            } catch (e: ClassNotFoundException) {
+                // Log an error or handle the case where the activity class cannot be found
+            }
+        } else {
+            // Log an error or handle the case where the context is not an AppCompatActivity
+        }
     }
 }

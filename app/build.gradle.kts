@@ -51,8 +51,6 @@ allprojects{
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://www.jitpack.io")
-            credentials { username = "jp_l40tne0p9r7vrirj2rus5l3tmo" }
-        }
+        maven { url = uri("https://www.jitpack.io") }
     }
 }

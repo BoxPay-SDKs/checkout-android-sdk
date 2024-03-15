@@ -2,12 +2,11 @@ package com.example.tray
 
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -16,7 +15,6 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.ActivityCheckBinding
-import com.example.tray.databinding.CustomRadioButtonLayoutBinding
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
 
@@ -103,14 +101,25 @@ import org.json.JSONObject
 
 
     private fun showBottomSheetWithOverlay() {
-        val checkout = Checkout(tokenLiveData.value.toString(),successScreenFullReferencePath.toString(),this)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback)
         Log.d("Checked","executed showBottomSheetWithOverlay")
-
-        checkout.minView()
+        boxPayCheckout.display()
     }
+
+     fun onPaymentResultCallback(result : String){
+         if(result == "Success"){
+             Log.d("onPaymentResultCallback","Success")
+             val intent = Intent(this,SuccessScreenForTesting :: class.java)
+             startActivity(intent)
+         }else{
+             Log.d("onPaymentResultCallback","Failure")
+             val intent = Intent(this,FailureScreenForTesting :: class.java)
+             startActivity(intent)
+         }
+     }
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/hK3JrVc6ys/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/gZOlwkSlVe/sessions"
         val jsonData = JSONObject("""{
     "context": {
         "countryCode": "IN",
@@ -121,7 +130,7 @@ import org.json.JSONObject
     },
     "paymentType": "S",
     "money": {
-        "amount": "2197",
+        "amount": "10",
         "currencyCode": "INR"
     },
     "descriptor": {
@@ -173,24 +182,6 @@ import org.json.JSONObject
                "discountedAmount":null,
                "amountWithoutTaxLocale":"699",
                "amountWithoutTaxLocaleFull":"699"
-            },
-            {
-                "id":"test",
-               "itemName":"test_name",
-               "description":"testProduct",
-               "quantity":1,
-               "manufacturer":null,
-               "brand":null,
-               "color":null,
-               "productUrl":null,
-               "imageUrl":"https://test-merchant.boxpay.tech/boxpay%20logo.svg",
-               "categories":null,
-               "amountWithoutTax":1299,
-               "taxAmount":120,
-               "taxPercentage":null,
-               "discountedAmount":null,
-               "amountWithoutTaxLocale":"1299",
-               "amountWithoutTaxLocaleFull":"1299"
             }
         ]
     },
@@ -220,7 +211,7 @@ import org.json.JSONObject
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer afcGgCv6mOVIIpnFPWBL44RRciVU8oMteV5ZhC2nwjjjuw8z0obKMjdK8ShcwLOU6uRNjQryLKl1pLAsLAXSI"
+                headers["Authorization"] =  "Bearer XyUQOoLDgHlgxAojYhY22ev4P6icr94XIMkxrISZFQnAZIOueM4WbFAWGDc0Q6jPcWBkCXfXWpvRlHoQ5fl20d"
                 return headers
             }
         }

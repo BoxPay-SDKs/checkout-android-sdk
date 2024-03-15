@@ -6,6 +6,7 @@ import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -14,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
@@ -67,9 +69,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
-    private lateinit var sharedPreferences : SharedPreferences
-    private lateinit var editor : SharedPreferences.Editor
-    private var transactionId : String ?= null
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var editor: SharedPreferences.Editor
+    private var transactionId: String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -217,7 +219,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.popularBanksRelativeLayout4.setBackgroundResource(R.drawable.popular_item_unselected_bg)
         colorAnimation.cancel()
     }
-    private fun updateTransactionIDInSharedPreferences(transactionIdArg : String) {
+
+    private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
         editor.putString("transactionId", transactionIdArg)
         editor.apply()
     }
@@ -240,7 +243,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             banksDetailsFiltered,
             binding.banksRecyclerView,
             liveDataPopularBankSelectedOrNot,
-            requireContext()
+            requireContext(),
+            binding.searchView
         )
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
@@ -354,6 +358,13 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 )
             }
         }
+
+        if (banksDetailsFiltered.size == 0) {
+            binding.noResultsFoundTextView.visibility = View.VISIBLE
+        } else {
+            binding.noResultsFoundTextView.visibility = View.GONE
+        }
+        allBanksAdapter.deselectSelectedItem()
         allBanksAdapter.notifyDataSetChanged()
     }
 
@@ -369,6 +380,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         for (bank in banksDetailsOriginal) {
             banksDetailsFiltered.add(bank)
         }
+        allBanksAdapter.deselectSelectedItem()
         allBanksAdapter.notifyDataSetChanged()
     }
 
@@ -405,6 +417,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         banksDetailsOriginal[index].bankName
 
                     constraintLayout.setOnClickListener {
+                        val inputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        inputMethodManager.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
                         liveDataPopularBankSelectedOrNot.value = true
 
                         if (popularBanksSelected && popularBanksSelectedIndex == index) {
@@ -423,6 +437,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             popularBanksSelected = true
                             proceedButtonIsEnabled.value = true
                             popularBanksSelectedIndex = index
+
                         }
                     }
 
@@ -433,7 +448,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         )
                         true
                     }
-                }else{
+                } else {
                     constraintLayout.visibility = View.GONE
                 }
             }
@@ -549,14 +564,14 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         val requestBody = JSONObject().apply {
             // Billing Address
             val billingAddressObject = JSONObject().apply {
-                put("address1", sharedPreferences.getString("address1","null"))
-                put("address2", sharedPreferences.getString("address2","null"))
-                put("address3", sharedPreferences.getString("address3","null"))
-                put("city", sharedPreferences.getString("city","null"))
-                put("countryCode", sharedPreferences.getString("countryCode","null"))
-                put("countryName", sharedPreferences.getString("countryName","null"))
-                put("postalCode", sharedPreferences.getString("postalCode","null"))
-                put("state", sharedPreferences.getString("state","null"))
+                put("address1", sharedPreferences.getString("address1", "null"))
+                put("address2", sharedPreferences.getString("address2", "null"))
+                put("address3", sharedPreferences.getString("address3", "null"))
+                put("city", sharedPreferences.getString("city", "null"))
+                put("countryCode", sharedPreferences.getString("countryCode", "null"))
+                put("countryName", sharedPreferences.getString("countryName", "null"))
+                put("postalCode", sharedPreferences.getString("postalCode", "null"))
+                put("state", sharedPreferences.getString("state", "null"))
             }
             put("billingAddress", billingAddressObject)
 
@@ -579,7 +594,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 put("acceptHeader", "application/json")
                 put("userAgentHeader", userAgentHeader)
                 put("browserLanguage", Locale.getDefault().toString())
-                put("ipAddress", sharedPreferences.getString("ipAddress","null"))
+                put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
                 put("colorDepth", 24) // Example value
                 put("javaEnabled", true) // Example value
                 put("timeZoneOffSet", 330) // Example value
@@ -595,43 +610,44 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             val shopperObject = JSONObject().apply {
                 val deliveryAddressObject = JSONObject().apply {
 
-                    put("address1", sharedPreferences.getString("address1","null"))
-                    put("address2", sharedPreferences.getString("address2","null"))
-                    put("address3", sharedPreferences.getString("address3","null"))
-                    put("city", sharedPreferences.getString("city","null"))
-                    put("countryCode", sharedPreferences.getString("countryCode","null"))
-                    put("countryName", sharedPreferences.getString("countryName","null"))
-                    put("postalCode", sharedPreferences.getString("postalCode","null"))
-                    put("state", sharedPreferences.getString("state","null"))
+                    put("address1", sharedPreferences.getString("address1", "null"))
+                    put("address2", sharedPreferences.getString("address2", "null"))
+                    put("address3", sharedPreferences.getString("address3", "null"))
+                    put("city", sharedPreferences.getString("city", "null"))
+                    put("countryCode", sharedPreferences.getString("countryCode", "null"))
+                    put("countryName", sharedPreferences.getString("countryName", "null"))
+                    put("postalCode", sharedPreferences.getString("postalCode", "null"))
+                    put("state", sharedPreferences.getString("state", "null"))
 
                 }
 
 
                 put("deliveryAddress", deliveryAddressObject)
-                put("email", sharedPreferences.getString("email","null"))
-                put("firstName", sharedPreferences.getString("firstName","null"))
-                if(sharedPreferences.getString("gender","null") == "null")
+                put("email", sharedPreferences.getString("email", "null"))
+                put("firstName", sharedPreferences.getString("firstName", "null"))
+                if (sharedPreferences.getString("gender", "null") == "null")
                     put("gender", JSONObject.NULL)
                 else
-                    put("gender",sharedPreferences.getString("gender","null"))
-                put("lastName", sharedPreferences.getString("lastName","null"))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber","null"))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference","null"))
+                    put("gender", sharedPreferences.getString("gender", "null"))
+                put("lastName", sharedPreferences.getString("lastName", "null"))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber", "null"))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference", "null"))
             }
             put("shopper", shopperObject)
         }
+        Log.d("request Body","Netbanking")
+        logJsonObject(requestBody)
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
-                // Handle response
-                logJsonObject(response)
+
+
                 hideLoadingInButton()
 
                 try {
                     // Parse the JSON response
-                    logJsonObject(response)
 
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
@@ -657,12 +673,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-//                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-//                        intent.putExtra("url", url)
-//                        startActivity(intent)
-
-                        val bottomSheet = ForceTestPaymentBottomSheet()
-                        bottomSheet.show(parentFragmentManager, "ForceTestPaymentOpenByWallet")
+                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                        intent.putExtra("url", url)
+                        startActivity(intent)
                     }
 
                 } catch (e: JSONException) {
@@ -703,7 +716,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body", jsonStr)
+        Log.d("Request Body Netbanking", jsonStr)
     }
 
     private fun enableProceedButton() {

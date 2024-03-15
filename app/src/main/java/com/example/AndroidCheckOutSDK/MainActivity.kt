@@ -17,6 +17,7 @@ class MainActivity : AppCompatActivity() {
             )
             intent.putExtra("KEY","https://test-apis.boxpay.tech/v0/checkout/sessions/6cf8526f-1694-4bff-93dc-b7e1c08c15d9")
             startActivity(intent)
+            finish()
         } catch (e: ClassNotFoundException) {
             e.printStackTrace()
         }
