@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.VolleyError
@@ -106,7 +107,14 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
                 val errorResponse = String(error.networkResponse.data)
                 Log.e("Error", " fetching Checkout error response: $errorResponse")
             }
-        })
+        }).apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
         queue.add(jsonObjectAll)
 
     }
