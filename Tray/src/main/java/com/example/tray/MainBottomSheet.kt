@@ -1076,15 +1076,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 Log.d("bottomSheetBehavior is null", "check here")
 
 
-            val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.7 // 90%
-            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+//            val screenHeight = resources.displayMetrics.heightPixels
+//            val percentageOfScreenHeight = 0.7 // 90%
+//            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
 //        // Adjust the height of the bottom sheet content view
 //        val layoutParams = bottomSheetContent.layoutParams
 //        layoutParams.height = desiredHeight
 //        bottomSheetContent.layoutParams = layoutParams
-            bottomSheetBehavior?.maxHeight = desiredHeight
+//            bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
 
