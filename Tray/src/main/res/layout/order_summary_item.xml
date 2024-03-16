@@ -84,7 +84,7 @@
                 app:layout_constraintTop_toTopOf="@+id/itemImage" />
 
             <TextView
-                android:id="@+id/textView17"
+                android:id="@+id/itemPrice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_semibold"
@@ -97,59 +97,16 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
-    <TextView
-        android:id="@+id/textView18"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="@font/poppins"
-        android:text="Subtotal"
-        android:textColor="#010102"
-        android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="@+id/cardView2"
-        app:layout_constraintTop_toBottomOf="@+id/cardView2" />
 
-    <TextView
-        android:id="@+id/textView19"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/poppins"
-        android:text="Tax"
-        android:textColor="#010102"
-        android:textSize="12sp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="@+id/textView18"
-        app:layout_constraintTop_toBottomOf="@+id/textView18" />
 
-    <TextView
-        android:id="@+id/subItemPrice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_semibold"
-        android:textColor="#010102"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@+id/textView18"
-        app:layout_constraintEnd_toEndOf="@+id/cardView2"
-        app:layout_constraintTop_toTopOf="@+id/textView18" />
 
-    <TextView
-        android:id="@+id/taxTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_semibold"
-        android:textColor="#010102"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@+id/textView19"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/textView19" />
-
-    <View
-        android:id="@+id/blackLine"
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="#D9D9D9"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView19" />
+<!--    <View-->
+<!--        android:id="@+id/blackLine"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="2dp"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:layout_marginBottom="8dp"-->
+<!--        android:background="#D9D9D9"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/textView19" />-->
 </androidx.constraintlayout.widget.ConstraintLayout>

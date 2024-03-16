@@ -127,12 +127,14 @@ internal class OTPScreenWebView : AppCompatActivity() {
 //                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
 //                        finish()
 
-                        val callback =  SingletonClass.getInstance().getYourObject()
-                        if(callback == null){
-                            Log.d("call back is null","failed")
-                        }else{
-                            callback.onPaymentResult("Failure")
-                        }
+//                        val callback =  SingletonClass.getInstance().getYourObject()
+//                        if(callback == null){
+//                            Log.d("call back is null","cancelled")
+//                        }else{
+//                            callback.onPaymentResult("cancelled")
+//                        }
+
+                        finish()
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()

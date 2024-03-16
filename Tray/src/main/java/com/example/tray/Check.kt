@@ -29,13 +29,11 @@ import org.json.JSONObject
 
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-
         makePaymentRequest(this)
+
         binding.textView6.text = "Generating Token Please wait..."
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
-
         tokenLiveData.observe(this, Observer { tokenInObserve ->
             // Handle the response after the token has been updated
             if(tokenInObserve != null) {
@@ -99,10 +97,8 @@ import org.json.JSONObject
         tokenFetchedAndOpen = true
     }
 
-
-    private fun showBottomSheetWithOverlay() {
+     private fun showBottomSheetWithOverlay() {
         val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback)
-        Log.d("Checked","executed showBottomSheetWithOverlay")
         boxPayCheckout.display()
     }
 
@@ -130,7 +126,7 @@ import org.json.JSONObject
     },
     "paymentType": "S",
     "money": {
-        "amount": "10",
+        "amount": "30",
         "currencyCode": "INR"
     },
     "descriptor": {
@@ -160,10 +156,11 @@ import org.json.JSONObject
         }
     },
     "order": {
-        "originalAmount": 699,
-        "shippingAmount": 500,
+        "originalAmount":10,
+        "shippingAmount": 10,
         "voucherCode": "VOUCHER",
-        "totalAmountWithoutTax": 699.00,
+        "taxAmount": 10,
+        "totalAmountWithoutTax": 20,
         "items": [
             {
                 "id":"test",
@@ -176,12 +173,12 @@ import org.json.JSONObject
                "productUrl":null,
                "imageUrl":"https://test-merchant.boxpay.tech/boxpay%20logo.svg",
                "categories":null,
-               "amountWithoutTax":699,
-               "taxAmount":null,
+               "amountWithoutTax":10,
+               "taxAmount":10,
                "taxPercentage":null,
                "discountedAmount":null,
-               "amountWithoutTaxLocale":"699",
-               "amountWithoutTaxLocaleFull":"699"
+               "amountWithoutTaxLocale":"10",
+               "amountWithoutTaxLocaleFull":"10"
             }
         ]
     },

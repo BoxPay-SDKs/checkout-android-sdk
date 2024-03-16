@@ -445,7 +445,8 @@
                         android:layout_height="15dp"
                         android:layout_centerInParent="true"
                         android:indeterminateDrawable="@drawable/loader_01"
-                        android:rotation="90" />
+                        android:rotation="90"
+                        android:visibility="gone"/>
 
                     <TextView
                         android:id="@+id/textView6"
@@ -453,7 +454,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
                         android:fontFamily="@font/poppins_semibold"
-                        android:text="Verify and Proceed Payment"
+                        android:text="Pay Now"
                         android:textColor="#ADACB0"
                         android:textSize="16sp" />
 

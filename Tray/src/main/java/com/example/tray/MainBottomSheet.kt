@@ -90,7 +90,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     private var overLayPresent = false
     private var items = mutableListOf<String>()
     private var images = mutableListOf<Int>()
-    private var taxes = mutableListOf<String>()
     private var prices = mutableListOf<String>()
     private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     var queue: RequestQueue? = null
@@ -244,27 +243,33 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
                         job?.cancel()
-                        val successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+                        binding.payUsingAnyUPIConstraint.isEnabled = true
 
-                        openActivity(successScreenFullReferencePath.toString(),requireContext())
+                        val callback =  SingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("call back is null","failed")
+                        }else{
+                            callback.onPaymentResult("Success")
+                        }
                     } else if (status.contains("PENDING", ignoreCase = true)) {
 //                        val bottomSheet = PaymentFailureScreen()
 //                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
 //                        finish()
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
                         job?.cancel()
-                        val bottomSheet = PaymentFailureScreen()
-                        bottomSheet.show(parentFragmentManager,"PaymentFailureBottomSheet")
+                        binding.payUsingAnyUPIConstraint.isEnabled = true
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
                     } else if (status.contains("FAILED", ignoreCase = true)) {
                         job?.cancel()
-                        val bottomSheet = PaymentFailureScreen()
-                        bottomSheet.show(parentFragmentManager,"PaymentFailureBottomSheet")
+                        binding.payUsingAnyUPIConstraint.isEnabled = true
+//                        val bottomSheet = PaymentFailureScreen()
+//                        bottomSheet.show(parentFragmentManager,"PaymentFailureBottomSheet")
                     }else{
                         job?.cancel()
-                        val bottomSheet = PaymentFailureScreen()
-                        bottomSheet.show(parentFragmentManager,"PaymentFailureBottomSheet")
+                        binding.payUsingAnyUPIConstraint.isEnabled = true
+//                        val bottomSheet = PaymentFailureScreen()
+//                        bottomSheet.show(parentFragmentManager,"PaymentFailureBottomSheet")
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
@@ -427,44 +432,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
-                if (data != null) {
-                    val value = data.getStringExtra("response")
-                    val list = arrayListOf<String>()
-                    list.add(value.toString())
-                    Toast.makeText(requireContext(), "Payment successful", Toast.LENGTH_SHORT)
-                        .show()
-                }
-            } else {
-                Toast.makeText(requireContext(), "Payment Failed", Toast.LENGTH_SHORT).show()
-            }
-        } else if (requestCode == 102) {
-            if (resultCode == Activity.RESULT_OK) {
-                // Payment successful
-                Log.d("UPI Payment", "Success")
-                val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                bottomSheet.show(parentFragmentManager, "PaymentSuccessfulWithDetailsBottomSheet")
-                // Handle success
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                // Payment canceled
-                Log.d("UPI Payment", "Cancelled")
-                val bottomSheet = PaymentFailureScreen()
-                bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
-                // Handle cancellation
-            } else {
-                // Payment failed
-                Log.d("UPI Payment", "Failed")
-                val bottomSheet = PaymentFailureScreen()
-                bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
-                // Handle failure
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -503,29 +470,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         getAllInstalledApps(packageManager)
 
 
-        activityResultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                val resultCode = result.resultCode
-                val data = result.data
-                Log.d("data of activityResultLauncher", data.toString())
-                Log.d("successScreenReference", successScreenFullReferencePath!!)
-                if (resultCode == Activity.RESULT_OK) {
-                    val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                    bottomSheet.show(parentFragmentManager, "Payment Success Screen")
-                } else {
-                    val bottomSheet = PaymentFailureScreen()
-                    bottomSheet.show(parentFragmentManager, "Payment Failure Screen")
-                }
-                Log.d("Making pay using any other upi apps enabled", "here")
-                binding.payUsingAnyUPIConstraint.isEnabled = true
-            }
+
 
         updateTransactionAmountInSharedPreferences("₹" + transactionAmount.toString())
 
         showUPIOptions()
 
 
-        val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices, taxes)
+        val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices)
         binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
@@ -567,7 +519,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         binding.payUsingAnyUPIConstraint.setOnClickListener {
 
             binding.payUsingAnyUPIConstraint.isEnabled = false
-            openDefaultUPIIntentBottomSheetFromAndroid()
+            getUrlForDefaultUPIIntent()
         }
 
 
@@ -811,27 +763,169 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun openDefaultUPIIntentBottomSheetFromAndroid() {
-        val upiPaymentUri = Uri.Builder()
-            .scheme("upi")
-            .authority("pay")
-            .appendQueryParameter("pa", "9999214205@ybl")
-            .appendQueryParameter("pn", "Piyush Sharma")
-            .appendQueryParameter("tn", "Testing Payment")
-            .appendQueryParameter("am", "1.0")
-            .appendQueryParameter("cu", "INR")
-            .build()
+    private fun openDefaultUPIIntentBottomSheetFromAndroid(url : String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startFunctionCalls()
+        startActivity(intent)
+    }
+    private fun addUPIInsteadOfAppName(url : String){
+
+        // Find the index of the colon
+        val colonIndex = url.indexOf(':')
+
+        // If the colon exists and is not the last character
+        if (colonIndex != -1 && colonIndex < url.length - 1) {
+            // Extract the substring after the colon
+            var result = url.substring(colonIndex + 1)
+            result = "upi:"+result
+            Log.d("upiIntent Details changed url",result)
+        } else {
+            // Handle cases where there is no colon or it's the last character
+            println("Invalid URL format")
+        }
+    }
+    private fun getUrlForDefaultUPIIntent(){
+        Log.d("postRequestCalled", System.currentTimeMillis().toString())
+        val requestQueue = Volley.newRequestQueue(context)
 
 
-        val genericUpiPaymentIntent = Intent.createChooser(
-            Intent().apply {
-                action = Intent.ACTION_VIEW
-                data = upiPaymentUri
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+            // Billing Address
+            val billingAddressObject = JSONObject().apply {
+                put("address1", sharedPreferences.getString("address1", "null"))
+                put("address2", sharedPreferences.getString("address2", "null"))
+                put("address3", sharedPreferences.getString("address3", "null"))
+                put("city", sharedPreferences.getString("city", "null"))
+                put("countryCode", sharedPreferences.getString("countryCode", "null"))
+                put("countryName", sharedPreferences.getString("countryName", "null"))
+                put("postalCode", sharedPreferences.getString("postalCode", "null"))
+                put("state", sharedPreferences.getString("state", "null"))
+            }
+            put("billingAddress", billingAddressObject)
+
+            // Browser Data
+
+            // Get the IP address
+
+            // Create the browserData JSON object
+            val browserData = JSONObject().apply {
+
+                val webView = WebView(requireContext())
+
+                // Get the default User-Agent string
+                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+
+                // Get the screen height and width
+                val displayMetrics = resources.displayMetrics
+                put("screenHeight", displayMetrics.heightPixels.toString())
+                put("screenWidth", displayMetrics.widthPixels.toString())
+                put("acceptHeader", "application/json")
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", Locale.getDefault().toString())
+                put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
+                put("colorDepth", 24) // Example value
+                put("javaEnabled", true) // Example value
+                put("timeZoneOffSet", 330) // Example value
+            }
+            put("browserData", browserData)
+            val instrumentDetailsObject = JSONObject().apply {
+                put("type", "upi/intent")
+
+//                val upiAppDetails = JSONObject().apply {
+//                    put("upiApp", "PayTm")
+//                    /
+//                    // Replace with the actual shopper VPA value
+//                }
+//                put("upiAppDetails", upiAppDetails)
+            }
+
+            // Instrument Details
+            put("instrumentDetails", instrumentDetailsObject)
+            // Shopper
+            val shopperObject = JSONObject().apply {
+                val deliveryAddressObject = JSONObject().apply {
+
+                    put("address1", sharedPreferences.getString("address1", "null"))
+                    put("address2", sharedPreferences.getString("address2", "null"))
+                    put("address3", sharedPreferences.getString("address3", "null"))
+                    put("city", sharedPreferences.getString("city", "null"))
+                    put("countryCode", sharedPreferences.getString("countryCode", "null"))
+                    put("countryName", sharedPreferences.getString("countryName", "null"))
+                    put("postalCode", sharedPreferences.getString("postalCode", "null"))
+                    put("state", sharedPreferences.getString("state", "null"))
+
+                }
+
+
+                put("deliveryAddress", deliveryAddressObject)
+                put("email", sharedPreferences.getString("email", "null"))
+                put("firstName", sharedPreferences.getString("firstName", "null"))
+                if (sharedPreferences.getString("gender", "null") == "null")
+                    put("gender", JSONObject.NULL)
+                else
+                    put("gender", sharedPreferences.getString("gender", "null"))
+                put("lastName", sharedPreferences.getString("lastName", "null"))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber", "null"))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference", "null"))
+            }
+            put("shopper", shopperObject)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, Base_Session_API_URL + token, requestBody,
+            Response.Listener { response ->
+
+                // Handle response
+
+                try {
+                    logJsonObjectUPIIntent(response)
+
+                    val actionsArray = response.getJSONArray("actions")
+                    val urlForIntent = actionsArray.getJSONObject(0).getString("url")
+
+                    val urlInBase64 = urlToBase64(urlForIntent)
+                    Log.d("upiIntent Details inside upi Intent call", urlInBase64)
+                    openDefaultUPIIntentBottomSheetFromAndroid(urlInBase64)
+
+                } catch (e: JSONException) {
+                    Log.d("upiIntent Details status check error", e.toString())
+                }
             },
-            "Pay with"
-        )
+            Response.ErrorListener { error ->
+                // Handle error
+                Log.e("Error", "Error occurred: ${error.message}")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+//                    val errorResponse = String(error.networkResponse.data)
+//                    Log.e("Error", "Detailed error response: $errorResponse")
+//                    binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+//                    binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
+//                    getMessageForFieldErrorItems(errorResponse)
+//                    hideLoadingInButton()
+//                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
+//                    Log.d("Error message", errorMessage)
+//                    if (errorMessage.contains("Session is no longer accepting the payment as payment is already completed",ignoreCase = true)){
+//                        binding.textView4.text = "Payment is already done"
+//                    }
+                }
 
-        activityResultLauncher.launch(genericUpiPaymentIntent)
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = token.toString()
+                return headers
+            }
+        }.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
     }
 
     private fun addOverlayToActivity() {
@@ -895,6 +989,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         binding.itemsInOrderRecyclerView.visibility = View.VISIBLE
         binding.textView18.visibility = View.VISIBLE
         binding.ItemsPrice.visibility = View.VISIBLE
+        binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
         binding.arrowIcon.animate()
             .rotation(180f)
             .setDuration(500) // Set the duration of the animation in milliseconds
@@ -908,6 +1003,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         binding.itemsInOrderRecyclerView.visibility = View.GONE
         binding.textView18.visibility = View.GONE
         binding.ItemsPrice.visibility = View.GONE
+        binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
         binding.arrowIcon.animate()
             .rotation(0f)
             .setDuration(500) // Set the duration of the animation in milliseconds
@@ -993,6 +1089,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isHideable = false
 
 
+            dialog.setCancelable(false)
+
+
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -1066,7 +1165,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun getAndSetOrderDetails() {
-
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
@@ -1075,9 +1173,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
 
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
+                val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")
                 val orderObject = paymentDetailsObject.getJSONObject("order")
                 val originalAmount = orderObject.getString("originalAmount")
-                transactionAmount = originalAmount
+                val shippingCharges = orderObject.getString("shippingAmount")
+                val taxes = orderObject.getString("taxAmount")
+
+                transactionAmount = totalAmount
                 val itemsArray = orderObject.getJSONArray("items")
                 var totalQuantity = 0
                 for (i in 0 until itemsArray.length()) {
@@ -1085,24 +1187,40 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                     items.add(itemObject.getString("itemName"))
                     images.add(R.drawable.truly_madly_logo)
                     prices.add(itemObject.getString("amountWithoutTaxLocale"))
-                    taxes.add(itemObject.getString("taxAmount"))
                     val quantity = itemObject.getInt("quantity")
                     totalQuantity += quantity
                 }
 
 
-                Log.d("totalQuantity", totalQuantity.toString())
-                Log.d("originalAmount", originalAmount.toString())
+                Log.d("order details subtotal", originalAmount)
+                Log.d("order details taxes",taxes.toString())
+                Log.d("order details shipping charges",shippingCharges.toString())
+                Log.d("order details subtotal",originalAmount.toString())
+                transactionAmount = totalAmount.toString()
 
-                transactionAmount = originalAmount.toString()
-
-                binding.unopenedTotalValue.text = "₹ ${transactionAmount}"
+                binding.unopenedTotalValue.text = "₹${totalAmount}"
                 if (totalQuantity == 1)
                     binding.numberOfItems.text = "${totalQuantity} item"
                 else
                     binding.numberOfItems.text = "${totalQuantity} items"
-                binding.ItemsPrice.text = "₹${originalAmount}"
+                binding.ItemsPrice.text = "₹${totalAmount}"
 
+
+
+                if(originalAmount != totalAmount) {
+                    binding.subtotalTextView.text = "₹${originalAmount}"
+                    binding.subTotalRelativeLayout.visibility = View.VISIBLE
+                }
+
+                if(taxes != "null"){
+                    binding.taxTextView.text = "₹${taxes}"
+                    binding.taxesRelativeLayout.visibility = View.VISIBLE
+                }
+
+                if(shippingCharges != "null"){
+                    binding.shippingChargesTextView.text = "₹${shippingCharges}"
+                    binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
+                }
 
             } catch (e: Exception) {
                 Log.d("Error Occurred in MainBottomSheet", e.toString())

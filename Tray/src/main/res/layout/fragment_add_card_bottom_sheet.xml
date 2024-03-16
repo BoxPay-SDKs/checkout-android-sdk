@@ -250,7 +250,6 @@
                             <ImageView
                                 android:id="@+id/imageView7"
                                 android:layout_width="wrap_content"
-
                                 android:layout_height="wrap_content"
                                 android:src="@drawable/error_outline"
                                 app:layout_constraintStart_toStartOf="parent"
@@ -297,7 +296,7 @@
                         android:layout_marginTop="2dp"
                         android:fontFamily="@font/poppins_bold"
                         android:gravity="center"
-                        android:text="Add Card"
+                        android:text="Card Details"
                         android:textColor="#2D2B32"
                         android:textSize="20sp"
                         app:layout_constraintStart_toEndOf="@+id/imageView"
@@ -515,7 +514,7 @@
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
                         android:fontFamily="@font/poppins_semibold"
-                        android:text="Verify and Proceed Payment"
+                        android:text="Pay Now"
                         android:textColor="#ADACB0"
                         android:textSize="16sp" />
 
