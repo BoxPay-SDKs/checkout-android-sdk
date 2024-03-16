@@ -478,7 +478,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardNumber.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
             } else {
                 val cardNumber = removeSpaces(binding.editTextCardNumber.text.toString())
                 if(!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))){
@@ -493,7 +493,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardValidity.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
             } else {
                 val cardValidity = binding.editTextCardValidity.text.toString()
                 try {
@@ -516,7 +516,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         })
         binding.editTextCardCVV.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
             } else {
                 try {
                     val cardCVV = binding.editTextCardCVV.text.toString()
@@ -534,7 +534,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         })
         binding.editTextNameOnCard.setOnFocusChangeListener(OnFocusChangeListener{view,hasFocus ->
             if(hasFocus){
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
             }else{
                 if(binding.editTextNameOnCard.text.isNullOrEmpty()){
                     isNameOnCardValid = false
@@ -626,7 +626,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
+        dialog.setOnShowListener { dialog ->
             val d = dialog as BottomSheetDialog
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
@@ -650,6 +650,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
 
 
@@ -837,7 +838,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     put("countryName", sharedPreferences.getString("countryName", "null"))
                     put("postalCode", sharedPreferences.getString("postalCode", "null"))
                     put("state", sharedPreferences.getString("state", "null"))
-
                 }
 
 
@@ -965,9 +965,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-        binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
-        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButton.isEnabled = true
     }
 
     fun showLoadingInButton() {

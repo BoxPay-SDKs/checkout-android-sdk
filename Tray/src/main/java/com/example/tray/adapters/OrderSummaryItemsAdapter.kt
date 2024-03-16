@@ -10,21 +10,14 @@ class OrderSummaryItemsAdapter(
     private val images: MutableList<Int>,
     private val items: MutableList<String>,
     private val prices: MutableList<String>,
-    private val taxes: MutableList<String>
 ) : RecyclerView.Adapter<OrderSummaryItemsAdapter.OrderSummaryViewHolder>() {
     inner class OrderSummaryViewHolder(private val binding: OrderSummaryItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
             binding.apply {
                 itemImage.setImageResource(images[position])
-                subItemPrice.text = "₹${prices[position]}"
+                itemPrice.text = "₹"+prices[position]+"/M"
                 itemName.text = items[position]
-                if (taxes[position] == "null") {
-                    binding.textView19.visibility = View.GONE
-                    binding.taxTextView.visibility = View.GONE
-                } else {
-                    binding.taxTextView.text = "₹${taxes[position]}"
-                }
             }
         }
     }

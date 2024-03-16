@@ -141,9 +141,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun unselectItemsInPopularLayout() {
         if (popularWalletsSelectedIndex != -1) {
-            fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(0)
+            fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(R.drawable.popular_item_unselected_bg)
         }
-
         popularWalletsSelected = false
     }
 
@@ -389,7 +388,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.boxPayLogoLottieAnimation.playAnimation()
         startBackgroundAnimation()
         disableProceedButton()
-        hideLoadingInButton()
         fetchWalletDetails()
 
 
@@ -403,6 +401,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     makeRecyclerViewJustBelowEditText()
                 }
                 filterWallets(query)
+                disableProceedButton()
                 return true
             }
 
@@ -413,6 +412,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     makeRecyclerViewJustBelowEditText()
                 }
                 filterWallets(newText)
+                disableProceedButton()
                 return true
             }
         })
@@ -871,9 +871,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-        binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
-        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButton.isEnabled = true
     }
 
     fun showLoadingInButton() {

@@ -304,14 +304,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         val requestBody = JSONObject().apply {
             // Billing Address
             val billingAddressObject = JSONObject().apply {
-                put("address1", "delivery address for the delivery")
-                put("address2", "delivery")
-                put("address3", JSONObject.NULL)
-                put("city", "Saharanpur")
-                put("countryCode", "IN")
-                put("countryName", "India")
-                put("postalCode", "247554")
-                put("state", "Uttar Pradesh")
+                put("address1", sharedPreferences.getString("address1", "null"))
+                put("address2", sharedPreferences.getString("address2", "null"))
+                put("address3", sharedPreferences.getString("address3", "null"))
+                put("city", sharedPreferences.getString("city", "null"))
+                put("countryCode", sharedPreferences.getString("countryCode", "null"))
+                put("countryName", sharedPreferences.getString("countryName", "null"))
+                put("postalCode", sharedPreferences.getString("postalCode", "null"))
+                put("state", sharedPreferences.getString("state", "null"))
             }
             put("billingAddress", billingAddressObject)
 
@@ -346,7 +346,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("type", "upi/collect")
 
                 val upiObject = JSONObject().apply {
-                    put("shopperVpa", userVPA) // Replace with the actual shopper VPA value
+                    put("shopperVpa", userVPA)
                 }
                 put("upi", upiObject)
             }
@@ -379,7 +379,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("uniqueReference", sharedPreferences.getString("uniqueReference","null"))
             }
 
-            Log.d("abcdefgh","null")
             logJsonObject(shopperObject)
 
 
@@ -457,9 +456,10 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-        binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
-        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButton.isEnabled = true
+//        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
     fun showLoadingInButton() {

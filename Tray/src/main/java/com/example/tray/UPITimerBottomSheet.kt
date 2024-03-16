@@ -255,12 +255,14 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
 //                        val bottomSheet = PaymentFailureScreen()
 //                        bottomSheet.show(parentFragmentManager, "Payment Failure")
 
-                        val callback =  SingletonClass.getInstance().getYourObject()
-                        if(callback == null){
-                            Log.d("call back is null","failed")
-                        }else{
-                            callback.onPaymentResult("Failure")
-                        }
+//                        val callback =  SingletonClass.getInstance().getYourObject()
+//                        if(callback == null){
+//                            Log.d("call back is null","failed")
+//                        }else{
+//                            callback.onPaymentResult("Failure")
+//                        }
+
+                        dismiss()
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         dismiss()

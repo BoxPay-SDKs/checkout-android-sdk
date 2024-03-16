@@ -251,7 +251,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.boxPayLogoLottieAnimation.playAnimation()
         startBackgroundAnimation()
         fetchBanksDetails()
-        hideLoadingInButton()
 
         if (successScreenFullReferencePath != null) {
             Log.d("NetBankingBottomSheetReference", successScreenFullReferencePath!!)
@@ -299,6 +298,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     makeRecyclerViewJustBelowEditText()
                 }
                 filterBanks(query)
+                disableProceedButton()
                 return true
             }
 
@@ -309,6 +309,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     makeRecyclerViewJustBelowEditText()
                 }
                 filterBanks(newText)
+                disableProceedButton()
                 return true
             }
         })
@@ -748,9 +749,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-        binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
-        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButton.isEnabled = true
     }
 
     fun showLoadingInButton() {

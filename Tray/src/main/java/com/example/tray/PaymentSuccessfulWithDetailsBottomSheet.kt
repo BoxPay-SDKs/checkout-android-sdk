@@ -1,5 +1,6 @@
 package com.example.tray
 
+import SingletonClass
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -21,7 +22,6 @@ import java.util.Date
 internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
     private var token: String? = null
-    private var successScreenFullReferencePath : String ?= null
     private var transactionID: String? = null
     private var originalAmount: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
@@ -42,7 +42,13 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
 
         binding. proceedButton.setOnClickListener(){
-            openActivity(successScreenFullReferencePath.toString(),requireContext())
+//            openActivity(successScreenFullReferencePath.toString(),requireContext())
+            val callback = SingletonClass.getInstance().getYourObject()
+            if(callback == null){
+                Log.d("callback is null","PaymentSuccessfulWithDetailsSheet")
+            }else{
+                callback.onPaymentResult("Success")
+            }
 //            callFunctionInActivity()
         }
         return binding.root
@@ -88,8 +94,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token","empty")
         Log.d("data fetched from sharedPreferences",token.toString())
-        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
-        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
+//        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
+//        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
         transactionID = sharedPreferences.getString("transactionId","empty")
         Log.d("transactionID fetched from sharedPreferences",transactionID.toString())
         originalAmount = sharedPreferences.getString("currencySymbol","2")+sharedPreferences.getString("originalAmount","empty")
