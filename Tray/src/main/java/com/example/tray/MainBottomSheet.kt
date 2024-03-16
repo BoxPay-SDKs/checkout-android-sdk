@@ -1075,7 +1075,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             if (bottomSheetBehavior == null)
                 Log.d("bottomSheetBehavior is null", "check here")
 
+            val screenHeight = requireContext().resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.7 // 90%
+            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
+//        // Adjust the height of the bottom sheet content view
+//        val layoutParams = bottomSheetContent.layoutParams
+//        layoutParams.height = desiredHeight
+//        bottomSheetContent.layoutParams = layoutParams
+            if(bottomSheetBehavior == null)
+                Log.d("MainBottomSheet  bottomSheet is null","Main Bottom Sheet")
+            bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
 
@@ -1156,19 +1166,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun getAndSetOrderDetails() {
-
-        val screenHeight = resources.displayMetrics.heightPixels
-        val percentageOfScreenHeight = 0.7 // 90%
-        val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
-        if(bottomSheetBehavior == null)
-            Log.d("MainBottomSheet  bottomSheet is null","Main Bottom Sheet")
-        bottomSheetBehavior?.maxHeight = desiredHeight
-
 
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
