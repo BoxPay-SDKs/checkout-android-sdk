@@ -109,7 +109,7 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
             }
         }).apply {
             // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
+            val timeoutMs = 1000000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
             val backoffMultiplier = 1.0f // Backoff multiplier
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
