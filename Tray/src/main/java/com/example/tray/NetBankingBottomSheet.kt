@@ -328,6 +328,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
             }
             Log.d("Selected bank is : ", bankInstrumentTypeValue)
+            binding.errorField.visibility = View.GONE
 
             postRequest(requireContext(), bankInstrumentTypeValue)
         }
@@ -341,8 +342,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
         dismiss()
     }
-
-
     private fun filterBanks(query: String?) {
         banksDetailsFiltered.clear()
         for (bank in banksDetailsOriginal) {

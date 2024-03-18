@@ -460,6 +460,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
             }
             Log.d("Selected bank is : ", walletInstrumentTypeValue)
+            binding.errorField.visibility = View.GONE
 
             postRequest(requireContext(), walletInstrumentTypeValue)
         }

@@ -233,56 +233,59 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.editTextCardNumber.addTextChangedListener(object : TextWatcher {
+            var isFormatting = false // Flag to prevent reformatting when deleting spaces
+            var userDeletingChars = false
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
+                userDeletingChars = count > after
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val textNow = s.toString()
-                Log.d("textNow length",textNow.length.toString())
-                if (textNow.isNotBlank()) {
-                    if(textNow.length == 19){
-                        isCardNumberValid = true
-                        proceedButtonIsEnabled.value = true
-                        binding.ll1InvalidCardNumber.visibility = View.GONE
-                    }else{
-                        isCardNumberValid = false
-                        proceedButtonIsEnabled.value = false
-                    }
-                }
-                if(textNow.length == 19){
-                    Log.d("16 digits","crossed")
-                    if(isValidCardNumberByLuhn(removeSpaces(textNow)))
-                        binding.editTextCardValidity.requestFocus()
-                    else{
-                        isCardNumberValid = false
-                        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
-                        proceedButtonIsEnabled.value = false
-                    }
-                }
-
-                binding.editTextCardNumber.removeTextChangedListener(this)
-
-                val text = s.toString().replace("\\s".toRegex(), "")
-                val formattedText = formatCardNumber(text)
-
-                binding.editTextCardNumber.setText(formattedText)
-                binding.editTextCardNumber.setSelection(formattedText.length)
-
-                binding.editTextCardNumber.addTextChangedListener(this)
-                val cardNumberWithOutSpaces = textNow.replace(" ", "")
-
-                if(cardNumberWithOutSpaces.length <= 6){
-                    Log.d("makeCardNetworkIdentificationCall",cardNumberWithOutSpaces)
-                    makeCardNetworkIdentificationCall(requireContext(),cardNumberWithOutSpaces)
-                }
+                //
             }
 
             override fun afterTextChanged(s: Editable?) {
-                val textNow = s.toString()
-                if (textNow.isBlank()) {
-                    isCardNumberValid = false
-                    proceedButtonIsEnabled.value = false
+                if (!isFormatting) {
+                    s?.let { editable ->
+                        Log.d("editable text here",editable.toString()+".")
+                        val textNow = editable.toString()
+                        val text = textNow.replace("\\s".toRegex(), "")
+                        val formattedText = formatCardNumber(text)
+
+                        if (editable.toString() != formattedText && !userDeletingChars) {
+                            Log.d("editable text here f",formattedText+".")
+                            isFormatting = true // Set flag to prevent reformatting
+                            binding.editTextCardNumber.setText(formattedText)
+                            binding.editTextCardNumber.setSelection(formattedText.length)
+                        }else if(editable.toString().length > 1 && editable.toString()[editable.toString().length - 1] == ' '){
+                            editable.delete(editable.length - 1, editable.length)
+                        }
+
+                        isFormatting = false // Reset the flag
+
+                        if (text.isBlank()) {
+                            isCardNumberValid = false
+                            proceedButtonIsEnabled.value = false
+                        } else if (text.length == 19) {
+                            if (isValidCardNumberByLuhn(removeSpaces(text))) {
+                                binding.editTextCardValidity.requestFocus()
+                                isCardNumberValid = true
+                                binding.ll1InvalidCardNumber.visibility = View.GONE
+                                proceedButtonIsEnabled.value = true
+                            } else {
+                                isCardNumberValid = false
+                                binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                                proceedButtonIsEnabled.value = false
+                            }
+                        } else {
+                            isCardNumberValid = false
+                            proceedButtonIsEnabled.value = false
+                            binding.ll1InvalidCardNumber.visibility = View.GONE
+                        }
+
+                        if (text.length <= 6) {
+                            makeCardNetworkIdentificationCall(requireContext(), text)
+                        }
+                    }
                 }
             }
         })
@@ -293,70 +296,76 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         // Set TextWatcher to add slashes dynamically as the user types
         binding.editTextCardValidity.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            var isFormatting = false
+            var userDeletingChars = false
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                userDeletingChars = count > after
+            }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
-                var text = s.toString().replace("/", "")
 
-                if(text.isNotEmpty() && (text[0].toString().toInt() != 0 && text[0].toString().toInt() != 1)){
-                    Log.d("Invalid month in validity",text[0].toString())
-                    binding.invalidCardValidity.visibility = View.GONE
-                    proceedButtonIsEnabled.value = false
-                }
-                binding.editTextCardValidity.removeTextChangedListener(this)
-                if(text.length == 1){
-                    Log.d("textNow card validity",text)
-                    if(text != "0" && text != "1"){
-                        text = "0"+text
-                    }
-                }
-
-//                val text = s.toString().replace("/", "")
-                val formattedText = formatMMYY(text)
-
-                if(text.length == 4){
-                    binding.editTextCardCVV.requestFocus()
-                }
-                binding.editTextCardValidity.setText(formattedText)
-                binding.editTextCardValidity.setSelection(formattedText.length)
-
-                binding.editTextCardValidity.addTextChangedListener(this)
-                val textNow = s.toString()
-                Log.d("onTextChanged", s.toString())
-                if (textNow.isNotBlank()) {
-
-                    if(textNow.length == 5) {
-                        Log.d("card validity is made true",textNow.length.toString())
-                        val cardValidity = binding.editTextCardValidity.text.toString()
-                        if (!(isValidExpirationDate(
-                                cardValidity.substring(0, 2),
-                                cardValidity.substring(3, 5)
-                            ))
-                        ) {
-                            isCardValidityValid = false
-                            proceedButtonIsEnabled.value = false
-                            binding.invalidCardValidity.visibility = View.VISIBLE
-                            binding.textView7.text = "Invalid card validity"
-                        }else{
-                            isCardValidityValid = true
-                            proceedButtonIsEnabled.value = true
-                            binding.invalidCardValidity.visibility = View.GONE
-                        }
-                    }
-                    else {
-                        isCardValidityValid = false
-                        proceedButtonIsEnabled.value = false
-                    }
-                }
             }
 
             override fun afterTextChanged(s: Editable?) {
-                val textNow = s.toString()
-                Log.d("afterTextChanged", s.toString())
-                if (textNow.isBlank()) {
-                    isCardValidityValid = false
-                    proceedButtonIsEnabled.value = false
+                if (!isFormatting) {
+                    val textNow = s.toString()
+                    var text = s.toString().replace("/", "")
+
+                    if (text.isNotEmpty() && (text[0].toString().toInt() != 0 && text[0].toString().toInt() != 1)) {
+                        Log.d("Invalid month in validity", text[0].toString())
+                        binding.invalidCardValidity.visibility = View.GONE
+                        proceedButtonIsEnabled.value = false
+                    }
+
+                    if (text.length == 1) {
+                        Log.d("textNow card validity", text)
+                        if (text != "0" && text != "1") {
+                            text = "0" + text
+                        }
+                    }
+
+                    val formattedText = formatMMYY(text)
+
+                    if (text.length == 4) {
+                        binding.editTextCardCVV.requestFocus()
+                    }
+
+                    // Set isFormatting to true to prevent infinite loop
+                    if(!userDeletingChars){
+                        isFormatting = true
+                    binding.editTextCardValidity.setText(formattedText)
+                    binding.editTextCardValidity.setSelection(formattedText.length)
+                    }else if(s.toString().length > 1 && s.toString()[s.toString().length - 1] == '/'){
+                        s?.delete(s.toString().length - 1, s.toString().length)
+                    }
+
+                    // Set isFormatting back to false after modifying the text
+                    isFormatting = false
+                    if (textNow.isNotBlank()) {
+                        if (textNow.length == 5) {
+                            Log.d("card validity is made true", textNow.length.toString())
+                            val cardValidity = binding.editTextCardValidity.text.toString()
+                            if (!(isValidExpirationDate(cardValidity.substring(0, 2), cardValidity.substring(3, 5)))) {
+                                isCardValidityValid = false
+                                proceedButtonIsEnabled.value = false
+                                binding.invalidCardValidity.visibility = View.VISIBLE
+                                binding.textView7.text = "Invalid card validity"
+                            } else {
+                                isCardValidityValid = true
+                                proceedButtonIsEnabled.value = true
+                                binding.invalidCardValidity.visibility = View.GONE
+                            }
+                        } else {
+                            isCardValidityValid = false
+                            proceedButtonIsEnabled.value = false
+                        }
+                    }
+
+                    if (textNow.isBlank()) {
+                        isCardValidityValid = false
+                        proceedButtonIsEnabled.value = false
+                    }
                 }
             }
         })

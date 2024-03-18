@@ -348,7 +348,6 @@
                                     app:lottie_autoPlay="true"
                                     app:lottie_fileName="boxpayLogo.json"
                                     app:lottie_loop="true" />
-
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"

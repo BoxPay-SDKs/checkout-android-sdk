@@ -51,7 +51,7 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
     private fun fetchShopperDetailsAndUpdateInSharedPreferences(){
         val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(context)
-        Log.d("fetchSHopperDetailsAndUpdate","Checkout")
+        Log.d("fetchShopperDetailsAndUpdate","Checkout")
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
             try {
 
