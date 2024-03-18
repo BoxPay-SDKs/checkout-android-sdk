@@ -168,7 +168,16 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     }
     private fun fetchUPIIntentURL(context: Context, appName: String) {
         Log.d(" upiIntent Details launch UPI Payment", appName)
+        showLoadingState()
         getUrlForUPIIntent(appName)
+    }
+    private fun showLoadingState(){
+        binding.loadingRelativeLayout.visibility = View.VISIBLE
+        binding.boxpayLogoLottie.playAnimation()
+    }
+    private fun removeLoadingState(){
+        binding.loadingRelativeLayout.visibility = View.GONE
+        binding.boxpayLogoLottie.cancelAnimation()
     }
 
     private fun launchUPIIntent(url: String) {
@@ -181,6 +190,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             startFunctionCalls()
 
             startActivity(intent)
+
+            removeLoadingState()
         } catch (e: ActivityNotFoundException) {
             // Handle the case where no activity is found to handle the intent
             Log.d("upiIntent Details Activity Not found",e.toString())
@@ -212,9 +223,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             e.printStackTrace()
             ""
         }
-    }
-    private fun checkStatusOfUpiIntent(){
-
     }
     private fun fetchStatusAndReason(url: String) {
         Log.d("fetching function called correctly", "Fine")
@@ -519,6 +527,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         binding.payUsingAnyUPIConstraint.setOnClickListener {
 
             binding.payUsingAnyUPIConstraint.isEnabled = false
+            showLoadingState()
             getUrlForDefaultUPIIntent()
         }
 
@@ -762,27 +771,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             else -> throw IllegalArgumentException("Invalid number: $num")
         }
     }
-
     private fun openDefaultUPIIntentBottomSheetFromAndroid(url : String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startFunctionCalls()
+
+
+
+        removeLoadingState()
         startActivity(intent)
-    }
-    private fun addUPIInsteadOfAppName(url : String){
-
-        // Find the index of the colon
-        val colonIndex = url.indexOf(':')
-
-        // If the colon exists and is not the last character
-        if (colonIndex != -1 && colonIndex < url.length - 1) {
-            // Extract the substring after the colon
-            var result = url.substring(colonIndex + 1)
-            result = "upi:"+result
-            Log.d("upiIntent Details changed url",result)
-        } else {
-            // Handle cases where there is no colon or it's the last character
-            println("Invalid URL format")
-        }
+        binding.payUsingAnyUPIConstraint.isEnabled = true
     }
     private fun getUrlForDefaultUPIIntent(){
         Log.d("postRequestCalled", System.currentTimeMillis().toString())
