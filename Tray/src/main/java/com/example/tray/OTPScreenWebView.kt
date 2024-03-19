@@ -36,10 +36,18 @@ internal class OTPScreenWebView : AppCompatActivity() {
     private lateinit var requestQueue: RequestQueue
     private var successScreenFullReferencePath: String? = null
     private var previousBottomSheet: Context ?= null
+    private lateinit var Base_Session_API_URL : String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+
+        val sharedPreferences = this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val environmentFetched = sharedPreferences.getString("environment","null")
+        Log.d("environment is $environmentFetched","Add UPI ID")
+        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+
         requestQueue = Volley.newRequestQueue(this)
         val receivedUrl = intent.getStringExtra("url")
         Log.d("url", receivedUrl.toString())
@@ -159,11 +167,10 @@ internal class OTPScreenWebView : AppCompatActivity() {
 //        handler.postDelayed(endAllTheBottomSheets, 2000)
 //    }
 
-
     private fun startFunctionCalls() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
-                fetchStatusAndReason("https://test-apis.boxpay.tech/v0/checkout/sessions/${token}/status")
+                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 5 seconds
                 delay(4000)
             }

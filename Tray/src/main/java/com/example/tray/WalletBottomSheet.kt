@@ -58,7 +58,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private var overlayViewCurrentBottomSheet: View? = null
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
-    private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var checkedPosition: Int? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
@@ -73,6 +72,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var colorAnimation: ValueAnimator
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
+    private lateinit var Base_Session_API_URL : String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -365,6 +365,10 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         editor = sharedPreferences.edit()
 
 
+        val environmentFetched = sharedPreferences.getString("environment","null")
+        Log.d("environment is $environmentFetched","Add UPI ID")
+        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+
         fetchTransactionDetailsFromSharedPreferences()
         walletDetailsOriginal = arrayListOf()
 
@@ -518,7 +522,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchWalletDetails() {
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val url = "${Base_Session_API_URL}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 

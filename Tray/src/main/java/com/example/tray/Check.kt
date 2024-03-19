@@ -193,8 +193,6 @@ import org.json.JSONObject
                 Log.d("token fetched", tokenFetched)
                 tokenLiveData.value = tokenFetched
                 // Call a function that depends on the token
-
-                // Use the token as needed
             },
             Response.ErrorListener { error ->
                 // Handle error

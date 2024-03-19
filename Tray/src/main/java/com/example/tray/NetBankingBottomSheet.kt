@@ -59,13 +59,13 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private var banksDetailsFiltered: ArrayList<NetbankingDataClass> = ArrayList()
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
-    private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var checkedPosition: Int? = null
     private var successScreenFullReferencePath: String? = null
     var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> =
         MutableLiveData<Boolean>().apply {
             value = false
         }
+    private lateinit var Base_Session_API_URL : String
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
@@ -152,7 +152,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchBanksDetails() {
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val url = "${Base_Session_API_URL}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 

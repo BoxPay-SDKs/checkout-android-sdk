@@ -50,7 +50,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentAddCardBottomSheetBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
-    private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
+    private lateinit var Base_Session_API_URL : String
     private var token: String? = null
     private var cardNumber: String? = null
     private var cardExpiryYYYY_MM: String? = null
@@ -79,17 +79,16 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     fun makeCardNetworkIdentificationCall(context: Context,cardNumber: String){
         val queue = Volley.newRequestQueue(context)
         Log.d("makeCardNetworkIdentificationCall",cardNumber)
-        val url = "https://test-apis.boxpay.tech/v0/platform/bank-identification-numbers/tokens/${cardNumber}"
-
+        val url = Base_Session_API_URL+"${token}/bank-identification-numbers/tokens/${cardNumber}"
+        Log.d("BIN API CALL",url)
         val jsonData = JSONArray()
-        var token = ""
 
         val brands = mutableListOf<String>()
 
         val request = object : JsonArrayRequest(Method.POST, url, jsonData,
             { response ->
                 for(i in 0 until response.length()){
-                    brands.add(response.getJSONObject(i).getString("brand"))
+                    brands.add(response.getJSONObject(i).getJSONObject("paymentMethod").getString("brand"))
                 }
                 Log.d("size of brands",brands.size.toString()+cardNumber)
                 updateCardNetwork(brands)
@@ -174,6 +173,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         editor = sharedPreferences.edit()
 
 
+        val environmentFetched = sharedPreferences.getString("environment","null")
+        Log.d("environment is $environmentFetched","Add UPI ID")
+        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+
+
         fetchTransactionDetailsFromSharedPreferences()
 
         val allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890. "
@@ -240,7 +244,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                //
+                if(s.toString().isNullOrBlank()){
+                    isCardNumberValid = true
+                    proceedButtonIsEnabled.value = true
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -303,8 +310,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-
+                isCardNumberValid = true
+                proceedButtonIsEnabled.value = true
             }
 
             override fun afterTextChanged(s: Editable?) {
