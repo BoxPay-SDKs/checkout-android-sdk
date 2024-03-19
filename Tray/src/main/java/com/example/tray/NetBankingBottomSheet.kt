@@ -236,6 +236,11 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
+
+        val environmentFetched = sharedPreferences.getString("environment","null")
+        Log.d("environment is $environmentFetched","Add UPI ID")
+        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+
         fetchTransactionDetailsFromSharedPreferences()
 
         banksDetailsOriginal = arrayListOf()
@@ -647,6 +652,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 hideLoadingInButton()
 
                 try {
+                    logJsonObject(response)
                     // Parse the JSON response
 
                     transactionId = response.getString("transactionId").toString()
