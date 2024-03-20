@@ -443,9 +443,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     proceedButtonIsEnabled.value = true
                 }
             }
-
         })
-
 
         binding.editTextCardCVV.setTransformationMethod(AsteriskPasswordTransformationMethod())
 
