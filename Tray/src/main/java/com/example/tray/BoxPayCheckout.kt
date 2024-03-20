@@ -140,7 +140,6 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
         editor.putString("token", token)
         Log.d("token added to sharedPreferences", token)
         editor.apply()
-
     }
 
 
