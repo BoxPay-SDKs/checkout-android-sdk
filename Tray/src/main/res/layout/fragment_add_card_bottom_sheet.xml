@@ -91,7 +91,7 @@
                         android:background="@drawable/edittext_bg"
                         android:fontFamily="@font/poppins"
                         android:gravity="center_vertical"
-                        android:hint="Enter Name"
+                        android:hint="Please enter name on your card"
                         android:inputType="text"
                         android:paddingStart="12dp"
                         android:paddingTop="8dp"
@@ -126,7 +126,7 @@
                             android:enabled="false"
                             android:fontFamily="@font/poppins"
                             android:gravity="center_vertical|left"
-                            android:text="Invalid name on card"
+                            android:text="Invalid UPI ID"
                             android:textColor="#B9232F"
                             android:textSize="12sp" />
                     </LinearLayout>
