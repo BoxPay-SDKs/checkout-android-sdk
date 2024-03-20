@@ -805,10 +805,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE
-                    binding.textView4.text = e.toString()
-
-
-                    e.printStackTrace()
+                    binding.textView4.text = "Error requesting payment"
+                    Log.e("Error in handling response",e.toString())
                 }
 
             },

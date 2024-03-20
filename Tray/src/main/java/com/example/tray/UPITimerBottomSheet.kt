@@ -7,22 +7,26 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.activityViewModels
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.tray.ViewModels.SharedViewModel
 import com.example.tray.databinding.FragmentUPITimerBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONException
 
-internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
+internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
+    CancelConfirmationBottomSheet.ConfirmationListener {
     private lateinit var binding: FragmentUPITimerBottomSheetBinding
     private lateinit var countdownTimer: CountDownTimer
     private lateinit var countdownTimerForAPI: CountDownTimer
@@ -31,12 +35,34 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
     private var successScreenFullReferencePath: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var virtualPaymentAddress: String? = null
+    var isBottomSheetShown = false
+    val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestQueue = Volley.newRequestQueue(requireContext())
         arguments?.let {
             virtualPaymentAddress = it.getString("virtualPaymentAddress")
+        }
+    }
+    fun explicitDismiss(){
+        Log.d("cancel confirmation bottom sheet","explicit dismiss called")
+        countdownTimer.cancel()
+        countdownTimerForAPI.cancel()
+        dismiss()
+    }
+    override fun onResume() {
+        super.onResume()
+        dialog?.setOnKeyListener { _, keyCode, _ ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && !isBottomSheetShown) {
+                val bottomSheet = CancelConfirmationBottomSheet()
+                bottomSheet.show(parentFragmentManager, "CancelConfirmationBottomSheet")
+                isBottomSheetShown = true
+                true
+            } else {
+                Log.d("onResume called", "not back")
+                false
+            }
         }
     }
 
@@ -115,16 +141,20 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
         binding = FragmentUPITimerBottomSheetBinding.inflate(layoutInflater, container, false)
-
+        sharedViewModel.dismissBottomSheetEvent.observe(viewLifecycleOwner) { dismissed ->
+            if (dismissed) {
+                explicitDismiss()
+                sharedViewModel.bottomSheetDismissed()
+            }
+        }
         fetchTransactionDetailsFromSharedPreferences()
 
         binding.UPIIDTextView.text = "UPI ID : ${virtualPaymentAddress}"
 
         binding.circularProgressBar.startAngle = 90f
         binding.cancelPaymentTextView.setOnClickListener() {
-            countdownTimer.cancel()
-            countdownTimerForAPI.cancel()
-            dismiss()
+            val bottomsheet = CancelConfirmationBottomSheet()
+            bottomsheet.show(parentFragmentManager,"CancellationConfirmation")
         }
         startTimer()
         startTimerForAPICalls()
@@ -262,7 +292,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
 //                            callback.onPaymentResult("Failure")
 //                        }
 
-                        dismiss()
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         dismiss()
@@ -301,5 +330,10 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment() {
             fragment.arguments = args
             return fragment
         }
+    }
+
+    override fun onConfirmation() {
+        Log.d("parent called successfully","onConfirmation")
+        dismiss()
     }
 }

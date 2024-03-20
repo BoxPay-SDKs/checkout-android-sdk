@@ -1,15 +1,19 @@
 package com.example.tray.ViewModels
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.tray.dataclasses.TransactionData
 
-class SharedViewModelTransactionDetails : ViewModel() {
-    private val transactionData = MutableLiveData<TransactionData>()
+class SharedViewModel : ViewModel() {
+    private val _dismissBottomSheetEvent = MutableLiveData<Boolean>()
+    val dismissBottomSheetEvent: LiveData<Boolean> = _dismissBottomSheetEvent
 
-    fun setTransactionData(data: TransactionData) {
-        transactionData.value = data
+    fun dismissBottomSheet() {
+        _dismissBottomSheetEvent.value = true
     }
 
-    fun getTransactionData() = transactionData
+    fun bottomSheetDismissed() {
+        _dismissBottomSheetEvent.value = false
+    }
 }

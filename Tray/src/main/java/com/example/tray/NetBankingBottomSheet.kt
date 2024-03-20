@@ -654,7 +654,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 try {
                     logJsonObject(response)
                     // Parse the JSON response
-
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
@@ -686,7 +685,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE
-                    binding.textView4.text = e.toString()
+                    binding.textView4.text = "Error requesting payment"
+                    Log.e("Error in handling response",e.toString())
                     e.printStackTrace()
                 }
 
