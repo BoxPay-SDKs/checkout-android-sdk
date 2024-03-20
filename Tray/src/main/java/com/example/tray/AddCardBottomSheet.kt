@@ -399,7 +399,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                 if(textNow.length == 4){
                     binding.editTextNameOnCard.requestFocus()
-
                 }
             }
 
@@ -409,6 +408,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (textNow.isBlank()) {
                     isCardCVVValid = false
                     proceedButtonIsEnabled.value = false
+                }else{
+                    isCardCVVValid = true
+                    proceedButtonIsEnabled.value = true
                 }
             }
         })
@@ -568,14 +570,20 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
         val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
         Log.d("date details","Current Month = $currentMonth, Current year =  $currentYear, inputExpMonth = $inputExpMonth, inputExpYear = $inputExpYear")
-        val isValidMonthRange =
-            ((inputExpMonth.toInt() >= currentMonth))
+
         val isValidYearValue = (inputExpYear.toInt() > 0)
         val isValidYearLength = (inputExpYear.length == 2)
+
+
+        Log.d("input expiry",inputExpYear.toInt().toString()+" "+inputExpMonth.toInt())
 
         val isMonthValid = (inputExpMonth.toInt() in 1..12)
 
         val isFutureYear = (("20"+inputExpYear).toInt() >= currentYear)
+
+        val isValidMonthRange =
+            ((inputExpMonth.toInt() >= currentMonth) || isFutureYear)
+
         val isSameYear_FutureOrCurrentMonth =
             ((inputExpYear.toInt() == currentYear) && (inputExpMonth.toInt() >= currentMonth))
 
@@ -583,6 +591,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 (isFutureYear || isSameYear_FutureOrCurrentMonth) && isMonthValid)
         if(!result)
             proceedButtonIsEnabled.value = false
+
+
+        Log.d("variables for validity",isValidMonthRange.toString()+" "+isValidYearValue+isValidYearLength+" "+isMonthValid+" "+isFutureYear+" "+isSameYear_FutureOrCurrentMonth)
 
         return result
     }
