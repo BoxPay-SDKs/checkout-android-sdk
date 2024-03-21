@@ -1,5 +1,6 @@
 package com.example.tray
 
+import FailureScreenSharedViewModel
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
@@ -46,6 +47,10 @@ import com.google.gson.GsonBuilder
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.BalloonCenterAlign
 import com.skydoves.balloon.createBalloon
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
@@ -269,6 +274,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
             enabled = !enabled
         }
+
+        val failureScreenSharedViewModelCallback = FailureScreenSharedViewModel(::failurePaymentFunction)
+        FailureScreenCallBackSingletonClass.getInstance().callBackFunctions = failureScreenSharedViewModelCallback
         proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
             if (enableProceedButton) {
                 enableProceedButton()
@@ -372,6 +380,19 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         allBanksAdapter.deselectSelectedItem()
         allBanksAdapter.notifyDataSetChanged()
     }
+    fun failurePaymentFunction(){
+        Log.d("Failure Screen View Model", "failurePaymentFunction")
+
+        // Start a coroutine with a delay of 5 seconds
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(1000) // Delay for 1 seconds
+
+            // Code inside this block will execute after the delay
+            val bottomSheet = PaymentFailureScreen()
+            bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
+        }
+
+    }
 
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
@@ -394,6 +415,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.textView24.visibility = View.GONE
         binding.linearLayout2.visibility = View.GONE
     }
+
 
     fun removeRecyclerViewFromBelowEditText() {
         binding.textView19.visibility = View.VISIBLE

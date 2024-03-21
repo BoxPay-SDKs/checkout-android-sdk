@@ -23,7 +23,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private lateinit var binding : FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
     private var token: String? = null
     private var transactionID: String? = null
-    private var originalAmount: String? = null
+    private var amount: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +37,9 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
 
         binding.lottieAnimationView.playAnimation()
         fetchTransactionDetailsFromSharedPreferences()
-        binding.transactionAmountTextView.text = originalAmount
+        binding.transactionAmountTextView.text = amount
         binding.transactionIDTextView.text = transactionID
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
-
         binding. proceedButton.setOnClickListener(){
 //            openActivity(successScreenFullReferencePath.toString(),requireContext())
             val callback = SingletonClass.getInstance().getYourObject()
@@ -98,8 +97,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
 //        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
         transactionID = sharedPreferences.getString("transactionId","empty")
         Log.d("transactionID fetched from sharedPreferences",transactionID.toString())
-        originalAmount = sharedPreferences.getString("currencySymbol","2")+sharedPreferences.getString("originalAmount","empty")
-        Log.d("success screen path fetched from sharedPreferences",originalAmount.toString())
+        amount = sharedPreferences.getString("currencySymbol","2")+sharedPreferences.getString("amount","empty")
+        Log.d("success screen path fetched from sharedPreferences",amount.toString())
     }
 
     object SharedPreferencesHelper {

@@ -23,7 +23,9 @@ import com.example.tray.databinding.FragmentUPITimerBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.GsonBuilder
 import org.json.JSONException
+import org.json.JSONObject
 
 internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     CancelConfirmationBottomSheet.ConfirmationListener {
@@ -244,6 +246,11 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         super.onDismiss(dialog)
         dismiss()
     }
+    fun logJsonObject(jsonObject: JSONObject) {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        val jsonStr = gson.toJson(jsonObject)
+        Log.d("Request Body Fetch Status", jsonStr)
+    }
 
     private fun fetchStatusAndReason(url: String) {
         Log.d("fetching function called correctly", "Fine")
@@ -251,6 +258,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             Request.Method.GET, url, null,
             { response ->
                 try {
+                    logJsonObject(response)
                     val status = response.getString("status")
                     val statusReason = response.getString("statusReason")
 
@@ -258,6 +266,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     // For example, log them
                     Log.d("Status", status)
                     Log.d("Status Reason", statusReason)
+
+
 
                     // Check if status is success, if yes, dismiss the bottom sheet
                     if (statusReason.contains(
@@ -292,9 +302,10 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 //                            callback.onPaymentResult("Failure")
 //                        }
 
-                        countdownTimer.cancel()
-                        countdownTimerForAPI.cancel()
-                        dismiss()
+//                        countdownTimer.cancel()
+//                        countdownTimerForAPI.cancel()
+//                        dismiss()
+
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
                     } else if (status.contains("FAILED", ignoreCase = true)) {
@@ -305,7 +316,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                         val callback =  SingletonClass.getInstance().getYourObject()
                         if(callback == null){
                             Log.d("call back is null","failed")
-                        }else{
+                        }
+                        else{
                             callback.onPaymentResult("Failure")
                         }
                         countdownTimer.cancel()

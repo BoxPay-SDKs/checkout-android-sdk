@@ -98,8 +98,11 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
                 editor.putString("originalAmount",orderObject.getString("originalAmount"))
 
 
+
+
                 val moneyObject = paymentDetailsObject.getJSONObject("money")
                 editor.putString("currencySymbol",moneyObject.getString("currencySymbol"))
+                editor.putString("amount",moneyObject.getString("amount"))
 
                 val ipAddress = convertIPv6ToIPv4(getLocalIpAddress())
                 Log.d("ipAddress",ipAddress.toString())

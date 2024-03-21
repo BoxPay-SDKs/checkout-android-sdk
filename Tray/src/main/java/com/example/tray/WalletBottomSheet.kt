@@ -1,5 +1,6 @@
 package com.example.tray
 
+import FailureScreenSharedViewModel
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
@@ -25,6 +26,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,9 +37,11 @@ import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.tray.ViewModels.SharedViewModel
 import com.example.tray.adapters.WalletAdapter
 import com.example.tray.databinding.FragmentWalletBottomSheetBinding
 import com.example.tray.dataclasses.WalletDataClass
+import com.example.tray.interfaces.OnWebViewCloseListener
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -45,10 +49,13 @@ import com.google.gson.GsonBuilder
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.BalloonCenterAlign
 import com.skydoves.balloon.createBalloon
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
-
 
 internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentWalletBottomSheetBinding
@@ -73,6 +80,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var Base_Session_API_URL : String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -360,6 +368,10 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         binding = FragmentWalletBottomSheetBinding.inflate(layoutInflater, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
+
+        val failureScreenSharedViewModelCallback = FailureScreenSharedViewModel(::failurePaymentFunction)
+        FailureScreenCallBackSingletonClass.getInstance().callBackFunctions = failureScreenSharedViewModelCallback
+
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
@@ -519,6 +531,19 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 }
             }
         }
+    }
+    fun failurePaymentFunction(){
+        Log.d("Failure Screen View Model", "failurePaymentFunction")
+
+        // Start a coroutine with a delay of 5 seconds
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(1000) // Delay for 1 seconds
+
+            // Code inside this block will execute after the delay
+            val bottomSheet = PaymentFailureScreen()
+            bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
+        }
+
     }
 
     private fun fetchWalletDetails() {
@@ -794,9 +819,21 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
 
-                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+//                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+//                        FailureScreenFunctionObject.failureScreenFunction = ::failurePaymentFunction
+                        val intent = Intent(context, OTPScreenWebView::class.java)
                         intent.putExtra("url", url)
+
+                        // Check if the context is not null before starting the activity
+//                        context?.let { context ->
+//                            intent.putExtra("url", url)
+//                            val webViewActivity = OTPScreenWebView()
+//                            webViewActivity.setWebViewCloseListener(requireContext()) // Pass the current BottomSheetDialogFragment as the listener
+//                            context.startActivity(intent)
+//                        } // Start the webViewActivity
+
                         startActivity(intent)
+////                        startActivity(intent)
 
 
 //                        val bottomSheet = ForceTestPaymentBottomSheet()

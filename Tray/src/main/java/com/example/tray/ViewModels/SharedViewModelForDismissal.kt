@@ -3,7 +3,6 @@ package com.example.tray.ViewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.tray.dataclasses.TransactionData
 
 class SharedViewModel : ViewModel() {
     private val _dismissBottomSheetEvent = MutableLiveData<Boolean>()

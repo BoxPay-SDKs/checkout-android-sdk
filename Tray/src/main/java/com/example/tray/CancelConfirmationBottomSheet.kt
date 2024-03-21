@@ -14,6 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 class CancelConfirmationBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentCancelConfirmationBottomSheetBinding
     val sharedViewModel: SharedViewModel by activityViewModels()
+
     interface ConfirmationListener {
         fun onConfirmation()
     }

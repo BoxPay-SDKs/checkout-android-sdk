@@ -126,7 +126,7 @@
                             android:enabled="false"
                             android:fontFamily="@font/poppins"
                             android:gravity="center_vertical|left"
-                            android:text="Invalid UPI ID"
+                            android:text="Enter Name"
                             android:textColor="#B9232F"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -193,7 +193,7 @@
                                 android:enabled="false"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical|left"
-                                android:text="Invalid card validity"
+                                android:text="Required"
                                 android:textColor="#B9232F"
                                 android:textSize="12sp"
                                 app:layout_constraintBottom_toBottomOf="parent"
@@ -260,13 +260,11 @@
                             <TextView
                                 android:id="@+id/textView8"
                                 android:layout_width="wrap_content"
-
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="2dp"
-
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center"
-                                android:text="Invalid CVV"
+                                android:text="Required"
                                 android:textColor="#B9232F"
                                 android:textSize="12sp"
                                 app:layout_constraintStart_toEndOf="@+id/imageView7"
@@ -429,7 +427,7 @@
                                 android:enabled="false"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center"
-                                android:text="Invalid Card Number"
+                                android:text="Required"
                                 android:textColor="#B9232F"
                                 android:textSize="12sp"
 
