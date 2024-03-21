@@ -1,5 +1,6 @@
 package com.example.tray
 
+import FailureScreenSharedViewModel
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
@@ -46,6 +47,10 @@ import com.google.gson.GsonBuilder
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.BalloonCenterAlign
 import com.skydoves.balloon.createBalloon
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
@@ -59,13 +64,13 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private var banksDetailsFiltered: ArrayList<NetbankingDataClass> = ArrayList()
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
-    private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var checkedPosition: Int? = null
     private var successScreenFullReferencePath: String? = null
     var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> =
         MutableLiveData<Boolean>().apply {
             value = false
         }
+    private lateinit var Base_Session_API_URL : String
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
@@ -152,7 +157,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchBanksDetails() {
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val url = "${Base_Session_API_URL}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
@@ -236,6 +241,11 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
+
+        val environmentFetched = sharedPreferences.getString("environment","null")
+        Log.d("environment is $environmentFetched","Add UPI ID")
+        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+
         fetchTransactionDetailsFromSharedPreferences()
 
         banksDetailsOriginal = arrayListOf()
@@ -264,6 +274,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
             enabled = !enabled
         }
+
+        val failureScreenSharedViewModelCallback = FailureScreenSharedViewModel(::failurePaymentFunction)
+        FailureScreenCallBackSingletonClass.getInstance().callBackFunctions = failureScreenSharedViewModelCallback
         proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
             if (enableProceedButton) {
                 enableProceedButton()
@@ -367,6 +380,19 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         allBanksAdapter.deselectSelectedItem()
         allBanksAdapter.notifyDataSetChanged()
     }
+    fun failurePaymentFunction(){
+        Log.d("Failure Screen View Model", "failurePaymentFunction")
+
+        // Start a coroutine with a delay of 5 seconds
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(1000) // Delay for 1 seconds
+
+            // Code inside this block will execute after the delay
+            val bottomSheet = PaymentFailureScreen()
+            bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
+        }
+
+    }
 
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
@@ -389,6 +415,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.textView24.visibility = View.GONE
         binding.linearLayout2.visibility = View.GONE
     }
+
 
     fun removeRecyclerViewFromBelowEditText() {
         binding.textView19.visibility = View.VISIBLE
@@ -647,8 +674,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 hideLoadingInButton()
 
                 try {
+                    logJsonObject(response)
                     // Parse the JSON response
-
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
@@ -680,7 +707,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE
-                    binding.textView4.text = e.toString()
+                    binding.textView4.text = "Error requesting payment"
+                    Log.e("Error in handling response",e.toString())
                     e.printStackTrace()
                 }
 

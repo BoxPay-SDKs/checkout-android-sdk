@@ -1,5 +1,6 @@
 package com.example.tray
 
+import FailureScreenSharedViewModel
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
@@ -25,6 +26,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,9 +37,11 @@ import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.tray.ViewModels.SharedViewModel
 import com.example.tray.adapters.WalletAdapter
 import com.example.tray.databinding.FragmentWalletBottomSheetBinding
 import com.example.tray.dataclasses.WalletDataClass
+import com.example.tray.interfaces.OnWebViewCloseListener
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -45,10 +49,13 @@ import com.google.gson.GsonBuilder
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.BalloonCenterAlign
 import com.skydoves.balloon.createBalloon
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
-
 
 internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentWalletBottomSheetBinding
@@ -58,7 +65,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private var overlayViewCurrentBottomSheet: View? = null
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
-    private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
     private var checkedPosition: Int? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
@@ -73,6 +79,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var colorAnimation: ValueAnimator
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
+    private lateinit var Base_Session_API_URL : String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -360,10 +368,18 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         binding = FragmentWalletBottomSheetBinding.inflate(layoutInflater, container, false)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
+
+        val failureScreenSharedViewModelCallback = FailureScreenSharedViewModel(::failurePaymentFunction)
+        FailureScreenCallBackSingletonClass.getInstance().callBackFunctions = failureScreenSharedViewModelCallback
+
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
+
+        val environmentFetched = sharedPreferences.getString("environment","null")
+        Log.d("environment is $environmentFetched","Add UPI ID")
+        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
         walletDetailsOriginal = arrayListOf()
@@ -516,9 +532,22 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             }
         }
     }
+    fun failurePaymentFunction(){
+        Log.d("Failure Screen View Model", "failurePaymentFunction")
+
+        // Start a coroutine with a delay of 5 seconds
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(1000) // Delay for 1 seconds
+
+            // Code inside this block will execute after the delay
+            val bottomSheet = PaymentFailureScreen()
+            bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
+        }
+
+    }
 
     private fun fetchWalletDetails() {
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val url = "${Base_Session_API_URL}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
@@ -790,9 +819,21 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
 
-                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+//                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+//                        FailureScreenFunctionObject.failureScreenFunction = ::failurePaymentFunction
+                        val intent = Intent(context, OTPScreenWebView::class.java)
                         intent.putExtra("url", url)
+
+                        // Check if the context is not null before starting the activity
+//                        context?.let { context ->
+//                            intent.putExtra("url", url)
+//                            val webViewActivity = OTPScreenWebView()
+//                            webViewActivity.setWebViewCloseListener(requireContext()) // Pass the current BottomSheetDialogFragment as the listener
+//                            context.startActivity(intent)
+//                        } // Start the webViewActivity
+
                         startActivity(intent)
+////                        startActivity(intent)
 
 
 //                        val bottomSheet = ForceTestPaymentBottomSheet()
@@ -801,10 +842,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE
-                    binding.textView4.text = e.toString()
-
-
-                    e.printStackTrace()
+                    binding.textView4.text = "Error requesting payment"
+                    Log.e("Error in handling response",e.toString())
                 }
 
             },

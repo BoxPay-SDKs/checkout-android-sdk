@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -11,12 +12,17 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.example.tray.ViewModels.SharedViewModel
 import com.example.tray.databinding.ActivityOtpscreenWebViewBinding
+import com.example.tray.interfaces.OnWebViewCloseListener
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,22 +30,56 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
+import org.json.JSONObject
 
 
-internal class OTPScreenWebView : AppCompatActivity() {
+internal class OTPScreenWebView() : AppCompatActivity() {
     private val binding by lazy {
         ActivityOtpscreenWebViewBinding.inflate(layoutInflater)
     }
-
+    private var webViewCloseListener: OnWebViewCloseListener? = null
     private var job: Job? = null
+    var isBottomSheetShown = false
     private var token: String? = null
     private lateinit var requestQueue: RequestQueue
     private var successScreenFullReferencePath: String? = null
     private var previousBottomSheet: Context ?= null
+    private lateinit var Base_Session_API_URL : String
+    private lateinit var sharedViewModel: SharedViewModel
+    fun explicitDismiss(){
+        Log.d("cancel confirmation bottom sheet","explicit dismiss called")
+        finish()
+    }
+    fun setWebViewCloseListener(listener: OnWebViewCloseListener) {
+        webViewCloseListener = listener
+    }
+
+    // Call this method when you close the webView
+    private fun notifyWebViewClosed() {
+        webViewCloseListener?.onWebViewClosed()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+
+        sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
+
+
+        sharedViewModel.dismissBottomSheetEvent.observe(this) { dismissed ->
+            if (dismissed) {
+                explicitDismiss()
+                sharedViewModel.bottomSheetDismissed()
+            }
+            isBottomSheetShown = false
+        }
+
+
+        val sharedPreferences = this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val environmentFetched = sharedPreferences.getString("environment","null")
+        Log.d("environment is $environmentFetched","Add UPI ID")
+        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+
         requestQueue = Volley.newRequestQueue(this)
         val receivedUrl = intent.getStringExtra("url")
         Log.d("url", receivedUrl.toString())
@@ -64,11 +104,26 @@ internal class OTPScreenWebView : AppCompatActivity() {
             }
         }
     }
+    override fun onBackPressed() {
+        if (!isBottomSheetShown) {
+            val bottomSheet = CancelConfirmationBottomSheet()
+            bottomSheet.show(supportFragmentManager, "CancelConfirmationBottomSheet")
+            isBottomSheetShown = true
+        } else {
+            super.onBackPressed()
+        }
+    }
 
     // Method to set the previous bottom sheet reference
     fun setPreviousBottomSheet(bottomSheet: Context?) {
         previousBottomSheet = bottomSheet
     }
+    fun logJsonObject(jsonObject: JSONObject) {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        val jsonStr = gson.toJson(jsonObject)
+        Log.d("Request Body Fetch Status", jsonStr)
+    }
+
 
     private fun fetchStatusAndReason(url: String) {
         Log.d("fetching function called correctly", "Fine")
@@ -76,6 +131,7 @@ internal class OTPScreenWebView : AppCompatActivity() {
             Request.Method.GET, url, null,
             { response ->
                 try {
+                    logJsonObject(response)
                     val status = response.getString("status")
                     val statusReason = response.getString("statusReason")
 
@@ -101,7 +157,6 @@ internal class OTPScreenWebView : AppCompatActivity() {
 //                       val successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
 //
 //                        openActivity(successScreenFullReferencePath.toString(),this)
-
                         val callback =  SingletonClass.getInstance().getYourObject()
                         if(callback == null){
                             Log.d("call back is null","failed")
@@ -116,24 +171,29 @@ internal class OTPScreenWebView : AppCompatActivity() {
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
                         job?.cancel()
 
-                        val bottomSheet = PaymentFailureScreen()
-                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
-                        finish()
+//                        val bottomSheet = PaymentFailureScreen()
+//                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+//                        finish()
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
 
                     } else if (status.contains("FAILED", ignoreCase = true)) {
                         job?.cancel()
 //                        val bottomSheet = PaymentFailureScreen()
+                        val callback = FailureScreenCallBackSingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("callback is null","PaymentSuccessfulWithDetailsSheet")
+                        }else{
+                            callback.openFailureScreen()
+                        }
+                        finish()
 //                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
+                        Log.d("Failure Screen View Model","OTP Screen $status")
+////                        sharedViewModelForFailureScreen.openFailureScreen()
+//                        FailureScreenFunctionObject.failureScreenFunction?.invoke()
 //                        finish()
 
-//                        val callback =  SingletonClass.getInstance().getYourObject()
-//                        if(callback == null){
-//                            Log.d("call back is null","cancelled")
-//                        }else{
-//                            callback.onPaymentResult("cancelled")
-//                        }
-
+                    }else if(status.contains("Rejected",ignoreCase = true)){
+                        Log.d("Failure Screen View Model","OTP Screen $status")
                         finish()
                     }
                 } catch (e: JSONException) {
@@ -159,11 +219,10 @@ internal class OTPScreenWebView : AppCompatActivity() {
 //        handler.postDelayed(endAllTheBottomSheets, 2000)
 //    }
 
-
     private fun startFunctionCalls() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
-                fetchStatusAndReason("https://test-apis.boxpay.tech/v0/checkout/sessions/${token}/status")
+                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 5 seconds
                 delay(4000)
             }

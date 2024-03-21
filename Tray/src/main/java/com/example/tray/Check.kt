@@ -98,7 +98,7 @@ import org.json.JSONObject
     }
 
      private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,"test")
         boxPayCheckout.display()
     }
 
@@ -193,8 +193,6 @@ import org.json.JSONObject
                 Log.d("token fetched", tokenFetched)
                 tokenLiveData.value = tokenFetched
                 // Call a function that depends on the token
-
-                // Use the token as needed
             },
             Response.ErrorListener { error ->
                 // Handle error

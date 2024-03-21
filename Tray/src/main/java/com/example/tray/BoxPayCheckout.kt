@@ -23,10 +23,26 @@ import java.util.Collections
 class BoxPayCheckout( private val context : Context, private val token: String,val onPaymentResult: (String) -> Unit){
     private lateinit var sharedPreferences : SharedPreferences
     private lateinit var editor : SharedPreferences.Editor
+    private var environment = "test"
 
-    fun display() {
+    constructor(context: Context, token: String, onPaymentResult: (String) -> Unit, environment: String) : this(context, token, onPaymentResult) {
+        // Initialize or use the additionalParam here if needed
+        Log.d("Additional parameter:", environment)
+        this.environment = environment
         sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
+
+        if(environment != "test" && environment != "sandbox" && environment != "prod"){
+            editor.putString("environment",environment)
+        }else{
+            this.environment = "test"
+            editor.putString("environment","test")
+        }
+
+    }
+
+    fun display() {
+        Log.d("environment variable",sharedPreferences.getString("environment","null").toString())
         putTransactionDetailsInSharedPreferences()
         Log.d("Checked","Executed minView Checkout")
         fetchShopperDetailsAndUpdateInSharedPreferences()
@@ -49,7 +65,7 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
     }
 
     private fun fetchShopperDetailsAndUpdateInSharedPreferences(){
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val url = "https://${this.environment}-apis.boxpay.tech/v0/checkout/sessions/${token}"
         val queue: RequestQueue = Volley.newRequestQueue(context)
         Log.d("fetchShopperDetailsAndUpdate","Checkout")
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
@@ -82,8 +98,11 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
                 editor.putString("originalAmount",orderObject.getString("originalAmount"))
 
 
+
+
                 val moneyObject = paymentDetailsObject.getJSONObject("money")
                 editor.putString("currencySymbol",moneyObject.getString("currencySymbol"))
+                editor.putString("amount",moneyObject.getString("amount"))
 
                 val ipAddress = convertIPv6ToIPv4(getLocalIpAddress())
                 Log.d("ipAddress",ipAddress.toString())
@@ -124,7 +143,6 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
         editor.putString("token", token)
         Log.d("token added to sharedPreferences", token)
         editor.apply()
-
     }
 
 
