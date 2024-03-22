@@ -26,6 +26,7 @@ import org.json.JSONObject
     private val binding : ActivityCheckBinding by lazy {
         ActivityCheckBinding.inflate(layoutInflater)
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -99,7 +100,7 @@ import org.json.JSONObject
     }
 
      private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,"test")
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback)
         boxPayCheckout.display()
     }
 
