@@ -141,7 +141,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
         binding = FragmentUPITimerBottomSheetBinding.inflate(layoutInflater, container, false)
         sharedViewModel.dismissBottomSheetEvent.observe(viewLifecycleOwner) { dismissed ->

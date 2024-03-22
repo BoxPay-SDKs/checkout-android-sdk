@@ -234,7 +234,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         binding = FragmentNetBankingBottomSheetBinding.inflate(layoutInflater, container, false)
 
         sharedPreferences =

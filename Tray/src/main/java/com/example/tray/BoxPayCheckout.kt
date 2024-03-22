@@ -30,8 +30,6 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
         // Initialize or use the additionalParam here if needed
         Log.d("Additional parameter:", environment)
         this.environment = environment
-        sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        editor = sharedPreferences.edit()
 
         if(environment != "test" && environment != "sandbox" && environment != "prod"){
             editor.putString("environment",environment)
@@ -42,6 +40,8 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
     }
 
     fun display() {
+        sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        editor = sharedPreferences.edit()
         Log.d("environment variable",sharedPreferences.getString("environment","null").toString())
         putTransactionDetailsInSharedPreferences()
         Log.d("Checked","Executed minView Checkout")

@@ -24,7 +24,6 @@ internal class LoadingBottomSheet : BottomSheetDialogFragment()  {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentLoadingBottomSheetBinding.inflate(inflater,container,false)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         return binding.root
     }
 
