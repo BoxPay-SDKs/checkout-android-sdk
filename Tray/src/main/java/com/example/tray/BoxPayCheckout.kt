@@ -96,6 +96,21 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
 
                 val orderObject = paymentDetailsObject.getJSONObject("order")
                 editor.putString("originalAmount",orderObject.getString("originalAmount"))
+                var imageURL = ""
+                val items = orderObject.getJSONArray("items")
+                if (items.length() > 0) {
+                    // Get the first item
+                    val itemObject = items.getJSONObject(0)
+
+                    // Get the imageUrl
+                    imageURL = itemObject.optString("imageUrl")
+
+                    // Now you can use this imageUrl with Picasso or any other image loading library
+                    Log.d("Image URL: $imageURL","BoxPayCheckout")
+                }
+
+                editor.putString("imageURL",imageURL)
+
 
 
 

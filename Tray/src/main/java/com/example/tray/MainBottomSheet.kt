@@ -493,7 +493,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         showUPIOptions()
 
 
-        val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices)
+        val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices,requireContext())
         binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
