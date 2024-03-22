@@ -13,10 +13,6 @@ class TestingPurpose : AppCompatActivity() {
         setContentView(R.layout.activity_testing_purpose)
 
 
-
-
-
-
         Log.d("called testing purpose","here")
 
             BoxPayCheckout(this, "3b9be777-2abc-491d-b2d5-6493104af4ab", ::onPaymentResultCallback).display()
