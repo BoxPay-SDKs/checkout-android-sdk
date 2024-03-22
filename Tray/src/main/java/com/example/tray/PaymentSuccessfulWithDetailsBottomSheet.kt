@@ -13,6 +13,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.tray.databinding.FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
+import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -42,11 +43,11 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
         binding. proceedButton.setOnClickListener(){
 //            openActivity(successScreenFullReferencePath.toString(),requireContext())
-            val callback = SingletonClass.getInstance().getYourObject()
+            val callback =  SingletonClass.getInstance().getYourObject()
             if(callback == null){
-                Log.d("callback is null","PaymentSuccessfulWithDetailsSheet")
+                Log.d("call back is null","failed")
             }else{
-                callback.onPaymentResult("Success")
+                callback.onPaymentResult(PaymentResultObject("Success"))
             }
 //            callFunctionInActivity()
         }

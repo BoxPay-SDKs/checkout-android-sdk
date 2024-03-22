@@ -15,6 +15,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.ActivityCheckBinding
+import com.example.tray.paymentResult.PaymentResultObject
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
 
@@ -102,8 +103,8 @@ import org.json.JSONObject
         boxPayCheckout.display()
     }
 
-     fun onPaymentResultCallback(result : String){
-         if(result == "Success"){
+     fun onPaymentResultCallback(result : PaymentResultObject){
+         if(result.result == "Success"){
              Log.d("onPaymentResultCallback","Success")
              val intent = Intent(this,SuccessScreenForTesting :: class.java)
              startActivity(intent)

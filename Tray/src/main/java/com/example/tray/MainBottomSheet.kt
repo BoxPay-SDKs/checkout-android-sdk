@@ -50,6 +50,7 @@ import com.example.tray.ViewModels.OverlayViewModel
 import com.example.tray.adapters.OrderSummaryItemsAdapter
 import com.example.tray.databinding.FragmentMainBottomSheetBinding
 import com.example.tray.dataclasses.WalletDataClass
+import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -255,9 +256,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
                         val callback =  SingletonClass.getInstance().getYourObject()
                         if(callback == null){
-                            Log.d("call back is null","failed")
+                            Log.d("call back is null","Success")
                         }else{
-                            callback.onPaymentResult("Success")
+                            callback.onPaymentResult(PaymentResultObject("Success"))
                         }
                     } else if (status.contains("PENDING", ignoreCase = true)) {
 //                        val bottomSheet = PaymentFailureScreen()
@@ -271,11 +272,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                     } else if (status.contains("FAILED", ignoreCase = true)) {
                         job?.cancel()
                         binding.payUsingAnyUPIConstraint.isEnabled = true
+                        val callback = FailureScreenCallBackSingletonClass.getInstance().getYourObject()
+                        if(callback == null){
+                            Log.d("callback is null","PaymentFailedWithDetailsSheet")
+                        }else{
+                            callback.openFailureScreen()
+                        }
 //                        val bottomSheet = PaymentFailureScreen()
 //                        bottomSheet.show(parentFragmentManager,"PaymentFailureBottomSheet")
                     }else{
                         job?.cancel()
                         binding.payUsingAnyUPIConstraint.isEnabled = true
+
 //                        val bottomSheet = PaymentFailureScreen()
 //                        bottomSheet.show(parentFragmentManager,"PaymentFailureBottomSheet")
                     }

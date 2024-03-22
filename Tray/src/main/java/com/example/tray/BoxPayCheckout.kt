@@ -13,6 +13,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.CallBackFunctions
+import com.example.tray.paymentResult.PaymentResultObject
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
 import java.net.Inet6Address
@@ -20,12 +21,12 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.util.Collections
 
-class BoxPayCheckout( private val context : Context, private val token: String,val onPaymentResult: (String) -> Unit){
+class BoxPayCheckout( private val context : Context, private val token: String,val onPaymentResult: (PaymentResultObject) -> Unit){
     private lateinit var sharedPreferences : SharedPreferences
     private lateinit var editor : SharedPreferences.Editor
     private var environment = "test"
 
-    constructor(context: Context, token: String, onPaymentResult: (String) -> Unit, environment: String) : this(context, token, onPaymentResult) {
+    constructor(context: Context, token: String, onPaymentResult: (PaymentResultObject) -> Unit, environment: String) : this(context, token, onPaymentResult) {
         // Initialize or use the additionalParam here if needed
         Log.d("Additional parameter:", environment)
         this.environment = environment
@@ -38,7 +39,6 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
             this.environment = "test"
             editor.putString("environment","test")
         }
-
     }
 
     fun display() {
