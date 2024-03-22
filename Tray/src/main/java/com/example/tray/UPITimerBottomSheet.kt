@@ -20,6 +20,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModel
 import com.example.tray.databinding.FragmentUPITimerBottomSheetBinding
+import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -282,9 +283,9 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 //                        bottomSheet.show(parentFragmentManager, "SuccessBottomSheetWithDetails")
                         val callback =  SingletonClass.getInstance().getYourObject()
                         if(callback == null){
-                            Log.d("call back is null","Success")
+                            Log.d("call back is null","failed")
                         }else{
-                            callback.onPaymentResult("Success")
+                            callback.onPaymentResult(PaymentResultObject("Success"))
                         }
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
@@ -311,14 +312,11 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     } else if (status.contains("FAILED", ignoreCase = true)) {
 //                        val bottomSheet = PaymentFailureScreen()
 //                        bottomSheet.show(parentFragmentManager, "Payment Failure")
-
-
-                        val callback =  SingletonClass.getInstance().getYourObject()
+                        val callback = FailureScreenCallBackSingletonClass.getInstance().getYourObject()
                         if(callback == null){
-                            Log.d("call back is null","failed")
-                        }
-                        else{
-                            callback.onPaymentResult("Failure")
+                            Log.d("callback is null","PaymentFailedWithDetailsSheet")
+                        }else{
+                            callback.openFailureScreen()
                         }
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()

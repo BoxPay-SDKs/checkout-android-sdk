@@ -22,6 +22,7 @@ import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModel
 import com.example.tray.databinding.ActivityOtpscreenWebViewBinding
 import com.example.tray.interfaces.OnWebViewCloseListener
+import com.example.tray.paymentResult.PaymentResultObject
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -159,9 +160,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 //                        openActivity(successScreenFullReferencePath.toString(),this)
                         val callback =  SingletonClass.getInstance().getYourObject()
                         if(callback == null){
-                            Log.d("call back is null","failed")
+                            Log.d("call back is null","Success")
                         }else{
-                            callback.onPaymentResult("Success")
+                            callback.onPaymentResult(PaymentResultObject("Success"))
                         }
 
                     } else if (status.contains("PENDING", ignoreCase = true)) {
