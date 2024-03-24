@@ -27,6 +27,8 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
     private var environment = "test"
 
     constructor(context: Context, token: String, onPaymentResult: (PaymentResultObject) -> Unit, environment: String) : this(context, token, onPaymentResult) {
+        val sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
         // Initialize or use the additionalParam here if needed
         Log.d("Additional parameter:", environment)
         this.environment = environment
@@ -40,9 +42,10 @@ class BoxPayCheckout( private val context : Context, private val token: String,v
     }
 
     fun display() {
-        sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        editor = sharedPreferences.edit()
-        Log.d("environment variable",sharedPreferences.getString("environment","null").toString())
+        val sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
+        Log.d("environment variable",sharedPreferences.getString("environment","test").toString())
         putTransactionDetailsInSharedPreferences()
         Log.d("Checked","Executed minView Checkout")
         fetchShopperDetailsAndUpdateInSharedPreferences()

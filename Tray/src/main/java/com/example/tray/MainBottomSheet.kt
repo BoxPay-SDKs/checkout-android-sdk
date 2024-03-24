@@ -490,16 +490,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         getAllInstalledApps(packageManager)
 
 
+        val orderSummaryAdapter = OrderSummaryItemsAdapter(imagesUrls, items, prices)
+        binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
+
+
 
 
         updateTransactionAmountInSharedPreferences("₹" + transactionAmount.toString())
 
         showUPIOptions()
 
-
-        val orderSummaryAdapter = OrderSummaryItemsAdapter(imagesUrls, items, prices)
-        binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
 
         // Set click listeners
@@ -1185,7 +1186,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
     private fun getAndSetOrderDetails() {
 
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val url = "${Base_Session_API_URL}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
