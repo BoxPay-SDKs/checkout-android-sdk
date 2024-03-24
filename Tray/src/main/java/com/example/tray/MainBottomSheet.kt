@@ -90,9 +90,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     private var netBankingMethods = false
     private var overLayPresent = false
     private var items = mutableListOf<String>()
-    private var images = mutableListOf<Int>()
+    private var imagesUrls = mutableListOf<String>()
     private var prices = mutableListOf<String>()
-    private val Base_Session_API_URL = "https://test-apis.boxpay.tech/v0/checkout/sessions/"
+    private lateinit var Base_Session_API_URL : String
     var queue: RequestQueue? = null
     private lateinit var sharedPreferences: SharedPreferences
     private var callBackFunctions: CallBackFunctions? = null
@@ -460,6 +460,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         queue = Volley.newRequestQueue(requireContext())
 
+        val environmentFetched = sharedPreferences.getString("environment","null")
+        Log.d("environment is $environmentFetched","Add UPI ID")
+        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+
 
         fetchTransactionDetailsFromSharedPreferences()
         overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
@@ -493,7 +497,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         showUPIOptions()
 
 
-        val orderSummaryAdapter = OrderSummaryItemsAdapter(images, items, prices,requireContext())
+        val orderSummaryAdapter = OrderSummaryItemsAdapter(imagesUrls, items, prices)
         binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
@@ -595,7 +599,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
 
     private fun fetchAllPaymentMethods() {
-        val url = "https://test-apis.boxpay.tech/v0/checkout/sessions/${token}"
+        val url = "${Base_Session_API_URL}${token}"
 
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
@@ -605,6 +609,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 // Get the payment methods array
                 val paymentMethodsArray =
                     response.getJSONObject("configs").getJSONArray("paymentMethods")
+
+                val paymentDetailsObject = response.getJSONObject("paymentDetails")
+                val itemsArray = paymentDetailsObject.getJSONObject("order").getJSONArray("items")
+
+                for (i in 0 until itemsArray.length()) {
+                    val imageURL = itemsArray.getJSONObject(i).getString("imageUrl")
+                    Log.d("imageURL",imageURL)
+                    imagesUrls.add(imageURL)
+                }
 
                 // Filter payment methods based on type equal to "Wallet"
                 for (i in 0 until paymentMethodsArray.length()) {
@@ -1192,7 +1205,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 for (i in 0 until itemsArray.length()) {
                     val itemObject = itemsArray.getJSONObject(i)
                     items.add(itemObject.getString("itemName"))
-                    images.add(R.drawable.truly_madly_logo)
                     prices.add(itemObject.getString("amountWithoutTaxLocale"))
                     val quantity = itemObject.getInt("quantity")
                     totalQuantity += quantity

@@ -10,27 +10,21 @@ import com.example.tray.databinding.OrderSummaryItemBinding
 import com.squareup.picasso.Picasso
 
 class OrderSummaryItemsAdapter(
-    private val images: MutableList<Int>,
+    private val imagesUrls: MutableList<String>,
     private val items: MutableList<String>,
     private val prices: MutableList<String>,
-    private val context :  Context
 ) : RecyclerView.Adapter<OrderSummaryItemsAdapter.OrderSummaryViewHolder>() {
     inner class OrderSummaryViewHolder(private val binding: OrderSummaryItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
             binding.apply {
-
-                val sharedPreferences =
-                    context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-
-
-                val imageURL =sharedPreferences.getString("imageURL","null")
-                Log.d("imageURL",imageURL.toString())
+                Log.d("imageURL",imagesUrls[position])
                 Picasso.get()
-                    .load(imageURL)
+                    .load(imagesUrls[position])
                     .into(binding.itemImage)
-                itemImage.setImageResource(images[position])
-                itemPrice.text = "₹"+prices[position]+"/M"
+
+//                itemImage.setImageResource(images[position])
+                itemPrice.text = "₹"+prices[position]
                 itemName.text = items[position]
             }
         }
