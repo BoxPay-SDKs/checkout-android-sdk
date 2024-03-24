@@ -21,31 +21,25 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.util.Collections
 
-class BoxPayCheckout( private val context : Context, private val token: String,val onPaymentResult: (PaymentResultObject) -> Unit){
-    private lateinit var sharedPreferences : SharedPreferences
-    private lateinit var editor : SharedPreferences.Editor
-    private var environment = "test"
+class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: (PaymentResultObject) -> Unit, private val environment: String = "test") {
+    private var sharedPreferences: SharedPreferences =
+        context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+    private var editor: SharedPreferences.Editor = sharedPreferences.edit()
 
-    constructor(context: Context, token: String, onPaymentResult: (PaymentResultObject) -> Unit, environment: String) : this(context, token, onPaymentResult) {
-        val sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
+    init {
         // Initialize or use the additionalParam here if needed
         Log.d("Additional parameter:", environment)
-        this.environment = environment
 
-        if(environment != "test" && environment != "sandbox" && environment != "prod"){
-            editor.putString("environment",environment)
-        }else{
-            this.environment = "test"
-            editor.putString("environment","test")
+        if (environment != "test" && environment != "sandbox" && environment != "prod") {
+            editor.putString("environment", environment)
+        } else {
+            editor.putString("environment", "test")
         }
+        editor.apply()
     }
 
     fun display() {
-        val sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-
-        Log.d("environment variable",sharedPreferences.getString("environment","test").toString())
+        Log.d("environment variable",sharedPreferences.getString("environment","null").toString())
         putTransactionDetailsInSharedPreferences()
         Log.d("Checked","Executed minView Checkout")
         fetchShopperDetailsAndUpdateInSharedPreferences()
