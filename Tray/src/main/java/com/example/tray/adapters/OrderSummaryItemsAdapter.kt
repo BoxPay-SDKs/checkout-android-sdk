@@ -1,13 +1,16 @@
 package com.example.tray.adapters
 
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tray.databinding.OrderSummaryItemBinding
+import com.squareup.picasso.Picasso
 
 class OrderSummaryItemsAdapter(
-    private val images: MutableList<Int>,
+    private val imagesUrls: MutableList<String>,
     private val items: MutableList<String>,
     private val prices: MutableList<String>,
 ) : RecyclerView.Adapter<OrderSummaryItemsAdapter.OrderSummaryViewHolder>() {
@@ -15,8 +18,13 @@ class OrderSummaryItemsAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
             binding.apply {
-                itemImage.setImageResource(images[position])
-                itemPrice.text = "₹"+prices[position]+"/M"
+                Log.d("imageURL",imagesUrls[position])
+                Picasso.get()
+                    .load(imagesUrls[position])
+                    .into(binding.itemImage)
+
+//                itemImage.setImageResource(images[position])
+                itemPrice.text = "₹"+prices[position]
                 itemName.text = items[position]
             }
         }

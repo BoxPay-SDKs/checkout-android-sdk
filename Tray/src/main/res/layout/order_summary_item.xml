@@ -22,28 +22,28 @@
 
             <ImageView
                 android:id="@+id/itemImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/truly_madly_logo" />
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/textView13"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="6dp"
-                android:fontFamily="@font/poppins"
-                android:text="Recurring Bill Frequency: "
-                android:textColor="#010102"
-                android:textSize="10sp"
-                app:layout_constraintStart_toEndOf="@+id/itemImage"
-                app:layout_constraintTop_toBottomOf="@+id/textView14" />
+
+<!--            <TextView-->
+<!--                android:id="@+id/textView13"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginStart="10dp"-->
+<!--                android:layout_marginTop="6dp"-->
+<!--                android:fontFamily="@font/poppins"-->
+<!--                android:text="Recurring Bill Frequency: "-->
+<!--                android:textColor="#010102"-->
+<!--                android:textSize="10sp"-->
+<!--                app:layout_constraintStart_toEndOf="@+id/itemImage"-->
+<!--                app:layout_constraintTop_toBottomOf="@+id/textView14" />-->
 
             <TextView
                 android:id="@+id/textView14"
@@ -52,24 +52,24 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="6dp"
                 android:fontFamily="@font/poppins"
-                android:text="Recurring Bill Amount: "
+                android:text="Amount : "
                 android:textColor="#010102"
                 android:textSize="10sp"
                 app:layout_constraintStart_toEndOf="@+id/itemImage"
                 app:layout_constraintTop_toBottomOf="@+id/itemName" />
 
-            <TextView
-                android:id="@+id/textView15"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:fontFamily="@font/poppins_semibold"
-                android:text="Every Month"
-                android:textColor="#010102"
-                android:textSize="10sp"
-                app:layout_constraintBottom_toBottomOf="@+id/textView13"
-                app:layout_constraintStart_toEndOf="@+id/textView13"
-                app:layout_constraintTop_toTopOf="@+id/textView13" />
+<!--            <TextView-->
+<!--                android:id="@+id/textView15"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginEnd="10dp"-->
+<!--                android:fontFamily="@font/poppins_semibold"-->
+<!--                android:text="Every Month"-->
+<!--                android:textColor="#010102"-->
+<!--                android:textSize="10sp"-->
+<!--                app:layout_constraintBottom_toBottomOf="@+id/textView13"-->
+<!--                app:layout_constraintStart_toEndOf="@+id/textView13"-->
+<!--                app:layout_constraintTop_toTopOf="@+id/textView13" />-->
 
             <TextView
                 android:id="@+id/itemName"
@@ -94,6 +94,13 @@
                 app:layout_constraintBottom_toBottomOf="@+id/textView14"
                 app:layout_constraintStart_toEndOf="@+id/textView14"
                 app:layout_constraintTop_toTopOf="@+id/textView14" />
+
+            <View
+                android:id="@+id/blackLine"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:background="#D9D9D9"
+                app:layout_constraintBottom_toBottomOf="parent"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 

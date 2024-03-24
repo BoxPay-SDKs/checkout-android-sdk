@@ -166,7 +166,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         // Inflate the layout for this fragment
         binding = FragmentAddCardBottomSheetBinding.inflate(inflater, container, false)
         sharedPreferences =
@@ -699,7 +698,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 Log.d("bottomSheetBehavior is null", "check here")
 
 
-            val screenHeight = resources.displayMetrics.heightPixels
+            val screenHeight = requireContext().resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.7 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 

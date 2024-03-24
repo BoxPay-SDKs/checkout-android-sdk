@@ -21,5 +21,7 @@ class MainActivity : AppCompatActivity() {
         } catch (e: ClassNotFoundException) {
             e.printStackTrace()
         }
+//       val intent = Intent(this, MerchantDetailsScreen ::class.java)
+//        startActivity(intent)
     }
 }
