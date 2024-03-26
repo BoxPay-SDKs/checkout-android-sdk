@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
@@ -57,6 +58,11 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        unregisterReceiver()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -164,7 +170,6 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
                 val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
                 binding.sampleTextView.text = message.toString()
 
-                unregisterReceiver()
 
 
                 Log.d("message fetched Example", message.toString())

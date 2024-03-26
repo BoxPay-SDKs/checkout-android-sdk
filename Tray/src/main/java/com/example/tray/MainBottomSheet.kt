@@ -109,7 +109,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         // Handle the back button press here
         // Dismiss the dialog when the back button is pressed
         removeOverlayFromActivity()
-        callFunctionInActivity()
+        val callback =  SingletonClass.getInstance().getYourObject()
+        if(callback == null){
+            Log.d("call back is null","Success")
+        }else{
+            callback.onPaymentResult(PaymentResultObject("Success"))
+        }
+//        callFunctionInActivity()
         dismiss()
     }
 
@@ -121,6 +127,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         // Notify ViewModel to hide the overlay when dismissed
         Log.d("Overlay", "Bottom sheet dismissed")
         overlayViewModel.setShowOverlay(false)
+        val callback =  SingletonClass.getInstance().getYourObject()
+        if(callback == null){
+            Log.d("call back is null","Success")
+        }else{
+            callback.onPaymentResult(PaymentResultObject("Failed"))
+        }
         super.onDismiss(dialog)
     }
 
@@ -523,7 +535,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
         binding.backButton.setOnClickListener() {
             removeOverlayFromActivity()
-            callFunctionInActivity()
+//            callFunctionInActivity()
+            val callback =  SingletonClass.getInstance().getYourObject()
+            if(callback == null){
+                Log.d("call back is null","Success")
+            }else{
+                callback.onPaymentResult(PaymentResultObject("Success"))
+            }
             dismiss()
         }
         var upiOptionsShown = true
@@ -1139,6 +1157,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
                             dismiss()
+                            val callback =  SingletonClass.getInstance().getYourObject()
+                            if(callback == null){
+                                Log.d("call back is null","Success")
+                            }else{
+                                callback.onPaymentResult(PaymentResultObject("Success"))
+                            }
                         }
                     }
                 }

@@ -67,8 +67,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-        val payment = PaymentResultObject("Piyush")
-        payment.result
+
 
 
         val environmentFetched = sharedPreferences.getString("environment","null")
@@ -87,6 +86,10 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 binding.imageView3.setImageResource(0)
                 checked = false
             }
+        }
+        binding.textView2.setOnClickListener(){
+            val bottomSheet = OTPBottomSheet()
+            bottomSheet.show(parentFragmentManager,"OTPBottomSheet")
         }
 
 

@@ -219,6 +219,4 @@ import org.json.JSONObject
         val jsonStr = gson.toJson(jsonObject)
         Log.d("Request Body Check", jsonStr)
     }
-
-
 }

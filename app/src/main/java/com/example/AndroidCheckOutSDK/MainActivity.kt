@@ -26,11 +26,11 @@ class MainActivity : AppCompatActivity() {
 //        } catch (e: ClassNotFoundException) {
 //            e.printStackTrace()
 //        }
-////       val intent = Intent(this, MerchantDetailsScreen ::class.java)
-////        startActivity(intent)
+       val intent = Intent(this, MerchantDetailsScreen ::class.java)
+        startActivity(intent)
 
-        val checkout = BoxPayCheckout(this,"c472cb28-77d1-4d57-ad52-dfefc70d8015",::onPaymentResultCallback)
-        checkout.display()
+//        val checkout = BoxPayCheckout(this,"c472cb28-77d1-4d57-ad52-dfefc70d8015",::onPaymentResultCallback)
+//        checkout.display()
     }
     fun onPaymentResultCallback(result : PaymentResultObject){
         if(result.result == "Success"){

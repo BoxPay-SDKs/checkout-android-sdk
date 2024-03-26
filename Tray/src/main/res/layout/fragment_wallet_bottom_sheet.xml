@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bottom_sheet_bg">
+
     <FrameLayout
         android:id="@+id/frameLayout1"
         android:layout_width="match_parent"
@@ -100,6 +101,7 @@
                         android:background="@drawable/edittext_bg"
                         android:iconifiedByDefault="false"
                         android:queryBackground="@null"
+                        android:textColor="#000000"
                         android:queryHint="Search for wallets"
                         android:searchIcon="@drawable/searchicon"
                         app:layout_constraintEnd_toEndOf="parent"
