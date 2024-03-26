@@ -389,7 +389,7 @@
                                     app:layout_constraintBottom_toBottomOf="@+id/textView21"
                                     app:layout_constraintEnd_toStartOf="@+id/textView21"
                                     app:layout_constraintTop_toTopOf="@+id/textView21"
-                                    app:srcCompat="@drawable/upis_logo_main_bottom_sheet" />
+                                    app:srcCompat="@drawable/upilogos__1_" />
 
                                 <TextView
                                     android:id="@+id/textView21"
