@@ -30,6 +30,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import coil.decode.SvgDecoder
+import coil.load
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -49,6 +51,7 @@ import com.google.gson.GsonBuilder
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.BalloonCenterAlign
 import com.skydoves.balloon.createBalloon
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -189,7 +192,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         3 -> popularWalletImageView4
                         else -> null
                     }
-                    imageView?.setImageResource(walletDetail.walletImage)
+
+                    imageView?.load(walletDetail.walletImage){
+                        decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
+                        size(90, 90)
+                    }
 
                     getPopularTextViewByNum(index + 1).text =
                         walletDetailsOriginal[index].walletName
@@ -378,7 +385,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
         val environmentFetched = sharedPreferences.getString("environment","null")
         Log.d("environment is $environmentFetched","Add UPI ID")
-        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
         walletDetailsOriginal = arrayListOf()
@@ -561,7 +568,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     val paymentMethod = paymentMethodsArray.getJSONObject(i)
                     if (paymentMethod.getString("type") == "Wallet") {
                         val walletName = paymentMethod.getString("title")
-                        val walletImage = R.drawable.wallet_sample_logo
+                        val walletImage = "https://checkout.boxpay.in"+paymentMethod.getString("logoUrl")
                         val walletBrand = paymentMethod.getString("brand")
                         val walletInstrumentTypeValue =
                             paymentMethod.getString("instrumentTypeValue")
@@ -883,7 +890,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
@@ -910,7 +917,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }

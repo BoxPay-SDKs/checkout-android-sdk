@@ -175,7 +175,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         val environmentFetched = sharedPreferences.getString("environment","null")
         Log.d("environment is $environmentFetched","Add UPI ID")
-        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
 
 
         fetchTransactionDetailsFromSharedPreferences()
@@ -1024,7 +1024,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
@@ -1041,7 +1041,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
@@ -1068,8 +1068,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             binding.textView7.text = "Invalid Validity"
             return ""
         }
-
     }
+
 
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()

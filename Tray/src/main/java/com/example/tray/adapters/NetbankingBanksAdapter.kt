@@ -1,7 +1,7 @@
 package com.example.tray.adapters
 
 import android.content.Context
-import android.graphics.Color
+
 import android.os.Handler
 import android.util.Log
 import android.view.Gravity
@@ -9,22 +9,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.Filter
-import android.widget.Filterable
 import android.widget.PopupWindow
 import android.widget.TextView
-import androidx.appcompat.widget.TooltipCompat
-import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
+import coil.decode.SvgDecoder
+import coil.load
 import com.example.tray.R
 import com.example.tray.databinding.NetbankingBanksItemBinding
 import com.example.tray.dataclasses.NetbankingDataClass
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
-import kotlinx.coroutines.newSingleThreadContext
-import java.util.Locale
+import java.io.InputStream
 
 
 class NetbankingBanksAdapter(
@@ -48,7 +44,37 @@ class NetbankingBanksAdapter(
                 } else {
                     bankNameTextView.text = bankName // You were missing this assignment
                 }
-                bankLogo.setImageResource(bankImage)
+
+                Log.d("imageURL",banksDetails[position].bankImage)
+//                Picasso.get()
+//                    .load(banksDetails[position].bankImage)
+//                    .placeholder(R.drawable.netbanking_sample_logo)
+//                    .into(binding.bankLogo)
+
+
+//                val options = RequestOptions()
+//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                    .skipMemoryCache(true) // Skip caching the placeholder image
+//                    .placeholder(R.drawable.netbanking_sample_logo) // Placeholder image resource
+//
+//                Glide.with(context)
+//                    .`as`(PictureDrawable::class.java)
+//                    .load("https://checkout.boxpay.in/assets/Icons/Bank%20Icons/OrientalBankOfCommerce.svg")
+//                    .apply(options)
+//                    .into(binding.bankLogo)
+
+//                imageView.setImageResource(R.drawable.)
+
+
+                binding.bankLogo.load(bankImage){
+                    decoderFactory{result,options,_ -> SvgDecoder(result.source,options)}
+                    size(80, 80)
+                }
+
+
+
+
+
 
 
                 radioButton.setBackgroundResource(
@@ -94,6 +120,7 @@ class NetbankingBanksAdapter(
         }
 
     }
+
 
     private fun showTooltip(anchorView: View, text: String) {
         // Inflate your tooltip layout
