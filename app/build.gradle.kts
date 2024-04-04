@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.AndroidCheckOutSDK"
-    compileSdk = 34
+    compileSdk = 33
 
     defaultConfig {
         applicationId = "com.example.AndroidCheckOutSDK"

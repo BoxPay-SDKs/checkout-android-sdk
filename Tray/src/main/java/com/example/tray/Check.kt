@@ -100,7 +100,7 @@ import org.json.JSONObject
     }
 
      private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,true)
         boxPayCheckout.display()
     }
 
@@ -117,77 +117,71 @@ import org.json.JSONObject
      }
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/gZOlwkSlVe/sessions"
+        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/gG4azzRSLu/sessions"
         val jsonData = JSONObject("""{
-    "context": {
+      "context": {
         "countryCode": "IN",
-        "legalEntity": {
-            "code": "demo_merchant"
-        },
+        "legalEntity": {"code": "demo_merchant"},
         "orderId": "test12"
-    },
-    "paymentType": "S",
-    "money": {
-        "amount": "30",
-        "currencyCode": "INR"
-    },
-    "descriptor": {
-        "line1": "Some descriptor"
-    },
-    "billingAddress": {
+      },
+      "paymentType": "S",
+      "money": {"amount": "30", "currencyCode": "INR"},
+      "descriptor": {"line1": "Some descriptor"},
+      "billingAddress": {
         "address1": "first address line",
-            "address2": "second address line",
-            "city": "Faridabad",
-            "state": "Haryana",
-            "countryCode": "IN",
-            "postalCode": "121004"
-    },
-    "shopper": {
+        "address2": "second address line",
+        "city": "Faridabad",
+        "state": "Haryana",
+        "countryCode": "IN",
+        "postalCode": "121004"
+      },
+      "shopper": {
         "firstName": "test",
         "lastName": "last",
         "email": "test123@gmail.com",
         "uniqueReference": "x123y",
         "phoneNumber": "911234567890",
         "deliveryAddress": {
-            "address1": "first line",
-        "address2": "second line",
-        "city": "Mumbai",
-        "state": "Maharashtra",
-        "countryCode": "IN",
-        "postalCode": "123456"
+          "address1": "first line",
+          "address2": "second line",
+          "city": "Mumbai",
+          "state": "Maharashtra",
+          "countryCode": "IN",
+          "postalCode": "123456"
         }
-    },
-    "order": {
-        "originalAmount":10,
+      },
+      "order": {
+        "originalAmount": 10,
         "shippingAmount": 10,
         "voucherCode": "VOUCHER",
         "taxAmount": 10,
         "totalAmountWithoutTax": 20,
         "items": [
-            {
-                "id":"test",
-               "itemName":"test_name",
-               "description":"testProduct",
-               "quantity":1,
-               "manufacturer":null,
-               "brand":null,
-               "color":null,
-               "productUrl":null,
-               "imageUrl":"https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-               "categories":null,
-               "amountWithoutTax":10,
-               "taxAmount":10,
-               "taxPercentage":null,
-               "discountedAmount":null,
-               "amountWithoutTaxLocale":"10",
-               "amountWithoutTaxLocaleFull":"10"
-            }
+          {
+            "id": "test",
+            "itemName": "test_name",
+            "description": "testProduct",
+            "quantity": 1,
+            "manufacturer": null,
+            "brand": null,
+            "color": null,
+            "productUrl": null,
+            "imageUrl":
+                "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+            "categories": null,
+            "amountWithoutTax": 10,
+            "taxAmount": 10,
+            "taxPercentage": null,
+            "discountedAmount": null,
+            "amountWithoutTaxLocale": "10",
+            "amountWithoutTaxLocaleFull": "10"
+          }
         ]
-    },
-    "statusNotifyUrl": "https://www.boxpay.tech",
-    "frontendReturnUrl": "https://www.boxpay.tech",
-    "frontendBackUrl": "https://www.boxpay.tech"
-}""")
+      },
+      "statusNotifyUrl": "https://www.boxpay.tech",
+      "frontendReturnUrl": "https://www.boxpay.tech",
+      "frontendBackUrl": "https://www.boxpay.tech"
+    }""")
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
                 logJsonObject(response)
@@ -208,7 +202,7 @@ import org.json.JSONObject
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer XyUQOoLDgHlgxAojYhY22ev4P6icr94XIMkxrISZFQnAZIOueM4WbFAWGDc0Q6jPcWBkCXfXWpvRlHoQ5fl20d"
+                headers["Authorization"] =  "Bearer 67mNiuo6eftyAoLUfipZGmfSiZhyiXwa5nPTC7zhfwmmhEsLaqBXzZg5ivn6haNWlmYAoYKxaaANreuyGZ08i2 "
                 return headers
             }
         }

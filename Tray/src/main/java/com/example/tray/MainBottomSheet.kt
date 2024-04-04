@@ -63,9 +63,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
-import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
@@ -213,7 +211,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     private fun startFunctionCalls() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
-                fetchStatusAndReason("https://test-apis.boxpay.tech/v0/checkout/sessions/${token}/status")
+                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 5 seconds
                 delay(4000)
             }
@@ -472,9 +470,22 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         queue = Volley.newRequestQueue(requireContext())
 
+
+//        val sdkClass12 =
+//            Class.forName("io.supercharge:shimmerlayout") // Replace with the actual package and class name of your SDK
+//
+//        val method: Method = sdkClass.getMethod("getSDKVersion")
+//        val sdkVersion = method.invoke(null) as String
+//        Log.d("SDK VERSION",sdkVersion)
+
+
         val environmentFetched = sharedPreferences.getString("environment","null")
         Log.d("environment is $environmentFetched","Add UPI ID")
-        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
+
+
+
+
 
 
         fetchTransactionDetailsFromSharedPreferences()
@@ -486,9 +497,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             }
         })
         overlayViewModel.setShowOverlay(true)
-
-
-
 
 
 
@@ -619,6 +627,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
     private fun fetchAllPaymentMethods() {
         val url = "${Base_Session_API_URL}${token}"
+        Log.d("Base URL",url)
 
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
@@ -1224,6 +1233,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 val shippingCharges = orderObject.getString("shippingAmount")
                 val taxes = orderObject.getString("taxAmount")
 
+
+
                 transactionAmount = totalAmount
                 val itemsArray = orderObject.getJSONArray("items")
                 var totalQuantity = 0
@@ -1234,6 +1245,46 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                     val quantity = itemObject.getInt("quantity")
                     totalQuantity += quantity
                 }
+
+
+
+                val merchantDetailsObject = response.getJSONObject("merchantDetails")
+                val checkoutThemeObject = merchantDetailsObject.getJSONObject("checkoutTheme")
+
+                val sharedPreferences =
+                    requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+                val editor = sharedPreferences.edit()
+
+
+                logJsonObject(checkoutThemeObject)
+
+
+                editor.putString("headerColor",checkoutThemeObject.getString("headerColor"))
+                Log.d("merchantDetails headerColor",checkoutThemeObject.getString("headerColor"))
+
+
+                editor.putString("primaryButtonColor",checkoutThemeObject.getString("primaryButtonColor"))
+                Log.d("merchantDetails buttonColor",checkoutThemeObject.getString("primaryButtonColor"))
+
+
+                editor.putString("buttonTextColor",checkoutThemeObject.getString("buttonTextColor"))
+
+
+
+                editor.apply()
+
+
+                Log.d("merchantDetails headerColor",sharedPreferences.getString("headerColor","null").toString())
+                Log.d("merchantDetails buttonTextColor",sharedPreferences.getString("buttonTextColor","null").toString())
+                Log.d("merchantDetails buttonColor",sharedPreferences.getString("primaryButtonColor","null").toString())
+
+//                val color = Color.parseColor(checkoutThemeObject.getString("headerColor"))
+
+//                binding.linearLayoutMain.setBackgroundColor(color)
+//                binding.constraintLayout123.setBackgroundColor(color)
+
+
+
 
 
                 Log.d("order details subtotal", originalAmount)
@@ -1300,6 +1351,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
+
+
         editor.putString("transactionAmount", transactionAmountArgs)
         editor.apply()
     }
@@ -1312,6 +1365,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             activity.removeLoadingAndEnabledProceedButton()
         }
     }
+
+
+
 
 
     companion object {

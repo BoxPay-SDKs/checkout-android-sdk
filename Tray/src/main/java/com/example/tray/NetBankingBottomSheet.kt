@@ -30,6 +30,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import coil.decode.SvgDecoder
+import coil.load
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -172,7 +174,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     val paymentMethod = paymentMethodsArray.getJSONObject(i)
                     if (paymentMethod.getString("type") == "NetBanking") {
                         val bankName = paymentMethod.getString("title")
-                        val bankImage = R.drawable.wallet_sample_logo
+                        val bankImage = "https://sandbox-checkout.boxpay.tech"+paymentMethod.getString("logoUrl")
+                        Log.d("Logo url : ",bankImage)
                         val bankBrand = paymentMethod.getString("brand")
                         val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
                         banksDetailsOriginal.add(
@@ -243,7 +246,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
         val environmentFetched = sharedPreferences.getString("environment","null")
         Log.d("environment is $environmentFetched","Add UPI ID")
-        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
 
@@ -437,7 +440,11 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         3 -> popularBanksImageView4
                         else -> null
                     }
-                    imageView?.setImageResource(bankDetail.bankImage)
+
+                    imageView?.load(bankDetail.bankImage){
+                        decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
+                        size(100, 100)
+                    }
 
                     getPopularTextViewByNum(index + 1).text =
                         banksDetailsOriginal[index].bankName
@@ -748,7 +755,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
@@ -775,7 +782,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }

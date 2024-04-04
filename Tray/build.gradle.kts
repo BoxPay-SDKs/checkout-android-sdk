@@ -4,15 +4,21 @@ plugins {
     id("maven-publish")
 }
 
+
+
+
 android {
     namespace = "com.example.tray"
-    compileSdk = 34
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 24
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
+
+
+
 
     buildTypes {
         release {
@@ -35,6 +41,7 @@ android {
     }
 }
 
+
 dependencies {
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
@@ -55,6 +62,8 @@ dependencies {
     implementation ("io.supercharge:shimmerlayout:2.1.0")
     implementation ("com.github.skydoves:balloon:1.4.7")
     implementation ("com.squareup.picasso:picasso:2.71828")
+    implementation("io.coil-kt:coil:2.5.0")
+    implementation("io.coil-kt:coil-svg:2.4.0")
 
 }
 
@@ -76,8 +85,6 @@ allprojects{
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://www.jitpack.io")
-            credentials { username = "jp_l40tne0p9r7vrirj2rus5l3tmo" }
-        }
+        maven { url = uri("https://www.jitpack.io") }
     }
 }

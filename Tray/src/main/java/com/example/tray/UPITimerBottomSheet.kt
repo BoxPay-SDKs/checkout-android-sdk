@@ -39,6 +39,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var virtualPaymentAddress: String? = null
     var isBottomSheetShown = false
+    private lateinit var Base_Session_API_URL : String
     val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -149,6 +150,17 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                 sharedViewModel.bottomSheetDismissed()
             }
         }
+
+
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
+
+        val environmentFetched = sharedPreferences.getString("environment","null")
+        Log.d("environment is $environmentFetched","Add UPI ID")
+        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
+
         fetchTransactionDetailsFromSharedPreferences()
 
         binding.UPIIDTextView.text = "UPI ID : ${virtualPaymentAddress}"
@@ -230,7 +242,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 
             override fun onTick(millisUntilFinished: Long) {
                 // Update TextView with the remaining time
-                fetchStatusAndReason("https://test-apis.boxpay.tech/v0/checkout/sessions/${token}/status")
+                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
             }
 
             override fun onFinish() {

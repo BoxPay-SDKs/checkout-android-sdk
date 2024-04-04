@@ -3,8 +3,10 @@ package com.example.tray
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -79,7 +81,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         val sharedPreferences = this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val environmentFetched = sharedPreferences.getString("environment","null")
         Log.d("environment is $environmentFetched","Add UPI ID")
-        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
 
         requestQueue = Volley.newRequestQueue(this)
         val receivedUrl = intent.getStringExtra("url")
@@ -104,6 +106,38 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 Log.d("page failed loading",error.toString())
             }
         }
+
+//        Handler().postDelayed({
+//
+//
+//            binding.webViewForOtpValidation.addJavascriptInterface(WebAppInterface(this), "Android")
+//            Log.d("OTP Validation","postDelayed Called")
+//            val otp = "123456"
+//            val jsCode = """
+//
+//            var otpField = document.querySelector('input[type="text"][autocomplete="one-time-code"], input[type="number"][autocomplete="one-time-code"], input[type="tel"][autocomplete="one-time-code"]');
+//            Android.logStatement("Inside OTP Field")
+//            if (otpField) {
+//            Android.showToast('OTP field filled successfully');
+//                otpField.value = '$otp';
+//                // Notify that OTP field was successfully filled
+//            } else {
+//                // Notify that OTP field was not found
+//                Android.showToast('OTP field not found');
+//            }
+//        """.trimIndent()
+//
+//
+//
+//            binding.webViewForOtpValidation.evaluateJavascript(jsCode) { value ->
+//                // Check for JavaScript errors
+//                if (value != null && value.startsWith("throw")) {
+//                    Log.e("JavaScript Error", value)
+//                }else{
+//                    Log.d("OTP Validation","Successful")
+//                }
+//            }
+//        }, 3000)
     }
     override fun onBackPressed() {
         if (!isBottomSheetShown) {
@@ -119,11 +153,14 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     fun setPreviousBottomSheet(bottomSheet: Context?) {
         previousBottomSheet = bottomSheet
     }
+
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
         Log.d("Request Body Fetch Status", jsonStr)
     }
+
+
 
 
     private fun fetchStatusAndReason(url: String) {
@@ -265,6 +302,22 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             }
         } else {
             // Log an error or handle the case where the context is not an AppCompatActivity
+        }
+    }
+
+    class WebAppInterface(private val mContext: Context) {
+        @JavascriptInterface
+        fun showToast(message: String) {
+            Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show()
+        }
+
+
+
+
+
+        @JavascriptInterface
+        fun logStatement(message: String){
+            Log.d("OTP Validation",message)
         }
     }
 }

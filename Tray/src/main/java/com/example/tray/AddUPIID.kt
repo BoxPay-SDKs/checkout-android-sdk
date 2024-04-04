@@ -21,7 +21,6 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
@@ -31,12 +30,12 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.FragmentAddUPIIDBinding
-import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
+import java.lang.reflect.Method
 import java.util.Locale
 import java.util.TimeZone
 
@@ -72,7 +71,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
         val environmentFetched = sharedPreferences.getString("environment","null")
         Log.d("environment is $environmentFetched","Add UPI ID")
-        Base_Session_API_URL = "https://${environmentFetched}-apis.boxpay.tech/v0/checkout/sessions/"
+        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
 
         var checked = false
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
@@ -91,8 +90,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             val bottomSheet = OTPBottomSheet()
             bottomSheet.show(parentFragmentManager,"OTPBottomSheet")
         }
-
-
 
 
 
@@ -126,7 +123,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 if (textNow.isNotBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = true
                     binding.proceedButton.isEnabled = true
-                    binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+                    binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
                     binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
                     binding.ll1InvalidUPI.visibility = View.GONE
                     binding.textView6.setTextColor(
@@ -466,7 +463,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
 //        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))

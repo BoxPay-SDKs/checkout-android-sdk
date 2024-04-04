@@ -67,7 +67,8 @@ class MerchantDetailsScreen : AppCompatActivity() {
             Log.d("token fetched from merchant details screen",token)
             binding.button.isEnabled = false
             binding.button.text = "Please Wait"
-            val checkout = BoxPayCheckout(this,token,::onPaymentResult,selectedEnvironment.toString())
+            Log.d("selectedEnvironment",selectedEnvironment.toString())
+            val checkout = BoxPayCheckout(this,token,::onPaymentResult,true)
             checkout.display()
         }
     }

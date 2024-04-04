@@ -8,11 +8,14 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
+import coil.decode.SvgDecoder
+import coil.load
 import com.example.tray.R
 import com.example.tray.databinding.WalletItemBinding
 import com.example.tray.dataclasses.WalletDataClass
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
+import com.squareup.picasso.Picasso
 
 class WalletAdapter(
     private val walletDetails: ArrayList<WalletDataClass>,
@@ -35,7 +38,10 @@ class WalletAdapter(
                 } else {
                     walletNameTextView.text = walletName
                 }
-                walletLogo.setImageResource(walletImage)
+                binding.walletLogo.load(walletImage){
+                    decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
+                    size(80, 80)
+                }
 
 
                 radioButton.setBackgroundResource(
