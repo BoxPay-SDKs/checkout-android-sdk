@@ -62,7 +62,7 @@ dependencies {
     implementation ("io.supercharge:shimmerlayout:2.1.0")
     implementation ("com.github.skydoves:balloon:1.4.7")
     implementation ("com.squareup.picasso:picasso:2.71828")
-    implementation("io.coil-kt:coil:2.5.0")
+    implementation("io.coil-kt:coil:2.4.0")
     implementation("io.coil-kt:coil-svg:2.4.0")
 
 }
