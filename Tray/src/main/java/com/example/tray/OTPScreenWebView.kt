@@ -110,33 +110,32 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 //        Handler().postDelayed({
 //
 //
-//            binding.webViewForOtpValidation.addJavascriptInterface(WebAppInterface(this), "Android")
-//            Log.d("OTP Validation","postDelayed Called")
-//            val otp = "123456"
-//            val jsCode = """
-//
-//            var otpField = document.querySelector('input[type="text"][autocomplete="one-time-code"], input[type="number"][autocomplete="one-time-code"], input[type="tel"][autocomplete="one-time-code"]');
-//            Android.logStatement("Inside OTP Field")
-//            if (otpField) {
-//            Android.showToast('OTP field filled successfully');
-//                otpField.value = '$otp';
-//                // Notify that OTP field was successfully filled
-//            } else {
-//                // Notify that OTP field was not found
-//                Android.showToast('OTP field not found');
-//            }
-//        """.trimIndent()
-//
-//
-//
-//            binding.webViewForOtpValidation.evaluateJavascript(jsCode) { value ->
-//                // Check for JavaScript errors
-//                if (value != null && value.startsWith("throw")) {
-//                    Log.e("JavaScript Error", value)
-//                }else{
-//                    Log.d("OTP Validation","Successful")
-//                }
-//            }
+            binding.webViewForOtpValidation.addJavascriptInterface(WebAppInterface(this), "Android")
+            Log.d("OTP Validation","postDelayed Called")
+            val otp = "123456"
+            val jsCode = """
+            var otpField = document.querySelector('input[type="text"][autocomplete="one-time-code"], input[type="number"][autocomplete="one-time-code"], input[type="tel"][autocomplete="one-time-code"]');
+            Android.logStatement("Inside OTP Field")
+            if (otpField) {
+            Android.showToast('OTP field filled successfully');
+                otpField.value = '$otp';
+                // Notify that OTP field was successfully filled
+            } else {
+                // Notify that OTP field was not found
+                Android.showToast('OTP field not found');
+            }
+        """.trimIndent()
+
+
+
+            binding.webViewForOtpValidation.evaluateJavascript(jsCode) { value ->
+                // Check for JavaScript errors
+                if (value != null && value.startsWith("throw")) {
+                    Log.e("JavaScript Error", value)
+                }else{
+                    Log.d("OTP Validation","Successful")
+                }
+            }
 //        }, 3000)
     }
     override fun onBackPressed() {

@@ -18,8 +18,9 @@ import com.example.tray.databinding.ActivityCheckBinding
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
+import kotlin.reflect.KParameter
 
- class Check : AppCompatActivity() {
+class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
     private var successScreenFullReferencePath : String ?= null
     private var tokenFetchedAndOpen = false
@@ -31,7 +32,6 @@ import org.json.JSONObject
 
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         makePaymentRequest(this)
 
         binding.textView6.text = "Generating Token Please wait..."
@@ -99,25 +99,29 @@ import org.json.JSONObject
         tokenFetchedAndOpen = true
     }
 
+
      private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,true)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,false)
         boxPayCheckout.display()
     }
 
-     fun onPaymentResultCallback(result : PaymentResultObject){
-         if(result.result == "Success"){
-             Log.d("onPaymentResultCallback","Success")
-             val intent = Intent(this,SuccessScreenForTesting :: class.java)
-             startActivity(intent)
-         }else{
-             Log.d("onPaymentResultCallback","Failure")
-             val intent = Intent(this,FailureScreenForTesting :: class.java)
-             startActivity(intent)
-         }
-     }
+
+    fun onPaymentResultCallback(result : PaymentResultObject) {
+        if(result.status == "Success"){
+            Log.d("onPaymentResultCallback","Success")
+            val intent = Intent(this,SuccessScreenForTesting :: class.java)
+            startActivity(intent)
+        }else{
+            Log.d("onPaymentResultCallback","Failure")
+            val intent = Intent(this,FailureScreenForTesting :: class.java)
+            startActivity(intent)
+        }
+    }
+
+
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/gG4azzRSLu/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/hK3JrVc6ys/sessions"
         val jsonData = JSONObject("""{
       "context": {
         "countryCode": "IN",
@@ -182,6 +186,7 @@ import org.json.JSONObject
       "frontendReturnUrl": "https://www.boxpay.tech",
       "frontendBackUrl": "https://www.boxpay.tech"
     }""")
+
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
                 logJsonObject(response)
@@ -202,7 +207,7 @@ import org.json.JSONObject
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer 67mNiuo6eftyAoLUfipZGmfSiZhyiXwa5nPTC7zhfwmmhEsLaqBXzZg5ivn6haNWlmYAoYKxaaANreuyGZ08i2 "
+                headers["Authorization"] =  "Bearer afcGgCv6mOVIIpnFPWBL44RRciVU8oMteV5ZhC2nwjjjuw8z0obKMjdK8ShcwLOU6uRNjQryLKl1pLAsLAXSI "
                 return headers
             }
         }

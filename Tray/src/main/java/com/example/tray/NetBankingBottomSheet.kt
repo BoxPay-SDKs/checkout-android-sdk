@@ -105,6 +105,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             val percentageOfScreenHeight = 0.7 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
+
 //        // Adjust the height of the bottom sheet content view
 //        val layoutParams = bottomSheetContent.layoutParams
 //        layoutParams.height = desiredHeight
@@ -288,6 +289,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         })
 
 
+
         liveDataPopularBankSelectedOrNot.observe(this, Observer {
             if (it) {
                 allBanksAdapter.deselectSelectedItem()
@@ -295,6 +297,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 unselectItemsInPopularLayout()
             }
         })
+
         allBanksAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
             if (checkPositionObserved == null) {
                 disableProceedButton()

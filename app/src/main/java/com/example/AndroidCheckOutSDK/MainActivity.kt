@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 //        checkout.display()
     }
     fun onPaymentResultCallback(result : PaymentResultObject){
-        if(result.result == "Success"){
+        if(result.status == "Success"){
             Log.d("onPaymentResultCallback","Success")
             val intent = Intent(this, SuccessScreenForTesting :: class.java)
             startActivity(intent)
