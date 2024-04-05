@@ -19,7 +19,7 @@ class TestingPurpose : AppCompatActivity() {
          // 5000 milliseconds = 5 seconds
     }
     fun onPaymentResultCallback(result : PaymentResultObject){
-        if(result.result == "Success"){
+        if(result.status == "Success"){
             Log.d("onPaymentResultCallback","Success")
             val intent = Intent(this,SuccessScreenForTesting :: class.java)
             startActivity(intent)

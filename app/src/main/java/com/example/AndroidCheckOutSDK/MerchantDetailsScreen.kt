@@ -74,11 +74,11 @@ class MerchantDetailsScreen : AppCompatActivity() {
     }
 
     fun onPaymentResult(result : PaymentResultObject){
-        if(result.result == "Success"){
-            Log.d("Payment Result = ",result.result.toString())
+        if(result.status == "Success"){
+            Log.d("Payment Result = ",result.status.toString())
             binding.button.setText("Payment has been Completed. please use another token")
         }else{
-            Log.d("Payment Result else condition = ",result.result.toString())
+            Log.d("Payment Result else condition = ",result.status.toString())
             binding.button.isEnabled = true
             binding.button.text = "Proceed"
         }

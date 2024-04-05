@@ -21,7 +21,7 @@ import java.net.InetAddress
 import java.net.NetworkInterface
 import java.util.Collections
 
-class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: (PaymentResultObject) -> Unit, private val sandboxEnabled: Boolean = false) {
+class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: (PaymentResultObject) -> Unit, private val sandboxEnabled: Boolean = false){
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
@@ -31,8 +31,8 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             editor.putString("environment", "sandbox-")
             this.environment = "sandbox-"
         }else{
-            editor.putString("environment","")
-            this.environment = ""
+            editor.putString("environment","test-")
+            this.environment = "test-"
         }
         editor.apply()
     }
