@@ -33,7 +33,6 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
             if (SmsRetriever.SMS_RETRIEVED_ACTION == intent.action) {
                 val extras = intent.extras
                 val smsRetrieverStatus = extras?.get(SmsRetriever.EXTRA_STATUS) as Status
-
                 when (smsRetrieverStatus.statusCode) {
                     CommonStatusCodes.SUCCESS -> {
                         // Get consent intent

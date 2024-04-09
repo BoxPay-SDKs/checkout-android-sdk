@@ -1,5 +1,6 @@
 package com.example.tray
 
+import DismissViewModel
 import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Context
@@ -28,6 +29,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.android.volley.VolleyError
@@ -48,6 +50,7 @@ import java.util.Locale
 
 internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentAddCardBottomSheetBinding
+    private lateinit var viewModel: DismissViewModel
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
     private lateinit var Base_Session_API_URL : String
@@ -156,9 +159,15 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+
         val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
         mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        Log.d("dismissViewModel","Add card dismiss called Works fine")
+        viewModel.onChildDismissed()
         dismiss()
+    }
+    private fun dismissMainBottomSheet(){
+
     }
 
 
@@ -172,6 +181,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
+
+
+
+        viewModel = ViewModelProvider(this).get(DismissViewModel::class.java)
 
         val environmentFetched = sharedPreferences.getString("environment","null")
         Log.d("environment is $environmentFetched","Add UPI ID")
@@ -680,6 +693,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
         (parentFragment as? MainBottomSheet)?.removeOverlayFromCurrentBottomSheet()
+        Log.d("dismissViewModel","Add card dismiss called Works fine")
+        viewModel.onChildDismissed()
         super.onDismiss(dialog)
     }
 
@@ -950,7 +965,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         } else {
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
-
                             startActivity(intent)
 
 //

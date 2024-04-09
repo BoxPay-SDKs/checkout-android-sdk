@@ -32,15 +32,7 @@ internal class WalletLoadingBottomSheet : BottomSheetDialogFragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentWalletLoadingBottomSheetBinding.inflate(layoutInflater,container,false)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        binding.backButton.setOnClickListener(){
-            dismiss()
-        }
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            val bottomSheet = PaymentStatusBottomSheet()
-            bottomSheet.show(childFragmentManager, "LoadingBottomSheet")
-        }, 2000)
         return binding.root
     }
     override fun onDismiss(dialog: DialogInterface) {

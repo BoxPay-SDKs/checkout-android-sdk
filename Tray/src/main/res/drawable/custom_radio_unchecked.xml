@@ -1,12 +1,4 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@android:color/transparent" /> <!-- Circle color (white in this example) -->
-
-    <stroke
-        android:width="3dp"
-        android:color="#DCDCDE" />
+    <solid android:color="@android:color/transparent" />
     <corners android:radius="1000dp"/>
-
-    <size
-        android:width="16dp"
-        android:height="16dp" /> <!-- Adjust size as needed for width and height -->
 </shape>

@@ -4,6 +4,7 @@ import SingletonClass
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -40,14 +41,22 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         fetchTransactionDetailsFromSharedPreferences()
         binding.transactionAmountTextView.text = amount
         binding.transactionIDTextView.text = transactionID
+        val sharedPreferences =
+            requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
         binding. proceedButton.setOnClickListener(){
 //            openActivity(successScreenFullReferencePath.toString(),requireContext())
             val callback =  SingletonClass.getInstance().getYourObject()
             if(callback == null){
-                Log.d("call back is null","failed")
+                Log.d("call back is null","Failed")
             }else{
                 callback.onPaymentResult(PaymentResultObject("Success"))
+
+                val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                Log.d("dismissViewModel","Payment Successful Sheet dismiss called Works fine")
+                dismiss()
             }
 //            callFunctionInActivity()
         }
@@ -105,7 +114,6 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     object SharedPreferencesHelper {
 
         private const val SHARED_PREF_NAME = "TransactionDetails"
-
         fun getAllKeyValuePairs(context: Context): Map<String, *> {
             val sharedPreferences = context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE)
             return sharedPreferences.all
