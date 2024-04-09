@@ -10,14 +10,12 @@
     android:background="@drawable/bottom_sheet_bg">
 
 
-
     <FrameLayout
         android:id="@+id/overlayContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#6E5B5B"
-        android:visibility="gone" />
-
+        android:visibility="gone"/>
 
 
     <LinearLayout

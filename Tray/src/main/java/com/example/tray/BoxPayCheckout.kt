@@ -25,7 +25,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
-    private var environment : String = "sandbox-"
+    private var environment : String = ""
     init {
         if(sandboxEnabled){
             editor.putString("environment", "sandbox-")
@@ -36,15 +36,29 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         }
         editor.apply()
     }
-
     fun display() {
+        if (context is Activity) {
+            Log.d("Checked","inside context if condition")
+            val activity = context as AppCompatActivity // or FragmentActivity, depending on your activity type
+            val fragmentManager = activity.supportFragmentManager
+            // Now you can use fragmentManager
+            val bottomSheet = BottomSheetLoadingSheet()
+            bottomSheet.show(fragmentManager, "BottomSheetLoadingSheet")
+        }
+
+
+        Log.d("Checking Time issue","Called display")
         Log.d("environment variable",sharedPreferences.getString("environment","null").toString())
         putTransactionDetailsInSharedPreferences()
         Log.d("Checked","Executed minView Checkout")
+        Log.d("Checking Time issue","Before fetching shopper details")
         fetchShopperDetailsAndUpdateInSharedPreferences()
     }
+
     private fun openBottomSheet(){
+
         initializingCallBackFunctions()
+
         if (context is Activity) {
             Log.d("Checked","inside context if condition")
             val activity = context as AppCompatActivity // or FragmentActivity, depending on your activity type
@@ -66,6 +80,8 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         Log.d("fetchShopperDetailsAndUpdate","Checkout")
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
             try {
+
+                Log.d("Checking Time issue","after fetching shopper details")
 
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
 
@@ -110,7 +126,6 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
 
 
 
-
                 val moneyObject = paymentDetailsObject.getJSONObject("money")
                 editor.putString("currencySymbol",moneyObject.getString("currencySymbol"))
                 editor.putString("amount",moneyObject.getString("amount"))
@@ -144,9 +159,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             val backoffMultiplier = 1.0f // Backoff multiplier
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
-
         queue.add(jsonObjectAll)
-
     }
 
 

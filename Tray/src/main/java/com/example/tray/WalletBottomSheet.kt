@@ -546,6 +546,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             delay(1000) // Delay for 1 seconds
 
             // Code inside this block will execute after the delay
+            // Code inside this block will execute after the delay
             val bottomSheet = PaymentFailureScreen()
             bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
         }

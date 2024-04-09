@@ -1,11 +1,15 @@
 package com.example.tray.adapters
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import coil.decode.SvgDecoder
@@ -26,6 +30,8 @@ class WalletAdapter(
 ) : RecyclerView.Adapter<WalletAdapter.WalletAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
+    val sharedPreferences =
+        context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
 
     inner class WalletAdapterViewHolder(val binding: WalletItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -44,6 +50,9 @@ class WalletAdapter(
                 }
 
 
+
+
+
                 radioButton.setBackgroundResource(
                     if (position == checkedPosition) {
                         R.drawable.custom_radio_checked
@@ -51,6 +60,10 @@ class WalletAdapter(
                         R.drawable.custom_radio_unchecked
                     }
                 )
+
+                val radioButtonColor = sharedPreferences.getString("primaryButtonColor","#0D8EFF")
+                Log.d("radioButtonColor wallet",radioButtonColor.toString())
+
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
                     Log.d("keyboard should hide now","WalletAdapter")
