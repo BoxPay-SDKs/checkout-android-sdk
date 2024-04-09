@@ -206,18 +206,13 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
 
         binding.webViewForOtpValidation.addJavascriptInterface(WebAppInterface(this), "Android")
-        Log.d("OTP Validation", "Immediate Execution")
+        Log.d("OTP Validation", otpFetched.toString())
         val jsCode = """
-    Android.logStatement("Inside OTP Field success")
     var inputField = document.querySelector('input')
     if (inputField) {
-        Android.showToast('Success');
-        inputField.value = '$otpFetched';
+
+        inputField.value = '${otpFetched.toString()}';
         // Notify that input field was successfully filled
-    } else {
-    Android.logStatement("Inside OTP Field failed")
-        // Notify that input field was not found
-        Android.showToast('Failed');
     }
 """.trimIndent()
 
@@ -225,6 +220,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         binding.webViewForOtpValidation.evaluateJavascript(jsCode) { value ->
             // Check for JavaScript errors
             if (value != null) {
+                ""
                 if (value.startsWith("throw")) {
                     Log.e("JavaScript Error", value)
                 } else {
@@ -237,7 +233,8 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private val runnable = object : Runnable {
         override fun run() {
             Log.d("otp fetched", "runnable $otpFetched")
-             // Call the function
+            // Call the function
+            fetchAndInjectOtp()
             handler.postDelayed(this, delayMillis) // Schedule next execution after delay
         }
     }
@@ -264,7 +261,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
                 otpFetched = extractOTPFromMessage(message.toString())
                 Log.d("message fetched", otpFetched.toString())
-
                 // Handle OTP
 
             } else {
@@ -288,6 +284,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
     // Start scheduling the function to run initially and then at intervals
     private fun startFetchingOtpAtIntervals() {
+        fetchAndInjectOtp()
         Log.d("otp fetched", "start fetching otp intervals")
         handler.postDelayed(runnable, delayMillis)
     }

@@ -99,7 +99,6 @@ class Check : AppCompatActivity() {
         tokenFetchedAndOpen = true
     }
 
-
      private fun showBottomSheetWithOverlay() {
         val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,false)
         boxPayCheckout.display()
@@ -121,7 +120,7 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/hK3JrVc6ys/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/gZOlwkSlVe/sessions"
         val jsonData = JSONObject("""{
       "context": {
         "countryCode": "IN",
@@ -207,7 +206,7 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer afcGgCv6mOVIIpnFPWBL44RRciVU8oMteV5ZhC2nwjjjuw8z0obKMjdK8ShcwLOU6uRNjQryLKl1pLAsLAXSI"
+                headers["Authorization"] =  "Bearer XyUQOoLDgHlgxAojYhY22ev4P6icr94XIMkxrISZFQnAZIOueM4WbFAWGDc0Q6jPcWBkCXfXWpvRlHoQ5fl20d"
                 return headers
             }
         }
