@@ -43,12 +43,10 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             val fragmentManager = activity.supportFragmentManager
             // Now you can use fragmentManager
             val bottomSheet = BottomSheetLoadingSheet()
-            if(bottomSheet.dialog?.window?.attributes?.dimAmount == null){
-                Log.d("dim effect will not be done","BoxPayCheckout")
-            }
-            bottomSheet.dialog?.window?.attributes?.dimAmount = 1.0f
             bottomSheet.show(fragmentManager, "BottomSheetLoadingSheet")
         }
+
+
 
         Log.d("Checking Time issue","Called display")
         Log.d("environment variable",sharedPreferences.getString("environment","null").toString())

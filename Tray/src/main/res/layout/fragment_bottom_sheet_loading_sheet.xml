@@ -32,7 +32,7 @@
                 android:fontFamily="@font/poppins"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="10dp"
-                android:text="Loading..."
+                android:text="Loading"
                 android:textColor="#4F4D55"/>
 
 

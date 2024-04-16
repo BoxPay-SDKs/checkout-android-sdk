@@ -3,6 +3,7 @@ package com.example.tray
 import android.R
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
@@ -51,7 +52,7 @@ class upiQRBottomSheet : BottomSheetDialogFragment() {
         editor = sharedPreferences.edit()
 
 
-
+        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         token = sharedPreferences.getString("token", "empty")
         val environmentFetched = sharedPreferences.getString("environment","null")
         Log.d("environment is $environmentFetched","Add UPI ID")

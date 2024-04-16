@@ -100,7 +100,7 @@ class Check : AppCompatActivity() {
     }
 
      private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,false)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,true)
         boxPayCheckout.display()
     }
 
@@ -120,11 +120,11 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/hK3JrVc6ys/sessions"
+        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/izFE32XEwU/sessions"
         val jsonData = JSONObject("""{
       "context": {
         "countryCode": "IN",
-        "legalEntity": {"code": "demo_merchant"},
+        "legalEntity": {"code": "nitish"},
         "orderId": "test12"
       },
       "paymentType": "S",
@@ -206,7 +206,7 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer afcGgCv6mOVIIpnFPWBL44RRciVU8oMteV5ZhC2nwjjjuw8z0obKMjdK8ShcwLOU6uRNjQryLKl1pLAsLAXSI"
+                headers["Authorization"] =  "Bearer mbWBtIWywpshAJoOVTp5QiuJGAhPKzt3zSp5F6ajETEEzugaSaaAY3UR8Q2xVOtNa2iCjHprm7ckWFWnuepnA9"
                 return headers
             }
         }

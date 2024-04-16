@@ -51,6 +51,7 @@ class WalletAdapter(
 
                     // Modify the solid color of the first item (assuming it's a GradientDrawable)
                     val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
+                    Log.d("set color function",sharedPreferences.getString("primaryButtonColor","#0D8EFF").toString())
                     shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
 
                     // Apply the modified drawable back to the radioButton ImageView
