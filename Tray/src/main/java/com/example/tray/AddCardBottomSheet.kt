@@ -1031,12 +1031,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
-            )
-        )
+        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
         binding.textView6.visibility = View.VISIBLE
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
@@ -1105,11 +1100,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             // Extract message from each item
             val errorMessage = fieldErrorItems.getJSONObject(i).getString("message")
             Log.d("errorMessage", errorMessage)
-
             if (errorMessage.contains("Invalid instrumentDetails.card.expiry", ignoreCase = true)) {
                 binding.invalidCardValidity.visibility = View.VISIBLE
                 binding.textView7.text = "Invalid Validity"
             }
+
             if (errorMessage.contains(
                     "instrumentDetails.card.number is invalid",
                     ignoreCase = true
@@ -1133,6 +1128,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         val statusReason = statusObject.getString("reason")
         Log.d("Reason xyz",statusReason)
 
+
+        binding.nameOnCardErrorLayout.visibility = View.VISIBLE
+        binding.textView17.text = statusReason
         if (statusReason.contains("Invalid Card Expiry", ignoreCase = true)) {
             binding.invalidCardValidity.visibility = View.VISIBLE
             binding.textView7.text = "Invalid Validity"

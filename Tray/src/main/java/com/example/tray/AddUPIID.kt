@@ -7,6 +7,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -86,10 +87,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 checked = false
             }
         }
-        binding.textView2.setOnClickListener(){
-            val bottomSheet = OTPBottomSheet()
-            bottomSheet.show(parentFragmentManager,"OTPBottomSheet")
-        }
+
+
+
 
 
 
@@ -126,12 +126,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
                     binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
                     binding.ll1InvalidUPI.visibility = View.GONE
-                    binding.textView6.setTextColor(
-                        ContextCompat.getColor(
-                            requireContext(),
-                            android.R.color.white
-                        )
-                    )
+                    binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 }
             }
@@ -216,6 +211,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
+
+
 
 
 

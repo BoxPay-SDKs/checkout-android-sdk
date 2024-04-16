@@ -23,15 +23,15 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/wallet_sample_logo" />
 
-        <View
+        <ImageView
             android:id="@+id/radioButton"
             android:layout_width="16dp"
             android:layout_height="16dp"
             android:layout_marginEnd="16dp"
-            android:background="@drawable/custom_radio_unchecked"
+            android:background="@drawable/custom_radio_checked"
             app:layout_constraintBottom_toTopOf="@+id/lineView"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <TextView
             android:id="@+id/walletNameTextView"

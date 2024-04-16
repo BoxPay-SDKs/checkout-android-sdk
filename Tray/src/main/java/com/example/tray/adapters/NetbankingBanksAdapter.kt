@@ -1,6 +1,9 @@
 package com.example.tray.adapters
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 
 import android.os.Handler
 import android.util.Log
@@ -9,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.lifecycle.MutableLiveData
@@ -32,11 +36,31 @@ class NetbankingBanksAdapter(
 ) : RecyclerView.Adapter<NetbankingBanksAdapter.NetBankingAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
+    val sharedPreferences =
+        context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
 
     inner class NetBankingAdapterViewHolder(val binding: NetbankingBanksItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
             binding.apply {
+
+                val radioButtonDrawable = radioButton.background
+
+                // Check if the background drawable is a LayerDrawable
+                if (radioButtonDrawable is LayerDrawable) {
+                    Log.d("Drawable found","success")
+                    val layerDrawable = radioButtonDrawable as LayerDrawable
+
+                    // Modify the solid color of the first item (assuming it's a GradientDrawable)
+                    val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
+                    shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
+
+                    // Apply the modified drawable back to the radioButton ImageView
+                    radioButton.background = layerDrawable
+                }else{
+                    Log.d("Drawable found","failure")
+                }
+
                 val bankName = banksDetails[position].bankName
                 val bankImage = banksDetails[position].bankImage
                 if (bankName.length >= 21) {
@@ -46,24 +70,6 @@ class NetbankingBanksAdapter(
                 }
 
                 Log.d("imageURL",banksDetails[position].bankImage)
-//                Picasso.get()
-//                    .load(banksDetails[position].bankImage)
-//                    .placeholder(R.drawable.netbanking_sample_logo)
-//                    .into(binding.bankLogo)
-
-
-//                val options = RequestOptions()
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .skipMemoryCache(true) // Skip caching the placeholder image
-//                    .placeholder(R.drawable.netbanking_sample_logo) // Placeholder image resource
-//
-//                Glide.with(context)
-//                    .`as`(PictureDrawable::class.java)
-//                    .load("https://checkout.boxpay.in/assets/Icons/Bank%20Icons/OrientalBankOfCommerce.svg")
-//                    .apply(options)
-//                    .into(binding.bankLogo)
-
-//                imageView.setImageResource(R.drawable.)
 
 
                 binding.bankLogo.load(bankImage){
@@ -77,18 +83,31 @@ class NetbankingBanksAdapter(
 
 
 
-                radioButton.setBackgroundResource(
-                    if (position == checkedPosition) {
-                        R.drawable.custom_radio_checked
-                    } else {
-                        R.drawable.custom_radio_unchecked
+
+                if(position == checkedPosition){
+                    Log.d("Drawable found","failure if condition wallet")
+                    if (radioButtonDrawable is LayerDrawable) {
+                        Log.d("Drawable found","success")
+                        val layerDrawable = radioButtonDrawable as LayerDrawable
+
+                        // Modify the solid color of the first item (assuming it's a GradientDrawable)
+                        val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
+                        shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
+
+                        // Apply the modified drawable back to the radioButton ImageView
+                        radioButton.background = layerDrawable
+                    }else{
+                        Log.d("Drawable found","failure")
                     }
-                )
+                }else{
+                    Log.d("Drawable found","failure else condition netbanking")
+                    radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
+                }
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
                     val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                     inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
-                    handleRadioButtonClick(adapterPosition)
+                    handleRadioButtonClick(adapterPosition,binding.radioButton)
                     liveDataPopularItemSelectedOrNot.value = false
                 }
 
@@ -169,7 +188,7 @@ class NetbankingBanksAdapter(
         holder.bind(position)
     }
 
-    private fun handleRadioButtonClick(position: Int) {
+    private fun handleRadioButtonClick(position: Int,imageView : ImageView) {
         if (checkedPosition != position) {
             // Change the background of the previously checked RadioButton
             val previousCheckedViewHolder =
@@ -178,6 +197,25 @@ class NetbankingBanksAdapter(
                 R.drawable.custom_radio_unchecked
             )
 
+
+            imageView.setBackgroundResource(R.drawable.custom_radio_checked)
+
+            val radioButtonDrawable = imageView.background
+
+            // Check if the background drawable is a LayerDrawable
+            if (radioButtonDrawable is LayerDrawable) {
+                Log.d("Drawable found","success")
+                val layerDrawable = radioButtonDrawable as LayerDrawable
+
+                // Modify the solid color of the first item (assuming it's a GradientDrawable)
+                val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
+                shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
+
+                // Apply the modified drawable back to the radioButton ImageView
+                imageView.background = layerDrawable
+            }else{
+                Log.d("Drawable found","failure in handle click")
+            }
             // Change the background of the clicked RadioButton
             val clickedViewHolder =
                 recyclerView.findViewHolderForAdapterPosition(position) as? NetBankingAdapterViewHolder

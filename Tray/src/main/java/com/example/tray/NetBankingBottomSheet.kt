@@ -72,6 +72,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         MutableLiveData<Boolean>().apply {
             value = false
         }
+
     private lateinit var Base_Session_API_URL : String
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
@@ -175,7 +176,12 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     val paymentMethod = paymentMethodsArray.getJSONObject(i)
                     if (paymentMethod.getString("type") == "NetBanking") {
                         val bankName = paymentMethod.getString("title")
-                        val bankImage = "https://sandbox-checkout.boxpay.tech"+paymentMethod.getString("logoUrl")
+
+                        var bankImage = paymentMethod.getString("logoUrl")
+                        if(bankImage.startsWith("/assets")) {
+                            bankImage =
+                                "https://checkout.boxpay.in" + paymentMethod.getString("logoUrl")
+                        }
                         Log.d("Logo url : ",bankImage)
                         val bankBrand = paymentMethod.getString("brand")
                         val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
@@ -297,6 +303,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 unselectItemsInPopularLayout()
             }
         })
+
 
         allBanksAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
             if (checkPositionObserved == null) {
@@ -622,6 +629,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                 // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                Log.d("user Agent for device",userAgentHeader)
 
                 // Get the screen height and width
                 val displayMetrics = resources.displayMetrics
@@ -645,7 +653,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             // Shopper
             val shopperObject = JSONObject().apply {
                 val deliveryAddressObject = JSONObject().apply {
-
                     put("address1", sharedPreferences.getString("address1", "null"))
                     put("address2", sharedPreferences.getString("address2", "null"))
                     put("address3", sharedPreferences.getString("address3", "null"))
@@ -654,8 +661,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     put("countryName", sharedPreferences.getString("countryName", "null"))
                     put("postalCode", sharedPreferences.getString("postalCode", "null"))
                     put("state", sharedPreferences.getString("state", "null"))
-
                 }
+
 
 
                 put("deliveryAddress", deliveryAddressObject)
@@ -745,7 +752,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             val backoffMultiplier = 1.0f // Backoff multiplier
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
-
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
@@ -760,12 +766,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.isEnabled = true
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
-            )
-        )
+        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
     }
 
     private fun disableProceedButton() {

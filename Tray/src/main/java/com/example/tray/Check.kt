@@ -120,7 +120,7 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/gZOlwkSlVe/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/hK3JrVc6ys/sessions"
         val jsonData = JSONObject("""{
       "context": {
         "countryCode": "IN",
@@ -128,7 +128,7 @@ class Check : AppCompatActivity() {
         "orderId": "test12"
       },
       "paymentType": "S",
-      "money": {"amount": "30", "currencyCode": "INR"},
+      "money": {"amount": "1", "currencyCode": "INR"},
       "descriptor": {"line1": "Some descriptor"},
       "billingAddress": {
         "address1": "first address line",
@@ -154,15 +154,15 @@ class Check : AppCompatActivity() {
         }
       },
       "order": {
-        "originalAmount": 10,
-        "shippingAmount": 10,
+        "originalAmount": 423.73,
+        "shippingAmount": 50,
         "voucherCode": "VOUCHER",
-        "taxAmount": 10,
-        "totalAmountWithoutTax": 20,
+        "taxAmount": 76.27,
+        "totalAmountWithoutTax": 423.73,
         "items": [
           {
             "id": "test",
-            "itemName": "test_name",
+            "itemName": "Sample Item",
             "description": "testProduct",
             "quantity": 1,
             "manufacturer": null,
@@ -172,8 +172,8 @@ class Check : AppCompatActivity() {
             "imageUrl":
                 "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
             "categories": null,
-            "amountWithoutTax": 10,
-            "taxAmount": 10,
+            "amountWithoutTax": 423.73,
+            "taxAmount": 76.27,
             "taxPercentage": null,
             "discountedAmount": null,
             "amountWithoutTaxLocale": "10",
@@ -206,7 +206,7 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer XyUQOoLDgHlgxAojYhY22ev4P6icr94XIMkxrISZFQnAZIOueM4WbFAWGDc0Q6jPcWBkCXfXWpvRlHoQ5fl20d"
+                headers["Authorization"] =  "Bearer afcGgCv6mOVIIpnFPWBL44RRciVU8oMteV5ZhC2nwjjjuw8z0obKMjdK8ShcwLOU6uRNjQryLKl1pLAsLAXSI"
                 return headers
             }
         }

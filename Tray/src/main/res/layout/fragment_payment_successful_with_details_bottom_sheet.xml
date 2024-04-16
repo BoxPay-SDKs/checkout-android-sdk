@@ -60,56 +60,30 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:id="@+id/textView23"
+                    android:id="@+id/textView24"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="32dp"
                     android:layout_marginTop="24dp"
                     android:fontFamily="@font/poppins"
-                    android:text="Plan Name : "
+                    android:text="Transaction ID : "
                     android:textColor="#4F4D55"
                     android:textSize="12sp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView" />
 
                 <TextView
-                    android:id="@+id/itemNameTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="32dp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:text="Truly Madly Basic"
-                    android:textColor="#4F4D55"
-                    android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="@+id/textView23"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/textView23" />
-
-                <TextView
-                    android:id="@+id/textView24"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="12dp"
-                    android:fontFamily="@font/poppins"
-                    android:text="Transaction ID : "
-                    android:textColor="#4F4D55"
-                    android:textSize="12sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView23" />
-
-                <TextView
                     android:id="@+id/transactionIDTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="24dp"
                     android:layout_marginEnd="32dp"
                     android:fontFamily="@font/poppins_medium"
                     android:text="#AAA1234"
                     android:textColor="#4F4D55"
                     android:textSize="12sp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/itemNameTextView" />
+                    app:layout_constraintTop_toBottomOf="@+id/textView" />
 
                 <TextView
                     android:id="@+id/textView25"

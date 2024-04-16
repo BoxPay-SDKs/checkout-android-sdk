@@ -262,8 +262,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun removeLoadingScreenState() {
         Log.d("removeLoadingScreenState", "called")
-        binding.walletsRecyclerView.visibility = View.VISIBLE
         binding.loadingRelativeLayout.visibility = View.GONE
+        binding.walletsRecyclerView.visibility = View.VISIBLE
         binding.popularItemRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
         binding.popularItemRelativeLayout2.setBackgroundResource(R.drawable.popular_item_unselected_bg)
         binding.popularItemRelativeLayout3.setBackgroundResource(R.drawable.popular_item_unselected_bg)
@@ -569,7 +569,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     val paymentMethod = paymentMethodsArray.getJSONObject(i)
                     if (paymentMethod.getString("type") == "Wallet") {
                         val walletName = paymentMethod.getString("title")
-                        val walletImage = "https://checkout.boxpay.in"+paymentMethod.getString("logoUrl")
+                        var walletImage = paymentMethod.getString("logoUrl")
+                        if(walletImage.startsWith("/assets")) {
+                            walletImage =
+                                "https://checkout.boxpay.in" + paymentMethod.getString("logoUrl")
+                        }
                         val walletBrand = paymentMethod.getString("brand")
                         val walletInstrumentTypeValue =
                             paymentMethod.getString("instrumentTypeValue")
@@ -893,13 +897,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.isEnabled = true
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
-            )
-        )
+        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
     }
+
 
     private fun disableProceedButton() {
         binding.textView6.visibility = View.VISIBLE
