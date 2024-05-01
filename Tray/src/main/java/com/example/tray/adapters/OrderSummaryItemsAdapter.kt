@@ -13,18 +13,22 @@ class OrderSummaryItemsAdapter(
     private val imagesUrls: MutableList<String>,
     private val items: MutableList<String>,
     private val prices: MutableList<String>,
+    private val context: Context
 ) : RecyclerView.Adapter<OrderSummaryItemsAdapter.OrderSummaryViewHolder>() {
+    val sharedPreferences =
+        context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     inner class OrderSummaryViewHolder(private val binding: OrderSummaryItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
         fun bind(position: Int) {
             binding.apply {
                 Log.d("imageURL",imagesUrls[position])
                 Picasso.get()
                     .load(imagesUrls[position])
                     .into(binding.itemImage)
-
+                val currencySymbol = sharedPreferences.getString("currencySymbol","")
 //                itemImage.setImageResource(images[position])
-                itemPrice.text = "₹"+prices[position]
+                itemPrice.text = currencySymbol+prices[position]
                 itemName.text = items[position]
             }
         }

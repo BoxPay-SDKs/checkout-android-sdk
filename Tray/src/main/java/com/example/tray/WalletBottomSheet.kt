@@ -9,7 +9,9 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,6 +22,7 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.SearchView
 import android.widget.TextView
@@ -32,6 +35,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
+import coil.transform.CircleCropTransformation
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -104,10 +108,20 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 Log.d("bottomSheetBehavior is null", "check here")
 
 
+
+            val window = d.window
+            window?.apply {
+                // Apply dim effect
+                setDimAmount(0.5f) // 50% dimming
+                setBackgroundDrawable(ColorDrawable(Color.argb(128, 0, 0, 0))) // Semi-transparent black background
+            }
+
+
             val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.7 // 90%
+            val percentageOfScreenHeight = 0.9 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
+            bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -193,10 +207,13 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         else -> null
                     }
 
+                    val sizeInPixels = (50 * resources.displayMetrics.density).toInt()
+
                     imageView?.load(walletDetail.walletImage){
                         decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
-                        size(90, 90)
+                        transformations( CircleCropTransformation())
                     }
+
 
                     getPopularTextViewByNum(index + 1).text =
                         walletDetailsOriginal[index].walletName
@@ -262,8 +279,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun removeLoadingScreenState() {
         Log.d("removeLoadingScreenState", "called")
-        binding.walletsRecyclerView.visibility = View.VISIBLE
         binding.loadingRelativeLayout.visibility = View.GONE
+        binding.walletsRecyclerView.visibility = View.VISIBLE
         binding.popularItemRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
         binding.popularItemRelativeLayout2.setBackgroundResource(R.drawable.popular_item_unselected_bg)
         binding.popularItemRelativeLayout3.setBackgroundResource(R.drawable.popular_item_unselected_bg)
@@ -377,6 +394,27 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
         val failureScreenSharedViewModelCallback = FailureScreenSharedViewModel(::failurePaymentFunction)
         FailureScreenCallBackSingletonClass.getInstance().callBackFunctions = failureScreenSharedViewModelCallback
+
+
+        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+        Log.d("userAgentHeader in MainBottom Sheet onCreateView",userAgentHeader)
+        if(userAgentHeader.contains("Mobile",ignoreCase = true)){
+            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+
+        val screenHeight = requireContext().resources.displayMetrics.heightPixels
+        val percentageOfScreenHeight = 0.45 // 70%
+        val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+
+
+
+        val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
+        layoutParams.height = desiredHeight
+        binding.nestedScrollView.layoutParams = layoutParams
+
+        val layoutParamsLoading = binding.loadingRelativeLayout.layoutParams as ConstraintLayout.LayoutParams
+        layoutParamsLoading.height = desiredHeight
+        binding.loadingRelativeLayout.layoutParams = layoutParamsLoading
 
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
@@ -569,7 +607,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     val paymentMethod = paymentMethodsArray.getJSONObject(i)
                     if (paymentMethod.getString("type") == "Wallet") {
                         val walletName = paymentMethod.getString("title")
-                        val walletImage = "https://checkout.boxpay.in"+paymentMethod.getString("logoUrl")
+                        var walletImage = paymentMethod.getString("logoUrl")
+                        if(walletImage.startsWith("/assets")) {
+                            walletImage =
+                                "https://checkout.boxpay.in" + paymentMethod.getString("logoUrl")
+                        }
                         val walletBrand = paymentMethod.getString("brand")
                         val walletInstrumentTypeValue =
                             paymentMethod.getString("instrumentTypeValue")
@@ -893,13 +935,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.isEnabled = true
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
-            )
-        )
+        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
     }
+
 
     private fun disableProceedButton() {
         binding.textView6.visibility = View.VISIBLE

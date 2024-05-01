@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
+import android.media.Image
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -37,6 +38,29 @@ class WalletAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
             binding.apply {
+
+                binding.walletNameTextView.text = walletDetails[position].walletName
+
+                // Get the background drawable of radioButton
+                val radioButtonDrawable = radioButton.background
+
+                // Check if the background drawable is a LayerDrawable
+                if (radioButtonDrawable is LayerDrawable) {
+                    Log.d("Drawable found","success")
+                    val layerDrawable = radioButtonDrawable as LayerDrawable
+
+                    // Modify the solid color of the first item (assuming it's a GradientDrawable)
+                    val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
+                    Log.d("set color function",sharedPreferences.getString("primaryButtonColor","#0D8EFF").toString())
+                    shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
+
+                    // Apply the modified drawable back to the radioButton ImageView
+                    radioButton.background = layerDrawable
+                }else{
+                    Log.d("Drawable found","failure")
+                }
+
+
                 val walletName = walletDetails[position].walletName
                 val walletImage = walletDetails[position].walletImage
                 if (walletName.length >= 21) {
@@ -50,16 +74,31 @@ class WalletAdapter(
                 }
 
 
+                if(position == checkedPosition){
+                    Log.d("Drawable found","failure if condition wallet")
+                    if (radioButtonDrawable is LayerDrawable) {
+                        Log.d("Drawable found","success")
+                        val layerDrawable = radioButtonDrawable as LayerDrawable
 
+                        // Modify the solid color of the first item (assuming it's a GradientDrawable)
+                        val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
+                        shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
 
-
-                radioButton.setBackgroundResource(
-                    if (position == checkedPosition) {
-                        R.drawable.custom_radio_checked
-                    } else {
-                        R.drawable.custom_radio_unchecked
+                        // Apply the modified drawable back to the radioButton ImageView
+                        radioButton.background = layerDrawable
+                    }else{
+                        Log.d("Drawable found","failure")
                     }
-                )
+                }else{
+                    Log.d("Drawable found","failure else condition wallet")
+                    radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
+                }
+
+//                if(position == checkedPosition){
+//                    radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
+//                }else{
+//                    radioButton.setBackgroundResource(R.drawable.custom_radio_checked)
+//                }
 
                 val radioButtonColor = sharedPreferences.getString("primaryButtonColor","#0D8EFF")
                 Log.d("radioButtonColor wallet",radioButtonColor.toString())
@@ -69,7 +108,7 @@ class WalletAdapter(
                     Log.d("keyboard should hide now","WalletAdapter")
                     val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                     inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
-                    handleRadioButtonClick(adapterPosition)
+                    handleRadioButtonClick(adapterPosition,binding.radioButton)
                     liveDataPopularItemSelectedOrNot.value = false
                 }
 
@@ -116,7 +155,7 @@ class WalletAdapter(
         holder.bind(position)
     }
 
-    private fun handleRadioButtonClick(position: Int) {
+    private fun handleRadioButtonClick(position: Int, imageView : ImageView) {
         if (checkedPosition != position) {
             // Change the background of the previously checked RadioButton
             val previousCheckedViewHolder =
@@ -125,7 +164,26 @@ class WalletAdapter(
                 R.drawable.custom_radio_unchecked
             )
 
-            // Change the background of the clicked RadioButton
+            imageView.setBackgroundResource(R.drawable.custom_radio_checked)
+
+            val radioButtonDrawable = imageView.background
+
+            // Check if the background drawable is a LayerDrawable
+            if (radioButtonDrawable is LayerDrawable) {
+                Log.d("Drawable found","success")
+                val layerDrawable = radioButtonDrawable as LayerDrawable
+
+                // Modify the solid color of the first item (assuming it's a GradientDrawable)
+                val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
+                shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
+
+                // Apply the modified drawable back to the radioButton ImageView
+                imageView.background = layerDrawable
+            }else{
+                Log.d("Drawable found","failure in handle click")
+            }
+
+//             Change the background of the clicked RadioButton
             val clickedViewHolder =
                 recyclerView.findViewHolderForAdapterPosition(position) as? WalletAdapter.WalletAdapterViewHolder
             clickedViewHolder?.binding?.radioButton?.setBackgroundResource(

@@ -9,8 +9,11 @@
     <FrameLayout
         android:id="@+id/frameLayout1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@drawable/bottom_sheet_bg">
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout123"
@@ -237,6 +240,7 @@
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.core.widget.NestedScrollView>
 
 
     </FrameLayout>

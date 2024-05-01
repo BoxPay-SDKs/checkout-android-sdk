@@ -31,8 +31,8 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             editor.putString("environment", "sandbox-")
             this.environment = "sandbox-"
         }else{
-            editor.putString("environment","")
-            this.environment = ""
+            editor.putString("environment","test-")
+            this.environment = "test-"
         }
         editor.apply()
     }
@@ -45,6 +45,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             val bottomSheet = BottomSheetLoadingSheet()
             bottomSheet.show(fragmentManager, "BottomSheetLoadingSheet")
         }
+
 
 
         Log.d("Checking Time issue","Called display")
@@ -84,7 +85,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
                 Log.d("Checking Time issue","after fetching shopper details")
 
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
-
+                val currencySymbol = paymentDetailsObject.getJSONObject("money").getString("currencySymbol")
                 val shopperJSONObject = paymentDetailsObject.getJSONObject("shopper")
                 Log.d("firstname",shopperJSONObject.getString("firstName"))
                 editor.putString("firstName",shopperJSONObject.getString("firstName"))

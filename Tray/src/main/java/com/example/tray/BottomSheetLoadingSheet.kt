@@ -1,5 +1,6 @@
 package com.example.tray
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -30,6 +31,7 @@ class BottomSheetLoadingSheet : BottomSheetDialogFragment() {
             repeatCount = LottieDrawable.INFINITE // Set repeat count to infinite
             playAnimation() // Start the animation
         }
+
 
         val callBackFunctions = callBackFunctionForLoadingState(::dismissCurrentBottomSheet)
         SingletonClassForLoadingState.getInstance().callBackFunctions = callBackFunctions

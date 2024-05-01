@@ -60,7 +60,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private lateinit var Base_Session_API_URL: String
     private lateinit var sharedViewModel: SharedViewModel
     private val handler = Handler()
-    private val delayMillis = 2000L
+    private val delayMillis = 4000L
     private val SMS_CONSENT_REQUEST = 1010
     private var otpFetched: String? = null
     private var startedCallsForOTPInject = false
@@ -204,26 +204,51 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             return
         }
 
-
+//var submitButton = document.querySelector('button[type="submit"]');
         binding.webViewForOtpValidation.addJavascriptInterface(WebAppInterface(this), "Android")
+
+
         Log.d("OTP Validation", otpFetched.toString())
         val jsCode = """
-    var inputField = document.querySelector('input')
-    if (inputField) {
+            
+            
+            
+    var inputField = document.querySelector('input'); // Assuming this is your OTP input field
+    var submitButton = document.querySelector('button[type="submit"]');
 
-        inputField.value = '${otpFetched.toString()}';
-        // Notify that input field was successfully filled
+    if (inputField) {
+        inputField.type = "text";
+
+  setTimeout(function() {
+  inputField.value = "$otpFetched";
+    inputField.type = "password";
+// Change back to password after a delay
+  }, 1000); // Set the OTP value in the input field
+        if (submitButton) {
+            if (submitButton.disabled) {
+                // If the submit button is disabled, enable it
+                submitButton.disabled = false;
+            }
+
+            // Click the submit button after setting the OTP value and enabling the button
+            submitButton.click();
+        } else {
+        
+        }
+    } else {
+
     }
 """.trimIndent()
 
 // Execute JavaScript code immediately
-        binding.webViewForOtpValidation.evaluateJavascript(jsCode) { value ->
+        binding.webViewForOtpValidation.evaluateJavascript(jsCode) {value ->
             // Check for JavaScript errors
             if (value != null) {
                 ""
                 if (value.startsWith("throw")) {
                     Log.e("JavaScript Error", value)
                 } else {
+                    otpFetched = null
                     Log.d("JavaScript Result", value)
                 }
             }
@@ -293,8 +318,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         if (!isBottomSheetShown) {
             val bottomSheet = CancelConfirmationBottomSheet()
             bottomSheet.show(supportFragmentManager, "CancelConfirmationBottomSheet")
-            isBottomSheetShown = true
+//            isBottomSheetShown = true
         } else {
+//            isBottomSheetShown = false
             super.onBackPressed()
         }
     }
@@ -348,6 +374,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                         if (callback == null) {
                             Log.d("call back is null", "Success")
                         } else {
+                            job?.cancel()
                             callback.onPaymentResult(PaymentResultObject("Success"))
                             finish()
                         }
@@ -370,7 +397,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                         val callback =
                             FailureScreenCallBackSingletonClass.getInstance().getYourObject()
                         if (callback == null) {
-                            Log.d("callback is null", "PaymentSuccessfulWithDetailsSheet")
+                            Log.d("callback is null", "PaymentFailed")
                         } else {
                             callback.openFailureScreen()
                         }
@@ -413,7 +440,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             while (isActive) {
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 5 seconds
-                delay(4000)
+                delay(2000)
             }
         }
     }

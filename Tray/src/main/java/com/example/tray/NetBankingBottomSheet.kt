@@ -9,8 +9,11 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -72,6 +75,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         MutableLiveData<Boolean>().apply {
             value = false
         }
+
     private lateinit var Base_Session_API_URL : String
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
@@ -101,15 +105,28 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 Log.d("bottomSheetBehavior is null", "check here")
 
 
-            val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.7 // 90%
+            val screenHeight = requireContext().resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.9 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-
 
 //        // Adjust the height of the bottom sheet content view
 //        val layoutParams = bottomSheetContent.layoutParams
 //        layoutParams.height = desiredHeight
 //        bottomSheetContent.layoutParams = layoutParams
+            if (bottomSheetBehavior == null)
+                Log.d("MainBottomSheet  bottomSheet is null", "Main Bottom Sheet")
+
+            bottomSheetBehavior?.maxHeight = desiredHeight
+
+            val window = d.window
+            window?.apply {
+                // Apply dim effect
+                setDimAmount(0.5f) // 50% dimming
+                setBackgroundDrawable(ColorDrawable(Color.argb(128, 0, 0, 0))) // Semi-transparent black background
+            }
+
+            bottomSheetBehavior?.maxHeight = desiredHeight
+
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -175,7 +192,12 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     val paymentMethod = paymentMethodsArray.getJSONObject(i)
                     if (paymentMethod.getString("type") == "NetBanking") {
                         val bankName = paymentMethod.getString("title")
-                        val bankImage = "https://sandbox-checkout.boxpay.tech"+paymentMethod.getString("logoUrl")
+
+                        var bankImage = paymentMethod.getString("logoUrl")
+                        if(bankImage.startsWith("/assets")) {
+                            bankImage =
+                                "https://checkout.boxpay.in" + paymentMethod.getString("logoUrl")
+                        }
                         Log.d("Logo url : ",bankImage)
                         val bankBrand = paymentMethod.getString("brand")
                         val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
@@ -244,9 +266,29 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
+        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+        Log.d("userAgentHeader in MainBottom Sheet onCreateView",userAgentHeader)
+        if(userAgentHeader.contains("Mobile",ignoreCase = true)){
+            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+
+        val screenHeight = requireContext().resources.displayMetrics.heightPixels
+        val percentageOfScreenHeight = 0.45 // 70%
+        val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+
+
+
+        val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
+        layoutParams.height = desiredHeight
+        binding.nestedScrollView.layoutParams = layoutParams
+
+        val layoutParamsLoading = binding.loadingRelativeLayout.layoutParams as ConstraintLayout.LayoutParams
+        layoutParamsLoading.height = desiredHeight
+        binding.loadingRelativeLayout.layoutParams = layoutParamsLoading
+
 
         val environmentFetched = sharedPreferences.getString("environment","null")
-        Log.d("environment is $environmentFetched","Add UPI ID")
+        Log.d("environment is $environmentFetched","Netbanking Bottom Sheet")
         Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
@@ -297,6 +339,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 unselectItemsInPopularLayout()
             }
         })
+
 
         allBanksAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
             if (checkPositionObserved == null) {
@@ -446,7 +489,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                     imageView?.load(bankDetail.bankImage){
                         decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
-                        size(100, 100)
                     }
 
                     getPopularTextViewByNum(index + 1).text =
@@ -622,6 +664,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                 // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                Log.d("user Agent for device",userAgentHeader)
 
                 // Get the screen height and width
                 val displayMetrics = resources.displayMetrics
@@ -645,7 +688,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             // Shopper
             val shopperObject = JSONObject().apply {
                 val deliveryAddressObject = JSONObject().apply {
-
                     put("address1", sharedPreferences.getString("address1", "null"))
                     put("address2", sharedPreferences.getString("address2", "null"))
                     put("address3", sharedPreferences.getString("address3", "null"))
@@ -654,8 +696,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     put("countryName", sharedPreferences.getString("countryName", "null"))
                     put("postalCode", sharedPreferences.getString("postalCode", "null"))
                     put("state", sharedPreferences.getString("state", "null"))
-
                 }
+
 
 
                 put("deliveryAddress", deliveryAddressObject)
@@ -745,7 +787,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             val backoffMultiplier = 1.0f // Backoff multiplier
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
-
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
@@ -760,12 +801,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.isEnabled = true
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
-            )
-        )
+        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
     }
 
     private fun disableProceedButton() {

@@ -7,7 +7,9 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
@@ -26,10 +28,13 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import coil.decode.SvgDecoder
+import coil.load
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.android.volley.VolleyError
@@ -91,8 +96,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         val request = object : JsonArrayRequest(Method.POST, url, jsonData,
             { response ->
                 for(i in 0 until response.length()){
-                    brands.add(response.getJSONObject(i).getJSONObject("paymentMethod").getString("brand"))
+                    val currBrand = response.getJSONObject(i).getJSONObject("paymentMethod").getString("brand")
+                    Log.d("Checking for card network",currBrand)
+                    brands.add(currBrand)
                 }
+
                 Log.d("size of brands",brands.size.toString()+cardNumber)
                 updateCardNetwork(brands)
             },
@@ -119,12 +127,37 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
     private fun getImageDrawableForItem(item: String): Int {
+
         return when (item) {
-            "VISA" -> R.drawable.visa // Replace with your VISA image resource
-            "Maestro" -> R.drawable.maestro // Replace with your MAESTRO image resource
+            "VISA" -> R.drawable.visa
             "Mastercard" -> R.drawable.mastercard
-            "AmericanExpress" ->
-                R.drawable.amex_png
+            "Maestro" -> R.drawable.maestro
+            "Cirrus" -> R.drawable.cirrus
+            "AmericanExpress" -> R.drawable.american_express
+            "Diners" -> R.drawable.diners
+            "Discover" -> R.drawable.discover
+            "Electron" -> R.drawable.electron
+            "JCB" -> R.drawable.jcb
+            "RUPAY" -> R.drawable.rupay
+            "BancontactCard" -> R.drawable.bancontact
+            "CARNET" -> R.drawable.carnet
+            "CartesBancaires" -> R.drawable.cartesbancaires
+            "ChinaUnionPay" -> R.drawable.chinaunionpay
+            "Elo" -> R.drawable.elo
+            "Hipercard" -> R.drawable.hipercard
+            "Troy" -> R.drawable.troy
+            "AllStar" -> R.drawable.allstar
+            "LaSer" -> R.drawable.laser
+            "Sears" -> R.drawable.sears
+            "Overdrive" -> R.drawable.overdrive
+            "Keyfuels" -> R.drawable.keyfuels
+            "Supercharge" -> R.drawable.charge
+            "UATP" -> R.drawable.uatp
+            "Aura" -> R.drawable.auraaxis
+            "Mada" -> R.drawable.mada
+            "Bankcard" -> R.drawable.bankcard
+            "Eftpos" -> R.drawable.eftpos
+            "Bajaj" -> R.drawable.bajaj
             else -> R.drawable.card_02 // Default image resource
         }
     }
@@ -141,6 +174,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         imageView.layoutParams = layoutParams
         val imageDrawable = getImageDrawableForItem(cardNetworkName)
         imageView.setImageResource(imageDrawable)
+
+
+
         binding.fetchedCardNetwork.removeAllViews()
         binding.fetchedCardNetwork.visibility = View.VISIBLE
         binding.fetchedCardNetwork.addView(imageView)
@@ -149,6 +185,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     private fun updateCardNetwork(brands: MutableList<String>){
         if(brands.size == 1){
+            Log.d("Checking for card network",brands.size.toString())
             removeAndAddImageCardNetworks(brands[0])
         }else{
             Log.d("updateCardNetworkRemoveAllViews","here")
@@ -181,6 +218,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
+
+        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+        Log.d("userAgentHeader in MainBottom Sheet onCreateView",userAgentHeader)
+        if(userAgentHeader.contains("Mobile",ignoreCase = true)){
+            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
 
 
 
@@ -250,13 +293,24 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.editTextCardNumber.addTextChangedListener(object : TextWatcher {
+
             var isFormatting = false // Flag to prevent reformatting when deleting spaces
             var userDeletingChars = false
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 userDeletingChars = count > after
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 if(s.toString().isNullOrBlank()){
                     isCardNumberValid = false
                     proceedButtonIsEnabled.value = false
@@ -267,6 +321,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun afterTextChanged(s: Editable?) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 if (!isFormatting) {
                     s?.let { editable ->
                         Log.d("editable text here",editable.toString()+".")
@@ -320,10 +379,20 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             var isFormatting = false
             var userDeletingChars = false
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 userDeletingChars = count > after
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 if(s.toString().isNullOrBlank()){
                     isCardValidityValid = true
                     proceedButtonIsEnabled.value = true
@@ -334,6 +403,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun afterTextChanged(s: Editable?) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 if (!isFormatting) {
                     val textNow = s.toString()
                     var text = s.toString().replace("/", "")
@@ -398,10 +472,19 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardCVV.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 Log.d("beforeTextChanged", s.toString())
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 val textNow = s.toString()
                 Log.d("onTextChanged", s.toString())
                 if (textNow.isNotBlank()) {
@@ -425,6 +508,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun afterTextChanged(s: Editable?) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 val textNow = s.toString()
                 Log.d("afterTextChanged", s.toString())
                 if (textNow.isBlank()) {
@@ -439,10 +527,21 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextNameOnCard.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 Log.d("beforeTextChanged", s.toString())
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 val textNow = s.toString()
                 if(textNow.isBlank()){
                     Log.d("inside true of text changed",s.toString())
@@ -453,6 +552,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun afterTextChanged(s: Editable?) {
+                if (bottomSheetBehavior == null)
+                    Log.d("bottomSheetBehavior is null", "check here")
+
+                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
                 val textNow = s.toString()
                 Log.d("afterTextChanged", s.toString())
                 if (textNow.isBlank()) {
@@ -714,17 +818,24 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
             val screenHeight = requireContext().resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.7 // 70%
+            val percentageOfScreenHeight = 0.9 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
 //        // Adjust the height of the bottom sheet content view
 //        val layoutParams = bottomSheetContent.layoutParams
 //        layoutParams.height = desiredHeight
 //        bottomSheetContent.layoutParams = layoutParams
-            bottomSheetBehavior?.maxHeight = desiredHeight
+
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
+            val window = d.window
+            window?.apply {
+                // Apply dim effect
+                setDimAmount(0.5f) // 50% dimming
+                setBackgroundDrawable(ColorDrawable(Color.argb(128, 0, 0, 0))) // Semi-transparent black background
+            }
 
 
 
@@ -1031,12 +1142,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
-            )
-        )
+        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
         binding.textView6.visibility = View.VISIBLE
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
@@ -1105,11 +1211,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             // Extract message from each item
             val errorMessage = fieldErrorItems.getJSONObject(i).getString("message")
             Log.d("errorMessage", errorMessage)
-
             if (errorMessage.contains("Invalid instrumentDetails.card.expiry", ignoreCase = true)) {
                 binding.invalidCardValidity.visibility = View.VISIBLE
                 binding.textView7.text = "Invalid Validity"
             }
+
             if (errorMessage.contains(
                     "instrumentDetails.card.number is invalid",
                     ignoreCase = true
@@ -1133,6 +1239,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         val statusReason = statusObject.getString("reason")
         Log.d("Reason xyz",statusReason)
 
+
+        binding.nameOnCardErrorLayout.visibility = View.VISIBLE
+        binding.textView17.text = statusReason
         if (statusReason.contains("Invalid Card Expiry", ignoreCase = true)) {
             binding.invalidCardValidity.visibility = View.VISIBLE
             binding.textView7.text = "Invalid Validity"

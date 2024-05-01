@@ -36,7 +36,6 @@ internal class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentPaymentStatusBottomSheetBinding.inflate(layoutInflater, container, false)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
 
         fetchTransactionDetailsFromSharedPreferences()
         val animationView: LottieAnimationView = binding.lottieAnimationView
@@ -66,6 +65,7 @@ internal class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         return binding.root
 
     }
+    
     private fun openActivity(activityPath: String, context: Context) {
         if (context is AppCompatActivity) {
             try {

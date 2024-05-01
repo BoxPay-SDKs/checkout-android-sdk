@@ -2,4 +2,5 @@
 <resources>
     <dimen name="collapsed_card_height">80dp</dimen>
     <dimen name="expanded_card_height">200dp</dimen>
+    <color name="scrimColor">#80000000</color>
 </resources>

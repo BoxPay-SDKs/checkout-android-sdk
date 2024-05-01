@@ -39,10 +39,11 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
 
         binding.lottieAnimationView.playAnimation()
         fetchTransactionDetailsFromSharedPreferences()
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
         binding.transactionAmountTextView.text = amount
         binding.transactionIDTextView.text = transactionID
-        val sharedPreferences =
-            requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
         binding. proceedButton.setOnClickListener(){
