@@ -1059,8 +1059,18 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     var url = ""
 
                     if (status.contains("Rejected", ignoreCase = true)) {
-                        Log.d("reason check","here")
-                        getStatusReasonFromResponse(response.toString())
+//                        Log.d("reason check","here")
+//                        getStatusReasonFromResponse(response.toString())
+
+//                        val callback =
+//                            FailureScreenCallBackSingletonClass.getInstance().getYourObject()
+//                        if (callback == null) {
+//                            Log.d("callback is null", "PaymentFailed")
+//                        } else {
+//                            callback.openFailureScreen()
+//                        }
+                        PaymentFailureScreen().show(parentFragmentManager,"FailureScreen")
+
 
                     }else{
                         val url = response
@@ -1240,8 +1250,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         Log.d("Reason xyz",statusReason)
 
 
-        binding.nameOnCardErrorLayout.visibility = View.VISIBLE
-        binding.textView17.text = statusReason
+        binding.invalidCardValidity.visibility = View.VISIBLE
+        binding.textView7.text = statusReason
         if (statusReason.contains("Invalid Card Expiry", ignoreCase = true)) {
             binding.invalidCardValidity.visibility = View.VISIBLE
             binding.textView7.text = "Invalid Validity"
