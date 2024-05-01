@@ -3,6 +3,9 @@ package com.example.tray
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.pm.ActivityInfo
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
@@ -11,6 +14,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebSettings
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.activityViewModels
@@ -61,7 +65,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             if (keyCode == KeyEvent.KEYCODE_BACK && !isBottomSheetShown) {
                 val bottomSheet = CancelConfirmationBottomSheet()
                 bottomSheet.show(parentFragmentManager, "CancelConfirmationBottomSheet")
-                isBottomSheetShown = true
                 true
             } else {
                 Log.d("onResume called", "not back")
@@ -84,16 +87,23 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             if (bottomSheetBehavior == null)
                 Log.d("bottomSheetBehavior is null", "check here")
 
-
             val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.7 // 90%
+            val percentageOfScreenHeight = 0.8 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+
+            val window = d.window
+            window?.apply {
+                // Apply dim effect
+                setDimAmount(0.5f) // 50% dimming
+                setBackgroundDrawable(ColorDrawable(Color.argb(128, 0, 0, 0))) // Semi-transparent black background
+            }
 
 //        // Adjust the height of the bottom sheet content view
 //        val layoutParams = bottomSheetContent.layoutParams
 //        layoutParams.height = desiredHeight
 //        bottomSheetContent.layoutParams = layoutParams
-//            bottomSheetBehavior?.maxHeight = desiredHeight
+
+            bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -149,6 +159,13 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                 explicitDismiss()
                 sharedViewModel.bottomSheetDismissed()
             }
+        }
+
+
+        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+        Log.d("userAgentHeader in MainBottom Sheet onCreateView",userAgentHeader)
+        if(userAgentHeader.contains("Mobile",ignoreCase = true)){
+            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
 
 

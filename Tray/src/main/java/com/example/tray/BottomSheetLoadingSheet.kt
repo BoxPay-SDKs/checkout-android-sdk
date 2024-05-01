@@ -33,9 +33,6 @@ class BottomSheetLoadingSheet : BottomSheetDialogFragment() {
         }
 
 
-
-        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
         val callBackFunctions = callBackFunctionForLoadingState(::dismissCurrentBottomSheet)
         SingletonClassForLoadingState.getInstance().callBackFunctions = callBackFunctions
         return binding.root

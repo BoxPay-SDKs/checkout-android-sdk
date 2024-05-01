@@ -13,8 +13,9 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
 
 
-
     <application>
+
+
         <activity
             android:name=".BottomSheetLoadingSheet"
             android:exported="false" />
@@ -32,6 +33,7 @@
             android:exported="false" />
         <activity
             android:name=".Check"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="false" />
         <activity
             android:name=".TrayActivity"

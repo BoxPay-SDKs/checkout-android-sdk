@@ -18,6 +18,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -91,6 +92,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     private var UPIAppsAndPackageMap: MutableMap<String, String> = mutableMapOf()
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var job: Job? = null
+    private var isTablet = false
     private var i = 1
     private var transactionAmount: String? = null
     private var upiAvailable = false
@@ -180,7 +182,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             }
 
             // If the app can handle the UPI intent, it's a UPI app
-            if (!upiApps.isEmpty()) {
+            if (!upiApps.isEmpty() || appName == "Paytm" || appName == "GPay" || appName == "PhonePe") {
                 i++;
                 Log.d("UPI App", appName)
                 Log.d("UPI App Package Name", app.packageName)
@@ -198,7 +200,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 }
             }
         }
-
         Log.d("Checking Time issue", "fetch upi apps")
     }
 
@@ -222,6 +223,24 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         binding.boxpayLogoLottie.cancelAnimation()
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        Log.d("upiIntent Status","inside onActivityResult")
+        job?.cancel()
+        if (requestCode == 121) {
+            if (resultCode == Activity.RESULT_OK) {
+                // The child activity was successful
+                // Handle the success here
+                Log.d("upiIntent Status","Success")
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // The child activity was canceled or failed
+                // Handle the cancellation or failure here
+                Log.d("upiIntent Status","Fail")
+            }
+        }
+    }
+
     private fun launchUPIIntent(url: String) {
         val intent = Intent(Intent.ACTION_VIEW)
         Log.d("upiIntent", url)
@@ -231,7 +250,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         try {
             startFunctionCalls()
 
-            startActivity(intent)
+            startActivityForResult(intent,121)
 
             removeLoadingState()
         } catch (e: ActivityNotFoundException) {
@@ -245,13 +264,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             while (isActive) {
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 5 seconds
-                delay(4000)
+                delay(2000)
             }
         }
     }
 
 
     fun urlToBase64(base64String: String): String {
+
+
 
         return try {
             // Decode Base64 string to byte array
@@ -269,7 +290,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchStatusAndReason(url: String) {
-        Log.d("fetching function called correctly", "Fine")
+        Log.d("fetching function called correctly", "Fine Main Bottom SHeet")
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
@@ -305,10 +326,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                             dismiss()
                         }
                     } else if (status.contains("PENDING", ignoreCase = true)) {
-//                        val bottomSheet = PaymentFailureScreen()
-//                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
-//                        finish()
+
                     } else if (status.contains("EXPIRED", ignoreCase = true)) {
+                        Log.d("Inside Expired","Expired")
                         job?.cancel()
                         binding.payUsingAnyUPIConstraint.isEnabled = true
                     } else if (status.contains("PROCESSING", ignoreCase = true)) {
@@ -328,9 +348,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                     } else {
                         job?.cancel()
                         binding.payUsingAnyUPIConstraint.isEnabled = true
-
 //                        val bottomSheet = PaymentFailureScreen()
 //                        bottomSheet.show(parentFragmentManager,"PaymentFailureBottomSheet")
+                        Log.d("inside else condition","else")
                     }
                 } catch (e: JSONException) {
                     e.printStackTrace()
@@ -397,7 +417,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
                 val upiAppDetails = JSONObject().apply {
                     put("upiApp", appName)
-                    //
 
 
                     // Replace with the actual shopper VPA value
@@ -499,11 +518,27 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 //        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         Log.d("Checking Time issue", "Main Bottom Sheet")
         binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
-        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         queue = Volley.newRequestQueue(requireContext())
         editor = sharedPreferences.edit()
+
+
+
+        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+        Log.d("userAgentHeader in MainBottom Sheet onCreateView",userAgentHeader)
+
+        if(userAgentHeader.contains("Mobile",ignoreCase = true)){
+            isTablet = false
+
+            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }else{
+            isTablet = true
+        }
+
+
+
+
 
 
 
@@ -551,6 +586,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
         val packageManager = requireContext().packageManager
         getAllInstalledApps(packageManager)
+
+
 
 
         val orderSummaryAdapter = OrderSummaryItemsAdapter(imagesUrls, items, prices,requireContext())
@@ -743,7 +780,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
 
-                val webView = WebView(requireContext())
 
                 // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
@@ -898,6 +934,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
                 val itemsArray = paymentDetailsObject.getJSONObject("order").getJSONArray("items")
+                val additionalDetails = response.getJSONObject("configs").getJSONArray("additionalFieldSets")
+                Log.d("additionalDetails",additionalDetails.toString())
+                var orderSummaryEnable = false
+
+                for(i in 0 until additionalDetails.length()){
+                    if(additionalDetails.get(i) == "ORDER_ITEM_DETAILS"){
+                        orderSummaryEnable = true
+                    }
+                }
+                Log.d("orderSummaryEnable",orderSummaryEnable.toString())
+
+
+                if(!orderSummaryEnable){
+                    binding.cardView3.visibility = View.GONE
+                }
 
                 for (i in 0 until itemsArray.length()) {
                     val imageURL = itemsArray.getJSONObject(i).getString("imageUrl")
@@ -1101,13 +1152,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     private fun openDefaultUPIIntentBottomSheetFromAndroid(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startFunctionCalls()
-
-
-
-
-
+        startActivityForResult(intent,121)
         removeLoadingState()
-        startActivity(intent)
         binding.payUsingAnyUPIConstraint.isEnabled = true
     }
 
@@ -1290,7 +1336,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
     }
 
     // Method to show overlay in the first BottomSheet
-    private fun showOverlayInCurrentBottomSheet() {
+    fun showOverlayInCurrentBottomSheet() {
         // Create a semi-transparent overlay view
         overlayViewCurrentBottomSheet = View(requireContext())
         overlayViewCurrentBottomSheet?.setBackgroundColor(Color.parseColor("#80000000")) // Adjust color and transparency as needed
@@ -1319,7 +1365,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
         binding.arrowIcon.animate()
             .rotation(180f)
-            .setDuration(500) // Set the duration of the animation in milliseconds
+            .setDuration(250) // Set the duration of the animation in milliseconds
             .withEndAction {
                 // Code to be executed when the animation ends
             }
@@ -1333,7 +1379,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
         binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
         binding.arrowIcon.animate()
             .rotation(0f)
-            .setDuration(500) // Set the duration of the animation in milliseconds
+            .setDuration(250) // Set the duration of the animation in milliseconds
             .withEndAction {
                 // Code to be executed when the animation ends
             }
@@ -1399,6 +1445,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
+
+
+
+
+//            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // Set transparent background
+
             if (bottomSheetBehavior == null)
                 Log.d("bottomSheetBehavior is null", "check here")
 
@@ -1413,6 +1465,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
             if (bottomSheetBehavior == null)
                 Log.d("MainBottomSheet  bottomSheet is null", "Main Bottom Sheet")
             bottomSheetBehavior?.maxHeight = desiredHeight
+
+            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
 

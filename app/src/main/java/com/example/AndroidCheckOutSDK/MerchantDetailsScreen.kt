@@ -21,7 +21,6 @@ import org.json.JSONObject
 class MerchantDetailsScreen : AppCompatActivity() {
     private val binding : ActivityMerchantDetailsScreenBinding by lazy {
         ActivityMerchantDetailsScreenBinding.inflate(layoutInflater)
-
     }
     private var selectedEnvironment: String? = null
 
