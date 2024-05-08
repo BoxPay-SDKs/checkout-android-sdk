@@ -63,10 +63,17 @@ class NetbankingBanksAdapter(
 
                 val bankName = banksDetails[position].bankName
                 val bankImage = banksDetails[position].bankImage
-                if (bankName.length >= 21) {
-                    bankNameTextView.text = bankName.substring(0, 21) + "..."
+                val displayMetrics = context.resources.displayMetrics
+                val screenWidth = displayMetrics.widthPixels
+                val averageWidthPerCharacter = bankNameTextView.paint.measureText("A")
+                Log.d("char before ellipsis",screenWidth.toString()+" "+averageWidthPerCharacter.toString())
+
+                val maxCharacters = (screenWidth / averageWidthPerCharacter).toInt()
+
+                if (bankName.length > maxCharacters) {
+                    bankNameTextView.text = "${bankName.substring(0, maxCharacters)}..."
                 } else {
-                    bankNameTextView.text = bankName // You were missing this assignment
+                    bankNameTextView.text = bankName
                 }
 
                 Log.d("imageURL",banksDetails[position].bankImage)

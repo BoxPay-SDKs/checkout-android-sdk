@@ -63,8 +63,15 @@ class WalletAdapter(
 
                 val walletName = walletDetails[position].walletName
                 val walletImage = walletDetails[position].walletImage
-                if (walletName.length >= 21) {
-                    walletName.substring(0, 21) + "..."
+                val displayMetrics = context.resources.displayMetrics
+                val screenWidth = displayMetrics.widthPixels
+                val averageWidthPerCharacter = walletNameTextView.paint.measureText("A")
+                Log.d("char before ellipsis",screenWidth.toString()+" "+averageWidthPerCharacter.toString())
+
+                val maxCharacters = (screenWidth / averageWidthPerCharacter).toInt()
+
+                if (walletName.length > maxCharacters) {
+                    walletNameTextView.text = "${walletName.substring(0, maxCharacters)}..."
                 } else {
                     walletNameTextView.text = walletName
                 }

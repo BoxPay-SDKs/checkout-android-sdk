@@ -35,6 +35,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
+import coil.transform.CircleCropTransformation
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -489,6 +490,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                     imageView?.load(bankDetail.bankImage){
                         decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
+                        transformations( CircleCropTransformation())
+                        size(80, 80)
                     }
 
                     getPopularTextViewByNum(index + 1).text =
