@@ -1,14 +1,20 @@
 package com.example.tray
 
+import android.Manifest
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.database.Cursor
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Telephony
 import android.util.Log
 import android.view.KeyEvent
 import android.webkit.JavascriptInterface
@@ -17,8 +23,10 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
@@ -43,15 +51,23 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.Timer
+import java.util.TimerTask
 import java.util.regex.Pattern
+import kotlin.reflect.typeOf
 
 
 internal class OTPScreenWebView() : AppCompatActivity() {
     private val binding by lazy {
         ActivityOtpscreenWebViewBinding.inflate(layoutInflater)
     }
+
+    val permissionReceive = Manifest.permission.RECEIVE_SMS
+    val permissionRead = Manifest.permission.READ_SMS
+    val smsVerificationReceiver = SmsReceiver()
     private var webViewCloseListener: OnWebViewCloseListener? = null
     private var job: Job? = null
+    private var jobForFetchingSMS : Job? = null
     var isBottomSheetShown = false
     private var token: String? = null
     private lateinit var requestQueue: RequestQueue
@@ -64,34 +80,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private val SMS_CONSENT_REQUEST = 1010
     private var otpFetched: String? = null
     private var startedCallsForOTPInject = false
-    val smsVerificationReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (SmsRetriever.SMS_RETRIEVED_ACTION == intent.action) {
-                val extras = intent.extras
-                val smsRetrieverStatus = extras?.get(SmsRetriever.EXTRA_STATUS) as Status
-                when (smsRetrieverStatus.statusCode) {
-                    CommonStatusCodes.SUCCESS -> {
-                        // Get consent intent
-                        val consentIntent =
-                            extras.getParcelable<Intent>(SmsRetriever.EXTRA_CONSENT_INTENT)
-                        try {
-                            // Start activity to show consent dialog to user, activity must be started in
-                            // 5 minutes, otherwise you'll receive another TIMEOUT intent
-                            if (consentIntent != null) {
-                                startActivityForResult(consentIntent, SMS_CONSENT_REQUEST)
-                            }
-                        } catch (e: ActivityNotFoundException) {
-                            // Handle the exception ...
-                        }
-                    }
 
-                    CommonStatusCodes.TIMEOUT -> {
-                        // Time out occurred, handle the error.
-                    }
-                }
-            }
-        }
-    }
 
     fun explicitDismiss() {
         Log.d("cancel confirmation bottom sheet", "explicit dismiss called")
@@ -107,20 +96,52 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         webViewCloseListener?.onWebViewClosed()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
 
-        val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
-        ContextCompat.registerReceiver(
-            this,
-            smsVerificationReceiver,
-            intentFilter,
-            ContextCompat.RECEIVER_VISIBLE_TO_INSTANT_APPS
-        )
 
-        initAutoFill()
+        if (ContextCompat.checkSelfPermission(this, permissionReceive) == PackageManager.PERMISSION_GRANTED) {
+            // Permission is granted, register the receiver
+            Log.d("Permission given","For Receive SMS")
+
+        } else {
+            // Permission is not granted, request it from the user
+            ActivityCompat.requestPermissions(this, arrayOf(permissionReceive), 101)
+        }
+
+        if (ContextCompat.checkSelfPermission(this, permissionRead) == PackageManager.PERMISSION_GRANTED) {
+            Log.d("Permission given","For Read SMS")
+            // Permission is granted, register the receiver
+        } else {
+            // Permission is not granted, request it from the user
+            ActivityCompat.requestPermissions(this, arrayOf(permissionRead), 101)
+        }
+
+        if(ContextCompat.checkSelfPermission(this, permissionRead) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, permissionReceive) == PackageManager.PERMISSION_GRANTED){
+            val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
+            registerReceiver(
+                smsVerificationReceiver,
+                intentFilter,
+                RECEIVER_VISIBLE_TO_INSTANT_APPS
+            )
+        }else{
+            ActivityCompat.requestPermissions(this, arrayOf(permissionRead,permissionReceive), 101)
+        }
+
+
+        jobForFetchingSMS = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                Log.d("Read Sms","Called")
+                readSms()
+                // Delay for 5 seconds
+                delay(1000)
+            }
+        }
+
+//        initAutoFill()
 
 
 
@@ -173,6 +194,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         }
 
 
+
+
+
 //        val mainHandler = Handler(Looper.getMainLooper())
 //        // Define a Runnable task to be executed after the delay
 //        val delayedTask = Runnable {
@@ -196,6 +220,67 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             }
     }
 
+    fun hasValidOTP(input: String): Boolean {
+        val regex = Regex("(?:your|use this) (verification code|passcode|OTP)\\s*(\\d{6})(?<!\\d)", RegexOption.IGNORE_CASE)
+        Log.d("Message Received",regex.matches(input).toString())
+        return regex.matches(input)
+    }
+
+    private fun readSms() {
+        try {
+            val contentResolver: ContentResolver = this.contentResolver
+            val cursor: Cursor? = contentResolver.query(
+                Telephony.Sms.CONTENT_URI,
+                null,
+                null,
+                null,
+                Telephony.Sms.DEFAULT_SORT_ORDER + " LIMIT 1"
+            )
+
+            cursor?.use { // Ensures the cursor is closed after use
+                if (it.moveToFirst()) {
+                    val address = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
+                    val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
+                    Log.d("Message Received", "Address: $address, Body: $body")
+                    val extractedOTP = extractOTPFromMessage(body)
+                    if(extractedOTP != null){
+                        Log.d("Extracted OTP",extractedOTP)
+                        otpFetched = extractedOTP
+                        jobForFetchingSMS?.cancel()
+                    }else{
+                        Log.d("Extracted OTP","null")
+                    }
+                    // Process SMS message here
+                } else {
+                    // No SMS found
+                    Log.d("Message Received", "No SMS found")
+                }
+            }
+        } catch (e: SecurityException) {
+            // Handle permission denial
+            Log.e("Error", "Permission Denied: ${e.message}")
+
+
+            val permission = Manifest.permission.RECEIVE_SMS
+
+            ActivityCompat.requestPermissions(this, arrayOf(permission), 101)
+        } catch (e: Exception) {
+            // Handle other exceptions
+            Log.e("Error", "Error reading SMS: ${e.message}")
+        }
+    }
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 101) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                readSms()
+            }else{
+//                val permission = Manifest.permission.RECEIVE_SMS
+//                ActivityCompat.requestPermissions(this, arrayOf(permission), 101)
+            }
+        }
+    }
+
 
     private fun fetchAndInjectOtp() {
 
@@ -204,40 +289,134 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             return
         }
 
+        val otpNum = otpFetched!!.toInt()
+
+
 //var submitButton = document.querySelector('button[type="submit"]');
         binding.webViewForOtpValidation.addJavascriptInterface(WebAppInterface(this), "Android")
 
 
         Log.d("OTP Validation", otpFetched.toString())
         val jsCode = """
-            
-            
-            
+            var proceedButtonIDFC = document.querySelector('.btn-idfc-maroon');
+            var inputFieldWithPassword = document.querySelector('input[type="password"]');
+            var inputFieldWithAutoComplete = document.querySelector('input[autocomplete="one-time-code"]'); 
     var inputField = document.querySelector('input'); // Assuming this is your OTP input field
-    var submitButton = document.querySelector('button[type="submit"]');
+var submitButton = document.querySelector('button[type="submit"]');
+var submitButtonMainButton = document.querySelector('td.mainbutton a#submitOTP');
+var makePaymentButton = document.querySelector('button[type="button"]');
+var amexContinueButton = document.querySelector('#otcContinueBtn');
 
-    if (inputField) {
-        inputField.type = "text";
-
-  setTimeout(function() {
-  inputField.value = "$otpFetched";
-    inputField.type = "password";
-// Change back to password after a delay
-  }, 1000); // Set the OTP value in the input field
-        if (submitButton) {
+if(inputFieldWithAutoComplete){
+    inputFieldWithAutoComplete.type = "text";
+ inputFieldWithAutoComplete.value = "$otpFetched";
+    setTimeout(function() {
+    if(submitButtonMainButton){
+        submitButtonMainButton.disabled = false;
+                setTimeout(function() {
+                    submitButtonMainButton.click(); // Click the submit button after a delay
+                }, 2000);
+        }
+        else if (submitButton) {
             if (submitButton.disabled) {
                 // If the submit button is disabled, enable it
                 submitButton.disabled = false;
+                setTimeout(function() {
+                    submitButton.click(); // Click the submit button after a delay
+                }, 2000); // Adjust the delay time as needed
+            } else {
+                setTimeout(function() {
+                    submitButton.click(); // Click the submit button after a delay
+                }, 2000); // Adjust the delay time as needed
             }
-
-            // Click the submit button after setting the OTP value and enabling the button
-            submitButton.click();
-        } else {
-        
         }
-    } else {
-
+        // Change back to password after a de   lay
+        
+       }, 1000);
     }
+else if(inputFieldWithPassword){
+inputFieldWithPassword.value = "$otpFetched";
+    setTimeout(function() {
+    if(amexContinueButton){
+                setTimeout(function() {
+                    amexContinueButton.click(); // Click the submit button after a delay
+                }, 2000);
+    }
+    else if(proceedButtonIDFC){
+    proceedButtonIDFC.disabled = false;
+                setTimeout(function() {
+                    proceedButtonIDFC.click(); // Click the submit button after a delay
+                }, 2000);
+    }
+    else if(submitButtonMainButton){
+        submitButtonMainButton.disabled = false;
+                setTimeout(function() {
+                    submitButtonMainButton.click(); // Click the submit button after a delay
+                }, 2000);
+        }
+        else if (submitButton) {
+            if (submitButton.disabled) {
+                // If the submit button is disabled, enable it
+                submitButton.disabled = false;
+                setTimeout(function() {
+                    submitButton.click(); // Click the submit button after a delay
+                }, 2000); // Adjust the delay time as needed
+            } else {
+                setTimeout(function() {
+                    submitButton.click(); // Click the submit button after a delay
+                }, 2000); // Adjust the delay time as needed
+            }
+        }else if(makePaymentButton){
+        if (makePaymentButton.disabled) {
+                // If the submit button is disabled, enable it
+                makePaymentButton.disabled = false;
+                setTimeout(function() {
+                    makePaymentButton.click(); // Click the submit button after a delay
+                }, 2000); // Adjust the delay time as needed
+            } else {
+                setTimeout(function() {
+                    makePaymentButton.click(); // Click the submit button after a delay
+                }, 2000); // Adjust the delay time as needed
+            }
+        }
+        
+        // Change back to password after a delay
+        
+    }, 1000); 
+}
+else if (inputField) {
+    inputField.value = "$otpFetched";
+    setTimeout(function() {
+    if(submitButtonMainButton){
+        submitButtonMainButton.disabled = false;
+       
+                setTimeout(function() {
+                    submitButtonMainButton.click(); // Click the submit button after a delay
+                }, 2000);
+        }
+        else if (submitButton) {
+       
+        
+            if (submitButton.disabled) {
+                // If the submit button is disabled, enable it
+                submitButton.disabled = false;
+      
+                setTimeout(function() {
+                    submitButton.click(); // Click the submit button after a delay
+                }, 2000); // Adjust the delay time as needed
+            } else {
+                setTimeout(function() {
+                    submitButton.click(); // Click the submit button after a delay
+                }, 2000); // Adjust the delay time as needed
+            }
+        }
+      
+        // Change back to password after a delay
+      
+    }, 1000); // Set the OTP value in the input field after a delay
+} else {
+    // Handle the case where the input field is not found
+}
 """.trimIndent()
 
 // Execute JavaScript code immediately

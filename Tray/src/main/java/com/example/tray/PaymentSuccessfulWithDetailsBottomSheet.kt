@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -134,6 +135,13 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
 
             if (bottomSheetBehavior == null)
                 Log.d("bottomSheetBehavior is null", "check here")
+
+            val window = d.window
+            window?.apply {
+                // Apply dim effect
+                setDimAmount(0.5f) // 50% dimming
+                setBackgroundDrawable(ColorDrawable(Color.argb(128, 0, 0, 0))) // Semi-transparent black background
+            }
 
 
             val screenHeight = resources.displayMetrics.heightPixels

@@ -212,6 +212,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     imageView?.load(walletDetail.walletImage){
                         decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
                         transformations( CircleCropTransformation())
+                        size(80, 80)
                     }
 
 

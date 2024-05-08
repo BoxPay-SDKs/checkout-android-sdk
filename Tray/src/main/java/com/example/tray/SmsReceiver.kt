@@ -1,51 +1,48 @@
 package com.example.tray
 
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
 import android.util.Log
+import androidx.core.app.ActivityCompat.startActivityForResult
+import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.common.api.Status
 import java.util.regex.Pattern
 
 
 
 class SmsReceiver : BroadcastReceiver() {
+    private val SMS_CONSENT_REQUEST = 1010
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("Broadcast Receiver","inside onReceive")
-        if (intent.action == Telephony.Sms.Intents.SMS_RECEIVED_ACTION) {
-            val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
-            val iterator = messages?.iterator()
+        if (SmsRetriever.SMS_RETRIEVED_ACTION == intent.action) {
+            val extras = intent.extras
+            val smsRetrieverStatus = extras?.get(SmsRetriever.EXTRA_STATUS) as Status
+            when (smsRetrieverStatus.statusCode) {
+                CommonStatusCodes.SUCCESS -> {
+                    // Get consent intent
+                    val consentIntent =
+                        extras.getParcelable<Intent>(SmsRetriever.EXTRA_CONSENT_INTENT)
+                    try {
+                        // Start activity to show consent dialog to user, activity must be started in
+                        // 5 minutes, otherwise you'll receive another TIMEOUT intent
+//                        if (consentIntent != null) {
+//                            startActivityForResult(consentIntent, SMS_CONSENT_REQUEST)
+//                        }
+                    } catch (e: ActivityNotFoundException) {
+                        // Handle the exception ...
+                    }
+                }
 
-            if (iterator != null) {
-                while (iterator.hasNext()) {
-                    val sms = iterator.next()
-                    val sender = sms.displayOriginatingAddress
-                    val messageBody = sms.messageBody
-                    handleIncomingSms(context, sender, messageBody)
+                CommonStatusCodes.TIMEOUT -> {
+                    // Time out occurred, handle the error.
                 }
             }
         }
     }
 
-    private fun handleIncomingSms(context: Context, sender: String, messageBody: String) {
-        // Implement your logic to handle the incoming SMS
-        Log.d("Broadcast Receiver",messageBody)
-        val otp = extractOTP(messageBody)
-        if (otp != null) {
-            // OTP extracted, trigger appropriate action (e.g., show dialog, process OTP)
-            // You can use LocalBroadcastManager or other means to communicate this event
-            // to your activity/fragment
-        }
-    }
 
-    private fun extractOTP(message: String): String? {
-        val pattern = Pattern.compile("\\b\\d{6}\\b") // Match 6-digit number
-        val matcher = pattern.matcher(message)
-        return if (matcher.find()) {
-            matcher.group(0) // Extract the OTP
-        } else {
-            null // OTP not found
-        }
-    }
 }

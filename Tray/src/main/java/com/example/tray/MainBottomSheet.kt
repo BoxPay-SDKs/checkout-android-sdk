@@ -1,10 +1,10 @@
 package com.example.tray
 
 
-import DismissViewModel
 import SingletonClass
+
+
 import android.app.Activity
-import android.app.Activity.RESULT_OK
 import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -18,7 +18,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -30,19 +29,18 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.ArrayAdapter
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
@@ -59,7 +57,6 @@ import com.example.tray.ViewModels.OverlayViewModel
 import com.example.tray.ViewModels.SingletonClassForLoadingState
 import com.example.tray.adapters.OrderSummaryItemsAdapter
 import com.example.tray.databinding.FragmentMainBottomSheetBinding
-import com.example.tray.dataclasses.WalletDataClass
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -77,6 +74,7 @@ import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.Locale
+
 
 internal class MainBottomSheet : BottomSheetDialogFragment() {
     private var transactionId : String ?= null

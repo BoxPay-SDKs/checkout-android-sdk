@@ -115,7 +115,6 @@ class CancelConfirmationBottomSheet : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_COLLAPSED -> {
                             // Collapsed
-
                         }
 
                         BottomSheetBehavior.STATE_DRAGGING -> {
