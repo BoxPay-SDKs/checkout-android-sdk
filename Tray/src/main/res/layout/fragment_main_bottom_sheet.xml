@@ -93,6 +93,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
+                        android:visibility="visible"
                         android:background="@android:color/white"
                         app:cardCornerRadius="10dp"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -316,11 +317,12 @@
                         android:id="@+id/textView12"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="22dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="16dp"
                         android:fontFamily="@font/poppins"
                         android:text="Choose payment method"
                         android:textColor="#0A090B"
-                        app:layout_constraintStart_toStartOf="@+id/cardView3"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/cardView3" />
 
                     <androidx.cardview.widget.CardView

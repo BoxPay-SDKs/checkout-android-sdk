@@ -3,6 +3,5 @@
     <string-array name="environment_options">
         <item>test</item>
         <item>sandbox</item>
-        <item>prod</item>
     </string-array>
 </resources>

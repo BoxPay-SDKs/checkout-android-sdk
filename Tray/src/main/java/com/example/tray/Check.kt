@@ -133,7 +133,7 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/k14ut9k7gQ/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/k12aNmllPW/sessions"
         val jsonData = JSONObject("""{
       "context": {
         "countryCode": "IN",
@@ -211,7 +211,7 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer bXj9R23osaf70w00Rn2RXFVOUpis6sn1XNPWkDu8g9tpwjP4hZThKqS38iA6E931qbm3bXGLKQJ7scZaufrMvq"
+                headers["Authorization"] =  "Bearer 72t54rOBQKzlEPddLizUJcZnJJGkm6Ysjy61u8eCtuYywGUhQW3MUivPwW0wmnky3gBQViQo9n6apZcUlXz4h9"
                 return headers
             }
         }

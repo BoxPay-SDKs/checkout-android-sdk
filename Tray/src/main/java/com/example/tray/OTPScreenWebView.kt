@@ -103,43 +103,16 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
 
 
-        if (ContextCompat.checkSelfPermission(this, permissionReceive) == PackageManager.PERMISSION_GRANTED) {
-            // Permission is granted, register the receiver
-            Log.d("Permission given","For Receive SMS")
-
-        } else {
-            // Permission is not granted, request it from the user
-            ActivityCompat.requestPermissions(this, arrayOf(permissionReceive), 101)
-        }
-
-        if (ContextCompat.checkSelfPermission(this, permissionRead) == PackageManager.PERMISSION_GRANTED) {
-            Log.d("Permission given","For Read SMS")
-            // Permission is granted, register the receiver
-        } else {
-            // Permission is not granted, request it from the user
-            ActivityCompat.requestPermissions(this, arrayOf(permissionRead), 101)
-        }
-
-        if(ContextCompat.checkSelfPermission(this, permissionRead) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, permissionReceive) == PackageManager.PERMISSION_GRANTED){
-            val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
-            registerReceiver(
-                smsVerificationReceiver,
-                intentFilter,
-                RECEIVER_VISIBLE_TO_INSTANT_APPS
-            )
-        }else{
-            ActivityCompat.requestPermissions(this, arrayOf(permissionRead,permissionReceive), 101)
-        }
 
 
-        jobForFetchingSMS = CoroutineScope(Dispatchers.IO).launch {
-            while (isActive) {
-                Log.d("Read Sms","Called")
-                readSms()
-                // Delay for 5 seconds
-                delay(1000)
-            }
-        }
+
+
+
+
+
+
+
+
 
 //        initAutoFill()
 
@@ -169,6 +142,51 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         binding.webViewForOtpValidation.settings.javaScriptEnabled = true
         startFunctionCalls()
         fetchTransactionDetailsFromSharedPreferences()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (ContextCompat.checkSelfPermission(this, permissionReceive) == PackageManager.PERMISSION_GRANTED) {
+                // Permission is granted, register the receiver
+                Log.d("Permission given","For Receive SMS")
+
+            } else {
+                // Permission is not granted, request it from the user
+                ActivityCompat.requestPermissions(this, arrayOf(permissionReceive), 101)
+            }
+
+            if (ContextCompat.checkSelfPermission(this, permissionRead) == PackageManager.PERMISSION_GRANTED) {
+                Log.d("Permission given","For Read SMS")
+                // Permission is granted, register the receiver
+            } else {
+                // Permission is not granted, request it from the user
+                ActivityCompat.requestPermissions(this, arrayOf(permissionRead), 101)
+            }
+
+            if(ContextCompat.checkSelfPermission(this, permissionRead) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, permissionReceive) == PackageManager.PERMISSION_GRANTED){
+                val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
+                registerReceiver(
+                    smsVerificationReceiver,
+                    intentFilter,
+                    RECEIVER_VISIBLE_TO_INSTANT_APPS
+                )
+
+                readSms()
+            }else{
+                ActivityCompat.requestPermissions(this, arrayOf(permissionRead,permissionReceive), 101)
+            }
+
+
+            jobForFetchingSMS = CoroutineScope(Dispatchers.IO).launch {
+                while (isActive) {
+                    Log.d("Read Sms","Called")
+                    readSms()
+                    // Delay for 5 seconds
+                    delay(1000)
+                }
+            }
+
+
+        }, 5000) // 5000 milliseconds = 5 seconds
+
 
 
         binding.webViewForOtpValidation.webViewClient = object : WebViewClient() {
@@ -589,6 +607,15 @@ else if (inputField) {
 
                     } else if (status.contains("Rejected", ignoreCase = true)) {
                         Log.d("Failure Screen View Model", "OTP Screen $status")
+                        job?.cancel()
+//                        val bottomSheet = PaymentFailureScreen()
+                        val callback =
+                            FailureScreenCallBackSingletonClass.getInstance().getYourObject()
+                        if (callback == null) {
+                            Log.d("callback is null", "PaymentFailed")
+                        } else {
+                            callback.openFailureScreen()
+                        }
                         finish()
                     }
                 } catch (e: JSONException) {
