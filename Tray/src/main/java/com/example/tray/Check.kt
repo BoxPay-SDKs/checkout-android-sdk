@@ -24,16 +24,17 @@ class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
     private var successScreenFullReferencePath : String ?= null
     private var tokenFetchedAndOpen = false
+
     private val binding : ActivityCheckBinding by lazy {
         ActivityCheckBinding.inflate(layoutInflater)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 //        val bottomSheet = QuickPayBottomSheet()
 //        bottomSheet.show(supportFragmentManager,"QuickPayTesting")
+
         makePaymentRequest(this)
 
         binding.textView6.text = "Generating Token Please wait..."
@@ -96,7 +97,7 @@ class Check : AppCompatActivity() {
     private fun handleResponseWithToken() {
         if(tokenFetchedAndOpen)
             return
-        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
+        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}",)
         showBottomSheetWithOverlay()
         tokenFetchedAndOpen = true
     }
@@ -104,6 +105,7 @@ class Check : AppCompatActivity() {
      private fun showBottomSheetWithOverlay() {
         val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,false)
         boxPayCheckout.display()
+//         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
 
 
@@ -119,10 +121,19 @@ class Check : AppCompatActivity() {
         }
     }
 
+//    "billingAddress": {
+//        "address1": "first address line",
+//        "address2": "second address line",
+//        "city": "Faridabad",
+//        "state": "Haryana",
+//        "countryCode": "IN",
+//        "postalCode": "121004"
+//    },
+
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/k12aNmllPW/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/k14ut9k7gQ/sessions"
         val jsonData = JSONObject("""{
       "context": {
         "countryCode": "IN",
@@ -132,14 +143,6 @@ class Check : AppCompatActivity() {
       "paymentType": "S",
       "money": {"amount": "1", "currencyCode": "INR"},
       "descriptor": {"line1": "Some descriptor"},
-      "billingAddress": {
-        "address1": "first address line",
-        "address2": "second address line",
-        "city": "Faridabad",
-        "state": "Haryana",
-        "countryCode": "IN",
-        "postalCode": "121004"
-      },
       "shopper": {
         "firstName": "test",
         "lastName": "last",
@@ -208,7 +211,7 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer 72t54rOBQKzlEPddLizUJcZnJJGkm6Ysjy61u8eCtuYywGUhQW3MUivPwW0wmnky3gBQViQo9n6apZcUlXz4h9"
+                headers["Authorization"] =  "Bearer bXj9R23osaf70w00Rn2RXFVOUpis6sn1XNPWkDu8g9tpwjP4hZThKqS38iA6E931qbm3bXGLKQJ7scZaufrMvq"
                 return headers
             }
         }

@@ -957,22 +957,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
-            // Billing Address
-            val billingAddressObject = JSONObject().apply {
-                put("address1", sharedPreferences.getString("address1", "null"))
-                put("address2", sharedPreferences.getString("address2", "null"))
-                put("address3", sharedPreferences.getString("address3", "null"))
-                put("city", sharedPreferences.getString("city", "null"))
-                put("countryCode", sharedPreferences.getString("countryCode", "null"))
-                put("countryName", sharedPreferences.getString("countryName", "null"))
-                put("postalCode", sharedPreferences.getString("postalCode", "null"))
-                put("state", sharedPreferences.getString("state", "null"))
-            }
-            put("billingAddress", billingAddressObject)
-
-            // Browser Data
-
-            // Get the IP address
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
@@ -1011,33 +995,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             // Instrument Details
             put("instrumentDetails", instrumentDetailsObject)
-            // Shopper
-            val shopperObject = JSONObject().apply {
-                val deliveryAddressObject = JSONObject().apply {
-
-                    put("address1", sharedPreferences.getString("address1", "null"))
-                    put("address2", sharedPreferences.getString("address2", "null"))
-                    put("address3", sharedPreferences.getString("address3", "null"))
-                    put("city", sharedPreferences.getString("city", "null"))
-                    put("countryCode", sharedPreferences.getString("countryCode", "null"))
-                    put("countryName", sharedPreferences.getString("countryName", "null"))
-                    put("postalCode", sharedPreferences.getString("postalCode", "null"))
-                    put("state", sharedPreferences.getString("state", "null"))
-                }
-
-
-                put("deliveryAddress", deliveryAddressObject)
-                put("email", sharedPreferences.getString("email", "null"))
-                put("firstName", sharedPreferences.getString("firstName", "null"))
-                if (sharedPreferences.getString("gender", "null") == "null")
-                    put("gender", JSONObject.NULL)
-                else
-                    put("gender", sharedPreferences.getString("gender", "null"))
-                put("lastName", sharedPreferences.getString("lastName", "null"))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber", "null"))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference", "null"))
-            }
-            put("shopper", shopperObject)
         }
 
         // Request a JSONObject response from the provided URL
