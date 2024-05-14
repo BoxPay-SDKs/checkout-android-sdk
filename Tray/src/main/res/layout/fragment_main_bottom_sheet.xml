@@ -330,7 +330,7 @@
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="12dp"
                         android:layout_marginEnd="16dp"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -778,7 +778,7 @@
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="12dp"
                         android:layout_marginEnd="16dp"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -947,7 +947,7 @@
                         android:layout_marginStart="16dp"
                         android:layout_marginTop="12dp"
                         android:layout_marginEnd="16dp"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         app:cardCornerRadius="8dp"
                         app:cardElevation="0dp"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -1313,7 +1313,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:visibility="gone"
-                    android:background="#E6FFFFFF">
+                    android:background="#FFFFFF">
 
                     <com.airbnb.lottie.LottieAnimationView
                         android:id="@+id/boxpayLogoLottie"

@@ -4,4 +4,5 @@
     <dimen name="expanded_card_height">200dp</dimen>
     <color name="scrimColor">#80000000</color>
     <color name="seekbar_not_progress_state">#000000</color>
+    <string name="underline_quick_pay"><u>Change</u></string>
 </resources>
