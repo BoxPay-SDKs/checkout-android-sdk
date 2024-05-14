@@ -5,6 +5,7 @@ import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -19,6 +20,7 @@ import com.google.gson.GsonBuilder
 import org.json.JSONObject
 
 class MerchantDetailsScreen : AppCompatActivity() {
+
     private val binding : ActivityMerchantDetailsScreenBinding by lazy {
         ActivityMerchantDetailsScreenBinding.inflate(layoutInflater)
     }
@@ -47,13 +49,15 @@ class MerchantDetailsScreen : AppCompatActivity() {
                 Log.d("Environment Item",selectedEnvironment.toString())
             }
 
+
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Do nothing
                 selectedEnvironment = null
             }
         }
 
         binding.button.setOnClickListener(){
+            val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(binding.editTextText.windowToken, 0)
 //            makePaymentRequest(this,binding.editTextText.text.toString())
 
             if(selectedEnvironment == null){
@@ -67,8 +71,14 @@ class MerchantDetailsScreen : AppCompatActivity() {
             binding.button.isEnabled = false
             binding.button.text = "Please Wait"
             Log.d("selectedEnvironment",selectedEnvironment.toString())
-            val checkout = BoxPayCheckout(this,token,::onPaymentResult,true)
-            checkout.display()
+            if(selectedEnvironment == "test") {
+                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false)
+                checkout.display()
+            }
+            else {
+                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true)
+                checkout.display()
+            }
         }
     }
 
