@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
@@ -18,7 +17,6 @@ import com.example.tray.databinding.ActivityCheckBinding
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
-import kotlin.reflect.KParameter
 
 class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
@@ -97,7 +95,7 @@ class Check : AppCompatActivity() {
     private fun handleResponseWithToken() {
         if(tokenFetchedAndOpen)
             return
-        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}",)
+        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
         showBottomSheetWithOverlay()
         tokenFetchedAndOpen = true
     }
@@ -128,12 +126,12 @@ class Check : AppCompatActivity() {
 //        "state": "Haryana",
 //        "countryCode": "IN",
 //        "postalCode": "121004"
-//    },
+//    }
 
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/k12aNmllPW/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/k14ut9k7gQ/sessions"
         val jsonData = JSONObject("""{
       "context": {
         "countryCode": "IN",
@@ -211,7 +209,7 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer 72t54rOBQKzlEPddLizUJcZnJJGkm6Ysjy61u8eCtuYywGUhQW3MUivPwW0wmnky3gBQViQo9n6apZcUlXz4h9"
+                headers["Authorization"] =  "Bearer bXj9R23osaf70w00Rn2RXFVOUpis6sn1XNPWkDu8g9tpwjP4hZThKqS38iA6E931qbm3bXGLKQJ7scZaufrMvq"
                 return headers
             }
         }

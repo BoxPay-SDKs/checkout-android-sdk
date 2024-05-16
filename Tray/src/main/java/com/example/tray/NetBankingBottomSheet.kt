@@ -663,7 +663,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
                 put("colorDepth", 24) // Example value
                 put("javaEnabled", true) // Example value
-                put("timeZoneOffSet", 330) // Example value
+                put("timeZoneOffSet", 330)
+                put("packageId",requireActivity().packageName)
             }
             put("browserData", browserData)
 

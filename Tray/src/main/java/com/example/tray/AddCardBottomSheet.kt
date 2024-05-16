@@ -332,7 +332,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         val textNow = editable.toString()
                         val text = textNow.replace("\\s".toRegex(), "")
                         val formattedText = formatCardNumber(text)
-
                         if (editable.toString() != formattedText && !userDeletingChars) {
                             Log.d("editable text here f",formattedText+".")
                             isFormatting = true // Set flag to prevent reformatting
@@ -531,7 +530,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (bottomSheetBehavior == null)
                     Log.d("bottomSheetBehavior is null", "check here")
 
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+//                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 Log.d("beforeTextChanged", s.toString())
             }
 
@@ -540,7 +539,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (bottomSheetBehavior == null)
                     Log.d("bottomSheetBehavior is null", "check here")
 
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+//                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
                 val textNow = s.toString()
                 if(textNow.isBlank()){
@@ -555,7 +554,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (bottomSheetBehavior == null)
                     Log.d("bottomSheetBehavior is null", "check here")
 
-                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+//                bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
                 val textNow = s.toString()
                 Log.d("afterTextChanged", s.toString())
@@ -977,6 +976,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("colorDepth", 24) // Example value
                 put("javaEnabled", true) // Example value
                 put("timeZoneOffSet", 330) // Example value
+                put("packageId",requireActivity().packageName)
             }
             put("browserData", browserData)
             val instrumentDetailsObject = JSONObject().apply {

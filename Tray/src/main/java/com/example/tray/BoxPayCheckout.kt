@@ -31,8 +31,8 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             editor.putString("environment", "sandbox-")
             this.environment = "sandbox-"
         }else{
-            editor.putString("environment","")
-            this.environment = ""
+            editor.putString("environment","test-")
+            this.environment = "test-"
         }
         editor.apply()
     }
@@ -68,6 +68,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             val bottomSheet = MainBottomSheet()
             bottomSheet.show(fragmentManager, "MainBottomSheet")
         }
+
     }
     fun initializingCallBackFunctions(){
         Log.d("result for callback","checkingPurpose")

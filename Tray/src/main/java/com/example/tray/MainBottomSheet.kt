@@ -343,12 +343,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 i++;
                 Log.d("UPI App", appName)
                 Log.d("UPI App Package Name", app.packageName)
-
                 UPIAppsAndPackageMap[appName] = app.packageName
             }
 
             // If the app can handle the UPI intent, it's a UPI app
-            if (!upiApps.isEmpty() || appName == "Paytm" || appName == "GPay" || appName == "PhonePe") {
+            if(!upiApps.isEmpty() || appName == "Paytm" || appName == "GPay" || appName == "PhonePe") {
                 i++;
                 Log.d("UPI App", appName)
                 Log.d("UPI App Package Name", app.packageName)
@@ -565,6 +564,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 put("colorDepth", 24) // Example value
                 put("javaEnabled", true) // Example value
                 put("timeZoneOffSet", 330) // Example value
+                put("packageId",requireActivity().packageName)
             }
             put("browserData", browserData)
             val instrumentDetailsObject = JSONObject().apply {
@@ -925,7 +925,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
                 put("colorDepth", 24) // Example value
                 put("javaEnabled", true) // Example value
-                put("timeZoneOffSet", 330) // Example value
+                put("timeZoneOffSet", 330)
+                put("packageId",requireActivity().packageName)// Example value
             }
             put("browserData", browserData)
 
@@ -1124,10 +1125,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                         }
                         binding.UPIQRConstraint.visibility = View.VISIBLE
                     }
+
                 } else {
                     Log.d("upi Not available", "here")
                     binding.cardView4.visibility = View.GONE
-
                 }
 
 
@@ -1286,24 +1287,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
-            // Billing Address
-//            val billingAddressObject = JSONObject().apply {
-//                put("address1", sharedPreferences.getString("address1", "null"))
-//                put("address2", sharedPreferences.getString("address2", "null"))
-//                put("address3", sharedPreferences.getString("address3", "null"))
-//                put("city", sharedPreferences.getString("city", "null"))
-//                put("countryCode", sharedPreferences.getString("countryCode", "null"))
-//                put("countryName", sharedPreferences.getString("countryName", "null"))
-//                put("postalCode", sharedPreferences.getString("postalCode", "null"))
-//                put("state", sharedPreferences.getString("state", "null"))
-//            }
-//            put("billingAddress", billingAddressObject)
-
-            // Browser Data
-
-            // Get the IP address
-
-            // Create the browserData JSON object
             val browserData = JSONObject().apply {
 
                 val webView = WebView(requireContext())
@@ -1319,14 +1302,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment() {
                 put("userAgentHeader", userAgentHeader)
                 put("browserLanguage", Locale.getDefault().toString())
                 put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
-                put("colorDepth", 24) // Example value
                 put("javaEnabled", true) // Example value
-                put("timeZoneOffSet", 330) // Example value
+                put("packageId",requireActivity().packageName)// Example value
             }
             put("browserData", browserData)
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", "upi/intent")
-
             }
 
             // Instrument Details
