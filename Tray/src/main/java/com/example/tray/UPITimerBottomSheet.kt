@@ -65,9 +65,11 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             if (keyCode == KeyEvent.KEYCODE_BACK && !isBottomSheetShown) {
                 val bottomSheet = CancelConfirmationBottomSheet()
                 bottomSheet.show(parentFragmentManager, "CancelConfirmationBottomSheet")
+                isBottomSheetShown = true
                 true
             } else {
                 Log.d("onResume called", "not back")
+                isBottomSheetShown = false
                 false
             }
         }

@@ -113,11 +113,11 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-        val environmentFetched = sharedPreferences.getString("environment", "null")
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
 
 
         token = sharedPreferences.getString("token", "empty")
-        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
+        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
 
 
@@ -163,7 +163,7 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val requestQueue = Volley.newRequestQueue(context)
-        val environmentFetched = sharedPreferences.getString("environment", "null")
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
         val url =
             "https://test-apis.boxpay.tech/v0/shoppers/+919818198330/instruments"
         val jsonArrayRequest = object : JsonArrayRequest(

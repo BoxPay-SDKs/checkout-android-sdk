@@ -130,13 +130,13 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
         val sharedPreferences =
             this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        val environmentFetched = sharedPreferences.getString("environment", "null")
-        Log.d("environment is $environmentFetched", "Add UPI ID")
-        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
+        Log.d("baseUrl is $baseUrl", "Add UPI ID")
+        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
         requestQueue = Volley.newRequestQueue(this)
         val receivedUrl = intent.getStringExtra("url")
-        Log.d("url", receivedUrl.toString())
+        Log.d("url in otp web view", receivedUrl.toString())
         binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
         binding.webViewForOtpValidation.settings.domStorageEnabled = true
         binding.webViewForOtpValidation.settings.javaScriptEnabled = true
@@ -703,6 +703,7 @@ else if (inputField) {
         fun showToast(message: String) {
 
             if (message == "Success") {
+
 
             } else {
                 Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show()

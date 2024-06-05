@@ -41,11 +41,13 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
+import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.adapters.NetbankingBanksAdapter
 import com.example.tray.databinding.FragmentNetBankingBottomSheetBinding
 import com.example.tray.dataclasses.NetbankingDataClass
+import com.example.tray.dataclasses.WalletDataClass
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -84,6 +86,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private var transactionId: String? = null
+    private var shippingEnabled : Boolean = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -288,9 +291,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.loadingRelativeLayout.layoutParams = layoutParamsLoading
 
 
-        val environmentFetched = sharedPreferences.getString("environment","null")
-        Log.d("environment is $environmentFetched","Netbanking Bottom Sheet")
-        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
+        val baseUrl = sharedPreferences.getString("baseUrl","null")
+        Log.d("baseUrl is $baseUrl","Netbanking Bottom Sheet")
+        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
 
@@ -300,17 +303,25 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             binding.banksRecyclerView,
             liveDataPopularBankSelectedOrNot,
             requireContext(),
-            binding.searchView
+            binding.searchView,
+            token.toString()
         )
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
         binding.boxPayLogoLottieAnimation.playAnimation()
         startBackgroundAnimation()
-        fetchBanksDetails()
+
+
+
+        if(!shippingEnabled)
+            fetchBanksDetails()
+        else
+            callPaymentMethodRules(requireContext())
 
         if (successScreenFullReferencePath != null) {
             Log.d("NetBankingBottomSheetReference", successScreenFullReferencePath!!)
         }
+
         var enabled = false
         binding.checkingTextView.setOnClickListener() {
             if (!enabled)
@@ -385,10 +396,14 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             if (!!liveDataPopularBankSelectedOrNot.value!!) {
                 bankInstrumentTypeValue =
                     banksDetailsOriginal[popularBanksSelectedIndex].bankInstrumentTypeValue
+
+                callUIAnalytics(requireContext(),"PAYMENT_INITIATED",banksDetailsOriginal[popularBanksSelectedIndex].bankBrand,"NetBanking")
             } else {
                 bankInstrumentTypeValue =
                     banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
+                callUIAnalytics(requireContext(),"PAYMENT_INITIATED",banksDetailsFiltered[checkedPosition!!].bankBrand,"NetBanking")
             }
+
             Log.d("Selected bank is : ", bankInstrumentTypeValue)
             binding.errorField.visibility = View.GONE
 
@@ -396,6 +411,69 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
 
         return binding.root
+    }
+    private fun callUIAnalytics(context: Context, event: String,paymentSubType : String, paymentType : String) {
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
+
+        Log.d("postRequestCalled", System.currentTimeMillis().toString())
+        val requestQueue = Volley.newRequestQueue(context)
+        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
+        val browserLanguage = Locale.getDefault().toString()
+
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+            put("callerToken", token)
+            put("uiEvent", event)
+
+            // Create eventAttrs JSON object
+            val eventAttrs = JSONObject().apply {
+                put("paymentType", paymentType)
+                put("paymentSubType", paymentSubType)
+            }
+            put("eventAttrs", eventAttrs)
+
+            // Create browserData JSON object
+            val browserData = JSONObject().apply {
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", browserLanguage)
+            }
+            put("browserData", browserData)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
+            Response.Listener { response ->
+                // Handle response
+                try {
+
+                } catch (e: JSONException) {
+                    Log.d("status check error", e.toString())
+                }
+
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                Log.e("Error", "Error occurred: ${error.message}")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    Log.e("Error", "Detailed error response: $errorResponse")
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
+                    Log.d("Error message", errorMessage)
+                }
+
+            }) {
+
+        }.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
     }
 
     private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
@@ -429,6 +507,64 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         allBanksAdapter.deselectSelectedItem()
         allBanksAdapter.notifyDataSetChanged()
     }
+    private fun callPaymentMethodRules(context: Context) {
+        Log.d("callPaymentMethodRules", System.currentTimeMillis().toString())
+        val requestQueue = Volley.newRequestQueue(context)
+
+        val countryName = sharedPreferences.getString("countryCode",null)
+
+        val jsonArrayRequest = object : JsonArrayRequest(
+            Method.GET, Base_Session_API_URL + token+"/payment-methods?customerCountryCode=$countryName", null,
+            Response.Listener { response ->
+                for (i in 0 until response.length()) {
+                    val paymentMethod = response.getJSONObject(i)
+                    if (paymentMethod.getString("type") == "NetBanking") {
+                        val bankName = paymentMethod.getString("title")
+
+                        var bankImage = paymentMethod.getString("logoUrl")
+                        if(bankImage.startsWith("/assets")) {
+                            bankImage =
+                                "https://checkout.boxpay.in" + paymentMethod.getString("logoUrl")
+                        }
+                        Log.d("Logo url : ",bankImage)
+                        val bankBrand = paymentMethod.getString("brand")
+                        val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
+                        banksDetailsOriginal.add(
+                            NetbankingDataClass(
+                                bankName,
+                                bankImage,
+                                bankBrand,
+                                bankInstrumentTypeValue
+                            )
+                        )
+                    }
+                }
+                showAllBanks()
+                removeLoadingScreenState()
+                fetchAndUpdateApiInPopularBanks()
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                Log.e("Error", "Error occurred: ${error.message}")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    Log.e("Error", "Detailed error response: $errorResponse")
+                }
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                return headers
+            }
+        }.apply {
+            val timeoutMs = 100000
+            val maxRetries = 0
+            val backoffMultiplier = 1.0f
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        requestQueue.add(jsonArrayRequest)
+    }
+
     fun failurePaymentFunction(){
         Log.d("Failure Screen View Model", "failurePaymentFunction")
 
@@ -652,7 +788,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
                 Log.d("user Agent for device",userAgentHeader)
-
                 // Get the screen height and width
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
@@ -661,9 +796,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 put("userAgentHeader", userAgentHeader)
                 put("browserLanguage", Locale.getDefault().toString())
                 put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
-                put("colorDepth", 24) // Example value
                 put("javaEnabled", true) // Example value
-                put("timeZoneOffSet", 330)
                 put("packageId",requireActivity().packageName)
             }
             put("browserData", browserData)
@@ -673,11 +806,26 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 put("type", bankInstrumentTypeValue)
             }
             put("instrumentDetails", instrumentDetailsObject)
-            // Shopper
 
+            if(sharedPreferences.getString("shippingEnabledOrNot",null) != null){
+                val shopperObject = JSONObject().apply {
+                    val deliveryAddressObject = JSONObject().apply {
+                        put("address1", sharedPreferences.getString("address1", null))
+                        put("address2", sharedPreferences.getString("address2", null))
+                        put("city", sharedPreferences.getString("city", null))
+                        put("countryCode", sharedPreferences.getString("countryCode", null))
+                        put("postalCode", sharedPreferences.getString("postalCode", null))
+                        put("state", sharedPreferences.getString("state", null))
+                        put("city", sharedPreferences.getString("city", null))
+                        put("email",sharedPreferences.getString("email",null))
+                        put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
+                        put("countryName",sharedPreferences.getString("countryName",null))
+                    }
+                    put("deliveryAddress", deliveryAddressObject)
+                }
+                put("shopper", shopperObject)
+            }
         }
-        Log.d("request Body","Netbanking")
-        logJsonObject(requestBody)
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
@@ -826,6 +974,12 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     companion object {
-
+        fun newInstance(
+            shippingEnabled: Boolean
+        ): NetBankingBottomSheet {
+            val fragment = NetBankingBottomSheet()
+            fragment.shippingEnabled = shippingEnabled
+            return fragment
+        }
     }
 }

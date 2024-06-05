@@ -5,35 +5,41 @@ import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import android.webkit.WebSettings
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Request
-import com.android.volley.RequestQueue
+import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.CallBackFunctions
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.gson.GsonBuilder
+import org.json.JSONException
 import org.json.JSONObject
-import java.net.Inet6Address
-import java.net.InetAddress
-import java.net.NetworkInterface
-import java.util.Collections
+import java.util.Locale
 
-class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: (PaymentResultObject) -> Unit, private val sandboxEnabled: Boolean = false){
+class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false, private val test: Boolean){
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
-    private var environment : String = ""
+
+    private var BASE_URL : String ?= null
     init {
         if(sandboxEnabled){
-            editor.putString("environment", "sandbox-")
-            this.environment = "sandbox-"
+            editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
+            this.BASE_URL = "sandbox-apis.boxpay.tech"
         }else{
-            editor.putString("environment","")
-            this.environment = ""
+            editor.putString("baseUrl","apis.boxpay.in")
+            this.BASE_URL = "apis.boxpay.in"
         }
+
+
+        if(test){
+            editor.putString("baseUrl","test-apis.boxpay.tech")
+            this.BASE_URL = "test-apis.boxpay.tech"
+        }
+
         editor.apply()
     }
     fun display() {
@@ -44,6 +50,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             // Now you can use fragmentManager
 //            val bottomSheet = BottomSheetLoadingSheet()
 //            bottomSheet.show(fragmentManager, "BottomSheetLoadingSheet")
+            callUIAnalytics(context,"CHECKOUT_LOADED")
             openBottomSheet()
         }
 
@@ -57,6 +64,76 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
 //        fetchShopperDetailsAndUpdateInSharedPreferences()
     }
 
+    private fun callUIAnalytics(context: Context, event: String) {
+
+        Log.d("postRequestCalled", System.currentTimeMillis().toString())
+        val requestQueue = Volley.newRequestQueue(context)
+        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
+        val browserLanguage = Locale.getDefault().toString()
+
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+            put("callerToken", token)
+            put("uiEvent", event)
+
+            // Create browserData JSON object
+            val browserData = JSONObject().apply {
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", browserLanguage)
+            }
+
+            put("browserData", browserData)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, "${BASE_URL}/v0/ui-analytics", requestBody,
+            Response.Listener { response ->
+
+                try {
+
+                } catch (e: JSONException) {
+                    Log.d("status check error", e.toString())
+                }
+
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                Log.e("Error", "Error occurred: ${error.message}")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    Log.e("Error", "Detailed error response: $errorResponse")
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
+                    Log.d("Error message", errorMessage)
+                }
+
+            }) {
+
+        }.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
+
+    }
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+            e.printStackTrace()
+        }
+        return null
+    }
+
     private fun openBottomSheet(){
         initializingCallBackFunctions()
 
@@ -68,11 +145,10 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             val bottomSheet = MainBottomSheet()
             bottomSheet.show(fragmentManager, "MainBottomSheet")
         }
-
     }
     fun initializingCallBackFunctions(){
         Log.d("result for callback","checkingPurpose")
-        val callBackFunctions = CallBackFunctions(onPaymentResult)
+        val callBackFunctions = onPaymentResult?.let { CallBackFunctions(it) }
         SingletonClass.getInstance().callBackFunctions = callBackFunctions
     }
 

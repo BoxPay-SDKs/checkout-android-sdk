@@ -75,6 +75,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private lateinit var sharedPreferences : SharedPreferences
     private lateinit var editor : SharedPreferences.Editor
     private var cardNetworkFound = false
+    private var cardNetworkName : String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,20 +90,36 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     fun makeCardNetworkIdentificationCall(context: Context,cardNumber: String){
         val queue = Volley.newRequestQueue(context)
         Log.d("makeCardNetworkIdentificationCall",cardNumber)
-        val url = Base_Session_API_URL+"${token}/bank-identification-numbers/tokens/${cardNumber}"
+        val url = Base_Session_API_URL+"${token}/bank-identification-numbers/${cardNumber}"
         Log.d("BIN API CALL",url)
-        val jsonData = JSONArray()
+        val jsonData = JSONObject()
         val brands = mutableListOf<String>()
-        val request = object : JsonArrayRequest(Method.POST, url, jsonData,
+        val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
-                for(i in 0 until response.length()){
-                    val currBrand = response.getJSONObject(i).getJSONObject("paymentMethod").getString("brand")
-                    Log.d("Checking for card network",currBrand)
+                logJsonObject(response)
+                try {
+                    val currBrand =
+                        response.getJSONObject("paymentMethod").getString("brand")
+                    Log.d("Checking for card network", currBrand)
                     brands.add(currBrand)
-                }
+                    cardNetworkName = currBrand
+                    val methodEnabled = response.getBoolean("methodEnabled")
+                    Log.d("methodEnabled",methodEnabled.toString())
 
-                Log.d("size of brands",brands.size.toString()+cardNumber)
-                updateCardNetwork(brands)
+
+
+                    if(!methodEnabled){
+                        isCardNumberValid = false
+                        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                        binding.textView4.text = "This card is not supported for the payment"
+                        proceedButtonIsEnabled.value = false
+                    }
+
+                    Log.d("size of brands", brands.size.toString() + " " + cardNumber)
+                    updateCardNetwork(brands)
+                }catch (e : Exception){
+                    Log.e("Exception in card bin",e.toString())
+                }
             },
             Response.ErrorListener { error ->
                 // Handle error
@@ -229,9 +246,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         viewModel = ViewModelProvider(this).get(DismissViewModel::class.java)
 
-        val environmentFetched = sharedPreferences.getString("environment","null")
-        Log.d("environment is $environmentFetched","Add UPI ID")
-        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
+        val baseUrl = sharedPreferences.getString("baseUrl","null")
+        Log.d("baseUrl is $baseUrl","Add Card")
+        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
 
         fetchTransactionDetailsFromSharedPreferences()
@@ -303,9 +320,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
                 userDeletingChars = count > after
+
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
                 if (bottomSheetBehavior == null)
                     Log.d("bottomSheetBehavior is null", "check here")
 
@@ -318,13 +337,22 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     isCardNumberValid = true
                     proceedButtonIsEnabled.value = true
                 }
+
+                Log.d("instrument called","number")
+                callUIAnalytics(requireContext(),"PAYMENT_INSTRUMENT_PROVIDED","","Card")
             }
 
             override fun afterTextChanged(s: Editable?) {
+
+
+
                 if (bottomSheetBehavior == null)
                     Log.d("bottomSheetBehavior is null", "check here")
 
                 bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
+
+
 
                 if (!isFormatting) {
                     s?.let { editable ->
@@ -361,9 +389,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             }
                         }
 
-                        if(!cardNetworkFound)
-                            makeCardNetworkIdentificationCall(requireContext(), text)
-
+                        if(text.length >= 9)
+                            makeCardNetworkIdentificationCall(requireContext(), text.substring(0,9))
+                        else{
+                            binding.ll1InvalidCardNumber.visibility = View.GONE
+                        }
                     }
                 }
             }
@@ -387,6 +417,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
                 if (bottomSheetBehavior == null)
                     Log.d("bottomSheetBehavior is null", "check here")
 
@@ -399,6 +430,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     isCardValidityValid = false
                     proceedButtonIsEnabled.value = false
                 }
+
+                Log.d("instrument called","validity")
+                callUIAnalytics(requireContext(),"PAYMENT_INSTRUMENT_PROVIDED","","Card")
+
+
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -479,6 +515,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
                 if (bottomSheetBehavior == null)
                     Log.d("bottomSheetBehavior is null", "check here")
 
@@ -496,6 +533,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         isCardCVVValid = false
                         proceedButtonIsEnabled.value = false
                     }
+
+                    callUIAnalytics(requireContext(),"PAYMENT_INSTRUMENT_PROVIDED","","Card")
                 }else{
                     isCardCVVValid = false
                     proceedButtonIsEnabled.value = false
@@ -503,10 +542,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                 if(textNow.length == 4){
                     binding.editTextNameOnCard.requestFocus()
+                    binding.editTextNameOnCard.requestFocus()
                 }
             }
 
             override fun afterTextChanged(s: Editable?) {
+
+
                 if (bottomSheetBehavior == null)
                     Log.d("bottomSheetBehavior is null", "check here")
 
@@ -535,7 +577,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
                 if (bottomSheetBehavior == null)
                     Log.d("bottomSheetBehavior is null", "check here")
 
@@ -548,6 +589,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     binding.nameOnCardErrorLayout.visibility = View.GONE
                     proceedButtonIsEnabled.value = false
                 }
+                Log.d("instrument called","name on card")
+                callUIAnalytics(requireContext(),"PAYMENT_INSTRUMENT_PROVIDED","","Card")
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -573,6 +616,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.editTextCardCVV.setTransformationMethod(AsteriskPasswordTransformationMethod())
 
         binding.proceedButton.setOnClickListener() {
+            callUIAnalytics(requireContext(),"PAYMENT_INITIATED",cardNetworkName,"Card")
             removeErrors()
             cardNumber = deformatCardNumber(binding.editTextCardNumber.text.toString())
             Log.d("card number", cardNumber!!)
@@ -948,6 +992,73 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         editor.putString("transactionId", transactionIdArg)
         editor.apply()
     }
+    private fun callUIAnalytics(context: Context, event: String,paymentSubType : String, paymentType : String) {
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
+
+        Log.d("postRequestCalled", System.currentTimeMillis().toString())
+        val requestQueue = Volley.newRequestQueue(context)
+        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+        val browserLanguage = Locale.getDefault().toString()
+
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+            put("callerToken", token)
+            put("uiEvent", event)
+
+            // Create eventAttrs JSON object
+            val eventAttrs = JSONObject().apply {
+                put("paymentType", paymentType)
+                put("paymentSubType", paymentSubType)
+            }
+            put("eventAttrs", eventAttrs)
+
+            // Create browserData JSON object
+            val browserData = JSONObject().apply {
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", browserLanguage)
+            }
+            put("browserData", browserData)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
+            Response.Listener { response ->
+
+                try {
+                    logJsonObject(response)
+
+
+
+                } catch (e: JSONException) {
+                    Log.d("status check error", e.toString())
+                }
+
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                Log.e("Error", "Error occurred: ${error.message}")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    Log.e("Error", "Detailed error response: $errorResponse")
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
+                    Log.d("Error message", errorMessage)
+                }
+
+            }) {
+
+        }.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
+
+    }
 
     fun postRequest(context: Context) {
         Log.d("postRequestCalled", System.currentTimeMillis().toString())
@@ -995,6 +1106,25 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             // Instrument Details
             put("instrumentDetails", instrumentDetailsObject)
+
+            if(sharedPreferences.getString("shippingEnabledOrNot",null) != null){
+                val shopperObject = JSONObject().apply {
+                    val deliveryAddressObject = JSONObject().apply {
+                        put("address1", sharedPreferences.getString("address1", null))
+                        put("address2", sharedPreferences.getString("address2", null))
+                        put("city", sharedPreferences.getString("city", null))
+                        put("countryCode", sharedPreferences.getString("countryCode", null))
+                        put("postalCode", sharedPreferences.getString("postalCode", null))
+                        put("state", sharedPreferences.getString("state", null))
+                        put("city", sharedPreferences.getString("city", null))
+                        put("email",sharedPreferences.getString("email",null))
+                        put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
+                        put("countryName",sharedPreferences.getString("countryName",null))
+                    }
+                    put("deliveryAddress", deliveryAddressObject)
+                }
+                put("shopper", shopperObject)
+            }
         }
 
         // Request a JSONObject response from the provided URL
@@ -1030,7 +1160,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
                     }else{
-                        val url = response
+                        url = response
                             .getJSONArray("actions")
                             .getJSONObject(0)
                             .getString("url")
@@ -1164,7 +1294,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         Log.d("Request Body", jsonStr)
     }
 
-    fun getMessageForFieldErrorItems(errorString: String) {
+    fun getMessageForFieldErrorItems(errorString: String) {1
 
         // Parse JSON response
         val jsonObject = JSONObject(errorString)

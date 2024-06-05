@@ -23,6 +23,7 @@ class Check : AppCompatActivity() {
     private var successScreenFullReferencePath : String ?= null
     private var tokenFetchedAndOpen = false
 
+
     private val binding : ActivityCheckBinding by lazy {
         ActivityCheckBinding.inflate(layoutInflater)
     }
@@ -101,7 +102,8 @@ class Check : AppCompatActivity() {
     }
 
      private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,false)
+         //tokenLiveData.value.toString()
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,false,true)
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
