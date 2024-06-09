@@ -55,6 +55,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private var transactionId: String? = null
+    private var shippingEnabled : Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -207,23 +208,29 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://"+baseUrl + "/v0/platform/vpa-validation", requestBody,
             Response.Listener { response ->
-                val statusUserVPA = response.getJSONObject("status").getString("status")
-                Log.d("userVPA Status",statusUserVPA)
+                try{
+                    val statusUserVPA = response.getJSONObject("status").getString("status")
+                    Log.d("userVPA Status",statusUserVPA)
 
-                if(!statusUserVPA.contains("Rejected",ignoreCase = true)){
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                    if(!statusUserVPA.contains("Rejected",ignoreCase = true)){
+                        binding.ll1InvalidUPI.visibility = View.GONE
+                        postRequest(requireContext(),userVPA)
+                    }else{
+                        binding.ll1InvalidUPI.visibility = View.VISIBLE
+                    }
+                }catch (e : Exception){
                     postRequest(requireContext(),userVPA)
-                }else{
-                    binding.ll1InvalidUPI.visibility = View.VISIBLE
                 }
             },
             Response.ErrorListener { error ->
+
+                binding.ll1InvalidUPI.visibility = View.GONE
+                postRequest(requireContext(),userVPA)
                 // Handle error
                 Log.e("Error", "Error occurred: ${error.message}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
-                    binding.ll1InvalidUPI.visibility = View.VISIBLE
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
                     Log.d("Error message", errorMessage)
                 }
@@ -453,9 +460,22 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             put("instrumentDetails", instrumentDetailsObject)
 
 
-            if(sharedPreferences.getString("shippingEnabledOrNot",null) != null){
-                val shopperObject = JSONObject().apply {
+
+
+            val shopperObject = JSONObject().apply {
+                put("email", sharedPreferences.getString("email",null))
+                put("firstName", sharedPreferences.getString("firstName",null))
+                if(sharedPreferences.getString("gender",null) == null)
+                    put("gender", JSONObject.NULL)
+                else
+                    put("gender",sharedPreferences.getString("gender",null))
+                put("lastName", sharedPreferences.getString("lastName",null))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber",null))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference",null))
+
+                if(shippingEnabled){
                     val deliveryAddressObject = JSONObject().apply {
+
                         put("address1", sharedPreferences.getString("address1", null))
                         put("address2", sharedPreferences.getString("address2", null))
                         put("city", sharedPreferences.getString("city", null))
@@ -466,12 +486,15 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         put("email",sharedPreferences.getString("email",null))
                         put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
                         put("countryName",sharedPreferences.getString("countryName",null))
+
                     }
                     put("deliveryAddress", deliveryAddressObject)
                 }
-                put("shopper", shopperObject)
             }
+
+            put("shopper", shopperObject)
         }
+        logJsonObject(requestBody)
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
@@ -688,7 +711,13 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
 
     companion object {
-
+        fun newInstance(
+            shippingEnabled: Boolean
+        ): AddUPIID {
+            val fragment = AddUPIID()
+            fragment.shippingEnabled = shippingEnabled
+            return fragment
+        }
     }
 
     private fun launchSuccessScreen(context: Context) {

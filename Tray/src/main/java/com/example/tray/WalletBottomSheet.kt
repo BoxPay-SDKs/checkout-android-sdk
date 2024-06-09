@@ -416,6 +416,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         layoutParams.height = desiredHeight
         binding.nestedScrollView.layoutParams = layoutParams
 
+
         val layoutParamsLoading = binding.loadingRelativeLayout.layoutParams as ConstraintLayout.LayoutParams
         layoutParamsLoading.height = desiredHeight
         binding.loadingRelativeLayout.layoutParams = layoutParamsLoading
@@ -426,7 +427,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
         val baseUrl = sharedPreferences.getString("baseUrl","null")
-        Log.d("baseUrl is $baseUrl","Add UPI ID")
+        Log.d("baseUrl is $baseUrl","Wallet")
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
@@ -919,9 +920,21 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             }
             put("instrumentDetails", instrumentDetailsObject)
 
-            if(sharedPreferences.getString("shippingEnabledOrNot",null) != null){
-                val shopperObject = JSONObject().apply {
+
+            val shopperObject = JSONObject().apply {
+                put("email", sharedPreferences.getString("email",null))
+                put("firstName", sharedPreferences.getString("firstName",null))
+                if(sharedPreferences.getString("gender",null) == null)
+                    put("gender", JSONObject.NULL)
+                else
+                    put("gender",sharedPreferences.getString("gender",null))
+                put("lastName", sharedPreferences.getString("lastName",null))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber",null))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference",null))
+
+                if(shippingEnabled){
                     val deliveryAddressObject = JSONObject().apply {
+
                         put("address1", sharedPreferences.getString("address1", null))
                         put("address2", sharedPreferences.getString("address2", null))
                         put("city", sharedPreferences.getString("city", null))
@@ -932,11 +945,15 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         put("email",sharedPreferences.getString("email",null))
                         put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
                         put("countryName",sharedPreferences.getString("countryName",null))
+
                     }
                     put("deliveryAddress", deliveryAddressObject)
                 }
-                put("shopper", shopperObject)
             }
+
+            put("shopper", shopperObject)
+
+
         }
 
         // Request a JSONObject response from the provided URL

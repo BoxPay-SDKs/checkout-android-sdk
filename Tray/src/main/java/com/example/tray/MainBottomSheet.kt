@@ -320,11 +320,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun showLoadingState(source: String) {
         Log.d("Source of loading state", source)
         binding.loadingRelativeLayout.visibility = View.VISIBLE
-        binding.boxpayLogoLottie.apply {
-            setAnimation("boxpayLogo.json") // Replace with your Lottie animation file
-            repeatCount = LottieDrawable.INFINITE // Set repeat count to infinite
-            playAnimation() // Start the animation
-        }
+//        binding.boxpayLogoLottie.apply {
+//            setAnimation("boxpayLogo.json") // Replace with your Lottie animation file
+//            repeatCount = LottieDrawable.INFINITE // Set repeat count to infinite
+//            playAnimation() // Start the animation
+//        }
+        binding.boxpayLogoLottie.playAnimation()
     }
 
     private fun removeLoadingState() {
@@ -524,9 +525,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             put("instrumentDetails", instrumentDetailsObject)
 
-            if(sharedPreferences.getString("shippingEnabledOrNot",null) != null){
-                val shopperObject = JSONObject().apply {
+            val shopperObject = JSONObject().apply {
+                put("email", sharedPreferences.getString("email",null))
+                put("firstName", sharedPreferences.getString("firstName",null))
+                if(sharedPreferences.getString("gender",null) == null)
+                    put("gender", JSONObject.NULL)
+                else
+                    put("gender",sharedPreferences.getString("gender",null))
+                put("lastName", sharedPreferences.getString("lastName",null))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber",null))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference",null))
+
+                if(shippingEnabled){
                     val deliveryAddressObject = JSONObject().apply {
+
                         put("address1", sharedPreferences.getString("address1", null))
                         put("address2", sharedPreferences.getString("address2", null))
                         put("city", sharedPreferences.getString("city", null))
@@ -537,11 +549,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         put("email",sharedPreferences.getString("email",null))
                         put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
                         put("countryName",sharedPreferences.getString("countryName",null))
+
                     }
                     put("deliveryAddress", deliveryAddressObject)
                 }
-                put("shopper", shopperObject)
             }
+
+            put("shopper", shopperObject)
         }
 
         // Request a JSONObject response from the provided URL
@@ -1022,9 +1036,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
             put("instrumentDetails", instrumentDetailsObject)
 
-            if(sharedPreferences.getString("shippingEnabledOrNot",null) != null){
-                val shopperObject = JSONObject().apply {
+            val shopperObject = JSONObject().apply {
+                put("email", sharedPreferences.getString("email",null))
+                put("firstName", sharedPreferences.getString("firstName",null))
+                if(sharedPreferences.getString("gender",null) == null)
+                    put("gender", JSONObject.NULL)
+                else
+                    put("gender",sharedPreferences.getString("gender",null))
+                put("lastName", sharedPreferences.getString("lastName",null))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber",null))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference",null))
+
+                if(shippingEnabled){
                     val deliveryAddressObject = JSONObject().apply {
+
                         put("address1", sharedPreferences.getString("address1", null))
                         put("address2", sharedPreferences.getString("address2", null))
                         put("city", sharedPreferences.getString("city", null))
@@ -1035,11 +1060,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         put("email",sharedPreferences.getString("email",null))
                         put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
                         put("countryName",sharedPreferences.getString("countryName",null))
+
                     }
                     put("deliveryAddress", deliveryAddressObject)
                 }
-                put("shopper", shopperObject)
             }
+
+            put("shopper", shopperObject)
         }
 
         // Request a JSONObject response from the provided URL
@@ -1388,9 +1415,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             // Instrument Details
             put("instrumentDetails", instrumentDetailsObject)
-            if(sharedPreferences.getString("shippingEnabledOrNot",null) != null){
-                val shopperObject = JSONObject().apply {
+            val shopperObject = JSONObject().apply {
+                put("email", sharedPreferences.getString("email",null))
+                put("firstName", sharedPreferences.getString("firstName",null))
+                if(sharedPreferences.getString("gender",null) == null)
+                    put("gender", JSONObject.NULL)
+                else
+                    put("gender",sharedPreferences.getString("gender",null))
+                put("lastName", sharedPreferences.getString("lastName",null))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber",null))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference",null))
+
+                if(shippingEnabled){
                     val deliveryAddressObject = JSONObject().apply {
+
                         put("address1", sharedPreferences.getString("address1", null))
                         put("address2", sharedPreferences.getString("address2", null))
                         put("city", sharedPreferences.getString("city", null))
@@ -1401,11 +1439,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         put("email",sharedPreferences.getString("email",null))
                         put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
                         put("countryName",sharedPreferences.getString("countryName",null))
+
                     }
                     put("deliveryAddress", deliveryAddressObject)
                 }
-                put("shopper", shopperObject)
             }
+
+            put("shopper", shopperObject)
         }
 
         // Request a JSONObject response from the provided URL
@@ -1733,6 +1773,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
         val url = "${Base_Session_API_URL}${token}"
+        Log.d("url for session",url)
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
@@ -1757,13 +1798,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (additionalDetails.get(i) == "ORDER_ITEM_DETAILS") {
                         orderSummaryEnable = true
                     }
-                    if(additionalDetails.get(i) == "SHIPPING_ADDRESS"){
-                        shippingEnabled = true
-                        Log.d("shippingEnabled",shippingEnabled.toString())
-                        editor.putString("shippingEnabledOrNot","true")
-                        val bottomSheet = DeliveryAddressBottomSheet.newInstance(this,true)
-                        bottomSheet.show(parentFragmentManager,"DeliveryAddressBottomSheetFirstTime")
-                    }
+//                    if(additionalDetails.get(i) == "SHIPPING_ADDRESS"){
+//                        shippingEnabled = true
+//                        Log.d("shippingEnabled",shippingEnabled.toString())
+//                        editor.putString("shippingEnabledOrNot","true")
+//                        val bottomSheet = DeliveryAddressBottomSheet.newInstance(this,true)
+//                        bottomSheet.show(parentFragmentManager,"DeliveryAddressBottomSheetFirstTime")
+//                    }
                 }
 
                 Log.d("orderSummaryEnable", orderSummaryEnable.toString())
@@ -1906,6 +1947,34 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.putString("countryCode",paymentDetailsObject.getJSONObject("context").getString("countryCode"))
                 editor.putString("legalEntity",paymentDetailsObject.getJSONObject("context").getJSONObject("legalEntity").getString("code"))
 
+
+
+
+                val shopperObject = paymentDetailsObject.getJSONObject("shopper")
+                if(!shopperObject.isNull("firstName")){
+                    Log.d("firstName","not null")
+                    editor.putString("firstName",shopperObject.getString("firstName"))
+                }
+                if(!shopperObject.isNull("lastName")){
+                    Log.d("lastName","not null")
+                    editor.putString("lastName",shopperObject.getString("lastName"))
+                }
+                if(!shopperObject.isNull("gender")){
+                    Log.d("gender","not null")
+                    editor.putString("gender",shopperObject.getString("gender"))
+                }
+                if(!shopperObject.isNull("phoneNumber")){
+                    Log.d("phoneNumber","not null")
+                    editor.putString("phoneNumber",shopperObject.getString("phoneNumber"))
+                }
+                if(!shopperObject.isNull("email")){
+                    Log.d("email","not null")
+                    editor.putString("email",shopperObject.getString("email"))
+                }
+                if(!shopperObject.isNull("uniqueReference")){
+                    Log.d("uniqueReference","not null")
+                    editor.putString("uniqueReference",shopperObject.getString("uniqueReference"))
+                }
 
 
 

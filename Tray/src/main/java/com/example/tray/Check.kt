@@ -103,6 +103,7 @@ class Check : AppCompatActivity() {
 
      private fun showBottomSheetWithOverlay() {
          //tokenLiveData.value.toString()
+         tokenLiveData.value.toString()
         val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,false,true)
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
@@ -144,11 +145,11 @@ class Check : AppCompatActivity() {
       "money": {"amount": "1", "currencyCode": "INR"},
       "descriptor": {"line1": "Some descriptor"},
       "shopper": {
-        "firstName": "test",
-        "lastName": "last",
-        "email": "test123@gmail.com",
+        "firstName": "Piyush",
+        "lastName": "Sharma",
+        "email":"piyush141001@gmail.com",
         "uniqueReference": "x123y",
-        "phoneNumber": "911234567890",
+        "phoneNumber": "919711668479",
         "deliveryAddress": {
           "address1": "first line",
           "address2": "second line",
