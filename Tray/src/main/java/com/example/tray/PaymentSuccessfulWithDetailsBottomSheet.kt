@@ -53,7 +53,9 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
             if(callback == null){
                 Log.d("call back is null","Failed")
             }else{
-                callback.onPaymentResult(PaymentResultObject("Success"))
+                val transactionId = sharedPreferences.getString("transactionId","").toString()
+                val operationId = sharedPreferences.getString("operationId","").toString()
+                callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
 
                 val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
                 mainBottomSheetFragment?.dismissTheSheetAfterSuccess()

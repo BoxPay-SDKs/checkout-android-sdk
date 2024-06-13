@@ -67,7 +67,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     val smsVerificationReceiver = SmsReceiver()
     private var webViewCloseListener: OnWebViewCloseListener? = null
     private var job: Job? = null
-    private var jobForFetchingSMS : Job? = null
+    private var jobForFetchingSMS: Job? = null
     var isBottomSheetShown = false
     private var token: String? = null
     private lateinit var requestQueue: RequestQueue
@@ -83,7 +83,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
 
     fun explicitDismiss() {
-        Log.d("cancel confirmation bottom sheet", "explicit dismiss called")
         finish()
     }
 
@@ -101,23 +100,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//        initAutoFill()
-
-
-
         sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
         sharedViewModel.dismissBottomSheetEvent.observe(this) { dismissed ->
             if (dismissed) {
@@ -131,12 +113,10 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         val sharedPreferences =
             this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
-        Log.d("baseUrl is $baseUrl", "Add UPI ID")
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
         requestQueue = Volley.newRequestQueue(this)
         val receivedUrl = intent.getStringExtra("url")
-        Log.d("url in otp web view", receivedUrl.toString())
         binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
         binding.webViewForOtpValidation.settings.domStorageEnabled = true
         binding.webViewForOtpValidation.settings.javaScriptEnabled = true
@@ -144,24 +124,36 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         fetchTransactionDetailsFromSharedPreferences()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            if (ContextCompat.checkSelfPermission(this, permissionReceive) == PackageManager.PERMISSION_GRANTED) {
-                // Permission is granted, register the receiver
-                Log.d("Permission given","For Receive SMS")
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    permissionReceive
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
 
             } else {
                 // Permission is not granted, request it from the user
                 ActivityCompat.requestPermissions(this, arrayOf(permissionReceive), 101)
             }
 
-            if (ContextCompat.checkSelfPermission(this, permissionRead) == PackageManager.PERMISSION_GRANTED) {
-                Log.d("Permission given","For Read SMS")
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    permissionRead
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 // Permission is granted, register the receiver
             } else {
                 // Permission is not granted, request it from the user
                 ActivityCompat.requestPermissions(this, arrayOf(permissionRead), 101)
             }
 
-            if(ContextCompat.checkSelfPermission(this, permissionRead) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, permissionReceive) == PackageManager.PERMISSION_GRANTED){
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    permissionRead
+                ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                    this,
+                    permissionReceive
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
                 registerReceiver(
                     smsVerificationReceiver,
@@ -170,14 +162,17 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 )
 
                 readSms()
-            }else{
-                ActivityCompat.requestPermissions(this, arrayOf(permissionRead,permissionReceive), 101)
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(permissionRead, permissionReceive),
+                    101
+                )
             }
 
 
             jobForFetchingSMS = CoroutineScope(Dispatchers.IO).launch {
                 while (isActive) {
-                    Log.d("Read Sms","Called")
                     readSms()
                     // Delay for 5 seconds
                     delay(1000)
@@ -188,12 +183,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         }, 5000) // 5000 milliseconds = 5 seconds
 
 
-
         binding.webViewForOtpValidation.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                // Page finished loading, you can perform any necessary actions here
-                Log.d("page finished loading", url.toString())
                 if (!startedCallsForOTPInject) {
                     startedCallsForOTPInject = true
                     startFetchingOtpAtIntervals()
@@ -206,42 +198,8 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 error: WebResourceError?
             ) {
                 super.onReceivedError(view, request, error)
-                // Handle errors here
-                Log.d("page failed loading", error.toString())
             }
         }
-
-
-
-
-
-//        val mainHandler = Handler(Looper.getMainLooper())
-//        // Define a Runnable task to be executed after the delay
-//        val delayedTask = Runnable {
-//            println("Calling delayedFunction after delay...")
-//            fetchAndInjectOtp()
-//        }
-//
-////         Post the delayed task to the message queue of the main thread
-//        mainHandler.postDelayed(delayedTask, 10000)
-    }
-
-    private fun initAutoFill() {
-        SmsRetriever.getClient(this)
-            .startSmsUserConsent(null)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("ADD Card listening", "here")
-                } else {
-                    Log.d("ADD Card listening failed", "here")
-                }
-            }
-    }
-
-    fun hasValidOTP(input: String): Boolean {
-        val regex = Regex("(?:your|use this) (verification code|passcode|OTP)\\s*(\\d{6})(?<!\\d)", RegexOption.IGNORE_CASE)
-        Log.d("Message Received",regex.matches(input).toString())
-        return regex.matches(input)
     }
 
     private fun readSms() {
@@ -259,14 +217,12 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 if (it.moveToFirst()) {
                     val address = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
                     val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
-                    Log.d("Message Received", "Address: $address, Body: $body")
                     val extractedOTP = extractOTPFromMessage(body)
-                    if(extractedOTP != null){
-                        Log.d("Extracted OTP",extractedOTP)
+                    if (extractedOTP != null) {
                         otpFetched = extractedOTP
                         jobForFetchingSMS?.cancel()
-                    }else{
-                        Log.d("Extracted OTP","null")
+                    } else {
+
                     }
                     // Process SMS message here
                 } else {
@@ -287,12 +243,17 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             Log.e("Error", "Error reading SMS: ${e.message}")
         }
     }
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 101) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 readSms()
-            }else{
+            } else {
 //                val permission = Manifest.permission.RECEIVE_SMS
 //                ActivityCompat.requestPermissions(this, arrayOf(permission), 101)
             }
@@ -300,163 +261,11 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     }
 
 
-    private fun fetchAndInjectOtp() {
 
-        if (otpFetched == null) {
-            Log.d("otp fetched", "null")
-            return
-        }
-
-        val otpNum = otpFetched!!.toInt()
-
-
-//var submitButton = document.querySelector('button[type="submit"]');
-        binding.webViewForOtpValidation.addJavascriptInterface(WebAppInterface(this), "Android")
-
-
-        Log.d("OTP Validation", otpFetched.toString())
-        val jsCode = """
-            var proceedButtonIDFC = document.querySelector('.btn-idfc-maroon');
-            var inputFieldWithPassword = document.querySelector('input[type="password"]');
-            var inputFieldWithAutoComplete = document.querySelector('input[autocomplete="one-time-code"]'); 
-    var inputField = document.querySelector('input'); // Assuming this is your OTP input field
-var submitButton = document.querySelector('button[type="submit"]');
-var submitButtonMainButton = document.querySelector('td.mainbutton a#submitOTP');
-var makePaymentButton = document.querySelector('button[type="button"]');
-var amexContinueButton = document.querySelector('#otcContinueBtn');
-
-if(inputFieldWithAutoComplete){
-    inputFieldWithAutoComplete.type = "text";
- inputFieldWithAutoComplete.value = "$otpFetched";
-    setTimeout(function() {
-    if(submitButtonMainButton){
-        submitButtonMainButton.disabled = false;
-                setTimeout(function() {
-                    submitButtonMainButton.click(); // Click the submit button after a delay
-                }, 2000);
-        }
-        else if (submitButton) {
-            if (submitButton.disabled) {
-                // If the submit button is disabled, enable it
-                submitButton.disabled = false;
-                setTimeout(function() {
-                    submitButton.click(); // Click the submit button after a delay
-                }, 2000); // Adjust the delay time as needed
-            } else {
-                setTimeout(function() {
-                    submitButton.click(); // Click the submit button after a delay
-                }, 2000); // Adjust the delay time as needed
-            }
-        }
-        // Change back to password after a de   lay
-        
-       }, 1000);
-    }
-else if(inputFieldWithPassword){
-inputFieldWithPassword.value = "$otpFetched";
-    setTimeout(function() {
-    if(amexContinueButton){
-                setTimeout(function() {
-                    amexContinueButton.click(); // Click the submit button after a delay
-                }, 2000);
-    }
-    else if(proceedButtonIDFC){
-    proceedButtonIDFC.disabled = false;
-                setTimeout(function() {
-                    proceedButtonIDFC.click(); // Click the submit button after a delay
-                }, 2000);
-    }
-    else if(submitButtonMainButton){
-        submitButtonMainButton.disabled = false;
-                setTimeout(function() {
-                    submitButtonMainButton.click(); // Click the submit button after a delay
-                }, 2000);
-        }
-        else if (submitButton) {
-            if (submitButton.disabled) {
-                // If the submit button is disabled, enable it
-                submitButton.disabled = false;
-                setTimeout(function() {
-                    submitButton.click(); // Click the submit button after a delay
-                }, 2000); // Adjust the delay time as needed
-            } else {
-                setTimeout(function() {
-                    submitButton.click(); // Click the submit button after a delay
-                }, 2000); // Adjust the delay time as needed
-            }
-        }else if(makePaymentButton){
-        if (makePaymentButton.disabled) {
-                // If the submit button is disabled, enable it
-                makePaymentButton.disabled = false;
-                setTimeout(function() {
-                    makePaymentButton.click(); // Click the submit button after a delay
-                }, 2000); // Adjust the delay time as needed
-            } else {
-                setTimeout(function() {
-                    makePaymentButton.click(); // Click the submit button after a delay
-                }, 2000); // Adjust the delay time as needed
-            }
-        }
-        
-        // Change back to password after a delay
-        
-    }, 1000); 
-}
-else if (inputField) {
-    inputField.value = "$otpFetched";
-    setTimeout(function() {
-    if(submitButtonMainButton){
-        submitButtonMainButton.disabled = false;
-       
-                setTimeout(function() {
-                    submitButtonMainButton.click(); // Click the submit button after a delay
-                }, 2000);
-        }
-        else if (submitButton) {
-       
-        
-            if (submitButton.disabled) {
-                // If the submit button is disabled, enable it
-                submitButton.disabled = false;
-      
-                setTimeout(function() {
-                    submitButton.click(); // Click the submit button after a delay
-                }, 2000); // Adjust the delay time as needed
-            } else {
-                setTimeout(function() {
-                    submitButton.click(); // Click the submit button after a delay
-                }, 2000); // Adjust the delay time as needed
-            }
-        }
-      
-        // Change back to password after a delay
-      
-    }, 1000); // Set the OTP value in the input field after a delay
-} else {
-    // Handle the case where the input field is not found
-}
-""".trimIndent()
-
-// Execute JavaScript code immediately
-        binding.webViewForOtpValidation.evaluateJavascript(jsCode) {value ->
-            // Check for JavaScript errors
-            if (value != null) {
-                ""
-                if (value.startsWith("throw")) {
-                    Log.e("JavaScript Error", value)
-                } else {
-                    otpFetched = null
-                    Log.d("JavaScript Result", value)
-                }
-            }
-        }
-    }
 
     private val runnable = object : Runnable {
         override fun run() {
-            Log.d("otp fetched", "runnable $otpFetched")
             // Call the function
-            fetchAndInjectOtp()
             handler.postDelayed(this, delayMillis) // Schedule next execution after delay
         }
     }
@@ -506,7 +315,6 @@ else if (inputField) {
 
     // Start scheduling the function to run initially and then at intervals
     private fun startFetchingOtpAtIntervals() {
-        fetchAndInjectOtp()
         Log.d("otp fetched", "start fetching otp intervals")
         handler.postDelayed(runnable, delayMillis)
     }
@@ -527,70 +335,43 @@ else if (inputField) {
         previousBottomSheet = bottomSheet
     }
 
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body Fetch Status", jsonStr)
-    }
-
 
     private fun fetchStatusAndReason(url: String) {
-        Log.d("fetching function called correctly", "Fine")
+
+        val sharedPreferences =
+            this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
                 try {
-                    logJsonObject(response)
                     val status = response.getString("status")
                     val statusReason = response.getString("statusReason")
-
-                    // Do something with status and statusReason
-                    // For example, log them
-                    Log.d("WebView Status", status)
-                    Log.d("Status Reason", statusReason)
+                    val transactionId = response.getString("transactionId")
 
                     // Check if status is success, if yes, dismiss the bottom sheet
                     if (status.contains(
                             "Approved",
                             ignoreCase = true
-                        ) || statusReason.contains(
-                            "Received by BoxPay for processing",
-                            ignoreCase = true
-                        ) || statusReason.contains(
-                            "Approved by PSP",
-                            ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
                         job?.cancel()
-                        val sharedPreferences =
-                            this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-//                       val successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
-//
-//                        openActivity(successScreenFullReferencePath.toString(),this)
                         val callback = SingletonClass.getInstance().getYourObject()
                         if (callback == null) {
                             Log.d("call back is null", "Success")
                         } else {
                             job?.cancel()
-                            callback.onPaymentResult(PaymentResultObject("Success"))
+                            callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
                             finish()
                         }
-
-                    } else if (status.contains("PENDING", ignoreCase = true)) {
-//                        val bottomSheet = PaymentFailureScreen()
-//                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
-//                        finish()
-                    } else if (status.contains("EXPIRED", ignoreCase = true)) {
-                        job?.cancel()
-
-//                        val bottomSheet = PaymentFailureScreen()
-//                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
-//                        finish()
-                    } else if (status.contains("PROCESSING", ignoreCase = true)) {
-
+                        editor.putString("status","Success")
+                    } else if (status.contains("RequiresAction", ignoreCase = true)) {
+                        editor.putString("status","RequiresAction")
+                    } else if (status.contains("Processing", ignoreCase = true)) {
+                        editor.putString("status","Posted")
                     } else if (status.contains("FAILED", ignoreCase = true)) {
                         job?.cancel()
-//                        val bottomSheet = PaymentFailureScreen()
                         val callback =
                             FailureScreenCallBackSingletonClass.getInstance().getYourObject()
                         if (callback == null) {
@@ -599,25 +380,9 @@ else if (inputField) {
                             callback.openFailureScreen()
                         }
                         finish()
-//                        bottomSheet.show(supportFragmentManager,"PaymentFailureBottomSheet")
-                        Log.d("Failure Screen View Model", "OTP Screen $status")
-////                        sharedViewModelForFailureScreen.openFailureScreen()
-//                        FailureScreenFunctionObject.failureScreenFunction?.invoke()
-//                        finish()
-
-                    } else if (status.contains("Rejected", ignoreCase = true)) {
-                        Log.d("Failure Screen View Model", "OTP Screen $status")
-                        job?.cancel()
-//                        val bottomSheet = PaymentFailureScreen()
-                        val callback =
-                            FailureScreenCallBackSingletonClass.getInstance().getYourObject()
-                        if (callback == null) {
-                            Log.d("callback is null", "PaymentFailed")
-                        } else {
-                            callback.openFailureScreen()
-                        }
-                        finish()
+                        editor.putString("status","Failed")
                     }
+                    editor.apply()
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
@@ -655,13 +420,8 @@ else if (inputField) {
         val sharedPreferences =
             this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token", "empty")
-        Log.d("data fetched from sharedPreferences", token.toString())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
-        Log.d(
-            "success screen path fetched from sharedPreferences",
-            successScreenFullReferencePath.toString()
-        )
     }
 
     override fun onDestroy() {
@@ -713,7 +473,7 @@ else if (inputField) {
 
         @JavascriptInterface
         fun logStatement(message: String) {
-            Log.d("OTP Validation", message)
+
         }
     }
 }

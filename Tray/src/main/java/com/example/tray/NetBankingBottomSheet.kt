@@ -105,8 +105,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
+
 
 
             val screenHeight = requireContext().resources.displayMetrics.heightPixels
@@ -117,8 +116,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 //        val layoutParams = bottomSheetContent.layoutParams
 //        layoutParams.height = desiredHeight
 //        bottomSheetContent.layoutParams = layoutParams
-            if (bottomSheetBehavior == null)
-                Log.d("MainBottomSheet  bottomSheet is null", "Main Bottom Sheet")
+
 
             bottomSheetBehavior?.maxHeight = desiredHeight
 
@@ -202,7 +200,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             bankImage =
                                 "https://checkout.boxpay.in" + paymentMethod.getString("logoUrl")
                         }
-                        Log.d("Logo url : ",bankImage)
                         val bankBrand = paymentMethod.getString("brand")
                         val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
                         banksDetailsOriginal.add(
@@ -220,7 +217,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 fetchAndUpdateApiInPopularBanks()
 
             } catch (e: Exception) {
-                Log.d("Error Occured", e.toString())
                 e.printStackTrace()
             }
 
@@ -245,7 +241,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun removeLoadingScreenState() {
-        Log.d("removeLoadingScreenState", "called")
         binding.banksRecyclerView.visibility = View.VISIBLE
         binding.loadingRelativeLayout.visibility = View.GONE
         binding.popularBanksRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
@@ -257,6 +252,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
         editor.putString("transactionId", transactionIdArg)
+        editor.putString("operationId",transactionIdArg)
         editor.apply()
     }
 
@@ -271,7 +267,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         editor = sharedPreferences.edit()
 
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        Log.d("userAgentHeader in MainBottom Sheet onCreateView",userAgentHeader)
         if(userAgentHeader.contains("Mobile",ignoreCase = true)){
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
@@ -292,7 +287,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
 
         val baseUrl = sharedPreferences.getString("baseUrl","null")
-        Log.d("baseUrl is $baseUrl","Netbanking Bottom Sheet")
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
@@ -318,9 +312,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         else
             callPaymentMethodRules(requireContext())
 
-        if (successScreenFullReferencePath != null) {
-            Log.d("NetBankingBottomSheetReference", successScreenFullReferencePath!!)
-        }
 
         var enabled = false
         binding.checkingTextView.setOnClickListener() {
@@ -404,7 +395,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 callUIAnalytics(requireContext(),"PAYMENT_INITIATED",banksDetailsFiltered[checkedPosition!!].bankBrand,"NetBanking")
             }
 
-            Log.d("Selected bank is : ", bankInstrumentTypeValue)
             binding.errorField.visibility = View.GONE
 
             postRequest(requireContext(), bankInstrumentTypeValue)
@@ -415,7 +405,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private fun callUIAnalytics(context: Context, event: String,paymentSubType : String, paymentType : String) {
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
 
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
         val browserLanguage = Locale.getDefault().toString()
@@ -448,7 +437,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 try {
 
                 } catch (e: JSONException) {
-                    Log.d("status check error", e.toString())
+
                 }
 
             },
@@ -508,7 +497,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         allBanksAdapter.notifyDataSetChanged()
     }
     private fun callPaymentMethodRules(context: Context) {
-        Log.d("callPaymentMethodRules", System.currentTimeMillis().toString())
+
         val requestQueue = Volley.newRequestQueue(context)
 
         val countryName = sharedPreferences.getString("countryCode",null)
@@ -526,7 +515,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             bankImage =
                                 "https://checkout.boxpay.in" + paymentMethod.getString("logoUrl")
                         }
-                        Log.d("Logo url : ",bankImage)
+
                         val bankBrand = paymentMethod.getString("brand")
                         val bankInstrumentTypeValue = paymentMethod.getString("instrumentTypeValue")
                         banksDetailsOriginal.add(
@@ -566,7 +555,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     fun failurePaymentFunction(){
-        Log.d("Failure Screen View Model", "failurePaymentFunction")
+
 
         // Start a coroutine with a delay of 5 seconds
         CoroutineScope(Dispatchers.Main).launch {
@@ -708,7 +697,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             setLifecycleOwner(lifecycleOwner)
         }
 
-        Log.d("long click detected", "popular Net banking")
+
         balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.TOP)
         balloon.dismissWithDelay(2000L)
     }
@@ -753,7 +742,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchRelativeLayout(num: Int): RelativeLayout {
-        Log.d("Number Called", num.toString())
+
         val relativeLayout: RelativeLayout = when (num) {
             0 ->
                 binding.popularBanksRelativeLayout1
@@ -773,7 +762,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun postRequest(context: Context, bankInstrumentTypeValue: String) {
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
+
         val requestQueue = Volley.newRequestQueue(context)
 
 
@@ -787,7 +776,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                 // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-                Log.d("user Agent for device",userAgentHeader)
+
                 // Get the screen height and width
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
@@ -841,7 +830,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                 if(shippingEnabled){
                     val deliveryAddressObject = JSONObject().apply {
-
                         put("address1", sharedPreferences.getString("address1", null))
                         put("address2", sharedPreferences.getString("address2", null))
                         put("city", sharedPreferences.getString("city", null))
@@ -852,7 +840,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         put("email",sharedPreferences.getString("email",null))
                         put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
                         put("countryName",sharedPreferences.getString("countryName",null))
-
                     }
                     put("deliveryAddress", deliveryAddressObject)
                 }
@@ -884,7 +871,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         val actionObject = actionsArray.getJSONObject(i)
                         url = actionObject.getString("url")
                         // Do something with the URL
-                        Log.d("url and status", url + "\n" + status)
+
                     }
 
 
@@ -896,10 +883,14 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
+                        if (status.contains("RequiresAction", ignoreCase = true)) {
+                            editor.putString("status","RequiresAction")
+                        }
                         val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                         intent.putExtra("url", url)
                         startActivity(intent)
                     }
+                    editor.apply()
 
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE
@@ -939,7 +930,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body Netbanking", jsonStr)
+
     }
 
     private fun enableProceedButton() {
@@ -998,13 +989,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
 
         token = sharedPreferences.getString("token", "empty")
-        Log.d("data fetched from sharedPreferences", token.toString())
+
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
-        Log.d(
-            "success screen path fetched from sharedPreferences",
-            successScreenFullReferencePath.toString()
-        )
     }
 
     companion object {

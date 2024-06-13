@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.activityViewModels
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModel
@@ -29,6 +30,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
+import okhttp3.internal.checkOffsetAndCount
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -54,7 +56,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         }
     }
     fun explicitDismiss(){
-        Log.d("cancel confirmation bottom sheet","explicit dismiss called")
         countdownTimer.cancel()
         countdownTimerForAPI.cancel()
         dismiss()
@@ -68,7 +69,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                 isBottomSheetShown = true
                 true
             } else {
-                Log.d("onResume called", "not back")
                 isBottomSheetShown = false
                 false
             }
@@ -86,8 +86,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
 
             val screenHeight = resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.8 // 90%
@@ -165,7 +163,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 
 
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        Log.d("userAgentHeader in MainBottom Sheet onCreateView",userAgentHeader)
         if(userAgentHeader.contains("Mobile",ignoreCase = true)){
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
@@ -177,7 +174,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 
 
         val environmentFetched = sharedPreferences.getString("environment","null")
-        Log.d("environment is $environmentFetched","Add UPI ID")
         Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
@@ -216,13 +212,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token", "empty")
-        Log.d("data fetched from sharedPreferences", token.toString())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
-        Log.d(
-            "success screen path fetched from sharedPreferences",
-            successScreenFullReferencePath.toString()
-        )
     }
 
     private fun startTimer() {
@@ -277,88 +268,68 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         super.onDismiss(dialog)
         dismiss()
     }
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body Fetch Status", jsonStr)
-    }
 
     private fun fetchStatusAndReason(url: String) {
-        Log.d("fetching function called correctly", "Fine")
+        val sharedPreferences =
+                requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
                 try {
-                    logJsonObject(response)
                     val status = response.getString("status")
                     val statusReason = response.getString("statusReason")
-
-                    // Do something with status and statusReason
-                    // For example, log them
-                    Log.d("Status", status)
-                    Log.d("Status Reason", statusReason)
-
-
+                    val transactionId = response.getString("transactionId")
 
                     // Check if status is success, if yes, dismiss the bottom sheet
-                    if (statusReason.contains(
-                            "Received by BoxPay for processing",
-                            ignoreCase = true
-                        ) || statusReason.contains(
-                            "Approved by PSP",
+                    if (status.contains(
+                            "Approved",
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
-//                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-//                        bottomSheet.show(parentFragmentManager, "SuccessBottomSheetWithDetails")
-                        val callback =  SingletonClass.getInstance().getYourObject()
-                        if(callback == null){
-                            Log.d("call back is null","failed")
-                        }else{
-                            callback.onPaymentResult(PaymentResultObject("Success"))
-                        }
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
-                        dismiss()
-                    } else if (status.contains("PENDING", ignoreCase = true)) {
-
-                    } else if (status.contains("EXPIRED", ignoreCase = true)) {
-//                        val bottomSheet = PaymentFailureScreen()
-//                        bottomSheet.show(parentFragmentManager, "Payment Failure")
-
-//                        val callback =  SingletonClass.getInstance().getYourObject()
-//                        if(callback == null){
-//                            Log.d("call back is null","failed")
-//                        }else{
-//                            callback.onPaymentResult("Failure")
-//                        }
-
-//                        countdownTimer.cancel()
-//                        countdownTimerForAPI.cancel()
-//                        dismiss()
-
-                    } else if (status.contains("PROCESSING", ignoreCase = true)) {
-
+                        val callback = SingletonClass.getInstance().getYourObject()
+                        if (callback == null) {
+                            Log.d("call back is null", "Success")
+                        } else {
+                            countdownTimer.cancel()
+                            countdownTimerForAPI.cancel()
+                            callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
+                            dismiss()
+                        }
+                        editor.putString("status","Success")
+                    } else if (status.contains("RequiresAction", ignoreCase = true)) {
+                        editor.putString("status","RequiresAction")
+                    } else if (status.contains("Processing", ignoreCase = true)) {
+                        editor.putString("status","Posted")
                     } else if (status.contains("FAILED", ignoreCase = true)) {
-//                        val bottomSheet = PaymentFailureScreen()
-//                        bottomSheet.show(parentFragmentManager, "Payment Failure")
-                        val callback = FailureScreenCallBackSingletonClass.getInstance().getYourObject()
-                        if(callback == null){
-                            Log.d("callback is null","PaymentFailedWithDetailsSheet")
-                        }else{
+                        countdownTimer.cancel()
+                        countdownTimerForAPI.cancel()
+                        val callback =
+                            FailureScreenCallBackSingletonClass.getInstance().getYourObject()
+                        if (callback == null) {
+                            Log.d("callback is null", "PaymentFailed")
+                        } else {
                             callback.openFailureScreen()
                         }
-                        countdownTimer.cancel()
-                        countdownTimerForAPI.cancel()
                         dismiss()
+                        editor.putString("status","Failed")
                     }
+                    editor.apply()
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
             }) { error ->
-            Log.d("Error here", error.toString())
-            error.printStackTrace()
+            Log.e("Error", "Error occurred: ${error.message}")
+            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                val errorResponse = String(error.networkResponse.data)
+                Log.e("Error", "Detailed error response: $errorResponse")
+            }
+            // Handle errors here
         }
+        // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -373,7 +344,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     }
 
     override fun onConfirmation() {
-        Log.d("parent called successfully","onConfirmation")
         dismiss()
     }
 }

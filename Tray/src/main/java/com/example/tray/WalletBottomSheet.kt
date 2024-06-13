@@ -107,8 +107,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
+
 
 
 
@@ -276,13 +275,12 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             setLifecycleOwner(lifecycleOwner)
         }
 
-        Log.d("long click detected", "popular wallet")
+
         balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.TOP)
         balloon.dismissWithDelay(2000L)
     }
 
     private fun removeLoadingScreenState() {
-        Log.d("removeLoadingScreenState", "called")
         binding.loadingRelativeLayout.visibility = View.GONE
         binding.walletsRecyclerView.visibility = View.VISIBLE
         binding.popularItemRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
@@ -328,52 +326,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             else -> throw IllegalArgumentException("Invalid number: $num  TextView1234")
         }
     }
-
-//    private fun startAutoScroll() {
-//        for (iteration in 1 until 5) {
-//            val horizontalScrollView = getPopularHorizontalMailByNum(iteration)
-//            val textView = getPopularTextViewByNum(iteration)
-//            val scrollSpeed = 1 // Adjust this value to change scroll speed
-//            val handler = Handler()
-//            val runnable = object : Runnable {
-//                var scrollPosition = 0
-//                var direction = 1 // 1 for scrolling right, -1 for scrolling left
-//
-//                override fun run() {
-//                    val maxX = textView.width - horizontalScrollView.width
-//
-//                    // Check if we've reached either end
-//                    if (scrollPosition >= maxX) {
-//                        direction = -1 // Change direction to scroll left
-//                    } else if (scrollPosition <= 0) {
-//                        direction = 1 // Change direction to scroll right
-//                    }
-//
-//                    // Update scroll position based on direction and speed
-//
-//                    if (direction == -1) {
-//                        horizontalScrollView.scrollTo(0, 0)
-//                        direction = 1
-//                        scrollPosition = 0
-//                    }
-//                    scrollPosition += scrollSpeed * direction
-//                    horizontalScrollView.scrollTo(scrollPosition, 0)
-//
-//                    // Schedule next scroll
-//                    handler.postDelayed(this, 60) // Adjust this value to change scroll interval
-//                }
-//            }
-//
-//            // Start scrolling after a delay
-//            handler.postDelayed(
-//                runnable,
-//                2000
-//            )// Adjust this value to change delay before scrolling starts
-//        }
-//    }
-
     private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
         editor.putString("transactionId", transactionIdArg)
+        editor.putString("operationId",transactionIdArg)
         editor.apply()
     }
 
@@ -401,7 +356,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        Log.d("userAgentHeader in MainBottom Sheet onCreateView",userAgentHeader)
         if(userAgentHeader.contains("Mobile",ignoreCase = true)){
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
@@ -427,17 +381,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
         val baseUrl = sharedPreferences.getString("baseUrl","null")
-        Log.d("baseUrl is $baseUrl","Wallet")
+
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
         walletDetailsOriginal = arrayListOf()
-
-
-
-        if (successScreenFullReferencePath != null) {
-            Log.d("WalletBottomSheetReference", successScreenFullReferencePath!!)
-        }
 
 
         allWalletAdapter = WalletAdapter(
@@ -533,7 +481,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
                 callUIAnalytics(requireContext(),"PAYMENT_INITIATED",walletDetailsOriginal[checkedPosition!!].walletBrand,"Wallet")
             }
-            Log.d("Selected bank is : ", walletInstrumentTypeValue)
+
             binding.errorField.visibility = View.GONE
 
             postRequest(requireContext(), walletInstrumentTypeValue)
@@ -572,7 +520,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private fun callUIAnalytics(context: Context, event: String,paymentSubType : String, paymentType : String) {
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
 
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
         val browserLanguage = Locale.getDefault().toString()
@@ -606,7 +553,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 try {
 
                 } catch (e: JSONException) {
-                    Log.d("status check error", e.toString())
+
                 }
 
             },
@@ -655,7 +602,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         }
     }
     fun failurePaymentFunction(){
-        Log.d("Failure Screen View Model", "failurePaymentFunction")
 
         // Start a coroutine with a delay of 5 seconds
         CoroutineScope(Dispatchers.Main).launch {
@@ -670,7 +616,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchWalletDetails() {
-        Log.d("fetchWalletDetails", "called")
         val url = "${Base_Session_API_URL}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
@@ -713,7 +658,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
             } catch (e: Exception) {
-                Log.d("Error Occured", e.toString())
                 e.printStackTrace()
             }
 
@@ -787,14 +731,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     fun makeRecyclerViewJustBelowEditText() {
 
-        Log.d("View will be gone now", "working fine")
+
         binding.textView19.visibility = View.GONE
         binding.textView24.visibility = View.GONE
         binding.linearLayout2.visibility = View.GONE
     }
 
     fun removeRecyclerViewFromBelowEditText() {
-        Log.d("View will be gone now", "working fine")
+
         binding.textView19.visibility = View.VISIBLE
         binding.textView24.visibility = View.VISIBLE
         binding.linearLayout2.visibility = View.VISIBLE
@@ -822,7 +766,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun callPaymentMethodRules(context: Context) {
-        Log.d("callPaymentMethodRules", System.currentTimeMillis().toString())
+
         val requestQueue = Volley.newRequestQueue(context)
 
         val countryName = sharedPreferences.getString("countryCode",null)
@@ -881,7 +825,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun postRequest(context: Context, instrumentTypeValue: String) {
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
 
         val requestBody = JSONObject().apply {
@@ -960,22 +903,15 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
-                // Handle response
-                logJsonObject(response)
-
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
 
                 hideLoadingInButton()
 
                 try {
-                    // Parse the JSON response
-                    logJsonObject(response)
 
-                    // Retrieve the "actions" array
-                    Log.d("error after actionsArray", "Wallet")
+
                     val actionsArray = response.getJSONArray("actions")
-                    Log.d("error after status", "Wallet")
                     val status = response.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
@@ -983,7 +919,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         val actionObject = actionsArray.getJSONObject(i)
                         url = actionObject.getString("url")
                         // Do something with the URL
-                        Log.d("url and status", url + "\n" + status)
+
                     }
 
 
@@ -996,6 +932,10 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
+
+                        if (status.contains("RequiresAction", ignoreCase = true)) {
+                            editor.putString("status","RequiresAction")
+                        }
 
 //                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
 //                        FailureScreenFunctionObject.failureScreenFunction = ::failurePaymentFunction
@@ -1011,6 +951,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 //                        } // Start the webViewActivity
 
                         startActivity(intent)
+                        editor.apply()
 ////                        startActivity(intent)
 
 
@@ -1021,7 +962,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE
                     binding.textView4.text = "Error requesting payment"
-                    Log.e("Error in handling response",e.toString())
                 }
 
             },
@@ -1051,13 +991,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
-    }
-
-
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body Wallet", jsonStr)
     }
 
     private fun enableProceedButton() {
@@ -1104,13 +1037,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         val sharedPreferences =
             requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token", "empty")
-        Log.d("data fetched from sharedPreferences", token.toString())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
-        Log.d(
-            "success screen path fetched from sharedPreferences",
-            successScreenFullReferencePath.toString()
-        )
     }
 
     fun extractMessageFromErrorResponse(response: String): String? {
@@ -1126,12 +1054,12 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         return null
     }
 
+
     companion object {
         fun newInstance(
             shippingEnabled: Boolean
         ): WalletBottomSheet {
             val fragment = WalletBottomSheet()
-            Log.d("shippingEnabled","wallet $shippingEnabled")
             fragment.shippingEnabled = shippingEnabled
             return fragment
         }

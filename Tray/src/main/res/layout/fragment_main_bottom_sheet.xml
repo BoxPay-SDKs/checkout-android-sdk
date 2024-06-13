@@ -1452,22 +1452,16 @@
 
                     <com.airbnb.lottie.LottieAnimationView
                         android:id="@+id/boxpayLogoLottie"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="32dp"
+                        android:layout_centerInParent="true"
                         app:lottie_fileName="boxpayLogo.json" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/boxpayLogoLottie"
                         android:layout_centerInParent="true"
-                        app:layout_constraintTop_toBottomOf="@+id/boxpayLogoLottie"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/poppins"
                         android:text="Loading..."

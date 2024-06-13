@@ -19,7 +19,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
 
-class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false, private val test: Boolean){
+class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false){
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
@@ -34,39 +34,18 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             this.BASE_URL = "apis.boxpay.in"
         }
 
-
-        if(test){
-            editor.putString("baseUrl","test-apis.boxpay.tech")
-            this.BASE_URL = "test-apis.boxpay.tech"
-        }
-
         editor.apply()
     }
     fun display() {
         if (context is Activity) {
-            Log.d("Checked","inside context if condition")
             val activity = context as AppCompatActivity // or FragmentActivity, depending on your activity type
-            val fragmentManager = activity.supportFragmentManager
-            // Now you can use fragmentManager
-//            val bottomSheet = BottomSheetLoadingSheet()
-//            bottomSheet.show(fragmentManager, "BottomSheetLoadingSheet")
             callUIAnalytics(context,"CHECKOUT_LOADED")
+            putTransactionDetailsInSharedPreferences()
             openBottomSheet()
         }
-
-
-
-        Log.d("Checking Time issue","Called display")
-        Log.d("environment variable",sharedPreferences.getString("environment","null").toString())
-        putTransactionDetailsInSharedPreferences()
-        Log.d("Checked","Executed minView Checkout")
-        Log.d("Checking Time issue","Before fetching shopper details")
-//        fetchShopperDetailsAndUpdateInSharedPreferences()
     }
 
     private fun callUIAnalytics(context: Context, event: String) {
-
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
         val browserLanguage = Locale.getDefault().toString()
@@ -138,7 +117,6 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         initializingCallBackFunctions()
 
         if (context is Activity) {
-            Log.d("Checked","inside context if condition")
             val activity = context as AppCompatActivity // or FragmentActivity, depending on your activity type
             val fragmentManager = activity.supportFragmentManager
             // Now you can use fragmentManager
@@ -147,7 +125,6 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         }
     }
     fun initializingCallBackFunctions(){
-        Log.d("result for callback","checkingPurpose")
         val callBackFunctions = onPaymentResult?.let { CallBackFunctions(it) }
         SingletonClass.getInstance().callBackFunctions = callBackFunctions
     }
@@ -157,13 +134,6 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
 
     private fun putTransactionDetailsInSharedPreferences() {
         editor.putString("token", token)
-        Log.d("token added to sharedPreferences", token)
         editor.apply()
-    }
-
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body Checkout", jsonStr)
     }
 }

@@ -104,22 +104,14 @@ class Check : AppCompatActivity() {
      private fun showBottomSheetWithOverlay() {
          //tokenLiveData.value.toString()
          tokenLiveData.value.toString()
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,false,true)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,true)
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
 
 
     fun onPaymentResultCallback(result : PaymentResultObject) {
-        if(result.status == "Success"){
-            Log.d("onPaymentResultCallback","Success")
-            val intent = Intent(this,SuccessScreenForTesting :: class.java)
-            startActivity(intent)
-        }else{
-            Log.d("onPaymentResultCallback","Failure")
-            val intent = Intent(this,FailureScreenForTesting :: class.java)
-            startActivity(intent)
-        }
+        Log.d("Result for the activity", "Payment result received: ${result.status} ${result.transactionId}  ${result.operationId}")
     }
 
 //    "billingAddress": {
@@ -134,11 +126,11 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/k14ut9k7gQ/sessions"
+        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/kAqHOFwT4s/sessions"
         val jsonData = JSONObject("""{
       "context": {
         "countryCode": "IN",
-        "legalEntity": {"code": "boxpay"},
+        "legalEntity": {"code": "test"},
         "orderId": "test12"
       },
       "paymentType": "S",
@@ -212,7 +204,7 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer bXj9R23osaf70w00Rn2RXFVOUpis6sn1XNPWkDu8g9tpwjP4hZThKqS38iA6E931qbm3bXGLKQJ7scZaufrMvq"
+                headers["Authorization"] =  "Bearer hHS5VOOxvbaHxWlGXvGp42tgDgIWBqR7Gj8V3vQknDs8o7OUqurrHZAi7YfilgfBgO5I52Bi0iFjUuu2iFmbWk"
                 return headers
             }
         }
