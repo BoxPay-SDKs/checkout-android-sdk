@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.webkit.WebSettings
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
@@ -19,12 +20,20 @@ import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import coil.decode.SvgDecoder
 import coil.load
+import com.android.volley.DefaultRetryPolicy
+import com.android.volley.Response
+import com.android.volley.VolleyError
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.example.tray.R
 import com.example.tray.databinding.NetbankingBanksItemBinding
 import com.example.tray.dataclasses.NetbankingDataClass
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.InputStream
+import java.util.Locale
 
 
 class NetbankingBanksAdapter(
@@ -32,7 +41,8 @@ class NetbankingBanksAdapter(
     private val recyclerView: RecyclerView,
     private var liveDataPopularItemSelectedOrNot : MutableLiveData<Boolean>,
     private val context : Context,
-    private val searchView : android.widget.SearchView
+    private val searchView : android.widget.SearchView,
+    private val token : String
 ) : RecyclerView.Adapter<NetbankingBanksAdapter.NetBankingAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
@@ -116,6 +126,9 @@ class NetbankingBanksAdapter(
                     inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
                     handleRadioButtonClick(adapterPosition,binding.radioButton)
                     liveDataPopularItemSelectedOrNot.value = false
+
+                    callUIAnalytics(context,"PAYMENT_INSTRUMENT_PROVIDED",banksDetails[position].bankBrand,"NetBanking")
+                    callUIAnalytics(context,"PAYMENT_METHOD_SELECTED",banksDetails[position].bankBrand,"NetBanking")
                 }
 
                 val balloon = createBalloon(context) {
@@ -174,6 +187,81 @@ class NetbankingBanksAdapter(
         Handler().postDelayed({
             popupWindow.dismiss()
         }, 3000)
+    }
+    private fun callUIAnalytics(context: Context, event: String,paymentSubType : String, paymentType : String) {
+        val environmentFetched = sharedPreferences.getString("environment", "null")
+
+        Log.d("postRequestCalled", System.currentTimeMillis().toString())
+        val requestQueue = Volley.newRequestQueue(context)
+        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
+        val browserLanguage = Locale.getDefault().toString()
+
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+            put("callerToken", token)
+            put("uiEvent", event)
+
+            // Create eventAttrs JSON object
+            val eventAttrs = JSONObject().apply {
+                put("paymentType", paymentType)
+                put("paymentSubType", paymentSubType)
+            }
+            put("eventAttrs", eventAttrs)
+
+            // Create browserData JSON object
+            val browserData = JSONObject().apply {
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", browserLanguage)
+            }
+            put("browserData", browserData)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, "https://${environmentFetched}apis.boxpay.tech/v0/ui-analytics", requestBody,
+            Response.Listener { response ->
+                // Handle response
+                try {
+
+                } catch (e: JSONException) {
+                    Log.d("status check error", e.toString())
+                }
+
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                Log.e("Error", "Error occurred: ${error.message}")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    Log.e("Error", "Detailed error response: $errorResponse")
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
+                    Log.d("Error message", errorMessage)
+                }
+
+            }) {
+
+        }.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
+    }
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+            e.printStackTrace()
+        }
+        return null
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NetBankingAdapterViewHolder {

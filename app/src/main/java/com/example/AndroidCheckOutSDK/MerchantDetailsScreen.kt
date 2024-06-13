@@ -1,7 +1,6 @@
 package com.example.AndroidCheckOutSDK
 
 import android.content.Context
-import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -9,10 +8,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import com.android.volley.Response
-import com.android.volley.VolleyError
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
 import com.example.AndroidCheckOutSDK.databinding.ActivityMerchantDetailsScreenBinding
 import com.example.tray.BoxPayCheckout
 import com.example.tray.paymentResult.PaymentResultObject
@@ -71,12 +66,15 @@ class MerchantDetailsScreen : AppCompatActivity() {
             binding.button.isEnabled = false
             binding.button.text = "Please Wait"
             Log.d("selectedEnvironment",selectedEnvironment.toString())
-            if(selectedEnvironment == "test") {
+            if(selectedEnvironment == "prod") {
                 val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false)
                 checkout.display()
             }
-            else {
+            else if(selectedEnvironment == "sandbox"){
                 val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true)
+                checkout.display()
+            }else if(selectedEnvironment == "test"){
+                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false)
                 checkout.display()
             }
         }

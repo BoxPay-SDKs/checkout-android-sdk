@@ -14,8 +14,7 @@
             android:id="@+id/constraintLayout123"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bottom_sheet_bg"
-            app:layout_anchorGravity="center">
+            android:background="@drawable/bottom_sheet_bg">
 <!--            <SeekBar-->
 <!--                android:id="@+id/sliderButton"-->
 <!--                android:layout_width="match_parent"-->
@@ -40,41 +39,52 @@
                 android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:fontFamily="@font/poppins_bold"
                 android:gravity="center"
                 android:text="Pay using"
                 android:textColor="#2D2B32"
                 android:textSize="16sp"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
             <LinearLayout
+                android:id="@+id/paymentDetailsLL"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
                 android:orientation="horizontal"
-                app:layout_constraintTop_toBottomOf="@+id/textView2"
+                android:weightSum="1"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:layout_marginTop="12dp"
-                android:weightSum="1">
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView2">
+
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@drawable/amazonpay"/>
+                    android:src="@drawable/amazonpay" />
+
                 <TextView
+                    android:id="@+id/paymentDetailsTextView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"/>
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Sample text"
+                    android:textColor="#000000"
+                    android:fontFamily="@font/poppins"/>
+
                 <TextView
-                    android:id="@+id/textView3"
+                    android:id="@+id/moreOptionsTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_bold"
-                    android:textColor="#0D8EFF"
-                    android:textSize="12sp"
                     android:text="@string/underline_quick_pay"
-                    />
+                    android:textColor="#0D8EFF"
+                    android:textSize="12sp" />
 
             </LinearLayout>
 
@@ -90,7 +100,8 @@
                 app:cardCornerRadius="7dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent">
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/paymentDetailsLL">
 
                 <RelativeLayout
                     android:id="@+id/proceedButtonRelativeLayout"
@@ -103,6 +114,7 @@
                         android:id="@+id/progressBar"
                         android:layout_width="15dp"
                         android:layout_height="15dp"
+                        android:visibility="gone"
                         android:layout_centerInParent="true"
                         android:indeterminateDrawable="@drawable/loader_01"
                         android:rotation="90" />

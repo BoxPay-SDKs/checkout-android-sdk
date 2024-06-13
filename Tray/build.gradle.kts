@@ -66,8 +66,6 @@ dependencies {
     implementation("io.coil-kt:coil-svg:2.4.0")
     implementation ("jp.wasabeef:glide-transformations:4.3.0")
     implementation("com.github.bumptech.glide:glide:4.12.0")
-
-
 }
 
 

@@ -1,8 +1,16 @@
 package com.example.tray
 
+import android.animation.ObjectAnimator
+import android.app.Dialog
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.StyleSpan
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -11,7 +19,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.FrameLayout
 import android.widget.SeekBar
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -21,18 +34,24 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.FragmentQuickPayBottomSheetBinding
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
 import java.util.Locale
+import kotlin.math.log
 
 class QuickPayBottomSheet : BottomSheetDialogFragment() {
-    private lateinit var binding : FragmentQuickPayBottomSheetBinding
+    private lateinit var binding: FragmentQuickPayBottomSheetBinding
     private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var editor : SharedPreferences.Editor
+    private lateinit var editor: SharedPreferences.Editor
     private lateinit var Base_Session_API_URL: String
-    private var transactionId : String ?= null
+    private var transactionId: String? = null
     private var token: String? = null
+    private var instrumentRef = MutableLiveData<String>()
+    private var displayValue : String ?= null
+    private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -43,7 +62,15 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
     ): View? {
 
         // Inflate the layout for this fragment
-        binding = FragmentQuickPayBottomSheetBinding.inflate(layoutInflater,container,false)
+        binding = FragmentQuickPayBottomSheetBinding.inflate(layoutInflater, container, false)
+
+        instrumentRef.observe(this, Observer { instrumentRefObserved ->
+            if(instrumentRefObserved == null){
+                disableProceedButton()
+            }else{
+                enableProceedButton()
+            }
+        })
 //        val seekBar = binding.sliderButton
 //
 //        val maxProgress = 100
@@ -83,30 +110,98 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
 //        })
 
 
-        sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-        val environmentFetched = sharedPreferences.getString("environment", "null")
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
+
 
         token = sharedPreferences.getString("token", "empty")
-
-        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
+        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
 
 
         fetchLastUsedPaymentMethods()
+
+        binding.proceedButton.setOnClickListener(){
+            openUPITimerBottomSheet(displayValue.toString())
+
+        }
+
+        binding.moreOptionsTextView.setOnClickListener(){
+            MainBottomSheet().show(parentFragmentManager,"MainBottomSheet")
+            dismiss()
+        }
         return binding.root
     }
 
-    private fun fetchLastUsedPaymentMethods(){
+    fun hideLoadingInButton() {
+        binding.progressBar.visibility = View.INVISIBLE
+        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
+        binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
+        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButton.isEnabled = true
+    }
+
+    fun showLoadingInButton() {
+        binding.textView6.visibility = View.INVISIBLE
+        binding.progressBar.visibility = View.VISIBLE
+        val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
+        rotateAnimation.duration = 3000
+        rotateAnimation.repeatCount = ObjectAnimator.INFINITE
+        binding.proceedButton.isEnabled = false
+        rotateAnimation.start()
+    }
+
+    private fun openUPITimerBottomSheet(userVPA : String) {
+        val bottomSheetFragment = UPITimerBottomSheet.newInstance(userVPA)
+        bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
+    }
+
+    private fun fetchLastUsedPaymentMethods() {
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val requestQueue = Volley.newRequestQueue(context)
-        val environmentFetched = sharedPreferences.getString("environment","null")
-        val url = "https://${environmentFetched}apis.boxpay.tech/v0/shoppers/+919818198330/instruments"
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
+        val url =
+            "https://test-apis.boxpay.tech/v0/shoppers/+919818198330/instruments"
         val jsonArrayRequest = object : JsonArrayRequest(
-            Method.GET, url,null,
+            Method.GET, url, null,
             Response.Listener { response ->
-                logJsonObject(response.getJSONObject(0))
+                try {
+                    if (response.length() >= 1) {
+                        val latestUsedMethod = response.getJSONObject(0)
+                        logJsonObject(latestUsedMethod)
+                        val type = latestUsedMethod.getString("type")
+                        val brand = latestUsedMethod.getString("brand")
+                        displayValue = latestUsedMethod.getString("displayValue")
+                         val typeAllCaps = type.toUpperCase()
+                        Log.d("type and brand","type : $typeAllCaps, brand : $brand and value : $displayValue")
+                        val builder = SpannableStringBuilder()
+
+// Append the type without any styling
+                        builder.append(type)
+
+// Append a separator
+                        builder.append(" | ")
+
+// Append the value with bold styling using shorthand operator
+                        val valueStartIndex = builder.length
+                        builder.append(displayValue)
+                        builder.setSpan(StyleSpan(Typeface.BOLD), valueStartIndex, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+// Set the styled text to your TextView
+                        binding.paymentDetailsTextView.text = builder
+                        instrumentRef.value = latestUsedMethod.getString("instrumentRef")
+
+
+
+                    }
+                } catch (e: Exception) {
+                    Log.e("Exception in quick pay API",e.toString())
+                }
+
             },
             Response.ErrorListener { error ->
                 // Handle error
@@ -132,7 +227,7 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["Authorization"] = "Session 82168892-b4a6-4b44-8a66-120fe5c6329f"
+                headers["Authorization"] = "Session 803fdcc1-e0d7-4d1c-929d-5f45d804f38d"
                 return headers
             }
         }.apply {
@@ -142,10 +237,10 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             val backoffMultiplier = 1.0f // Backoff multiplier
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
-
         // Add the request to the RequestQueue.
         requestQueue.add(jsonArrayRequest)
     }
+
     fun extractMessageFromErrorResponse(response: String): String? {
         try {
             // Parse the JSON string
@@ -157,6 +252,27 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             e.printStackTrace()
         }
         return null
+    }
+
+
+    private fun enableProceedButton() {
+        binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
+        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.textView6.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
+            )
+        )
+    }
+
+    private fun disableProceedButton() {
+        binding.textView6.visibility = View.VISIBLE
+        binding.proceedButton.isEnabled = false
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
+        binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
+        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
 
@@ -186,10 +302,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             }
             put("billingAddress", billingAddressObject)
 
-            // Browser Data
-
-            // Get the IP address
-
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
 
@@ -205,10 +317,14 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 put("acceptHeader", "application/json")
                 put("userAgentHeader", userAgentHeader)
                 put("browserLanguage", Locale.getDefault().toString())
-                put("ipAddress", sharedPreferences.getString("ipAddress","null"))
+                put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
                 put("colorDepth", 24) // Example value
                 put("javaEnabled", true) // Example value
                 put("timeZoneOffSet", 330) // Example value
+
+                put("packageId",requireActivity().packageName)
+
+
             }
             put("browserData", browserData)
 
@@ -222,37 +338,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 put("upi", upiObject)
             }
             put("instrumentDetails", instrumentDetailsObject)
-            // Shopper
-            val shopperObject = JSONObject().apply {
-                val deliveryAddressObject = JSONObject().apply {
-
-                    put("address1", sharedPreferences.getString("address1","null"))
-                    put("address2", sharedPreferences.getString("address2","null"))
-                    put("address3", sharedPreferences.getString("address3","null"))
-                    put("city", sharedPreferences.getString("city","null"))
-                    put("countryCode", sharedPreferences.getString("countryCode","null"))
-                    put("countryName", sharedPreferences.getString("countryName","null"))
-                    put("postalCode", sharedPreferences.getString("postalCode","null"))
-                    put("state", sharedPreferences.getString("state","null"))
-                }
-
-
-                put("deliveryAddress", deliveryAddressObject)
-                put("email", sharedPreferences.getString("email","null"))
-                put("firstName", sharedPreferences.getString("firstName","null"))
-                if(sharedPreferences.getString("gender","null") == "null")
-                    put("gender", JSONObject.NULL)
-                else
-                    put("gender",sharedPreferences.getString("gender","null"))
-                put("lastName", sharedPreferences.getString("lastName","null"))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber","null"))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference","null"))
-            }
-
-            logJsonObject(shopperObject)
-
-
-            put("shopper", shopperObject)
         }
 
         // Request a JSONObject response from the provided URL
@@ -304,9 +389,76 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
-    private fun updateTransactionIDInSharedPreferences(transactionIdArg : String) {
+
+    private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
         editor.putString("transactionId", transactionIdArg)
         editor.apply()
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
+            val d = dialog as BottomSheetDialog
+            val bottomSheet =
+                d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
+            if (bottomSheet != null) {
+//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
+                bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+            }
+
+            if (bottomSheetBehavior == null)
+                Log.d("bottomSheetBehavior is null", "check here")
+
+            val window = d.window
+            window?.apply {
+                // Apply dim effect
+                setDimAmount(0.5f) // 50% dimming
+                setBackgroundDrawable(ColorDrawable(Color.argb(128, 0, 0, 0))) // Semi-transparent black background
+            }
+
+
+            bottomSheetBehavior?.isDraggable = false
+            bottomSheetBehavior?.isHideable = false
+
+
+
+
+
+            bottomSheetBehavior?.addBottomSheetCallback(object :
+                BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    // Handle state changes
+                    when (newState) {
+                        BottomSheetBehavior.STATE_EXPANDED -> {
+                            // Fully expanded
+                        }
+
+                        BottomSheetBehavior.STATE_COLLAPSED -> {
+                            // Collapsed
+                        }
+
+                        BottomSheetBehavior.STATE_DRAGGING -> {
+                            // The BottomSheet is being dragged
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_SETTLING -> {
+                            // The BottomSheet is settling
+//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+
+                        BottomSheetBehavior.STATE_HIDDEN -> {
+                            //Hidden
+
+                        }
+                    }
+                }
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+
+                }
+            })
+        }
+        return dialog
     }
 
     companion object {

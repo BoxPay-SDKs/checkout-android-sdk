@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
@@ -18,12 +17,12 @@ import com.example.tray.databinding.ActivityCheckBinding
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
-import kotlin.reflect.KParameter
 
 class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
     private var successScreenFullReferencePath : String ?= null
     private var tokenFetchedAndOpen = false
+
 
     private val binding : ActivityCheckBinding by lazy {
         ActivityCheckBinding.inflate(layoutInflater)
@@ -97,28 +96,22 @@ class Check : AppCompatActivity() {
     private fun handleResponseWithToken() {
         if(tokenFetchedAndOpen)
             return
-        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}",)
+        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
         showBottomSheetWithOverlay()
         tokenFetchedAndOpen = true
     }
 
      private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,false)
+         //tokenLiveData.value.toString()
+         tokenLiveData.value.toString()
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,true)
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
 
 
     fun onPaymentResultCallback(result : PaymentResultObject) {
-        if(result.status == "Success"){
-            Log.d("onPaymentResultCallback","Success")
-            val intent = Intent(this,SuccessScreenForTesting :: class.java)
-            startActivity(intent)
-        }else{
-            Log.d("onPaymentResultCallback","Failure")
-            val intent = Intent(this,FailureScreenForTesting :: class.java)
-            startActivity(intent)
-        }
+        Log.d("Result for the activity", "Payment result received: ${result.status} ${result.transactionId}  ${result.operationId}")
     }
 
 //    "billingAddress": {
@@ -128,27 +121,27 @@ class Check : AppCompatActivity() {
 //        "state": "Haryana",
 //        "countryCode": "IN",
 //        "postalCode": "121004"
-//    },
+//    }
 
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/k12aNmllPW/sessions"
+        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/kAqHOFwT4s/sessions"
         val jsonData = JSONObject("""{
       "context": {
         "countryCode": "IN",
-        "legalEntity": {"code": "boxpay"},
+        "legalEntity": {"code": "test"},
         "orderId": "test12"
       },
       "paymentType": "S",
       "money": {"amount": "1", "currencyCode": "INR"},
       "descriptor": {"line1": "Some descriptor"},
       "shopper": {
-        "firstName": "test",
-        "lastName": "last",
-        "email": "test123@gmail.com",
+        "firstName": "Piyush",
+        "lastName": "Sharma",
+        "email":"piyush141001@gmail.com",
         "uniqueReference": "x123y",
-        "phoneNumber": "911234567890",
+        "phoneNumber": "919711668479",
         "deliveryAddress": {
           "address1": "first line",
           "address2": "second line",
@@ -211,7 +204,7 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer 72t54rOBQKzlEPddLizUJcZnJJGkm6Ysjy61u8eCtuYywGUhQW3MUivPwW0wmnky3gBQViQo9n6apZcUlXz4h9"
+                headers["Authorization"] =  "Bearer hHS5VOOxvbaHxWlGXvGp42tgDgIWBqR7Gj8V3vQknDs8o7OUqurrHZAi7YfilgfBgO5I52Bi0iFjUuu2iFmbWk"
                 return headers
             }
         }
