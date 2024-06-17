@@ -24,6 +24,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModel
+import com.example.tray.ViewModels.SingletonForDismissMainSheet
 import com.example.tray.databinding.FragmentUPITimerBottomSheetBinding
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -288,23 +289,36 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
+                        editor.putString("status","Success")
+                        editor.apply()
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         val callback = SingletonClass.getInstance().getYourObject()
+                        val callbackForDismissing = SingletonForDismissMainSheet.getInstance().getYourObject()
                         if (callback == null) {
-                            Log.d("call back is null", "Success")
+                            Log.d("Result for the activity", "null")
                         } else {
-                            countdownTimer.cancel()
-                            countdownTimerForAPI.cancel()
+                            Log.d("Result for the activity", "not null")
                             callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
-                            dismiss()
                         }
-                        editor.putString("status","Success")
+
+                        if(callbackForDismissing != null){
+                            Log.d("callbackForDismissing is null", "not null")
+                            callbackForDismissing.dismissFunction()
+                        }else{
+                            Log.d("callbackForDismissing is null", "null")
+                        }
+
+                        dismiss()
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status","RequiresAction")
+                        editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
                         editor.putString("status","Posted")
+                        editor.apply()
                     } else if (status.contains("FAILED", ignoreCase = true)) {
+                        editor.putString("status","Failed")
+                        editor.apply()
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         val callback =
@@ -315,7 +329,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                             callback.openFailureScreen()
                         }
                         dismiss()
-                        editor.putString("status","Failed")
+
                     }
                     editor.apply()
                 } catch (e: JSONException) {

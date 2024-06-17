@@ -102,87 +102,79 @@ class Check : AppCompatActivity() {
     }
 
      private fun showBottomSheetWithOverlay() {
+
          //tokenLiveData.value.toString()
-         tokenLiveData.value.toString()
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value.toString(),:: onPaymentResultCallback,true)
+//         tokenLiveData.value.toString()
+        val boxPayCheckout = BoxPayCheckout(this, "86402552-62f2-44ea-91bc-4fd284129ef0",:: onPaymentResultCallback,false)
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
 
 
     fun onPaymentResultCallback(result : PaymentResultObject) {
-        Log.d("Result for the activity", "Payment result received: ${result.status} ${result.transactionId}  ${result.operationId}")
+        Log.d("Result for the activity", "Payment result received: onpr ${result.status} onpr ${result.transactionId}  onpr ${result.operationId}")
     }
-
-//    "billingAddress": {
-//        "address1": "first address line",
-//        "address2": "second address line",
-//        "city": "Faridabad",
-//        "state": "Haryana",
-//        "countryCode": "IN",
-//        "postalCode": "121004"
-//    }
 
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
         val url = "https://sandbox-apis.boxpay.tech/v0/merchants/kAqHOFwT4s/sessions"
-        val jsonData = JSONObject("""{
-      "context": {
-        "countryCode": "IN",
-        "legalEntity": {"code": "test"},
-        "orderId": "test12"
-      },
-      "paymentType": "S",
-      "money": {"amount": "1", "currencyCode": "INR"},
-      "descriptor": {"line1": "Some descriptor"},
-      "shopper": {
-        "firstName": "Piyush",
-        "lastName": "Sharma",
-        "email":"piyush141001@gmail.com",
-        "uniqueReference": "x123y",
-        "phoneNumber": "919711668479",
-        "deliveryAddress": {
-          "address1": "first line",
-          "address2": "second line",
-          "city": "Mumbai",
-          "state": "Maharashtra",
-          "countryCode": "IN",
-          "postalCode": "123456"
-        }
-      },
-      "order": {
-        "originalAmount": 423.73,
-        "shippingAmount": 50,
-        "voucherCode": "VOUCHER",
+        val jsonData = JSONObject(""" {
+  "context": {
+    "countryCode": "IN",
+    "legalEntity": {"code": "demo"},
+    "orderId": "test12"
+  },
+  "paymentType": "S",
+  "money": {"amount": "1", "currencyCode": "INR"},
+  "descriptor": {"line1": "Some descriptor"},
+  "shopper": {
+    "firstName": "Piyush",
+    "lastName": "Sharma",
+    "email":"piyush141001@gmail.com",
+    "uniqueReference": "x123y",
+    "phoneNumber": "919711668479",
+    "deliveryAddress": {
+      "address1": "first line",
+      "address2": "second line",
+      "city": "Mumbai",
+      "state": "Maharashtra",
+      "countryCode": "IN",
+      "postalCode": "123456"
+    }
+  },
+  "order": {
+    "originalAmount": 423.73,
+    "shippingAmount": 50,
+    "voucherCode": "VOUCHER",
+    "taxAmount": 76.27,
+    "totalAmountWithoutTax": 423.73,
+    "items": [
+      {
+        "id": "test",
+        "itemName": "Sample Item",
+        "description": "testProduct",
+        "quantity": 1,
+        "manufacturer": null,
+        "brand": null,
+        "color": null,
+        "productUrl": null,
+        "imageUrl":
+            "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+        "categories": null,
+        "amountWithoutTax": 423.73,
         "taxAmount": 76.27,
-        "totalAmountWithoutTax": 423.73,
-        "items": [
-          {
-            "id": "test",
-            "itemName": "Sample Item",
-            "description": "testProduct",
-            "quantity": 1,
-            "manufacturer": null,
-            "brand": null,
-            "color": null,
-            "productUrl": null,
-            "imageUrl":
-                "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-            "categories": null,
-            "amountWithoutTax": 423.73,
-            "taxAmount": 76.27,
-            "taxPercentage": null,
-            "discountedAmount": null,
-            "amountWithoutTaxLocale": "10",
-            "amountWithoutTaxLocaleFull": "10"
-          }
-        ]
-      },
-      "statusNotifyUrl": "https://www.boxpay.tech",
-      "frontendReturnUrl": "https://www.boxpay.tech",
-      "frontendBackUrl": "https://www.boxpay.tech"
-    }""")
+        "taxPercentage": null,
+        "discountedAmount": null,
+        "amountWithoutTaxLocale": "10",
+        "amountWithoutTaxLocaleFull": "10"
+      }
+    ]
+  },
+  "statusNotifyUrl": "https://www.boxpay.tech",
+  "frontendReturnUrl": "https://www.boxpay.tech",
+  "frontendBackUrl": "https://www.boxpay.tech"
+}""")
 
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->

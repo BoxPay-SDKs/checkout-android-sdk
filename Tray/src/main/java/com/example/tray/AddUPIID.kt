@@ -494,21 +494,19 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
 
-                var url = ""
-
                 if (status.contains("Rejected", ignoreCase = true)) {
                     PaymentFailureScreen().show(parentFragmentManager,"FailureScreen")
                 }else {
 
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status","RequiresAction")
+                        editor.apply()
+                        openUPITimerBottomSheet()
                     }
-                    url = response
-                        .getJSONArray("actions")
-                        .getJSONObject(0)
-                        .getString("url")
+                    else if (status.contains("Approved", ignoreCase = true)) {
+                        editor.putString("status","Success")
+                        editor.apply()
 
-                    if (status.contains("Approved", ignoreCase = true)) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                         bottomSheet.show(
                             parentFragmentManager,
@@ -517,10 +515,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     }
                 }
-
-                openUPITimerBottomSheet()
                 hideLoadingInButton()
-                editor.apply()
 
             },
             Response.ErrorListener { error ->
@@ -561,6 +556,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
+    }
+    fun dismissCurrentBottomSheet(){
+        dismiss()
     }
 
     fun hideLoadingInButton() {

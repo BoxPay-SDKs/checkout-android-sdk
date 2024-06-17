@@ -42,6 +42,7 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.FragmentAddCardBottomSheetBinding
+import com.example.tray.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -54,6 +55,8 @@ import java.util.Locale
 
 
 internal class AddCardBottomSheet : BottomSheetDialogFragment() {
+
+    private var callback: UpdateMainBottomSheetInterface? = null
     private lateinit var binding: FragmentAddCardBottomSheetBinding
     private lateinit var viewModel: DismissViewModel
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
@@ -102,8 +105,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     brands.add(currBrand)
                     cardNetworkName = currBrand
                     val methodEnabled = response.getBoolean("methodEnabled")
-
-
 
                     if(!methodEnabled){
                         isCardNumberValid = false
@@ -944,16 +945,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
             Response.Listener { response ->
-
                 try {
                     logJsonObject(response)
-
-
-
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
-
             },
             Response.ErrorListener { error ->
                 // Handle error
@@ -1064,7 +1060,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             Response.Listener { response ->
                 // Handle response
                 hideLoadingInButton()
-
                 try {
                     logJsonObject(response)
 
@@ -1153,6 +1148,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             e.printStackTrace()
         }
         return null
+    }
+
+    fun dismissCurrentBottomSheet(){
+        dismiss()
     }
 
     fun hideLoadingInButton() {
@@ -1269,7 +1268,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             shippingEnabled: Boolean
         ): AddCardBottomSheet {
             val fragment = AddCardBottomSheet()
-            Log.d("shippingEnabled","wallet $shippingEnabled")
             fragment.shippingEnabled = shippingEnabled
             return fragment
         }

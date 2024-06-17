@@ -36,8 +36,10 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModel
+import com.example.tray.ViewModels.SingletonForDismissMainSheet
 import com.example.tray.databinding.ActivityOtpscreenWebViewBinding
 import com.example.tray.interfaces.OnWebViewCloseListener
+import com.example.tray.interfaces.UpdateMainBottomSheetInterface
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.common.api.CommonStatusCodes
@@ -62,6 +64,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         ActivityOtpscreenWebViewBinding.inflate(layoutInflater)
     }
 
+    private var callbackForDismissingMainSheet: UpdateMainBottomSheetInterface? = null
     val permissionReceive = Manifest.permission.RECEIVE_SMS
     val permissionRead = Manifest.permission.READ_SMS
     val smsVerificationReceiver = SmsReceiver()
@@ -356,21 +359,38 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
+
+                        editor.putString("status","Success")
+                        editor.apply()
+
                         job?.cancel()
                         val callback = SingletonClass.getInstance().getYourObject()
+                        val callbackForDismissing = SingletonForDismissMainSheet.getInstance().getYourObject()
                         if (callback == null) {
                             Log.d("call back is null", "Success")
                         } else {
-                            job?.cancel()
                             callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
-                            finish()
                         }
-                        editor.putString("status","Success")
+
+                        if(callbackForDismissing != null){
+                            Log.d("callbackForDismissing is null", "not null")
+                            callbackForDismissing.dismissFunction()
+                        }else{
+                            Log.d("callbackForDismissing is null", "null")
+                        }
+
+                        finish()
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status","RequiresAction")
+                        editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
                         editor.putString("status","Posted")
+                        editor.apply()
                     } else if (status.contains("FAILED", ignoreCase = true)) {
+
+                        editor.putString("status","Failed")
+                        editor.apply()
+
                         job?.cancel()
                         val callback =
                             FailureScreenCallBackSingletonClass.getInstance().getYourObject()
@@ -379,10 +399,12 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                         } else {
                             callback.openFailureScreen()
                         }
+
+
                         finish()
-                        editor.putString("status","Failed")
+                        
                     }
-                    editor.apply()
+
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
@@ -476,4 +498,5 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
         }
     }
+
 }

@@ -33,7 +33,6 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             editor.putString("baseUrl","apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
         }
-
         editor.apply()
     }
     fun display() {

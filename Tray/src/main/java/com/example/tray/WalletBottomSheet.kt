@@ -993,6 +993,10 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         requestQueue.add(jsonObjectRequest)
     }
 
+    fun dismissCurrentBottomSheet(){
+        dismiss()
+    }
+
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
