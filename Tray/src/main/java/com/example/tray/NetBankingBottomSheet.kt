@@ -448,7 +448,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                 }
 
             }) {

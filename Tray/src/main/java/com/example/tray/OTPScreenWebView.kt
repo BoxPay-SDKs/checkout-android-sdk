@@ -230,7 +230,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                     // Process SMS message here
                 } else {
                     // No SMS found
-                    Log.d("Message Received", "No SMS found")
+
                 }
             }
         } catch (e: SecurityException) {
@@ -282,7 +282,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             return matcher.group() // Return the matched OTP
         }
 
-        Log.d("otp fetched", "extract OTP FROM MESSAGE null")
+
         return null // Return null if no OTP is found
     }
 
@@ -294,7 +294,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 // User granted consent
                 val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
                 otpFetched = extractOTPFromMessage(message.toString())
-                Log.d("message fetched", otpFetched.toString())
                 // Handle OTP
 
             } else {
@@ -318,7 +317,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
     // Start scheduling the function to run initially and then at intervals
     private fun startFetchingOtpAtIntervals() {
-        Log.d("otp fetched", "start fetching otp intervals")
         handler.postDelayed(runnable, delayMillis)
     }
 
@@ -366,17 +364,14 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                         job?.cancel()
                         val callback = SingletonClass.getInstance().getYourObject()
                         val callbackForDismissing = SingletonForDismissMainSheet.getInstance().getYourObject()
-                        if (callback == null) {
-                            Log.d("call back is null", "Success")
-                        } else {
+                        if(callback!= null){
                             callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
                         }
 
                         if(callbackForDismissing != null){
-                            Log.d("callbackForDismissing is null", "not null")
                             callbackForDismissing.dismissFunction()
                         }else{
-                            Log.d("callbackForDismissing is null", "null")
+
                         }
 
                         finish()
@@ -395,7 +390,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                         val callback =
                             FailureScreenCallBackSingletonClass.getInstance().getYourObject()
                         if (callback == null) {
-                            Log.d("callback is null", "PaymentFailed")
+
                         } else {
                             callback.openFailureScreen()
                         }

@@ -491,13 +491,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "FailureScreenFromUPIIntent"
                         )
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        Log.d("Result for the activity", "status${status}")
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        Log.d(
-                            "Result for the activity",
-                            sharedPreferences.getString("status", null).toString()
-                        )
                     }
                     val urlInBase64 = urlToBase64(urlForIntent)
                     launchUPIIntent(urlInBase64)
@@ -1397,7 +1392,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "FailureScreenFromUPIIntent"
                         )
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        Log.d("Result for the activity", "status ${status}")
                         editor.putString("status", "RequiresAction")
                         editor.apply()
                     }
@@ -1694,10 +1688,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             try {
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
-                Log.d("Debug", "paymentDetailsObject retrieved")
 
                 val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")
-                Log.d("Debug", "totalAmount: $totalAmount")
+
 
                 var orderObject : JSONObject ?= null
                 if(!paymentDetailsObject.isNull("order")){
@@ -1705,19 +1698,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
 
-                Log.d("Debug", "orderObject retrieved")
-
                 val originalAmount = orderObject?.getString("originalAmount")
-                Log.d("Debug", "originalAmount: $originalAmount")
 
                 val shippingCharges = orderObject?.getString("shippingAmount")
-                Log.d("Debug", "shippingCharges: $shippingCharges")
+
 
                 val taxes = orderObject?.getString("taxAmount")
-                Log.d("Debug", "taxes: $taxes")
 
                 val additionalDetails = response.getJSONObject("configs").getJSONArray("additionalFieldSets")
-                Log.d("Debug", "additionalDetails retrieved")
 
                 var orderSummaryEnable = false
 
@@ -1741,17 +1729,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 transactionAmount = totalAmount
 
-                if (paymentDetailsObject.isNull("order")) {
-                    Log.d("Inside order block", "transactionAmount")
-                }
 
                 val itemsArray = orderObject?.getJSONArray("items")
-                Log.d("Debug", "itemsArray retrieved")
+
 
                 try {
                     for (i in 0 until itemsArray!!.length()) {
                         val itemObject = itemsArray.getJSONObject(i)
-                        Log.d("Debug", "itemObject retrieved: $itemObject")
 
                         items.add(itemObject.getString("itemName"))
                         prices.add(itemObject.getString("amountWithoutTaxLocale"))
@@ -1825,22 +1809,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (!shippingEnabled) {
                     val paymentMethodsArray = response.getJSONObject("configs").getJSONArray("paymentMethods")
-                    Log.d("Debug", "paymentMethodsArray retrieved")
 
                     try {
                         if (paymentDetailsObject.isNull("order")) {
-                            Log.d("Inside order block", "shippingEnabled")
+
 
                             val itemsArray = paymentDetailsObject.getJSONObject("order").getJSONArray("items")
-                            Log.d("Debug", "itemsArray retrieved again")
+
 
                             for (i in 0 until itemsArray.length()) {
                                 val imageURL = itemsArray.getJSONObject(i).getString("imageUrl")
-                                Log.d("Debug", "imageURL retrieved: $imageURL")
                                 imagesUrls.add(imageURL)
                             }
-                        } else {
-                            Log.d("Inside order block", "shippingEnabled not")
                         }
                     } catch (e: Exception) {
                         binding.cardView3.visibility = View.GONE
@@ -1917,7 +1897,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 removeLoadingState()
 
             } catch (e: Exception) {
-                Log.d("Invalid Token prompt", "session data call catch ${e.toString()}")
                 Toast.makeText(
                     requireContext(),
                     "Invalid token/selected environment.\nPlease press back button and try again",
@@ -1932,8 +1911,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 "Invalid token/selected environment.\nPlease press back button and try again",
                 Toast.LENGTH_LONG
             ).show()
-
-            Log.d("Invalid Token prompt", "session data call error listener")
             Log.e("Error", "Error occurred: ${error.message}")
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)

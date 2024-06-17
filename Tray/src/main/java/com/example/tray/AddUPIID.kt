@@ -226,7 +226,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                 }
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -431,7 +430,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
                 put("javaEnabled", true) // Example value
                 put("packageId", requireActivity().packageName)
-                Log.d("packageId", requireActivity().packageName)
             }
             put("browserData", browserData)
 
@@ -486,8 +484,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
-                // Handle response
-                // Log.d("Response of Successful Post API call", response.toString())
 
                 val status = response.getJSONObject("status").getString("status")
                 val reason = response.getJSONObject("status").getString("reason")
@@ -526,7 +522,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     Log.e("Error", "Detailed error response: $errorResponse")
                     binding.ll1InvalidUPI.visibility = View.VISIBLE
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                     if (errorMessage.contains(
                             "Session is no longer accepting the payment as payment is already completed",
                             ignoreCase = true
@@ -693,7 +688,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                 }
 
             }) {
