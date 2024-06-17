@@ -24,6 +24,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModel
+import com.example.tray.ViewModels.SingletonForDismissMainSheet
 import com.example.tray.databinding.FragmentUPITimerBottomSheetBinding
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -45,7 +46,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var virtualPaymentAddress: String? = null
     var isBottomSheetShown = false
-    private lateinit var Base_Session_API_URL : String
+    private lateinit var Base_Session_API_URL: String
     val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,11 +56,13 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             virtualPaymentAddress = it.getString("virtualPaymentAddress")
         }
     }
-    fun explicitDismiss(){
+
+    fun explicitDismiss() {
         countdownTimer.cancel()
         countdownTimerForAPI.cancel()
         dismiss()
     }
+
     override fun onResume() {
         super.onResume()
         dialog?.setOnKeyListener { _, keyCode, _ ->
@@ -95,7 +98,16 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             window?.apply {
                 // Apply dim effect
                 setDimAmount(0.5f) // 50% dimming
-                setBackgroundDrawable(ColorDrawable(Color.argb(128, 0, 0, 0))) // Semi-transparent black background
+                setBackgroundDrawable(
+                    ColorDrawable(
+                        Color.argb(
+                            128,
+                            0,
+                            0,
+                            0
+                        )
+                    )
+                ) // Semi-transparent black background
             }
 
 //        // Adjust the height of the bottom sheet content view
@@ -163,7 +175,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 
 
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        if(userAgentHeader.contains("Mobile",ignoreCase = true)){
+        if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
 
@@ -173,7 +185,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         val editor = sharedPreferences.edit()
 
 
-        val environmentFetched = sharedPreferences.getString("environment","null")
+        val environmentFetched = sharedPreferences.getString("environment", "null")
         Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
@@ -183,7 +195,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         binding.circularProgressBar.startAngle = 90f
         binding.cancelPaymentTextView.setOnClickListener() {
             val bottomsheet = CancelConfirmationBottomSheet()
-            bottomsheet.show(parentFragmentManager,"CancellationConfirmation")
+            bottomsheet.show(parentFragmentManager, "CancellationConfirmation")
         }
         startTimer()
         startTimerForAPICalls()
@@ -271,7 +283,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 
     private fun fetchStatusAndReason(url: String) {
         val sharedPreferences =
-                requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
 
         val jsonObjectRequest = JsonObjectRequest(
@@ -288,34 +300,46 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
+                        editor.putString("status", "Success")
+                        editor.apply()
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         val callback = SingletonClass.getInstance().getYourObject()
-                        if (callback == null) {
-                            Log.d("call back is null", "Success")
-                        } else {
-                            countdownTimer.cancel()
-                            countdownTimerForAPI.cancel()
-                            callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
-                            dismiss()
+                        val callbackForDismissing =
+                            SingletonForDismissMainSheet.getInstance().getYourObject()
+                        if (callback != null) {
+                            callback.onPaymentResult(
+                                PaymentResultObject(
+                                    "Success",
+                                    transactionId,
+                                    transactionId
+                                )
+                            )
                         }
-                        editor.putString("status","Success")
+
+                        if (callbackForDismissing != null) {
+                            callbackForDismissing.dismissFunction()
+                        }
+
+                        dismiss()
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status","RequiresAction")
+                        editor.putString("status", "RequiresAction")
+                        editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status","Posted")
+                        editor.putString("status", "Posted")
+                        editor.apply()
                     } else if (status.contains("FAILED", ignoreCase = true)) {
+                        editor.putString("status", "Failed")
+                        editor.apply()
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         val callback =
                             FailureScreenCallBackSingletonClass.getInstance().getYourObject()
-                        if (callback == null) {
-                            Log.d("callback is null", "PaymentFailed")
-                        } else {
+                        if(callback!=null) {
                             callback.openFailureScreen()
                         }
                         dismiss()
-                        editor.putString("status","Failed")
+
                     }
                     editor.apply()
                 } catch (e: JSONException) {

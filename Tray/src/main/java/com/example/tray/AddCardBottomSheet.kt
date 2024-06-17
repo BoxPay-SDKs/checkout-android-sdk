@@ -42,6 +42,7 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.FragmentAddCardBottomSheetBinding
+import com.example.tray.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -54,6 +55,8 @@ import java.util.Locale
 
 
 internal class AddCardBottomSheet : BottomSheetDialogFragment() {
+
+    private var callback: UpdateMainBottomSheetInterface? = null
     private lateinit var binding: FragmentAddCardBottomSheetBinding
     private lateinit var viewModel: DismissViewModel
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
@@ -102,8 +105,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     brands.add(currBrand)
                     cardNetworkName = currBrand
                     val methodEnabled = response.getBoolean("methodEnabled")
-
-
 
                     if(!methodEnabled){
                         isCardNumberValid = false
@@ -632,19 +633,16 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         if(binding.editTextCardValidity.text.isNullOrEmpty()){
                             binding.textView7.text = "Enter Card Validity"
                         }else{
-                            Log.d("Invalid card validity","card bottom sheet")
                             binding.textView7.text = "Invalid card Validity"
                         }
                     }else{
                         binding.invalidCardValidity.visibility = View.GONE
                     }
                 }catch (e : Exception){
-                    Log.d("Invalid card validity","exception")
                     binding.invalidCardValidity.visibility = View.VISIBLE
                     if(binding.editTextCardValidity.text.isNullOrEmpty()){
                         binding.textView7.text = "Enter Card Validity"
                     }else{
-                        Log.d("Invalid card validity","card bottom sheet")
                         binding.textView7.text = "Invalid card Validity"
                     }
                 }
@@ -944,16 +942,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
             Response.Listener { response ->
-
                 try {
                     logJsonObject(response)
-
-
-
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
-
             },
             Response.ErrorListener { error ->
                 // Handle error
@@ -962,7 +955,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                 }
 
             }) {
@@ -1064,7 +1056,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             Response.Listener { response ->
                 // Handle response
                 hideLoadingInButton()
-
                 try {
                     logJsonObject(response)
 
@@ -1100,7 +1091,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     }
                     editor.apply()
                 } catch (e: JSONException) {
-                    Log.d("status check error",e.toString())
+                    e.printStackTrace()
                 }
 
             },
@@ -1115,7 +1106,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     getMessageForFieldErrorItems(errorResponse)
                     hideLoadingInButton()
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                     if (errorMessage.contains("Session is no longer accepting the payment as payment is already completed",ignoreCase = true)){
                         binding.textView4.text = "Payment is already done"
                     }
@@ -1153,6 +1143,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             e.printStackTrace()
         }
         return null
+    }
+
+    fun dismissCurrentBottomSheet(){
+        dismiss()
     }
 
     fun hideLoadingInButton() {
@@ -1209,7 +1203,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body", jsonStr)
     }
 
     fun getMessageForFieldErrorItems(errorString: String) {1
@@ -1225,7 +1218,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         for (i in 0 until fieldErrorItems.length()) {
             // Extract message from each item
             val errorMessage = fieldErrorItems.getJSONObject(i).getString("message")
-            Log.d("errorMessage", errorMessage)
             if (errorMessage.contains("Invalid instrumentDetails.card.expiry", ignoreCase = true)) {
                 binding.invalidCardValidity.visibility = View.VISIBLE
                 binding.textView7.text = "Invalid Validity"
@@ -1269,7 +1261,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             shippingEnabled: Boolean
         ): AddCardBottomSheet {
             val fragment = AddCardBottomSheet()
-            Log.d("shippingEnabled","wallet $shippingEnabled")
             fragment.shippingEnabled = shippingEnabled
             return fragment
         }

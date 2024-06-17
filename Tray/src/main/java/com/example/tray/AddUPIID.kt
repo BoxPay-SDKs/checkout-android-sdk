@@ -226,7 +226,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                 }
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -431,7 +430,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
                 put("javaEnabled", true) // Example value
                 put("packageId", requireActivity().packageName)
-                Log.d("packageId", requireActivity().packageName)
             }
             put("browserData", browserData)
 
@@ -486,15 +484,11 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
-                // Handle response
-                // Log.d("Response of Successful Post API call", response.toString())
 
                 val status = response.getJSONObject("status").getString("status")
                 val reason = response.getJSONObject("status").getString("reason")
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
-
-                var url = ""
 
                 if (status.contains("Rejected", ignoreCase = true)) {
                     PaymentFailureScreen().show(parentFragmentManager,"FailureScreen")
@@ -502,13 +496,13 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status","RequiresAction")
+                        editor.apply()
+                        openUPITimerBottomSheet()
                     }
-                    url = response
-                        .getJSONArray("actions")
-                        .getJSONObject(0)
-                        .getString("url")
+                    else if (status.contains("Approved", ignoreCase = true)) {
+                        editor.putString("status","Success")
+                        editor.apply()
 
-                    if (status.contains("Approved", ignoreCase = true)) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                         bottomSheet.show(
                             parentFragmentManager,
@@ -517,10 +511,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     }
                 }
-
-                openUPITimerBottomSheet()
                 hideLoadingInButton()
-                editor.apply()
 
             },
             Response.ErrorListener { error ->
@@ -531,7 +522,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     Log.e("Error", "Detailed error response: $errorResponse")
                     binding.ll1InvalidUPI.visibility = View.VISIBLE
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                     if (errorMessage.contains(
                             "Session is no longer accepting the payment as payment is already completed",
                             ignoreCase = true
@@ -561,6 +551,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
+    }
+    fun dismissCurrentBottomSheet(){
+        dismiss()
     }
 
     fun hideLoadingInButton() {
@@ -695,7 +688,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                 }
 
             }) {

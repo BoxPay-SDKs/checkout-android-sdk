@@ -36,8 +36,10 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModel
+import com.example.tray.ViewModels.SingletonForDismissMainSheet
 import com.example.tray.databinding.ActivityOtpscreenWebViewBinding
 import com.example.tray.interfaces.OnWebViewCloseListener
+import com.example.tray.interfaces.UpdateMainBottomSheetInterface
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import com.google.android.gms.common.api.CommonStatusCodes
@@ -62,6 +64,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         ActivityOtpscreenWebViewBinding.inflate(layoutInflater)
     }
 
+    private var callbackForDismissingMainSheet: UpdateMainBottomSheetInterface? = null
     val permissionReceive = Manifest.permission.RECEIVE_SMS
     val permissionRead = Manifest.permission.READ_SMS
     val smsVerificationReceiver = SmsReceiver()
@@ -227,7 +230,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                     // Process SMS message here
                 } else {
                     // No SMS found
-                    Log.d("Message Received", "No SMS found")
+
                 }
             }
         } catch (e: SecurityException) {
@@ -279,7 +282,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             return matcher.group() // Return the matched OTP
         }
 
-        Log.d("otp fetched", "extract OTP FROM MESSAGE null")
+
         return null // Return null if no OTP is found
     }
 
@@ -291,7 +294,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 // User granted consent
                 val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
                 otpFetched = extractOTPFromMessage(message.toString())
-                Log.d("message fetched", otpFetched.toString())
                 // Handle OTP
 
             } else {
@@ -315,7 +317,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
     // Start scheduling the function to run initially and then at intervals
     private fun startFetchingOtpAtIntervals() {
-        Log.d("otp fetched", "start fetching otp intervals")
         handler.postDelayed(runnable, delayMillis)
     }
 
@@ -356,33 +357,49 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
+
+                        editor.putString("status","Success")
+                        editor.apply()
+
                         job?.cancel()
                         val callback = SingletonClass.getInstance().getYourObject()
-                        if (callback == null) {
-                            Log.d("call back is null", "Success")
-                        } else {
-                            job?.cancel()
+                        val callbackForDismissing = SingletonForDismissMainSheet.getInstance().getYourObject()
+                        if(callback!= null){
                             callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
-                            finish()
                         }
-                        editor.putString("status","Success")
+
+                        if(callbackForDismissing != null){
+                            callbackForDismissing.dismissFunction()
+                        }else{
+
+                        }
+
+                        finish()
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status","RequiresAction")
+                        editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
                         editor.putString("status","Posted")
+                        editor.apply()
                     } else if (status.contains("FAILED", ignoreCase = true)) {
+
+                        editor.putString("status","Failed")
+                        editor.apply()
+
                         job?.cancel()
                         val callback =
                             FailureScreenCallBackSingletonClass.getInstance().getYourObject()
                         if (callback == null) {
-                            Log.d("callback is null", "PaymentFailed")
+
                         } else {
                             callback.openFailureScreen()
                         }
+
+
                         finish()
-                        editor.putString("status","Failed")
+                        
                     }
-                    editor.apply()
+
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
@@ -476,4 +493,5 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
         }
     }
+
 }

@@ -448,7 +448,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     Log.e("Error", "Detailed error response: $errorResponse")
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                 }
 
             }) {
@@ -796,34 +795,17 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             }
             put("instrumentDetails", instrumentDetailsObject)
 
-//            if(shippingEnabled){
-//                val shopperObject = JSONObject().apply {
-//                    val deliveryAddressObject = JSONObject().apply {
-//                        put("address1", sharedPreferences.getString("address1", null))
-//                        put("address2", sharedPreferences.getString("address2", null))
-//                        put("city", sharedPreferences.getString("city", null))
-//                        put("countryCode", sharedPreferences.getString("countryCode", null))
-//                        put("postalCode", sharedPreferences.getString("postalCode", null))
-//                        put("state", sharedPreferences.getString("state", null))
-//                        put("city", sharedPreferences.getString("city", null))
-//                        put("email",sharedPreferences.getString("email",null))
-//                        put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
-//                        put("countryName",sharedPreferences.getString("countryName",null))
-//                    }
-//                    put("deliveryAddress", deliveryAddressObject)
-//                }
-//                put("shopper", shopperObject)
-//            }
-
 
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email",null))
                 put("firstName", sharedPreferences.getString("firstName",null))
+
                 if(sharedPreferences.getString("gender",null) == null)
                     put("gender", JSONObject.NULL)
                 else
                     put("gender",sharedPreferences.getString("gender",null))
+
                 put("lastName", sharedPreferences.getString("lastName",null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber",null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference",null))
@@ -844,7 +826,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     put("deliveryAddress", deliveryAddressObject)
                 }
             }
-
             put("shopper", shopperObject)
         }
 
@@ -925,6 +906,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
+    }
+    fun dismissCurrentBottomSheet(){
+        dismiss()
     }
 
     fun logJsonObject(jsonObject: JSONObject) {
