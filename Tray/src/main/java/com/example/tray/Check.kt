@@ -2,11 +2,11 @@ package com.example.tray
 
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
@@ -22,6 +22,8 @@ class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
     private var successScreenFullReferencePath : String ?= null
     private var tokenFetchedAndOpen = false
+    private lateinit var sharedPreferences : SharedPreferences
+    private lateinit var editor : SharedPreferences.Editor
 
 
     private val binding : ActivityCheckBinding by lazy {
@@ -35,6 +37,8 @@ class Check : AppCompatActivity() {
 //        bottomSheet.show(supportFragmentManager,"QuickPayTesting")
 
         makePaymentRequest(this)
+        sharedPreferences = getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        editor = sharedPreferences.edit()
 
         binding.textView6.text = "Generating Token Please wait..."
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
@@ -105,7 +109,7 @@ class Check : AppCompatActivity() {
 
          //tokenLiveData.value.toString()
 //         tokenLiveData.value.toString()
-        val boxPayCheckout = BoxPayCheckout(this, "86402552-62f2-44ea-91bc-4fd284129ef0",:: onPaymentResultCallback,false)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,true)
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
@@ -122,7 +126,7 @@ class Check : AppCompatActivity() {
         val jsonData = JSONObject(""" {
   "context": {
     "countryCode": "IN",
-    "legalEntity": {"code": "demo"},
+    "legalEntity": {"code": "test"},
     "orderId": "test12"
   },
   "paymentType": "S",
@@ -181,6 +185,8 @@ class Check : AppCompatActivity() {
                 logJsonObject(response)
                 val tokenFetched = response.getString("token")
                 Log.d("token fetched", tokenFetched)
+                editor.putString("token",tokenFetched)
+                editor.apply()
                 tokenLiveData.value = tokenFetched
                 // Call a function that depends on the token
             },

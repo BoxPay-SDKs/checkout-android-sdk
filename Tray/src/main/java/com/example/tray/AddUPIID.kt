@@ -4,7 +4,6 @@ import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -35,12 +34,9 @@ import com.example.tray.databinding.FragmentAddUPIIDBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.reflect.Method
 import java.util.Locale
-import java.util.TimeZone
 
 
 internal class AddUPIID : BottomSheetDialogFragment() {
@@ -55,7 +51,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private var transactionId: String? = null
-    private var shippingEnabled : Boolean = false
+    private var shippingEnabled: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -155,6 +151,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 val textNow = s.toString()
                 if (textNow.isBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = false
+                    binding.proceedButtonRelativeLayout.isClickable = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
                     binding.ll1InvalidUPI.visibility = View.GONE
                 }
@@ -169,11 +166,11 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiCollect", "Upi")
 
-            if(checkString(userVPA!!)){
+            if (checkString(userVPA!!)) {
                 binding.ll1InvalidUPI.visibility = View.GONE
                 validateAPICall(requireContext(), userVPA!!)
                 showLoadingInButton()
-            }else{
+            } else {
                 binding.ll1InvalidUPI.visibility = View.VISIBLE
             }
         }
@@ -182,11 +179,13 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
         return binding.root
     }
+
     fun checkString(input: String): Boolean {
         val regex = Regex(".+@.+")
         return regex.matches(input)
     }
-    private fun validateAPICall(context : Context,userVPA: String) {
+
+    private fun validateAPICall(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
 
@@ -201,25 +200,25 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://"+baseUrl + "/v0/platform/vpa-validation", requestBody,
+            Method.POST, "https://" + baseUrl + "/v0/platform/vpa-validation", requestBody,
             Response.Listener { response ->
-                try{
+                try {
                     val statusUserVPA = response.getJSONObject("status").getString("status")
 
-                    if(!statusUserVPA.contains("Rejected",ignoreCase = true)){
+                    if (!statusUserVPA.contains("Rejected", ignoreCase = true)) {
                         binding.ll1InvalidUPI.visibility = View.GONE
-                        postRequest(requireContext(),userVPA)
-                    }else{
+                        postRequest(requireContext(), userVPA)
+                    } else {
                         binding.ll1InvalidUPI.visibility = View.VISIBLE
                     }
-                }catch (e : Exception){
-                    postRequest(requireContext(),userVPA)
+                } catch (e: Exception) {
+                    postRequest(requireContext(), userVPA)
                 }
             },
             Response.ErrorListener { error ->
 
                 binding.ll1InvalidUPI.visibility = View.GONE
-                postRequest(requireContext(),userVPA)
+                postRequest(requireContext(), userVPA)
                 // Handle error
                 Log.e("Error", "Error occurred: ${error.message}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
@@ -247,7 +246,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
         editor.putString("transactionId", transactionIdArg)
-        editor.putString("operationId",transactionIdArg)
+        editor.putString("operationId", transactionIdArg)
         editor.apply()
     }
 
@@ -445,20 +444,18 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             put("instrumentDetails", instrumentDetailsObject)
 
 
-
-
             val shopperObject = JSONObject().apply {
-                put("email", sharedPreferences.getString("email",null))
-                put("firstName", sharedPreferences.getString("firstName",null))
-                if(sharedPreferences.getString("gender",null) == null)
+                put("email", sharedPreferences.getString("email", null))
+                put("firstName", sharedPreferences.getString("firstName", null))
+                if (sharedPreferences.getString("gender", null) == null)
                     put("gender", JSONObject.NULL)
                 else
-                    put("gender",sharedPreferences.getString("gender",null))
-                put("lastName", sharedPreferences.getString("lastName",null))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber",null))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference",null))
+                    put("gender", sharedPreferences.getString("gender", null))
+                put("lastName", sharedPreferences.getString("lastName", null))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
 
-                if(shippingEnabled){
+                if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
 
                         put("address1", sharedPreferences.getString("address1", null))
@@ -468,9 +465,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         put("postalCode", sharedPreferences.getString("postalCode", null))
                         put("state", sharedPreferences.getString("state", null))
                         put("city", sharedPreferences.getString("city", null))
-                        put("email",sharedPreferences.getString("email",null))
-                        put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
-                        put("countryName",sharedPreferences.getString("countryName",null))
+                        put("email", sharedPreferences.getString("email", null))
+                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+                        put("countryName", sharedPreferences.getString("countryName", null))
 
                     }
                     put("deliveryAddress", deliveryAddressObject)
@@ -491,16 +488,20 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 updateTransactionIDInSharedPreferences(transactionId!!)
 
                 if (status.contains("Rejected", ignoreCase = true)) {
-                    PaymentFailureScreen().show(parentFragmentManager,"FailureScreen")
-                }else {
+                    binding.ll1InvalidUPI.visibility = View.VISIBLE
+                    binding.proceedButtonRelativeLayout.isEnabled = false
+                    binding.proceedButtonRelativeLayout.isClickable = false
+                    PaymentFailureScreen().show(parentFragmentManager, "FailureScreen")
+                } else {
 
                     if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status","RequiresAction")
+                        binding.ll1InvalidUPI.visibility = View.GONE
+                        editor.putString("status", "RequiresAction")
                         editor.apply()
                         openUPITimerBottomSheet()
-                    }
-                    else if (status.contains("Approved", ignoreCase = true)) {
-                        editor.putString("status","Success")
+                    } else if (status.contains("Approved", ignoreCase = true)) {
+                        binding.ll1InvalidUPI.visibility = View.GONE
+                        editor.putString("status", "Success")
                         editor.apply()
 
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
@@ -552,7 +553,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
-    fun dismissCurrentBottomSheet(){
+
+    fun dismissCurrentBottomSheet() {
         dismiss()
     }
 
