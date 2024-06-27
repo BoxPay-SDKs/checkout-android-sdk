@@ -155,7 +155,7 @@
                             android:enabled="false"
                             android:fontFamily="@font/poppins"
                             android:gravity="center"
-                            android:text="Invalid UPI ID"
+                            android:text="Invalid UPI ID. Please check and retry"
                             android:textColor="#B9232F"
                             android:textSize="12sp"
                             app:layout_constraintStart_toEndOf="@+id/imageView5"
