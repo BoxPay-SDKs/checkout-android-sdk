@@ -1805,6 +1805,31 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!shopperObject.isNull("uniqueReference")) {
                     editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
                 }
+                if (!shopperObject.isNull("deliveryAddress")) {
+                    val deliveryAddress = shopperObject.getJSONObject("deliveryAddress")
+                    val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
+                    val countryCodeJson = JSONObject(jsonString)
+                    if (!deliveryAddress.isNull("address1")) {
+                        editor.putString("address1", deliveryAddress.getString("address1"))
+                    }
+                    if (!deliveryAddress.isNull("address2")) {
+                        editor.putString("address2", deliveryAddress.getString("address2"))
+                    }
+                    if (!deliveryAddress.isNull("countryCode")) {
+                        val countryName = getCountryName(countryCodeJson, deliveryAddress.getString("countryCode"))
+                        editor.putString("countryName",countryName?.first)
+                        editor.putString("indexCountryCodePhone", countryName?.second)
+                    }
+                    if (!deliveryAddress.isNull("city")) {
+                        editor.putString("city", deliveryAddress.getString("city"))
+                    }
+                    if (!deliveryAddress.isNull("state")) {
+                        editor.putString("state", deliveryAddress.getString("state"))
+                    }
+                    if (!deliveryAddress.isNull("postalCode")) {
+                        editor.putString("postalCode", deliveryAddress.getString("postalCode"))
+                    }
+                }
 
                 if (!shippingEnabled) {
                     val paymentMethodsArray = response.getJSONObject("configs").getJSONArray("paymentMethods")
@@ -1893,6 +1918,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 editor.apply()
+
+                binding.nameTextView.text = sharedPreferences.getString("firstName", "") + " " + sharedPreferences.getString("lastName", "")
+                binding.mobileNumberTextViewMain.text = "${
+                    sharedPreferences.getString(
+                        "countryCodePhoneNum",
+                        ""
+                    )
+                }-${sharedPreferences.getString("phoneNumber", "")}"
+                binding.addressTextViewMain.text = "${sharedPreferences.getString("address1", "")}\n" +
+                        "${sharedPreferences.getString("address2", "")}\n" +
+                        "${sharedPreferences.getString("city", "")}" +
+                        ", ${sharedPreferences.getString("state", "")}" +
+                        ", ${sharedPreferences.getString("postalCode", "")}"
                 removeLoadingState()
 
             } catch (e: Exception) {
@@ -1954,7 +1992,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     override fun updateBottomSheet() {
-        binding.nameTextView.text = sharedPreferences.getString("name", null)
+        binding.nameTextView.text = sharedPreferences.getString("firstName", null) + " " + sharedPreferences.getString("lastName", null)
         binding.mobileNumberTextViewMain.text = "${
             sharedPreferences.getString(
                 "countryCodePhoneNum",
@@ -1971,5 +2009,39 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         callPaymentMethodRules(requireContext())
 
+    }
+
+    fun readJsonFromAssets(context: Context, fileName: String): String {
+        val assetManager = context.assets
+        val inputStream = assetManager.open(fileName)
+        val bufferedReader = inputStream.bufferedReader()
+        return bufferedReader.use { it.readText() }
+    }
+
+    fun getCountryName(countryCodeJson: JSONObject, countryCode: String): Pair<String, String>? {
+        countryCodeJson.keys().forEach { key ->
+            if (key.equals(countryCode)) {
+                val countryDetails = countryCodeJson.getJSONObject(key)
+                val code = countryDetails.getString("fullName")
+                val isd = countryDetails.getString("isdCode")
+                return Pair(code, isd)
+            }
+        }
+
+        // Return null if no matching ISD code is found
+        return null
+    }
+
+    fun getPhoneNumberCode(countryCodeJson: JSONObject,isdCode: String): Int? {
+        var index = 0
+        countryCodeJson.keys().forEach { key ->
+            if(key.equals(isdCode)) {
+                return index
+            }
+            index++
+        }
+
+        // Return null if no matching ISD code is found
+        return null
     }
 }
