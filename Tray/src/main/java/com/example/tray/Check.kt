@@ -2,11 +2,10 @@ package com.example.tray
 
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
@@ -105,7 +104,7 @@ class Check : AppCompatActivity() {
 
          //tokenLiveData.value.toString()
 //         tokenLiveData.value.toString()
-        val boxPayCheckout = BoxPayCheckout(this, "86402552-62f2-44ea-91bc-4fd284129ef0",:: onPaymentResultCallback,false)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,true)
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
