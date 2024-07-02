@@ -1813,6 +1813,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         val countryName = getCountryName(countryCodeJson, deliveryAddress.getString("countryCode"))
                         editor.putString("countryName",countryName?.first)
                         editor.putString("indexCountryCodePhone", countryName?.second)
+                        editor.putString("countryCodePhoneNum", countryName?.second)
                     }
                     if (!deliveryAddress.isNull("city")) {
                         editor.putString("city", deliveryAddress.getString("city"))
