@@ -142,6 +142,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 // Get the selected item
                 val selectedDialCode = parent.getItemAtPosition(position).toString()
                 // Display or use the selected item
+                if (countryCodePhoneNum != selectedDialCode) {
+                    binding.mobileNumberEditText.setText("")
+                }
                 countryCodePhoneNum = selectedDialCode
                 indexCountryCodePhone = position
                 phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
