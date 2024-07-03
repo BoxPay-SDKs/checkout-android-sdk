@@ -1057,14 +1057,22 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     if (status.contains("Rejected", ignoreCase = true)) {
                         PaymentFailureScreen().show(parentFragmentManager,"FailureScreen")
                     }else{
+                        val type = response.getJSONArray("actions").getJSONObject(0).getString("type")
 
                         if (status.contains("RequiresAction", ignoreCase = true)) {
                             editor.putString("status","RequiresAction")
                         }
-                        url = response
-                            .getJSONArray("actions")
-                            .getJSONObject(0)
-                            .getString("url")
+                        if (type.contains("html", true)) {
+                            url = response
+                                .getJSONArray("actions")
+                                .getJSONObject(0)
+                                .getString("htmlPageString")
+                        } else {
+                            url = response
+                                .getJSONArray("actions")
+                                .getJSONObject(0)
+                                .getString("url")
+                        }
 
                         if (status.contains("Approved", ignoreCase = true)) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
@@ -1073,6 +1081,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         } else {
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
+                            intent.putExtra("type",type)
                             startActivity(intent)
                         }
 
