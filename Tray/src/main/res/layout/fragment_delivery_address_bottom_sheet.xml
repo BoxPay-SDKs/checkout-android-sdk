@@ -133,7 +133,7 @@
 
                             <Spinner
                                 android:id="@+id/spinner_dial_codes"
-                                android:layout_width="wrap_content"
+                                android:layout_width="70dp"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:background="@null"
@@ -154,6 +154,20 @@
                                 android:textSize="14sp"
                                 tools:ignore="TouchTargetSizeCheck" />
                         </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/mobileErrorText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:lineSpacingExtra="-1sp"
+                            android:text="Mobile Number length is not correct"
+                            android:visibility="gone"
+                            android:textColor="#ffff0000"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/mobileNumberLinearLayout" />
 
 
                         <TextView
@@ -199,7 +213,7 @@
                             android:text="Country*"
                             android:textColor="@android:color/black"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/addressEditText2" />
+                            app:layout_constraintTop_toBottomOf="@+id/emailEditText" />
 
                         <AutoCompleteTextView
                             android:id="@+id/countryEditText"
@@ -220,70 +234,6 @@
                             app:layout_constraintTop_toBottomOf="@+id/countryTextView"
                             tools:ignore="TouchTargetSizeCheck" />
 
-
-                        <TextView
-                            android:id="@+id/addressTextView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:fontFamily="@font/poppins"
-                            android:gravity="center_vertical"
-                            android:lineSpacingExtra="-1sp"
-                            android:text="House number, Apartment *"
-                            android:textColor="@android:color/black"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/emailEditText" />
-
-                        <EditText
-                            android:id="@+id/addressEditText1"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:background="@drawable/edittext_bg"
-                            android:fontFamily="@font/poppins"
-                            android:gravity="center_vertical"
-                            android:hint="House number, Apartment "
-                            android:inputType="text"
-                            android:padding="8dp"
-                            android:textColor="#000000"
-                            android:textColorHint="#7F7D83"
-                            android:textSize="14sp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/addressTextView"
-                            tools:ignore="TouchTargetSizeCheck" />
-
-                        <TextView
-                            android:id="@+id/addressTextView2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:fontFamily="@font/poppins"
-                            android:gravity="center_vertical"
-                            android:lineSpacingExtra="-1sp"
-                            android:text="Area, Colony, Street, Sector*"
-                            android:textColor="@android:color/black"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/addressEditText1" />
-
-                        <EditText
-                            android:id="@+id/addressEditText2"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:background="@drawable/edittext_bg"
-                            android:fontFamily="@font/poppins"
-                            android:gravity="center_vertical"
-                            android:hint="Area, Colony, Street, SectorEnter Address"
-                            android:inputType="text"
-                            android:padding="8dp"
-                            android:textColor="#000000"
-                            android:textColorHint="#7F7D83"
-                            android:textSize="14sp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/addressTextView2"
-                            tools:ignore="TouchTargetSizeCheck" />
 
 
                         <TextView
@@ -318,6 +268,21 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/postalCodeTextView"
                             tools:ignore="TouchTargetSizeCheck" />
+
+                        <TextView
+                            android:id="@+id/postalCodeErrorText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:lineSpacingExtra="-1sp"
+                            android:text="Invalid Postal Code"
+                            android:visibility="gone"
+                            android:textColor="#ffff0000"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/postalCodeEditText" />
+
 
                         <TextView
                             android:id="@+id/stateTextView"
@@ -384,6 +349,86 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/cityTextView"
                             tools:ignore="TouchTargetSizeCheck" />
+
+                        <TextView
+                            android:id="@+id/addressTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:lineSpacingExtra="-1sp"
+                            android:text="House number, Apartment *"
+                            android:textColor="@android:color/black"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/cityEditText" />
+
+                        <EditText
+                            android:id="@+id/addressEditText1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:background="@drawable/edittext_bg"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:hint="House number, Apartment "
+                            android:inputType="text"
+                            android:padding="8dp"
+                            android:textColor="#000000"
+                            android:textColorHint="#7F7D83"
+                            android:textSize="14sp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/addressTextView"
+                            tools:ignore="TouchTargetSizeCheck" />
+
+                        <TextView
+                            android:id="@+id/addressTextView2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:lineSpacingExtra="-1sp"
+                            android:text="Area, Colony, Street, Sector "
+                            android:textColor="@android:color/black"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/addressEditText1" />
+
+                        <TextView
+                            android:id="@+id/addressTextViewOptional2"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:lineSpacingExtra="-1sp"
+                            android:text="(optional)"
+                            android:textColor="#80323232"
+                            app:layout_constraintStart_toEndOf="@+id/addressTextView2"
+                            app:layout_constraintTop_toBottomOf="@+id/addressEditText1" />
+
+                        <EditText
+                            android:id="@+id/addressEditText2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:background="@drawable/edittext_bg"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:hint="Area, Colony, Street, SectorEnter Address"
+                            android:inputType="text"
+                            android:padding="8dp"
+                            android:textColor="#000000"
+                            android:textColorHint="#7F7D83"
+                            android:textSize="14sp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/addressTextView2"
+                            tools:ignore="TouchTargetSizeCheck" />
+
+
+
 
 
                     </androidx.constraintlayout.widget.ConstraintLayout>

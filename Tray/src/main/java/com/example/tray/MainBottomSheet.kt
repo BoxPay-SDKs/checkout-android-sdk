@@ -709,7 +709,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
 
-        binding.rightArrow.setOnClickListener() {
+        binding.deliveryAddressConstraintLayout.setOnClickListener() {
             val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
             bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
         }
@@ -1921,11 +1921,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         ""
                     )
                 }-${sharedPreferences.getString("phoneNumber", "")}"
-                binding.addressTextViewMain.text = "${sharedPreferences.getString("address1", "")}\n" +
-                        "${sharedPreferences.getString("address2", "")}\n" +
-                        "${sharedPreferences.getString("city", "")}" +
-                        ", ${sharedPreferences.getString("state", "")}" +
-                        ", ${sharedPreferences.getString("postalCode", "")}"
+                binding.addressTextViewMain.text = if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
+                    "${sharedPreferences.getString("address1", null)}\n" +
+                            "${sharedPreferences.getString("address2", null)}\n" +
+                            "${sharedPreferences.getString("city", null)}" +
+                            ", ${sharedPreferences.getString("state", "null")}" +
+                            ", ${sharedPreferences.getString("postalCode", "null")}"
+                } else {
+                    "${sharedPreferences.getString("address1", null)}\n" +
+                            "${sharedPreferences.getString("city", null)}" +
+                            ", ${sharedPreferences.getString("state", "null")}" +
+                            ", ${sharedPreferences.getString("postalCode", "null")}"
+                }
                 removeLoadingState()
 
             } catch (e: Exception) {
@@ -1994,11 +2001,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 null
             )
         }-${sharedPreferences.getString("phoneNumber", null)}"
-        binding.addressTextViewMain.text = "${sharedPreferences.getString("address1", null)}\n" +
-                "${sharedPreferences.getString("address2", null)}\n" +
-                "${sharedPreferences.getString("city", null)}" +
-                ", ${sharedPreferences.getString("state", "null")}" +
-                ", ${sharedPreferences.getString("postalCode", "null")}"
+        binding.addressTextViewMain.text = if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
+            "${sharedPreferences.getString("address1", null)}\n" +
+                    "${sharedPreferences.getString("address2", null)}\n" +
+                    "${sharedPreferences.getString("city", null)}" +
+                    ", ${sharedPreferences.getString("state", "null")}" +
+                    ", ${sharedPreferences.getString("postalCode", "null")}"
+        } else {
+            "${sharedPreferences.getString("address1", null)}\n" +
+                    "${sharedPreferences.getString("city", null)}" +
+                    ", ${sharedPreferences.getString("state", "null")}" +
+                    ", ${sharedPreferences.getString("postalCode", "null")}"
+        }
 
         binding.cardView8.visibility = View.VISIBLE
 
