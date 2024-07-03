@@ -352,7 +352,7 @@
                                 android:fontFamily="@font/poppins_bold"
                                 android:gravity="center"
                                 android:layout_marginStart="6dp"
-                                android:text="Deliver Address"
+                                android:text="Delivery Address"
                                 android:textColor="#2D2B32"
                                 android:textSize="16sp"
                                 app:layout_constraintStart_toEndOf="@+id/deliveryAddressObjectImage"
@@ -397,7 +397,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="12dp"
                                 android:layout_marginEnd="12dp"
-                                android:src="@drawable/right_arrow"
+                                android:src="@drawable/ic_edit_details"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintTop_toBottomOf="@id/dashedLine4" />
 
