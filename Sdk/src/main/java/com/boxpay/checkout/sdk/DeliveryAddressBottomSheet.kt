@@ -453,6 +453,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         if (mobileNumber.length !in minPhoneLength..maxPhoneLength) {
             disableProceedButton()
+            binding.mobileErrorText.visibility = View.VISIBLE
             return false
         }
 
@@ -463,13 +464,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             disableProceedButton()
             return false
         }
-        if (mobileNumber.isNullOrBlank()) {
-            if (calledBySubmitButton) {
-                binding.mobileNumberEditText.error = "This field is required"
-            }
-            disableProceedButton()
-            return false
-        }
+
         if (email.isNullOrBlank()) {
             if (calledBySubmitButton) {
                 binding.emailEditText.error = "This field is required"
@@ -484,12 +479,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
             disableProceedButton()
         }
-        if (address2.isNullOrBlank()) {
-            if (calledBySubmitButton) {
-                binding.addressEditText2.error = "This field is required"
-            }
-            disableProceedButton()
-        }
         if (!countrySelected) {
             if (calledBySubmitButton) {
                 binding.countryEditText.error = "This field is required"
@@ -497,10 +486,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             disableProceedButton()
             return false
         }
-        if (postalCode.isNullOrBlank()) {
+        if (postalCode.isNullOrBlank() || postalCode.length != 6) {
             if (calledBySubmitButton) {
                 binding.postalCodeEditText.error = "This field is required"
             }
+            binding.postalCodeErrorText.visibility = View.VISIBLE
             disableProceedButton()
             return false
         }
@@ -518,7 +508,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             disableProceedButton()
             return false
         }
-
+        binding.mobileErrorText.visibility = View.GONE
+        binding.postalCodeErrorText.visibility = View.GONE
         enableProceedButton()
         return true
     }
@@ -673,7 +664,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         !binding.mobileNumberEditText.text.isNullOrBlank() &&
         !binding.emailEditText.text.isNullOrBlank() &&
         !binding.addressEditText1.text.isNullOrBlank() &&
-        !binding.addressEditText2.text.isNullOrBlank() &&
         !binding.countryEditText.text.isNullOrBlank() &&
         !binding.postalCodeEditText.text.isNullOrBlank() && !binding.stateEditText.text.isNullOrBlank() &&
         !binding.cityEditText.text.isNullOrBlank()
