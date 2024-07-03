@@ -66,7 +66,6 @@ import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -327,7 +326,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             while (isActive) {
                 delay(4000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
-                // Delay for 4 seconds
             }
         }
     }
