@@ -1,6 +1,8 @@
 package com.boxpay.checkout.sdk
 
+import SingletonClass
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentResolver
 import android.content.Context
@@ -86,6 +88,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         webViewCloseListener?.onWebViewClosed()
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,10 +110,23 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
         requestQueue = Volley.newRequestQueue(this)
+        val receivedType = intent.getStringExtra("type")
         val receivedUrl = intent.getStringExtra("url")
-        binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
+
+        if (receivedType?.contains("html", true) == true) {
+            val htmlUrl = receivedUrl?.replace("\\\"", "\"")
+                ?.replace("\\\\", "\\")
+                ?.replace("\\n", "\n")
+                ?.replace("\\/", "/") ?: ""
+
+            binding.webViewForOtpValidation.loadDataWithBaseURL(null,htmlUrl, "text/html", "UTF-8", null)
+        } else {
+            binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
+        }
+
         binding.webViewForOtpValidation.settings.domStorageEnabled = true
         binding.webViewForOtpValidation.settings.javaScriptEnabled = true
+
         startFunctionCalls()
         fetchTransactionDetailsFromSharedPreferences()
 
