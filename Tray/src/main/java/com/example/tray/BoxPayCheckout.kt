@@ -45,7 +45,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             val latestVersion =
                 getLatestVersionFromJitPack("com.github.BoxPay-SDKs", "checkout-android-sdk")
             val currentVersion = BuildConfig.SDK_VERSION
-            if (latestVersion != currentVersion) {
+            if (!latestVersion.contains("beta",true) && latestVersion != currentVersion) {
                 enqueueSdkDownload(context, latestVersion)
             }
         }
