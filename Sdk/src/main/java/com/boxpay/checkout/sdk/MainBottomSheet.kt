@@ -96,6 +96,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var job: Job? = null
     private var isTablet = false
+    private  var priceBreakUpVisible = false
     private var i = 1
     private var transactionAmount: String? = null
     private var upiAvailable = false
@@ -435,37 +436,37 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             put("instrumentDetails", instrumentDetailsObject)
 
-            val shopperObject = JSONObject().apply {
-                put("email", sharedPreferences.getString("email", null))
-                put("firstName", sharedPreferences.getString("firstName", null))
-                if (sharedPreferences.getString("gender", null) == null)
-                    put("gender", JSONObject.NULL)
-                else
-                    put("gender", sharedPreferences.getString("gender", null))
-                put("lastName", sharedPreferences.getString("lastName", null))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-
-                if (shippingEnabled) {
-                    val deliveryAddressObject = JSONObject().apply {
-
-                        put("address1", sharedPreferences.getString("address1", null))
-                        put("address2", sharedPreferences.getString("address2", null))
-                        put("city", sharedPreferences.getString("city", null))
-                        put("countryCode", sharedPreferences.getString("countryCode", null))
-                        put("postalCode", sharedPreferences.getString("postalCode", null))
-                        put("state", sharedPreferences.getString("state", null))
-                        put("city", sharedPreferences.getString("city", null))
-                        put("email", sharedPreferences.getString("email", null))
-                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
-                        put("countryName", sharedPreferences.getString("countryName", null))
-
-                    }
-                    put("deliveryAddress", deliveryAddressObject)
-                }
-            }
-
-            put("shopper", shopperObject)
+//            val shopperObject = JSONObject().apply {
+//                put("email", sharedPreferences.getString("email", null))
+//                put("firstName", sharedPreferences.getString("firstName", null))
+//                if (sharedPreferences.getString("gender", null) == null)
+//                    put("gender", JSONObject.NULL)
+//                else
+//                    put("gender", sharedPreferences.getString("gender", null))
+//                put("lastName", sharedPreferences.getString("lastName", null))
+//                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+//                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+//
+//                if (shippingEnabled) {
+//                    val deliveryAddressObject = JSONObject().apply {
+//
+//                        put("address1", sharedPreferences.getString("address1", null))
+//                        put("address2", sharedPreferences.getString("address2", null))
+//                        put("city", sharedPreferences.getString("city", null))
+//                        put("countryCode", sharedPreferences.getString("countryCode", null))
+//                        put("postalCode", sharedPreferences.getString("postalCode", null))
+//                        put("state", sharedPreferences.getString("state", null))
+//                        put("city", sharedPreferences.getString("city", null))
+//                        put("email", sharedPreferences.getString("email", null))
+//                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+//                        put("countryName", sharedPreferences.getString("countryName", null))
+//
+//                    }
+//                    put("deliveryAddress", deliveryAddressObject)
+//                }
+//            }
+//
+//            put("shopper", shopperObject)
         }
 
         // Request a JSONObject response from the provided URL
@@ -610,7 +611,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
         // Set click listeners
-        var priceBreakUpVisible = false
+
         binding.orderSummaryConstraintLayout.setOnClickListener { // Toggle visibility of the price break-up card
             if (!priceBreakUpVisible) {
                 showPriceBreakUp()
@@ -715,6 +716,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
         binding.deliveryAddressConstraintLayout.setOnClickListener() {
+            val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
+            bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+        }
+
+
+        binding.proceedButton.setOnClickListener() {
             val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
             bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
         }
@@ -956,37 +963,37 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
             put("instrumentDetails", instrumentDetailsObject)
 
-            val shopperObject = JSONObject().apply {
-                put("email", sharedPreferences.getString("email", null))
-                put("firstName", sharedPreferences.getString("firstName", null))
-                if (sharedPreferences.getString("gender", null) == null)
-                    put("gender", JSONObject.NULL)
-                else
-                    put("gender", sharedPreferences.getString("gender", null))
-                put("lastName", sharedPreferences.getString("lastName", null))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-
-                if (shippingEnabled) {
-                    val deliveryAddressObject = JSONObject().apply {
-
-                        put("address1", sharedPreferences.getString("address1", null))
-                        put("address2", sharedPreferences.getString("address2", null))
-                        put("city", sharedPreferences.getString("city", null))
-                        put("countryCode", sharedPreferences.getString("countryCode", null))
-                        put("postalCode", sharedPreferences.getString("postalCode", null))
-                        put("state", sharedPreferences.getString("state", null))
-                        put("city", sharedPreferences.getString("city", null))
-                        put("email", sharedPreferences.getString("email", null))
-                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
-                        put("countryName", sharedPreferences.getString("countryName", null))
-
-                    }
-                    put("deliveryAddress", deliveryAddressObject)
-                }
-            }
-
-            put("shopper", shopperObject)
+//            val shopperObject = JSONObject().apply {
+//                put("email", sharedPreferences.getString("email", null))
+//                put("firstName", sharedPreferences.getString("firstName", null))
+//                if (sharedPreferences.getString("gender", null) == null)
+//                    put("gender", JSONObject.NULL)
+//                else
+//                    put("gender", sharedPreferences.getString("gender", null))
+//                put("lastName", sharedPreferences.getString("lastName", null))
+//                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+//                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+//
+//                if (shippingEnabled) {
+//                    val deliveryAddressObject = JSONObject().apply {
+//
+//                        put("address1", sharedPreferences.getString("address1", null))
+//                        put("address2", sharedPreferences.getString("address2", null))
+//                        put("city", sharedPreferences.getString("city", null))
+//                        put("countryCode", sharedPreferences.getString("countryCode", null))
+//                        put("postalCode", sharedPreferences.getString("postalCode", null))
+//                        put("state", sharedPreferences.getString("state", null))
+//                        put("city", sharedPreferences.getString("city", null))
+//                        put("email", sharedPreferences.getString("email", null))
+//                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+//                        put("countryName", sharedPreferences.getString("countryName", null))
+//
+//                    }
+//                    put("deliveryAddress", deliveryAddressObject)
+//                }
+//            }
+//
+//            put("shopper", shopperObject)
         }
 
         // Request a JSONObject response from the provided URL
@@ -1335,37 +1342,37 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             // Instrument Details
             put("instrumentDetails", instrumentDetailsObject)
-            val shopperObject = JSONObject().apply {
-                put("email", sharedPreferences.getString("email", null))
-                put("firstName", sharedPreferences.getString("firstName", null))
-                if (sharedPreferences.getString("gender", null) == null)
-                    put("gender", JSONObject.NULL)
-                else
-                    put("gender", sharedPreferences.getString("gender", null))
-                put("lastName", sharedPreferences.getString("lastName", null))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-
-                if (shippingEnabled) {
-                    val deliveryAddressObject = JSONObject().apply {
-
-                        put("address1", sharedPreferences.getString("address1", null))
-                        put("address2", sharedPreferences.getString("address2", null))
-                        put("city", sharedPreferences.getString("city", null))
-                        put("countryCode", sharedPreferences.getString("countryCode", null))
-                        put("postalCode", sharedPreferences.getString("postalCode", null))
-                        put("state", sharedPreferences.getString("state", null))
-                        put("city", sharedPreferences.getString("city", null))
-                        put("email", sharedPreferences.getString("email", null))
-                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
-                        put("countryName", sharedPreferences.getString("countryName", null))
-
-                    }
-                    put("deliveryAddress", deliveryAddressObject)
-                }
-            }
-
-            put("shopper", shopperObject)
+//            val shopperObject = JSONObject().apply {
+//                put("email", sharedPreferences.getString("email", null))
+//                put("firstName", sharedPreferences.getString("firstName", null))
+//                if (sharedPreferences.getString("gender", null) == null)
+//                    put("gender", JSONObject.NULL)
+//                else
+//                    put("gender", sharedPreferences.getString("gender", null))
+//                put("lastName", sharedPreferences.getString("lastName", null))
+//                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+//                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+//
+//                if (shippingEnabled) {
+//                    val deliveryAddressObject = JSONObject().apply {
+//
+//                        put("address1", sharedPreferences.getString("address1", null))
+//                        put("address2", sharedPreferences.getString("address2", null))
+//                        put("city", sharedPreferences.getString("city", null))
+//                        put("countryCode", sharedPreferences.getString("countryCode", null))
+//                        put("postalCode", sharedPreferences.getString("postalCode", null))
+//                        put("state", sharedPreferences.getString("state", null))
+//                        put("city", sharedPreferences.getString("city", null))
+//                        put("email", sharedPreferences.getString("email", null))
+//                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+//                        put("countryName", sharedPreferences.getString("countryName", null))
+//
+//                    }
+//                    put("deliveryAddress", deliveryAddressObject)
+//                }
+//            }
+//
+//            put("shopper", shopperObject)
         }
 
         // Request a JSONObject response from the provided URL
@@ -1787,48 +1794,62 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.putString("legalEntity", paymentDetailsObject.getJSONObject("context").getJSONObject("legalEntity").getString("code"))
 
                 val shopperObject = paymentDetailsObject.getJSONObject("shopper")
-                if (!shopperObject.isNull("firstName")) {
-                    editor.putString("firstName", shopperObject.getString("firstName"))
-                }
-                if (!shopperObject.isNull("lastName")) {
-                    editor.putString("lastName", shopperObject.getString("lastName"))
-                }
-                if (!shopperObject.isNull("gender")) {
-                    editor.putString("gender", shopperObject.getString("gender"))
-                }
-                if (!shopperObject.isNull("phoneNumber")) {
-                    editor.putString("phoneNumber", shopperObject.getString("phoneNumber"))
-                }
-                if (!shopperObject.isNull("email")) {
-                    editor.putString("email", shopperObject.getString("email"))
-                }
-                if (!shopperObject.isNull("uniqueReference")) {
-                    editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
-                }
-                if (!shopperObject.isNull("deliveryAddress")) {
-                    val deliveryAddress = shopperObject.getJSONObject("deliveryAddress")
-                    val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
-                    val countryCodeJson = JSONObject(jsonString)
-                    if (!deliveryAddress.isNull("address1")) {
-                        editor.putString("address1", deliveryAddress.getString("address1"))
+                if (shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.getJSONObject("deliveryAddress").isNull("address1")) {
+                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.textView12.visibility = View.GONE
+                    binding.upiLinearLayout.visibility = View.GONE
+                    binding.cardView5.visibility = View.GONE
+                    binding.cardView7.visibility = View.GONE
+                    binding.netBankingConstraint.visibility = View.GONE
+                    binding.cardConstraint.visibility = View.GONE
+                    binding.linearLayout.visibility = View.GONE
+                    binding.proceedButton.visibility = View.VISIBLE
+                    priceBreakUpVisible = true
+                    showPriceBreakUp()
+                } else {
+                    if (!shopperObject.isNull("firstName")) {
+                        editor.putString("firstName", shopperObject.getString("firstName"))
                     }
-                    if (!deliveryAddress.isNull("address2")) {
-                        editor.putString("address2", deliveryAddress.getString("address2"))
+                    if (!shopperObject.isNull("lastName")) {
+                        editor.putString("lastName", shopperObject.getString("lastName"))
                     }
-                    if (!deliveryAddress.isNull("countryCode")) {
-                        val countryName = getCountryName(countryCodeJson, deliveryAddress.getString("countryCode"))
-                        editor.putString("countryName",countryName?.first)
-                        editor.putString("indexCountryCodePhone", countryName?.second)
-                        editor.putString("countryCodePhoneNum", countryName?.second)
+                    if (!shopperObject.isNull("gender")) {
+                        editor.putString("gender", shopperObject.getString("gender"))
                     }
-                    if (!deliveryAddress.isNull("city")) {
-                        editor.putString("city", deliveryAddress.getString("city"))
+                    if (!shopperObject.isNull("phoneNumber")) {
+                        editor.putString("phoneNumber", shopperObject.getString("phoneNumber"))
                     }
-                    if (!deliveryAddress.isNull("state")) {
-                        editor.putString("state", deliveryAddress.getString("state"))
+                    if (!shopperObject.isNull("email")) {
+                        editor.putString("email", shopperObject.getString("email"))
                     }
-                    if (!deliveryAddress.isNull("postalCode")) {
-                        editor.putString("postalCode", deliveryAddress.getString("postalCode"))
+                    if (!shopperObject.isNull("uniqueReference")) {
+                        editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
+                    }
+                    if (!shopperObject.isNull("deliveryAddress")) {
+                        val deliveryAddress = shopperObject.getJSONObject("deliveryAddress")
+                        val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
+                        val countryCodeJson = JSONObject(jsonString)
+                        if (!deliveryAddress.isNull("address1")) {
+                            editor.putString("address1", deliveryAddress.getString("address1"))
+                        }
+                        if (!deliveryAddress.isNull("address2")) {
+                            editor.putString("address2", deliveryAddress.getString("address2"))
+                        }
+                        if (!deliveryAddress.isNull("countryCode")) {
+                            val countryName = getCountryName(countryCodeJson, deliveryAddress.getString("countryCode"))
+                            editor.putString("countryName",countryName?.first)
+                            editor.putString("indexCountryCodePhone", countryName?.second)
+                            editor.putString("countryCodePhoneNum", countryName?.second)
+                        }
+                        if (!deliveryAddress.isNull("city")) {
+                            editor.putString("city", deliveryAddress.getString("city"))
+                        }
+                        if (!deliveryAddress.isNull("state")) {
+                            editor.putString("state", deliveryAddress.getString("state"))
+                        }
+                        if (!deliveryAddress.isNull("postalCode")) {
+                            editor.putString("postalCode", deliveryAddress.getString("postalCode"))
+                        }
                     }
                 }
 
@@ -2021,6 +2042,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
 
         binding.cardView8.visibility = View.VISIBLE
+
+        binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+        binding.textView12.visibility = View.VISIBLE
+        binding.upiLinearLayout.visibility = View.VISIBLE
+        binding.cardView5.visibility = View.VISIBLE
+        binding.cardView7.visibility = View.VISIBLE
+        binding.netBankingConstraint.visibility = View.VISIBLE
+        binding.cardConstraint.visibility = View.VISIBLE
+        binding.linearLayout.visibility = View.VISIBLE
+        binding.proceedButton.visibility = View.VISIBLE
+        priceBreakUpVisible = true
+        hidePriceBreakUp()
 
         callPaymentMethodRules(requireContext())
 
