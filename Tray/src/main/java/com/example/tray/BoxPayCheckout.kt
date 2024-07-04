@@ -45,7 +45,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             val latestVersion =
                 getLatestVersionFromJitPack("com.github.BoxPay-SDKs", "checkout-android-sdk")
             val currentVersion = BuildConfig.SDK_VERSION
-            if (!latestVersion.contains("beta",true) && latestVersion != currentVersion) {
+            if (latestVersion != currentVersion) {
                 enqueueSdkDownload(context, latestVersion)
             }
         }
@@ -208,7 +208,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             .build()
 
         val request = Request.Builder()
-            .url("https://jitpack.io/api/builds/$groupId/$artifactId/latest/")
+            .url("https://jitpack.io/api/builds/$groupId/$artifactId/")
             .build()
 
         return withContext(Dispatchers.IO) {
@@ -220,7 +220,15 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
 
                 val responseBody = response.body?.string()
                 val json = JSONObject(responseBody)
-                json.getString("version") // Return the version from JSON
+                val versionsObject = json.getJSONObject("com.github.BoxPay-SDKs").getJSONObject("checkout-android-sdk")
+                val versionsMap = versionsObject.toMap()
+                val lastVersionWithoutVAndOkStatus = versionsMap.filter { (version, status) ->
+                    !version.contains("v") &&  !version.contains("beta") && status == "ok"
+                }.keys.maxOrNull()
+
+                println("latestversion $lastVersionWithoutVAndOkStatus")
+
+                return@withContext lastVersionWithoutVAndOkStatus ?: BuildConfig.SDK_VERSION
             } catch (e: IOException) {
                 e.printStackTrace()
                 "Unknown"
@@ -234,6 +242,16 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
             .setInputData(workDataOf("latestVersion" to latestVersion))
             .build()
         workManager.enqueue(downloadRequest)
+    }
+
+    fun JSONObject.toMap(): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+        val keys = keys()
+        while (keys.hasNext()) {
+            val key = keys.next()
+            map[key] = getString(key)
+        }
+        return map
     }
 }
 
