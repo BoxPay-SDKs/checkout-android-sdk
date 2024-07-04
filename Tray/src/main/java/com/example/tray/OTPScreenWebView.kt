@@ -1,9 +1,9 @@
 package com.example.tray
 
+import SingletonClass
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ActivityNotFoundException
-import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -16,7 +16,6 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
 import android.util.Log
-import android.view.KeyEvent
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -25,10 +24,8 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -42,9 +39,6 @@ import com.example.tray.interfaces.OnWebViewCloseListener
 import com.example.tray.interfaces.UpdateMainBottomSheetInterface
 import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.gms.auth.api.phone.SmsRetriever
-import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.Status
-import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -52,11 +46,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
-import org.json.JSONObject
-import java.util.Timer
-import java.util.TimerTask
 import java.util.regex.Pattern
-import kotlin.reflect.typeOf
 
 
 internal class OTPScreenWebView() : AppCompatActivity() {
@@ -98,6 +88,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         webViewCloseListener?.onWebViewClosed()
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -119,10 +110,23 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
         requestQueue = Volley.newRequestQueue(this)
+        val receivedType = intent.getStringExtra("type")
         val receivedUrl = intent.getStringExtra("url")
-        binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
+
+        if (receivedType?.contains("html", true) == true) {
+            val htmlUrl = receivedUrl?.replace("\\\"", "\"")
+                ?.replace("\\\\", "\\")
+                ?.replace("\\n", "\n")
+                ?.replace("\\/", "/") ?: ""
+
+            binding.webViewForOtpValidation.loadDataWithBaseURL(null,htmlUrl, "text/html", "UTF-8", null)
+        } else {
+            binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
+        }
+
         binding.webViewForOtpValidation.settings.domStorageEnabled = true
         binding.webViewForOtpValidation.settings.javaScriptEnabled = true
+
         startFunctionCalls()
         fetchTransactionDetailsFromSharedPreferences()
 

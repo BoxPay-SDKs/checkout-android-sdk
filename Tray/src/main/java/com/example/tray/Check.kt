@@ -122,7 +122,7 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/kAqHOFwT4s/sessions"
+        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/lGhJZ2Fxv2/sessions"
         val jsonData = JSONObject(""" {
   "context": {
     "countryCode": "IN",
@@ -176,11 +176,16 @@ class Check : AppCompatActivity() {
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
                 logJsonObject(response)
+                val sharedPreferences =
+                    this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+                val editor: SharedPreferences.Editor = sharedPreferences.edit()
                 val tokenFetched = response.getString("token")
                 Log.d("token fetched", tokenFetched)
                 editor.putString("token",tokenFetched)
                 editor.apply()
                 tokenLiveData.value = tokenFetched
+                editor.putString("token",tokenLiveData.value)
+                editor.apply()
                 // Call a function that depends on the token
             },
             Response.ErrorListener { error ->
@@ -196,6 +201,8 @@ class Check : AppCompatActivity() {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =  "Bearer hHS5VOOxvbaHxWlGXvGp42tgDgIWBqR7Gj8V3vQknDs8o7OUqurrHZAi7YfilgfBgO5I52Bi0iFjUuu2iFmbWk"
+                headers["X-Client-Connector-Name"] =  "Android SDK"
+                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
             }
         }
