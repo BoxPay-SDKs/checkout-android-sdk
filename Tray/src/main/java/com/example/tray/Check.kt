@@ -2,6 +2,7 @@ package com.example.tray
 
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -104,7 +105,7 @@ class Check : AppCompatActivity() {
 
          //tokenLiveData.value.toString()
 //         tokenLiveData.value.toString()
-        val boxPayCheckout = BoxPayCheckout(this, "86402552-62f2-44ea-91bc-4fd284129ef0",:: onPaymentResultCallback,false)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,true)
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
@@ -117,11 +118,11 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/kAqHOFwT4s/sessions"
+        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/lGhJZ2Fxv2/sessions"
         val jsonData = JSONObject(""" {
   "context": {
     "countryCode": "IN",
-    "legalEntity": {"code": "demo"},
+    "legalEntity": {"code": "boxpay_test"},
     "orderId": "test12"
   },
   "paymentType": "S",
@@ -178,9 +179,14 @@ class Check : AppCompatActivity() {
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
                 logJsonObject(response)
+                val sharedPreferences =
+                    this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+                val editor: SharedPreferences.Editor = sharedPreferences.edit()
                 val tokenFetched = response.getString("token")
                 Log.d("token fetched", tokenFetched)
                 tokenLiveData.value = tokenFetched
+                editor.putString("token",tokenLiveData.value)
+                editor.apply()
                 // Call a function that depends on the token
             },
             Response.ErrorListener { error ->
