@@ -2,11 +2,10 @@ package com.example.tray
 
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
@@ -197,6 +196,8 @@ class Check : AppCompatActivity() {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =  "Bearer hHS5VOOxvbaHxWlGXvGp42tgDgIWBqR7Gj8V3vQknDs8o7OUqurrHZAi7YfilgfBgO5I52Bi0iFjUuu2iFmbWk"
+                headers["X-Client-Connector-Name"] =  "Android SDK"
+                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
             }
         }
