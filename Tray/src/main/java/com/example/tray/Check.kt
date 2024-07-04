@@ -133,19 +133,12 @@ class Check : AppCompatActivity() {
   "money": {"amount": "1", "currencyCode": "INR"},
   "descriptor": {"line1": "Some descriptor"},
   "shopper": {
-    "firstName": "Piyush",
-    "lastName": "Sharma",
-    "email":"piyush141001@gmail.com",
-    "uniqueReference": "x123y",
-    "phoneNumber": "919711668479",
-    "deliveryAddress": {
-      "address1": "first line",
-      "address2": "second line",
-      "city": "Mumbai",
-      "state": "Maharashtra",
-      "countryCode": "IN",
-      "postalCode": "123456"
-    }
+    "firstName": null,
+    "lastName": null,
+    "email":null,
+    "uniqueReference": "xyz",
+    "phoneNumber": null,
+    "deliveryAddress":null
   },
   "order": {
     "originalAmount": 423.73,
