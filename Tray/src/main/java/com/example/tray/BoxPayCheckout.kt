@@ -166,8 +166,8 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
     }
 
     fun updateSdk() {
-        val sdkDirectory = File(context.filesDir, "sdk")
-        val newSdkDirectory = File(context.filesDir, "sdk_new")
+        val sdkDirectory = File(context.filesDir, "boxpay_sdk")
+        val newSdkDirectory = File(context.filesDir, "boxpay_sdk_new")
 
         if (!newSdkDirectory.exists()) {
             return
@@ -248,7 +248,7 @@ class SdkDownloadWorker(context: Context, params: WorkerParameters) :
             }
 
             val body: ResponseBody = response.body ?: return Result.failure()
-            val newSdkFile = File(applicationContext.filesDir, "sdk_new/checkout-android-sdk-$latestVersion.aar")
+            val newSdkFile = File(applicationContext.filesDir, "boxpay_sdk_new/checkout-android-sdk-$latestVersion.aar")
             newSdkFile.parentFile?.mkdirs()
 
             withContext(Dispatchers.IO) {
