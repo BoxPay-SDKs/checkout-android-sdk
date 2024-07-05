@@ -142,7 +142,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 // Get the selected item
                 val selectedDialCode = parent.getItemAtPosition(position).toString()
                 // Display or use the selected item
-                if (countryCodePhoneNum != selectedDialCode) {
+                if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty()) {
                     binding.mobileNumberEditText.setText("")
                 }
                 countryCodePhoneNum = selectedDialCode
@@ -150,7 +150,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
                 minPhoneLength = phoneLength.first
                 maxPhoneLength = phoneLength.second
-                Log.d("dialCode", "Selected: $countryCodePhoneNum")
             }
             
 
@@ -168,16 +167,20 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.fullNameEditText.filters = arrayOf(filter)
 
 
-        val address1 = sharedPreferences.getString("address1", null)
-        val address2 = sharedPreferences.getString("address2", null)
-        val city = sharedPreferences.getString("city", null)
-        val state = sharedPreferences.getString("state", null)
-        val postalCode = sharedPreferences.getString("postalCode", null)
-        val name = sharedPreferences.getString("firstName", null) + " " + sharedPreferences.getString("lastName", null)
-        val email = sharedPreferences.getString("email", null)
-        val phoneNumber = sharedPreferences.getString("phoneNumber", null)
+        val address1 = sharedPreferences.getString("address1", "")
+        val address2 = sharedPreferences.getString("address2", "")
+        val city = sharedPreferences.getString("city", "")
+        val state = sharedPreferences.getString("state", "")
+        val postalCode = sharedPreferences.getString("postalCode", "")
+        val name = if ( sharedPreferences.getString("firstName", "").isNullOrEmpty() ) {
+            ""
+        } else {
+            sharedPreferences.getString("firstName", "") + " " + sharedPreferences.getString("lastName", "")
+        }
+        val email = sharedPreferences.getString("email", "")
+        val phoneNumber = sharedPreferences.getString("phoneNumber", "")
         val indexCountryPhone = sharedPreferences.getString("indexCountryCodePhone", null)
-        val countryName = sharedPreferences.getString("countryName", null)
+        val countryName = sharedPreferences.getString("countryName", "")
 
         binding.backButton.setOnClickListener(){
             dismiss()
@@ -186,9 +189,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         if (!firstTime) {
             binding.backButton.visibility = View.VISIBLE
 
-            if (indexCountryPhone != null) {
-                binding.spinnerDialCodes.setSelection(getPhoneNumberCode(countryCodesArray, indexCountryPhone) ?: 0)
-            }
+            binding.spinnerDialCodes.setSelection(getPhoneNumberCode(countryCodesArray, indexCountryPhone ?: countryCodePhoneNum))
 
             if (address1 != null) {
                 binding.addressEditText1.setText(address1)
@@ -257,7 +258,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                checkAllFieldsEntered(false)
+                if (isMobileNumberValid()) {
+                    if (toCheckAllFieldsAreFilled()) {
+                        enableProceedButton()
+                    }
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -276,25 +281,14 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                checkAllFieldsEntered(false)
+                if (isEmailValid()) {
+                    if (toCheckAllFieldsAreFilled()) {
+                        enableProceedButton()
+                    }
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
-                val emailPattern = "^[A-Za-z0-9+_.-]+@(.+)\$"
-                val email = s.toString()
-
-                // Check if the email matches the pattern
-                val isValidEmail = email.matches(emailPattern.toRegex())
-
-                if (!isValidEmail) {
-                    Log.d("isValidEmail", "false")
-                    binding.emailEditText.error = "Invalid email address"
-                    disableProceedButton()
-                } else {
-                    binding.emailEditText.error = null
-                    Log.d("isValidEmail", "true")
-                    checkAllFieldsEntered(false)
-                }
             }
         })
 
@@ -344,7 +338,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                checkAllFieldsEntered(false)
+                if (isPostalValid()) {
+                    if (toCheckAllFieldsAreFilled()) {
+                        enableProceedButton()
+                    }
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -404,7 +402,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             editor.putString("state", state.toString())
             editor.putString("countryCode", selectedCountryName)
             editor.putString("postalCode", postalCode.toString())
-            editor.putString("name", fullName.toString())
+            editor.putString("firstName", fullName.toString())
             editor.putString("email", email.toString())
             editor.putString("phoneNumber", mobileNumber.toString())
             editor.putString("countryCodePhoneNum", countryCodePhoneNum)
@@ -437,37 +435,13 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
     private fun checkAllFieldsEntered(calledBySubmitButton: Boolean): Boolean {
         val fullName = binding.fullNameEditText.text
-        val mobileNumber = binding.mobileNumberEditText.text
-        val email = binding.emailEditText.text
         val address1 = binding.addressEditText1.text
-        val address2 = binding.addressEditText2.text
-        val country = binding.countryEditText.text
-        val postalCode = binding.postalCodeEditText.text
         val state = binding.stateEditText.text
         val city = binding.cityEditText.text
-
-        Log.d(
-            "Address Details",
-            "$fullName $mobileNumber $email $country $postalCode $state $city\n $address1 $address2"
-        )
-
-        if (mobileNumber.length !in minPhoneLength..maxPhoneLength) {
-            disableProceedButton()
-            binding.mobileErrorText.visibility = View.VISIBLE
-            return false
-        }
 
         if (fullName.isNullOrBlank()) {
             if (calledBySubmitButton) {
                 binding.fullNameEditText.error = "This field is required"
-            }
-            disableProceedButton()
-            return false
-        }
-
-        if (email.isNullOrBlank()) {
-            if (calledBySubmitButton) {
-                binding.emailEditText.error = "This field is required"
             }
             disableProceedButton()
             return false
@@ -478,19 +452,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 binding.addressEditText1.error = "This field is required"
             }
             disableProceedButton()
+            return false
         }
         if (!countrySelected) {
             if (calledBySubmitButton) {
                 binding.countryEditText.error = "This field is required"
             }
-            disableProceedButton()
-            return false
-        }
-        if (postalCode.isNullOrBlank() || postalCode.length != 6) {
-            if (calledBySubmitButton) {
-                binding.postalCodeEditText.error = "This field is required"
-            }
-            binding.postalCodeErrorText.visibility = View.VISIBLE
             disableProceedButton()
             return false
         }
@@ -508,8 +475,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             disableProceedButton()
             return false
         }
-        binding.mobileErrorText.visibility = View.GONE
-        binding.postalCodeErrorText.visibility = View.GONE
         enableProceedButton()
         return true
     }
@@ -737,7 +702,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     }
 
 
-    fun getPhoneNumberCode(countryCodeJson: Array<String>,isdCode: String): Int? {
+    fun getPhoneNumberCode(countryCodeJson: Array<String>,isdCode: String): Int {
         var index = 0
         countryCodeJson.forEach { key ->
             if(key.equals(isdCode)) {
@@ -747,6 +712,40 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
 
         // Return null if no matching ISD code is found
-        return null
+        return index
+    }
+
+    fun isMobileNumberValid(): Boolean {
+        val mobileNumber = binding.mobileNumberEditText.text
+        if (mobileNumber.length !in minPhoneLength..maxPhoneLength) {
+            disableProceedButton()
+            binding.mobileErrorText.visibility = View.VISIBLE
+            return false
+        }
+        binding.mobileErrorText.visibility = View.GONE
+        return true
+    }
+
+    fun isEmailValid(): Boolean {
+        val email = binding.emailEditText.text
+        val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
+        if (!email.isNullOrBlank() && !email.matches(emailRegex)) {
+            binding.emailErrorText.visibility = View.VISIBLE
+            disableProceedButton()
+            return false
+        }
+        binding.emailErrorText.visibility = View.GONE
+        return true
+    }
+
+    fun isPostalValid() : Boolean {
+        val postalCode = binding.postalCodeEditText.text
+        if (postalCode.isNullOrBlank() || postalCode.length != 6) {
+            binding.postalCodeErrorText.visibility = View.VISIBLE
+            disableProceedButton()
+            return false
+        }
+        binding.postalCodeErrorText.visibility = View.GONE
+        return true
     }
 }
