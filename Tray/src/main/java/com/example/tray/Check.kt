@@ -4,18 +4,15 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.databinding.ActivityCheckBinding
 import com.example.tray.paymentResult.PaymentResultObject
-import com.google.gson.GsonBuilder
 import org.json.JSONObject
 
 class Check : AppCompatActivity() {
@@ -48,8 +45,6 @@ class Check : AppCompatActivity() {
                 handleResponseWithToken()
                 binding.textView6.text = "Opening"
                 binding.openButton.isEnabled = false
-            }else{
-                Log.d("token is empty","waiting")
             }
         })
 
@@ -81,7 +76,6 @@ class Check : AppCompatActivity() {
     fun removeLoadingAndEnabledProceedButton(){
         binding.openButton.isEnabled = true
         binding.progressBar.visibility = View.GONE
-        Log.d("text will be updated here","here")
         binding.textView6.text = "Open Bottom Sheet"
         binding.textView6.visibility = View.VISIBLE
         binding.openButton.visibility = View.VISIBLE
@@ -100,7 +94,6 @@ class Check : AppCompatActivity() {
     private fun handleResponseWithToken() {
         if(tokenFetchedAndOpen)
             return
-        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
         showBottomSheetWithOverlay()
         tokenFetchedAndOpen = true
     }
@@ -111,12 +104,10 @@ class Check : AppCompatActivity() {
 //         tokenLiveData.value.toString()
         val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,true)
         boxPayCheckout.display()
-//         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
 
 
     fun onPaymentResultCallback(result : PaymentResultObject) {
-        Log.d("Result for the activity", "Payment result received: onpr ${result.status} onpr ${result.transactionId}  onpr ${result.operationId}")
     }
 
 
@@ -175,27 +166,16 @@ class Check : AppCompatActivity() {
 
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
-                logJsonObject(response)
                 val sharedPreferences =
                     this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
                 val editor: SharedPreferences.Editor = sharedPreferences.edit()
                 val tokenFetched = response.getString("token")
-                Log.d("token fetched", tokenFetched)
                 editor.putString("token",tokenFetched)
                 editor.apply()
                 tokenLiveData.value = tokenFetched
-                editor.putString("token",tokenLiveData.value)
-                editor.apply()
-                // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.toString()}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    Log.d("","")
-                }
+            Response.ErrorListener { _ ->
+
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
@@ -207,10 +187,5 @@ class Check : AppCompatActivity() {
             }
         }
         queue.add(request)
-    }
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body Check", jsonStr)
     }
 }

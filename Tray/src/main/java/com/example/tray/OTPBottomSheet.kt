@@ -1,8 +1,6 @@
 package com.example.tray
 
-import android.app.Activity
 import android.app.Dialog
-import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Context
@@ -11,22 +9,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.database.Cursor
-import android.net.Uri
 import android.os.Bundle
 import android.provider.Telephony
-import android.telephony.SmsMessage
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.tray.databinding.FragmentOTPBottomSheetBinding
-import com.google.android.gms.auth.api.phone.SmsRetriever
-import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.Status
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -56,21 +45,7 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
-
-
-            val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.7 // 90%
-            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-
-
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -133,7 +108,6 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun readSms() {
-        Log.d("Message Received","readSms Function")
         val contentResolver: ContentResolver = requireActivity().contentResolver
         val cursor: Cursor? = contentResolver.query(
             Telephony.Sms.CONTENT_URI,
@@ -147,7 +121,6 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
             if (it.moveToFirst()) {
                 val address = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
                 val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
-                Log.d("Message Received",body)
                 binding.sampleTextView.text = body
                 smsList.add("Sender: $address\nMessage: $body")
             }
@@ -165,7 +138,6 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
     private inner class SmsReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION == intent.action) {
-                Log.d("Message Received","onReceiver")
                 readSms()
             }
         }

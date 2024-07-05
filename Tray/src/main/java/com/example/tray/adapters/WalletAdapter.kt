@@ -4,10 +4,8 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
-import android.media.Image
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
@@ -26,7 +24,6 @@ import com.example.tray.databinding.WalletItemBinding
 import com.example.tray.dataclasses.WalletDataClass
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
-import com.squareup.picasso.Picasso
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
@@ -244,8 +241,7 @@ class WalletAdapter(
             // Retrieve the value associated with the "message" key
             return jsonObject.getString("message")
         } catch (e: Exception) {
-            // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }

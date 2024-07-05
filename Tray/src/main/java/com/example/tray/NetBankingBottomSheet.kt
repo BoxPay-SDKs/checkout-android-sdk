@@ -13,8 +13,6 @@ import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.DisplayMetrics
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +25,6 @@ import android.widget.RelativeLayout
 import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
@@ -47,7 +44,6 @@ import com.android.volley.toolbox.Volley
 import com.example.tray.adapters.NetbankingBanksAdapter
 import com.example.tray.databinding.FragmentNetBankingBottomSheetBinding
 import com.example.tray.dataclasses.NetbankingDataClass
-import com.example.tray.dataclasses.WalletDataClass
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -101,7 +97,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
@@ -217,12 +212,10 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 fetchAndUpdateApiInPopularBanks()
 
             } catch (e: Exception) {
-                e.printStackTrace()
+
             }
 
-        }, { error ->
-
-            Log.e("error here", "RESPONSE IS $error")
+        }, { _ ->
             Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
                 .show()
         })
@@ -441,14 +434,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 }
 
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
+            Response.ErrorListener { _ ->
 
             }) {
 
@@ -531,13 +517,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 removeLoadingScreenState()
                 fetchAndUpdateApiInPopularBanks()
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                }
+            Response.ErrorListener { _ ->
+
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -876,17 +857,13 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE
                     binding.textView4.text = "Error requesting payment"
-                    Log.e("Error in handling response",e.toString())
-                    e.printStackTrace()
                 }
 
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
                     binding.errorField.visibility = View.VISIBLE
                     binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
                     hideLoadingInButton()
@@ -963,8 +940,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             // Retrieve the value associated with the "message" key
             return jsonObject.getString("message")
         } catch (e: Exception) {
-            // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }

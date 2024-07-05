@@ -15,7 +15,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
-import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -29,7 +28,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.android.volley.Request
 import com.android.volley.RequestQueue
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModel
@@ -238,16 +236,8 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 }
             }
         } catch (e: SecurityException) {
-            // Handle permission denial
-            Log.e("Error", "Permission Denied: ${e.message}")
-
-
             val permission = Manifest.permission.RECEIVE_SMS
-
             ActivityCompat.requestPermissions(this, arrayOf(permission), 101)
-        } catch (e: Exception) {
-            // Handle other exceptions
-            Log.e("Error", "Error reading SMS: ${e.message}")
         }
     }
 
@@ -405,27 +395,12 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                     }
 
                 } catch (e: JSONException) {
-                    e.printStackTrace()
+
                 }
-            }) { error ->
-            Log.e("Error", "Error occurred: ${error.message}")
-            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                val errorResponse = String(error.networkResponse.data)
-                Log.e("Error", "Detailed error response: $errorResponse")
-            }
-            // Handle errors here
+            }) { _ ->
         }
-        // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
-//    fun killOTPWeViewActivity(){
-//        val endAllTheBottomSheets = Runnable {
-//            finish()
-//        }
-//        val handler = Handler()
-//        // Delay execution by 1000 milliseconds (1 second)
-//        handler.postDelayed(endAllTheBottomSheets, 2000)
-//    }
 
     private fun startFunctionCalls() {
         job = CoroutineScope(Dispatchers.IO).launch {

@@ -15,7 +15,6 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnFocusChangeListener
@@ -109,17 +108,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     updateCardNetwork(brands)
                 }catch (e : Exception){
-                    Log.e("Exception in card bin",e.toString())
                 }
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
+            Response.ErrorListener { _ ->
                 updateCardNetwork(brands)
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                }
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
@@ -935,22 +927,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                try {
-                    logJsonObject(response)
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                }
+            Response.Listener { _ ->
+               // no op
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
-
+            Response.ErrorListener { _ ->
+                // no op
             }) {
 
         }.apply {
@@ -1094,16 +1075,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     }
                     editor.apply()
                 } catch (e: JSONException) {
-                    e.printStackTrace()
                 }
 
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
                     binding.ll1InvalidCardNumber.visibility = View.VISIBLE
                     binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
                     getMessageForFieldErrorItems(errorResponse)
@@ -1142,8 +1120,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             // Retrieve the value associated with the "message" key
             return jsonObject.getString("message")
         } catch (e: Exception) {
-            // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }

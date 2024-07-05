@@ -1,9 +1,7 @@
 package com.example.tray.adapters
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.tray.databinding.OrderSummaryItemBinding
@@ -22,12 +20,10 @@ class OrderSummaryItemsAdapter(
 
         fun bind(position: Int) {
             binding.apply {
-                Log.d("imageURL",imagesUrls[position])
                 Picasso.get()
                     .load(imagesUrls[position])
                     .into(binding.itemImage)
                 val currencySymbol = sharedPreferences.getString("currencySymbol","")
-//                itemImage.setImageResource(images[position])
                 itemPrice.text = currencySymbol+prices[position]
                 itemName.text = items[position]
             }

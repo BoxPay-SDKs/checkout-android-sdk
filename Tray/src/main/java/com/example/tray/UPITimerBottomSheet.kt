@@ -1,5 +1,6 @@
 package com.example.tray
 
+import SingletonClass
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -8,7 +9,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -16,7 +16,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.widget.FrameLayout
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.activityViewModels
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -30,10 +29,7 @@ import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
-import okhttp3.internal.checkOffsetAndCount
 import org.json.JSONException
-import org.json.JSONObject
 
 internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     CancelConfirmationBottomSheet.ConfirmationListener {
@@ -343,7 +339,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     }
                     editor.apply()
                 } catch (e: JSONException) {
-                    e.printStackTrace()
+
                 }
             }) { error ->
             Log.e("Error", "Error occurred: ${error.message}")

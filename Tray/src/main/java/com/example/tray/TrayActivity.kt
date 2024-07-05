@@ -14,7 +14,6 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.cardview.widget.CardView
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
@@ -61,31 +60,9 @@ internal class TrayActivity : BottomSheetDialogFragment()  {
     }
     private fun JsonObject(){
         val queue : RequestQueue = Volley.newRequestQueue(requireContext())
-        val request = JsonObjectRequest(Request.Method.GET, url, null, { response ->
+        val request = JsonObjectRequest(Request.Method.GET, url, null, { _ ->
 
-            try {
-                val obj = response.getJSONObject("paymentDetails")
-                val paymentDetailsOBJ = obj.getJSONObject("money")
-                val orderJsonObj= obj.getJSONObject("order")
-                val orderJsonArray = orderJsonObj.getJSONArray("items")
-
-                val fetchedQuantity = orderJsonArray.getJSONObject(0).getString("quantity")
-//                quantity = fetchedQuantity.toInt()
-//                binding.textView7.text = quantity.toString()+" items"
-//                price = paymentDetailsOBJ.getString("amount").toInt()
-//                currencySymbol = paymentDetailsOBJ.getString("currencySymbol")
-//                currencyCode = paymentDetailsOBJ.getString("currencyCode")
-//                binding.textView8.text = currencySymbol+price
-//                Log.d("data from json",price.toString()+" "+currencySymbol+" "+currencyCode+" ")
-
-            } catch (e: Exception) {
-                Log.d("Error Occured",e.toString())
-                e.printStackTrace()
-            }
-
-        }, { error ->
-
-            Log.e("error here", "RESPONSE IS $error")
+        }, { _ ->
             Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
                 .show()
         })

@@ -2,7 +2,6 @@ package com.example.AndroidCheckOutSDK
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -41,7 +40,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
                 selectedEnvironment = parent?.getItemAtPosition(position).toString()
                 binding.button.isEnabled = true
                 binding.button.text = "Proceed"
-                Log.d("Environment Item",selectedEnvironment.toString())
             }
 
 
@@ -61,10 +59,8 @@ class MerchantDetailsScreen : AppCompatActivity() {
 
 
             val token = binding.editTextText.text.toString()
-            Log.d("token fetched from merchant details screen",token)
             binding.button.isEnabled = false
             binding.button.text = "Please Wait"
-            Log.d("selectedEnvironment",selectedEnvironment.toString())
             if(selectedEnvironment == "prod") {
                 val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false)
                 checkout.display()
@@ -81,10 +77,8 @@ class MerchantDetailsScreen : AppCompatActivity() {
 
     fun onPaymentResult(result : PaymentResultObject){
         if(result.status == "Success"){
-            Log.d("Payment Result = ",result.status.toString())
             binding.button.setText("Payment has been Completed. please use another token")
         }else{
-            Log.d("Payment Result else condition = ",result.status.toString())
             binding.button.isEnabled = true
             binding.button.text = "Proceed"
         }

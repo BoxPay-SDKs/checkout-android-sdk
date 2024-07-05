@@ -1,6 +1,5 @@
 package com.example.tray
 
-import android.R
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -13,8 +12,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.fragment.app.Fragment
 import com.airbnb.lottie.LottieAnimationView
 import com.example.tray.databinding.FragmentPaymentStatusBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -46,11 +43,6 @@ internal class PaymentStatusBottomSheet : BottomSheetDialogFragment() {
         val handler = Handler()
         val startAnimationRunnable = Runnable {
             try{
-                if(successScreenFullReferencePath == null){
-                    Log.d("error in opening success screen of merchant","here")
-                }else{
-                    Log.d("successScreenFullReferencePath",successScreenFullReferencePath!!)
-                }
                 openActivity(successScreenFullReferencePath!!,requireContext())
                 dismiss()
             }

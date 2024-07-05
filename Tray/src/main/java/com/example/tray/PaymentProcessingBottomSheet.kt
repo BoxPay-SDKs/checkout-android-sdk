@@ -2,8 +2,6 @@ package com.example.tray
 
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,10 +41,6 @@ internal class PaymentProcessingBottomSheet :BottomSheetDialogFragment() {
 //                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
-
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
-
 
             val screenHeight = resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.7 // 90%

@@ -4,7 +4,6 @@ import android.animation.ObjectAnimator
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -13,7 +12,6 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,12 +33,8 @@ import com.example.tray.databinding.FragmentAddUPIIDBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
-import org.json.JSONException
 import org.json.JSONObject
-import java.lang.reflect.Method
 import java.util.Locale
-import java.util.TimeZone
 
 
 internal class AddUPIID : BottomSheetDialogFragment() {
@@ -216,17 +210,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     postRequest(requireContext(),userVPA)
                 }
             },
-            Response.ErrorListener { error ->
-
+            Response.ErrorListener { _ ->
                 binding.ll1InvalidUPI.visibility = View.GONE
                 postRequest(requireContext(),userVPA)
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -271,7 +257,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
+        dialog.setOnShowListener { dialog ->
             val d = dialog as BottomSheetDialog
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
@@ -300,19 +286,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             val percentageOfScreenHeight = 0.7 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-
-//            dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-//            dialog.window?.setDimAmount(0.5f)
-
-
-//            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // Set transparent background
-//            dialog.window?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.setBackgroundResource(R.drawable.button_bg)
-
-
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
@@ -516,10 +489,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
                     binding.ll1InvalidUPI.visibility = View.VISIBLE
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
                     if (errorMessage.contains(
@@ -622,8 +593,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             // Retrieve the value associated with the "message" key
             return jsonObject.getString("message")
         } catch (e: Exception) {
-            // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }
@@ -671,25 +641,11 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                // Handle response
-
-                try {
-
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                }
-
+            Response.Listener { _ ->
+                // no op
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
-
+            Response.ErrorListener { _ ->
+                // no op
             }) {
 
         }.apply {

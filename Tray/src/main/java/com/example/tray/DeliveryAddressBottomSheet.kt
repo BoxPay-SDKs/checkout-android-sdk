@@ -10,7 +10,6 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +19,6 @@ import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import com.example.tray.databinding.FragmentDeliveryAddressBottomSheetBinding
 import com.example.tray.interfaces.UpdateMainBottomSheetInterface
-import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -99,7 +97,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         binding.countryEditText.setOnItemClickListener { parent, view, position, id ->
             val selectedItem = parent.getItemAtPosition(position).toString()
-            Log.d("item selected : ",selectedItem)
 
             countrySelectedFromDropDown = selectedItem
             countrySelected = true
@@ -426,14 +423,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         return binding.root
     }
 
-    fun onPaymentResultCallback(result: PaymentResultObject) {
-        if (result.status == "Success") {
-            Log.d("onPaymentResultCallback", "Success")
-        } else {
-            Log.d("onPaymentResultCallback", "Failure")
-        }
-    }
-
     private fun checkAllFieldsEntered(calledBySubmitButton: Boolean): Boolean {
         val fullName = binding.fullNameEditText.text
         val address1 = binding.addressEditText1.text
@@ -520,9 +509,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
-
             val window = d.window
             window?.apply {
                 // Apply dim effect
@@ -543,20 +529,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val percentageOfScreenHeight = 0.5 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-
-//            dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-//            dialog.window?.setDimAmount(0.5f)
-
-
-//            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // Set transparent background
-//            dialog.window?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.setBackgroundResource(R.drawable.button_bg)
-
-
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
-//            bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             if(firstTime)
@@ -616,7 +588,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val fragment = DeliveryAddressBottomSheet()
             fragment.callback = callback
 
-            Log.d("Instance first time : ",firstTime.toString())
             fragment.firstTime = firstTime
             return fragment
         }

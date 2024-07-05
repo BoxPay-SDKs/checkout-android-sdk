@@ -22,14 +22,11 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
-import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.SearchView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,20 +41,15 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.example.tray.ViewModels.SharedViewModel
 import com.example.tray.adapters.WalletAdapter
 import com.example.tray.databinding.FragmentWalletBottomSheetBinding
 import com.example.tray.dataclasses.WalletDataClass
-import com.example.tray.interfaces.OnWebViewCloseListener
-import com.example.tray.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.BalloonCenterAlign
 import com.skydoves.balloon.createBalloon
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -547,24 +539,10 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                // Handle response
-
-                try {
-
-                } catch (e: JSONException) {
-
-                }
+            Response.Listener { _ ->
 
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
+            Response.ErrorListener { _ ->
 
             }) {
 
@@ -649,15 +627,12 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     }
                 }
 
-                // Print the filtered wallet payment methods
                 showAllWallets()
                 fetchAndUpdateApiInPopularWallets()
                 removeLoadingScreenState()
-//                startAutoScroll()
 
 
             } catch (e: Exception) {
-                e.printStackTrace()
             }
 
         }, { error ->
@@ -1051,8 +1026,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             // Retrieve the value associated with the "message" key
             return jsonObject.getString("message")
         } catch (e: Exception) {
-            // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }

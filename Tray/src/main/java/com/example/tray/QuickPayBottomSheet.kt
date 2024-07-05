@@ -11,25 +11,17 @@ import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.StyleSpan
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
-import android.widget.SeekBar
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Request
-import com.android.volley.RequestQueue
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -37,10 +29,8 @@ import com.example.tray.databinding.FragmentQuickPayBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
 import org.json.JSONObject
 import java.util.Locale
-import kotlin.math.log
 
 class QuickPayBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentQuickPayBottomSheetBinding
@@ -172,57 +162,22 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 try {
                     if (response.length() >= 1) {
                         val latestUsedMethod = response.getJSONObject(0)
-                        logJsonObject(latestUsedMethod)
                         val type = latestUsedMethod.getString("type")
-                        val brand = latestUsedMethod.getString("brand")
                         displayValue = latestUsedMethod.getString("displayValue")
-                         val typeAllCaps = type.toUpperCase()
-                        Log.d("type and brand","type : $typeAllCaps, brand : $brand and value : $displayValue")
                         val builder = SpannableStringBuilder()
-
-// Append the type without any styling
                         builder.append(type)
-
-// Append a separator
                         builder.append(" | ")
-
-// Append the value with bold styling using shorthand operator
                         val valueStartIndex = builder.length
                         builder.append(displayValue)
                         builder.setSpan(StyleSpan(Typeface.BOLD), valueStartIndex, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-// Set the styled text to your TextView
                         binding.paymentDetailsTextView.text = builder
                         instrumentRef.value = latestUsedMethod.getString("instrumentRef")
-
-
-
                     }
                 } catch (e: Exception) {
-                    Log.e("Exception in quick pay API",e.toString())
                 }
 
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Detailed error response:", "Detailed error response: $errorResponse")
-
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
-                    if (errorMessage.contains(
-                            "Session is no longer accepting the payment as payment is already completed",
-                            ignoreCase = true
-                        )
-                    ) {
-
-                    } else {
-
-                    }
-                }
-
+            Response.ErrorListener { _ ->
 
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -248,8 +203,7 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             // Retrieve the value associated with the "message" key
             return jsonObject.getString("message")
         } catch (e: Exception) {
-            // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }
@@ -275,19 +229,8 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
-
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body QuickPay", jsonStr)
-    }
-
     private fun postRequestForUPICollect(context: Context, userVPA: String) {
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
-
-
-        // Constructing the request body
         val requestBody = JSONObject().apply {
             // Billing Address
             val billingAddressObject = JSONObject().apply {
@@ -344,34 +287,10 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
-                // Handle response
-                // Log.d("Response of Successful Post API call", response.toString())
-
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
-                logJsonObject(response)
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
-                    if (errorMessage.contains(
-                            "Session is no longer accepting the payment as payment is already completed",
-                            ignoreCase = true
-                        )
-                    ) {
-
-                    } else {
-
-                    }
-
-                }
-
-
+            Response.ErrorListener { _ ->
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -402,12 +321,8 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
-
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
 
             val window = d.window
             window?.apply {
@@ -419,11 +334,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
 
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
-
-
-
-
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -439,12 +349,10 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_DRAGGING -> {
                             // The BottomSheet is being dragged
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
 
                         BottomSheetBehavior.STATE_SETTLING -> {
                             // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
@@ -459,9 +367,5 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             })
         }
         return dialog
-    }
-
-    companion object {
-
     }
 }
