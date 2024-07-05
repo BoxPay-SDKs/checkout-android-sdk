@@ -203,8 +203,6 @@ class Check : AppCompatActivity() {
                 Log.e("Error", "Error occurred: ${error.toString()}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    Log.d("", "")
                 }
             }) {
             override fun getHeaders(): Map<String, String> {
@@ -221,6 +219,5 @@ class Check : AppCompatActivity() {
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body Check", jsonStr)
     }
 }

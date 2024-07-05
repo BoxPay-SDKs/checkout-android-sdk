@@ -4,7 +4,6 @@ import SingletonClass
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import android.webkit.WebSettings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.work.CoroutineWorker
@@ -26,7 +25,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.ResponseBody
-import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
@@ -105,18 +103,15 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
                 try {
 
                 } catch (e: JSONException) {
-                    Log.d("status check error", e.toString())
+                    e.printStackTrace()
                 }
 
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
                     val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
                 }
 
             }) {
@@ -175,7 +170,6 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         val newSdkDirectory = File(context.filesDir, "sdk_new")
 
         if (!newSdkDirectory.exists()) {
-            Log.e("updateSdk", "New SDK directory does not exist.")
             return
         }
 
@@ -183,28 +177,11 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         if (sdkDirectory.exists()) {
             sdkDirectory.deleteRecursively()
         }
-
-        // Rename the new SDK directory to the old one
-        if (newSdkDirectory.renameTo(sdkDirectory)) {
-            Log.i("updateSdk", "SDK updated successfully.")
-        } else {
-            Log.e("updateSdk", "Failed to update SDK.")
-        }
     }
 
 
     suspend fun getLatestVersionFromJitPack(groupId: String, artifactId: String): String {
-        val loggingInterceptor = HttpLoggingInterceptor(object : HttpLoggingInterceptor.Logger {
-            override fun log(message: String) {
-                // Log your message here (you can log to Logcat)
-                Log.d("HttpLoggingInterceptor", message)
-            }
-        }).apply {
-            level = HttpLoggingInterceptor.Level.BODY  // Set logging level
-        }
-
         val client = OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)  // Add logging interceptor
             .build()
 
         val request = Request.Builder()
@@ -279,8 +256,6 @@ class SdkDownloadWorker(context: Context, params: WorkerParameters) :
                     outputStream.write(body.bytes())
                 }
             }
-
-            Log.d("new version", "a new Version is downloaded")
 
 
         } catch (e: IOException) {
