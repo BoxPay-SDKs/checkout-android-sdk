@@ -48,9 +48,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this@MainActivity, "Latest version is $latestVersion", Toast.LENGTH_SHORT).show()
             }
         }
-
-//        val checkout = BoxPayCheckout(this,"c472cb28-77d1-4d57-ad52-dfefc70d8015",::onPaymentResultCallback)
-//        checkout.display()
     }
 
     fun onPaymentResultCallback(result: PaymentResultObject) {
@@ -81,7 +78,7 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         val request = Request.Builder()
-            .url("https://jitpack.io/api/builds/$groupId/$artifactId/latest/")
+            .url("https://jitpack.io/api/builds/$groupId/$artifactId/latestOk/")
             .build()
 
         return withContext(Dispatchers.IO) {
