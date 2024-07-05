@@ -98,6 +98,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var isTablet = false
     private  var priceBreakUpVisible = false
     private var i = 1
+    var countryCode : Pair<String,String>? = null
     private var transactionAmount: String? = null
     private var upiAvailable = false
     private var upiCollectMethod = false
@@ -1792,9 +1793,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.putString("merchantId", response.getString("merchantId"))
                 editor.putString("countryCode", paymentDetailsObject.getJSONObject("context").getString("countryCode"))
                 editor.putString("legalEntity", paymentDetailsObject.getJSONObject("context").getJSONObject("legalEntity").getString("code"))
-                var countryCode : Pair<String,String>? = null
 
                 val shopperObject = paymentDetailsObject.getJSONObject("shopper")
+                if (!shopperObject.isNull("uniqueReference")) {
+                    editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
+                }
                 if (shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.getJSONObject("deliveryAddress").isNull("address1")) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
@@ -1820,9 +1823,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                     if (!shopperObject.isNull("email")) {
                         editor.putString("email", shopperObject.getString("email"))
-                    }
-                    if (!shopperObject.isNull("uniqueReference")) {
-                        editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
                     }
                     if (!shopperObject.isNull("deliveryAddress")) {
                         val deliveryAddress = shopperObject.getJSONObject("deliveryAddress")
@@ -2045,6 +2045,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
 
         binding.cardView8.visibility = View.VISIBLE
+        countryCode = Pair(sharedPreferences.getString("countryName",null) ?: "",sharedPreferences.getString("indexCountryCodePhone",null) ?: "")
+        val shopperPhoneNumber = countryCode?.second + sharedPreferences.getString("phoneNumber",null)
+        editor.putString("phoneNumber", shopperPhoneNumber)
+        editor.apply()
 
         binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
         binding.textView12.visibility = View.VISIBLE
@@ -2077,19 +2081,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val isd = countryDetails.getString("isdCode")
                 return Pair(code, isd)
             }
-        }
-
-        // Return null if no matching ISD code is found
-        return null
-    }
-
-    fun getPhoneNumberCode(countryCodeJson: JSONObject,isdCode: String): Int? {
-        var index = 0
-        countryCodeJson.keys().forEach { key ->
-            if(key.equals(isdCode)) {
-                return index
-            }
-            index++
         }
 
         // Return null if no matching ISD code is found
