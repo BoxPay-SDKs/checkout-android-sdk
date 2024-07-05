@@ -1807,6 +1807,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     priceBreakUpVisible = true
                     showPriceBreakUp()
                 } else {
+                    binding.proceedButton.visibility = View.GONE
                     if (!shopperObject.isNull("firstName")) {
                         editor.putString("firstName", shopperObject.getString("firstName"))
                     }
@@ -2021,7 +2022,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     override fun updateBottomSheet() {
-        binding.nameTextView.text = sharedPreferences.getString("firstName", null) + " " + sharedPreferences.getString("lastName", null)
+        binding.nameTextView.text = sharedPreferences.getString("firstName", "") + " " + sharedPreferences.getString("lastName", "")
         binding.mobileNumberTextViewMain.text = "${
             sharedPreferences.getString(
                 "countryCodePhoneNum",
@@ -2051,7 +2052,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.netBankingConstraint.visibility = View.VISIBLE
         binding.cardConstraint.visibility = View.VISIBLE
         binding.linearLayout.visibility = View.VISIBLE
-        binding.proceedButton.visibility = View.VISIBLE
+        binding.proceedButton.visibility = View.GONE
         priceBreakUpVisible = true
         hidePriceBreakUp()
 

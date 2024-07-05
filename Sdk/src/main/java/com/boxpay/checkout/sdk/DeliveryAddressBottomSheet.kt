@@ -34,7 +34,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private var callback: UpdateMainBottomSheetInterface? = null
-    private var indexCountryCodePhone: Int = 0
+    private var indexCountryCodePhone: String = ""
     private var firstTime: Boolean = false
     private var selectedCountryName = "IN"
     private var countrySelected = false
@@ -72,6 +72,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             android.R.layout.simple_spinner_item,
             countryCodesArray
         )
+        val indexCountryPhone = sharedPreferences.getString("indexCountryCodePhone", null)
 
         // Set custom dropdown layout
         adapter.setDropDownViewResource(R.layout.custom_dial_code_item)
@@ -142,11 +143,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 // Get the selected item
                 val selectedDialCode = parent.getItemAtPosition(position).toString()
                 // Display or use the selected item
-                if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty()) {
+                if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty() && selectedDialCode != indexCountryPhone) {
                     binding.mobileNumberEditText.setText("")
                 }
                 countryCodePhoneNum = selectedDialCode
-                indexCountryCodePhone = position
+                indexCountryCodePhone = selectedDialCode
                 phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
                 minPhoneLength = phoneLength.first
                 maxPhoneLength = phoneLength.second
@@ -179,7 +180,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
         val email = sharedPreferences.getString("email", "")
         val phoneNumber = sharedPreferences.getString("phoneNumber", "")
-        val indexCountryPhone = sharedPreferences.getString("indexCountryCodePhone", null)
         val countryName = sharedPreferences.getString("countryName", "")
 
         binding.backButton.setOnClickListener(){
@@ -407,7 +407,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             editor.putString("phoneNumber", mobileNumber.toString())
             editor.putString("countryCodePhoneNum", countryCodePhoneNum)
             editor.putString("countryName", country.toString())
-            editor.putString("indexCountryCodePhone", indexCountryCodePhone.toString())
+            editor.putString("indexCountryCodePhone", indexCountryCodePhone)
 
 
             editor.apply()
@@ -419,6 +419,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
 
         if (toCheckAllFieldsAreFilled()) {
+            binding.textView.text = "Edit address"
             enableProceedButton()
         }
 
