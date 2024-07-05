@@ -1,0 +1,1490 @@
+{
+  "AD": {
+    "fullName": "Andorra",
+    "isdCode": "+376",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "AND"
+  },
+  "AE": {
+    "fullName": "United Arab Emirates",
+    "isdCode": "+971",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "ARE"
+  },
+  "AF": {
+    "fullName": "Afghanistan",
+    "isdCode": "+93",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "AFG"
+  },
+  "AG": {
+    "fullName": "Antigua and Barbuda",
+    "isdCode": "+1268",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "ATG"
+  },
+  "AI": {
+    "fullName": "Anguilla",
+    "isdCode": "+1264",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "AIA"
+  },
+  "AL": {
+    "fullName": "Albania",
+    "isdCode": "+355",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "ALB"
+  },
+  "AM": {
+    "fullName": "Armenia",
+    "isdCode": "+374",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "ARM"
+  },
+  "AO": {
+    "fullName": "Angola",
+    "isdCode": "+244",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "AGO"
+  },
+  "AQ": {
+    "fullName": "Antarctica",
+    "isdCode": "+672",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "ATA"
+  },
+  "AR": {
+    "fullName": "Argentina",
+    "isdCode": "+54",
+    "phoneNumberLength": [6, 7, 8],
+    "threeLetterCode": "ARG"
+  },
+  "AS": {
+    "fullName": "American Samoa",
+    "isdCode": "+1684",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "ASM"
+  },
+  "AT": {
+    "fullName": "Austria",
+    "isdCode": "+43",
+    "phoneNumberLength": [10, 11],
+    "threeLetterCode": "AUT"
+  },
+  "AU": {
+    "fullName": "Australia",
+    "isdCode": "+61",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "AUS"
+  },
+  "AW": {
+    "fullName": "Aruba",
+    "isdCode": "+297",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "ABW"
+  },
+  "AX": {
+    "fullName": "Aland Islands",
+    "isdCode": "+358",
+    "phoneNumberLength": [7, 8, 9, 10],
+    "threeLetterCode": "ALA"
+  },
+  "AZ": {
+    "fullName": "Azerbaijan",
+    "isdCode": "+994",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "AZE"
+  },
+  "BA": {
+    "fullName": "Bosnia and Herzegovina",
+    "isdCode": "+387",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "BIH"
+  },
+  "BB": {
+    "fullName": "Barbados",
+    "isdCode": "+1246",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "BRB"
+  },
+  "BD": {
+    "fullName": "Bangladesh",
+    "isdCode": "+880",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "BGD"
+  },
+  "BE": {
+    "fullName": "Belgium",
+    "isdCode": "+32",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "BEL"
+  },
+  "BF": {
+    "fullName": "Burkina Faso",
+    "isdCode": "+226",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "BFA"
+  },
+  "BG": {
+    "fullName": "Bulgaria",
+    "isdCode": "+359",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "BGR"
+  },
+  "BH": {
+    "fullName": "Bahrain",
+    "isdCode": "+973",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "BHR"
+  },
+  "BI": {
+    "fullName": "Burundi",
+    "isdCode": "+257",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "BDI"
+  },
+  "BJ": {
+    "fullName": "Benin",
+    "isdCode": "+229",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "BEN"
+  },
+  "BL": {
+    "fullName": "Saint Barthelemy",
+    "isdCode": "+590",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "BLM"
+  },
+  "BM": {
+    "fullName": "Bermuda",
+    "isdCode": "+1441",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "BMU"
+  },
+  "BN": {
+    "fullName": "Brunei",
+    "isdCode": "+673",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "BRN"
+  },
+  "BO": {
+    "fullName": "Bolivia",
+    "isdCode": "+591",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "BOL"
+  },
+  "BR": {
+    "fullName": "Brazil",
+    "isdCode": "+55",
+    "phoneNumberLength": [11],
+    "threeLetterCode": "BRA"
+  },
+  "BS": {
+    "fullName": "Bahamas",
+    "isdCode": "+1242",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "BHS"
+  },
+  "BT": {
+    "fullName": "Bhutan",
+    "isdCode": "+975",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "BTN"
+  },
+  "BV": {
+    "fullName": "Bouvet Island",
+    "isdCode": "+47",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "BVT"
+  },
+  "BW": {
+    "fullName": "Botswana",
+    "isdCode": "+267",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "BWA"
+  },
+  "BY": {
+    "fullName": "Belarus",
+    "isdCode": "+375",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "BLR"
+  },
+  "BZ": {
+    "fullName": "Belize",
+    "isdCode": "+501",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "BLZ"
+  },
+  "CA": {
+    "fullName": "Canada",
+    "isdCode": "+1",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "CAN"
+  },
+  "CC": {
+    "fullName": "Cocos Islands",
+    "isdCode": "+61",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "CCK"
+  },
+  "CD": {
+    "fullName": "Congo (DRC)",
+    "isdCode": "+243",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "COD"
+  },
+  "CF": {
+    "fullName": "Central African Republic",
+    "isdCode": "+236",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "CAF"
+  },
+  "CG": {
+    "fullName": "Republic of Congo",
+    "isdCode": "+242",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "COG"
+  },
+  "CH": {
+    "fullName": "Switzerland",
+    "isdCode": "+41",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "CHE"
+  },
+  "CI": {
+    "fullName": "Ivory Coast",
+    "isdCode": "+225",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "CIV"
+  },
+  "CK": {
+    "fullName": "Cook Islands",
+    "isdCode": "+682",
+    "phoneNumberLength": [5],
+    "threeLetterCode": "COK"
+  },
+  "CL": {
+    "fullName": "Chile",
+    "isdCode": "+56",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "CHL"
+  },
+  "CM": {
+    "fullName": "Cameroon",
+    "isdCode": "+237",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "CMR"
+  },
+  "CN": {
+    "fullName": "China",
+    "isdCode": "+86",
+    "phoneNumberLength": [11],
+    "threeLetterCode": "CHN"
+  },
+  "CO": {
+    "fullName": "Colombia",
+    "isdCode": "+57",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "COL"
+  },
+  "CR": {
+    "fullName": "Costa Rica",
+    "isdCode": "+506",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "CRI"
+  },
+  "CU": {
+    "fullName": "Cuba",
+    "isdCode": "+53",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "CUB"
+  },
+  "CV": {
+    "fullName": "Cape Verde",
+    "isdCode": "+238",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "CPV"
+  },
+  "CW": {
+    "fullName": "Curacao",
+    "isdCode": "+599",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "CUW"
+  },
+  "CX": {
+    "fullName": "Christmas Island",
+    "isdCode": "+61",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "CXR"
+  },
+  "CY": {
+    "fullName": "Cyprus",
+    "isdCode": "+357",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "CYP"
+  },
+  "CZ": {
+    "fullName": "Czech Republic",
+    "isdCode": "+420",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "CZE"
+  },
+  "DE": {
+    "fullName": "Germany",
+    "isdCode": "+49",
+    "phoneNumberLength": [10, 11],
+    "threeLetterCode": "DEU"
+  },
+  "DJ": {
+    "fullName": "Djibouti",
+    "isdCode": "+253",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "DJI"
+  },
+  "DK": {
+    "fullName": "Denmark",
+    "isdCode": "+45",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "DNK"
+  },
+  "DM": {
+    "fullName": "Dominica",
+    "isdCode": "+1767",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "DMA"
+  },
+  "DO": {
+    "fullName": "Dominican Republic",
+    "isdCode": "+1809",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "DOM"
+  },
+  "DZ": {
+    "fullName": "Algeria",
+    "isdCode": "+213",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "DZA"
+  },
+  "EC": {
+    "fullName": "Ecuador",
+    "isdCode": "+593",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "ECU"
+  },
+  "EE": {
+    "fullName": "Estonia",
+    "isdCode": "+372",
+    "phoneNumberLength": [7, 8],
+    "threeLetterCode": "EST"
+  },
+  "EG": {
+    "fullName": "Egypt",
+    "isdCode": "+20",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "EGY"
+  },
+  "EH": {
+    "fullName": "Western Sahara",
+    "isdCode": "+212",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "ESH"
+  },
+  "ER": {
+    "fullName": "Eritrea",
+    "isdCode": "+291",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "ERI"
+  },
+  "ES": {
+    "fullName": "Spain",
+    "isdCode": "+34",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "ESP"
+  },
+  "ET": {
+    "fullName": "Ethiopia",
+    "isdCode": "+251",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "ETH"
+  },
+  "FI": {
+    "fullName": "Finland",
+    "isdCode": "+358",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "FIN"
+  },
+  "FJ": {
+    "fullName": "Fiji",
+    "isdCode": "+679",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "FJI"
+  },
+  "FK": {
+    "fullName": "Falkland Islands",
+    "isdCode": "+500",
+    "phoneNumberLength": [5, 6],
+    "threeLetterCode": "FLK"
+  },
+  "FM": {
+    "fullName": "Micronesia",
+    "isdCode": "+691",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "FSM"
+  },
+  "FO": {
+    "fullName": "Faroe Islands",
+    "isdCode": "+298",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "FRO"
+  },
+  "FR": {
+    "fullName": "France",
+    "isdCode": "+33",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "FRA"
+  },
+  "GA": {
+    "fullName": "Gabon",
+    "isdCode": "+241",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "GAB"
+  },
+  "GB": {
+    "fullName": "United Kingdom",
+    "isdCode": "+44",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "GBR"
+  },
+  "GD": {
+    "fullName": "Grenada",
+    "isdCode": "+1473",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "GRD"
+  },
+  "GE": {
+    "fullName": "Georgia",
+    "isdCode": "+995",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "GEO"
+  },
+  "GF": {
+    "fullName": "French Guiana",
+    "isdCode": "+594",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "GUF"
+  },
+  "GG": {
+    "fullName": "Guernsey",
+    "isdCode": "+44",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "GGY"
+  },
+  "GH": {
+    "fullName": "Ghana",
+    "isdCode": "+233",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "GHA"
+  },
+  "GI": {
+    "fullName": "Gibraltar",
+    "isdCode": "+350",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "GIB"
+  },
+  "GL": {
+    "fullName": "Greenland",
+    "isdCode": "+299",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "GRL"
+  },
+  "GM": {
+    "fullName": "Gambia",
+    "isdCode": "+220",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "GMB"
+  },
+  "GN": {
+    "fullName": "Guinea",
+    "isdCode": "+224",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "GIN"
+  },
+  "GP": {
+    "fullName": "Guadeloupe",
+    "isdCode": "+590",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "GLP"
+  },
+  "GQ": {
+    "fullName": "Equatorial Guinea",
+    "isdCode": "+240",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "GNQ"
+  },
+  "GR": {
+    "fullName": "Greece",
+    "isdCode": "+30",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "GRC"
+  },
+  "GS": {
+    "fullName": "South Georgia and the South Sandwich Islands",
+    "isdCode": "+500",
+    "phoneNumberLength": [5, 6],
+    "threeLetterCode": "SGS"
+  },
+  "GT": {
+    "fullName": "Guatemala",
+    "isdCode": "+502",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "GTM"
+  },
+  "GU": {
+    "fullName": "Guam",
+    "isdCode": "+1671",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "GUM"
+  },
+  "GW": {
+    "fullName": "Guinea-Bissau",
+    "isdCode": "+245",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "GNB"
+  },
+  "GY": {
+    "fullName": "Guyana",
+    "isdCode": "+592",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "GUY"
+  },
+  "HK": {
+    "fullName": "Hong Kong",
+    "isdCode": "+852",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "HKG"
+  },
+  "HM": {
+    "fullName": "Heard Island and McDonald Islands",
+    "isdCode": "+672",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "HMD"
+  },
+  "HN": {
+    "fullName": "Honduras",
+    "isdCode": "+504",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "HND"
+  },
+  "HR": {
+    "fullName": "Croatia",
+    "isdCode": "+385",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "HRV"
+  },
+  "HT": {
+    "fullName": "Haiti",
+    "isdCode": "+509",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "HTI"
+  },
+  "HU": {
+    "fullName": "Hungary",
+    "isdCode": "+36",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "HUN"
+  },
+  "ID": {
+    "fullName": "Indonesia",
+    "isdCode": "+62",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "IDN"
+  },
+  "IE": {
+    "fullName": "Ireland",
+    "isdCode": "+353",
+    "phoneNumberLength": [9, 10],
+    "threeLetterCode": "IRL"
+  },
+  "IL": {
+    "fullName": "Israel",
+    "isdCode": "+972",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "ISR"
+  },
+  "IM": {
+    "fullName": "Isle of Man",
+    "isdCode": "+44",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "IMN"
+  },
+  "IN": {
+    "fullName": "India",
+    "isdCode": "+91",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "IND"
+  },
+  "IO": {
+    "fullName": "British Indian Ocean Territory",
+    "isdCode": "+246",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "IOT"
+  },
+  "IQ": {
+    "fullName": "Iraq",
+    "isdCode": "+964",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "IRQ"
+  },
+  "IR": {
+    "fullName": "Iran",
+    "isdCode": "+98",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "IRN"
+  },
+  "IS": {
+    "fullName": "Iceland",
+    "isdCode": "+354",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "ISL"
+  },
+  "IT": {
+    "fullName": "Italy",
+    "isdCode": "+39",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "ITA"
+  },
+  "JE": {
+    "fullName": "Jersey",
+    "isdCode": "+44",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "JEY"
+  },
+  "JM": {
+    "fullName": "Jamaica",
+    "isdCode": "+1876",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "JAM"
+  },
+  "JO": {
+    "fullName": "Jordan",
+    "isdCode": "+962",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "JOR"
+  },
+  "JP": {
+    "fullName": "Japan",
+    "isdCode": "+81",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "JPN"
+  },
+  "KE": {
+    "fullName": "Kenya",
+    "isdCode": "+254",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "KEN"
+  },
+  "KG": {
+    "fullName": "Kyrgyzstan",
+    "isdCode": "+996",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "KGZ"
+  },
+  "KH": {
+    "fullName": "Cambodia",
+    "isdCode": "+855",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "KHM"
+  },
+  "KI": {
+    "fullName": "Kiribati",
+    "isdCode": "+686",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "KIR"
+  },
+  "KM": {
+    "fullName": "Comoros",
+    "isdCode": "+269",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "COM"
+  },
+  "KN": {
+    "fullName": "Saint Kitts and Nevis",
+    "isdCode": "+1869",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "KNA"
+  },
+  "KP": {
+    "fullName": "North Korea",
+    "isdCode": "+850",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "PRK"
+  },
+  "KR": {
+    "fullName": "South Korea",
+    "isdCode": "+82",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "KOR"
+  },
+  "KW": {
+    "fullName": "Kuwait",
+    "isdCode": "+965",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "KWT"
+  },
+  "KY": {
+    "fullName": "Cayman Islands",
+    "isdCode": "+1345",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "CYM"
+  },
+  "KZ": {
+    "fullName": "Kazakhstan",
+    "isdCode": "+7",
+    "phoneNumberLength": [10, 11],
+    "threeLetterCode": "KAZ"
+  },
+  "LA": {
+    "fullName": "Laos",
+    "isdCode": "+856",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "LAO"
+  },
+  "LB": {
+    "fullName": "Lebanon",
+    "isdCode": "+961",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "LBN"
+  },
+  "LC": {
+    "fullName": "Saint Lucia",
+    "isdCode": "+1758",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "LCA"
+  },
+  "LI": {
+    "fullName": "Liechtenstein",
+    "isdCode": "+423",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "LIE"
+  },
+  "LK": {
+    "fullName": "Sri Lanka",
+    "isdCode": "+94",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "LKA"
+  },
+  "LR": {
+    "fullName": "Liberia",
+    "isdCode": "+231",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "LBR"
+  },
+  "LS": {
+    "fullName": "Lesotho",
+    "isdCode": "+266",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "LSO"
+  },
+  "LT": {
+    "fullName": "Lithuania",
+    "isdCode": "+370",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "LTU"
+  },
+  "LU": {
+    "fullName": "Luxembourg",
+    "isdCode": "+352",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "LUX"
+  },
+  "LV": {
+    "fullName": "Latvia",
+    "isdCode": "+371",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "LVA"
+  },
+  "LY": {
+    "fullName": "Libya",
+    "isdCode": "+218",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "LBY"
+  },
+  "MA": {
+    "fullName": "Morocco",
+    "isdCode": "+212",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "MAR"
+  },
+  "MC": {
+    "fullName": "Monaco",
+    "isdCode": "+377",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MCO"
+  },
+  "MD": {
+    "fullName": "Moldova",
+    "isdCode": "+373",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MDA"
+  },
+  "ME": {
+    "fullName": "Montenegro",
+    "isdCode": "+382",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MNE"
+  },
+  "MF": {
+    "fullName": "Saint Martin",
+    "isdCode": "+590",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "MAF"
+  },
+  "MG": {
+    "fullName": "Madagascar",
+    "isdCode": "+261",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MDG"
+  },
+  "MH": {
+    "fullName": "Marshall Islands",
+    "isdCode": "+692",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "MHL"
+  },
+  "MK": {
+    "fullName": "North Macedonia",
+    "isdCode": "+389",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MKD"
+  },
+  "ML": {
+    "fullName": "Mali",
+    "isdCode": "+223",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MLI"
+  },
+  "MM": {
+    "fullName": "Myanmar",
+    "isdCode": "+95",
+    "phoneNumberLength": [7, 8, 9, 10],
+    "threeLetterCode": "MMR"
+  },
+  "MN": {
+    "fullName": "Mongolia",
+    "isdCode": "+976",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MNG"
+  },
+  "MO": {
+    "fullName": "Macao",
+    "isdCode": "+853",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MAC"
+  },
+  "MP": {
+    "fullName": "Northern Mariana Islands",
+    "isdCode": "+1670",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "MNP"
+  },
+  "MQ": {
+    "fullName": "Martinique",
+    "isdCode": "+596",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "MTQ"
+  },
+  "MR": {
+    "fullName": "Mauritania",
+    "isdCode": "+222",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MRT"
+  },
+  "MS": {
+    "fullName": "Montserrat",
+    "isdCode": "+1664",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "MSR"
+  },
+  "MT": {
+    "fullName": "Malta",
+    "isdCode": "+356",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "MLT"
+  },
+  "MU": {
+    "fullName": "Mauritius",
+    "isdCode": "+230",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "MUS"
+  },
+  "MV": {
+    "fullName": "Maldives",
+    "isdCode": "+960",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "MDV"
+  },
+  "MW": {
+    "fullName": "Malawi",
+    "isdCode": "+265",
+    "phoneNumberLength": [7, 8, 9],
+    "threeLetterCode": "MWI"
+  },
+  "MX": {
+    "fullName": "Mexico",
+    "isdCode": "+52",
+    "phoneNumberLength": [10, 11],
+    "threeLetterCode": "MEX"
+  },
+  "MY": {
+    "fullName": "Malaysia",
+    "isdCode": "+60",
+    "phoneNumberLength": [9, 10],
+    "threeLetterCode": "MYS"
+  },
+  "MZ": {
+    "fullName": "Mozambique",
+    "isdCode": "+258",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "MOZ"
+  },
+  "NA": {
+    "fullName": "Namibia",
+    "isdCode": "+264",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "NAM"
+  },
+  "NC": {
+    "fullName": "New Caledonia",
+    "isdCode": "+687",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "NCL"
+  },
+  "NE": {
+    "fullName": "Niger",
+    "isdCode": "+227",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "NER"
+  },
+  "NF": {
+    "fullName": "Norfolk Island",
+    "isdCode": "+672",
+    "phoneNumberLength": [5],
+    "threeLetterCode": "NFK"
+  },
+  "NG": {
+    "fullName": "Nigeria",
+    "isdCode": "+234",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "NGA"
+  },
+  "NI": {
+    "fullName": "Nicaragua",
+    "isdCode": "+505",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "NIC"
+  },
+  "NL": {
+    "fullName": "Netherlands",
+    "isdCode": "+31",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "NLD"
+  },
+  "NO": {
+    "fullName": "Norway",
+    "isdCode": "+47",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "NOR"
+  },
+  "NP": {
+    "fullName": "Nepal",
+    "isdCode": "+977",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "NPL"
+  },
+  "NR": {
+    "fullName": "Nauru",
+    "isdCode": "+674",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "NRU"
+  },
+  "NU": {
+    "fullName": "Niue",
+    "isdCode": "+683",
+    "phoneNumberLength": [4],
+    "threeLetterCode": "NIU"
+  },
+  "NZ": {
+    "fullName": "New Zealand",
+    "isdCode": "+64",
+    "phoneNumberLength": [9, 10],
+    "threeLetterCode": "NZL"
+  },
+  "OM": {
+    "fullName": "Oman",
+    "isdCode": "+968",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "OMN"
+  },
+  "PA": {
+    "fullName": "Panama",
+    "isdCode": "+507",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "PAN"
+  },
+  "PE": {
+    "fullName": "Peru",
+    "isdCode": "+51",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "PER"
+  },
+  "PF": {
+    "fullName": "French Polynesia",
+    "isdCode": "+689",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "PYF"
+  },
+  "PG": {
+    "fullName": "Papua New Guinea",
+    "isdCode": "+675",
+    "phoneNumberLength": [7, 8],
+    "threeLetterCode": "PNG"
+  },
+  "PH": {
+    "fullName": "Philippines",
+    "isdCode": "+63",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "PHL"
+  },
+  "PK": {
+    "fullName": "Pakistan",
+    "isdCode": "+92",
+    "phoneNumberLength": [10, 11],
+    "threeLetterCode": "PAK"
+  },
+  "PL": {
+    "fullName": "Poland",
+    "isdCode": "+48",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "POL"
+  },
+  "PM": {
+    "fullName": "Saint Pierre and Miquelon",
+    "isdCode": "+508",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "SPM"
+  },
+  "PN": {
+    "fullName": "Pitcairn",
+    "isdCode": "+64",
+    "phoneNumberLength": [4],
+    "threeLetterCode": "PCN"
+  },
+  "PR": {
+    "fullName": "Puerto Rico",
+    "isdCode": "+1",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "PRI"
+  },
+  "PS": {
+    "fullName": "Palestine",
+    "isdCode": "+970",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "PSE"
+  },
+  "PT": {
+    "fullName": "Portugal",
+    "isdCode": "+351",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "PRT"
+  },
+  "PW": {
+    "fullName": "Palau",
+    "isdCode": "+680",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "PLW"
+  },
+  "PY": {
+    "fullName": "Paraguay",
+    "isdCode": "+595",
+    "phoneNumberLength": [9, 10],
+    "threeLetterCode": "PRY"
+  },
+  "QA": {
+    "fullName": "Qatar",
+    "isdCode": "+974",
+    "phoneNumberLength": [7, 8],
+    "threeLetterCode": "QAT"
+  },
+  "RE": {
+    "fullName": "Reunion",
+    "isdCode": "+262",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "REU"
+  },
+  "RO": {
+    "fullName": "Romania",
+    "isdCode": "+40",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "ROU"
+  },
+  "RS": {
+    "fullName": "Serbia",
+    "isdCode": "+381",
+    "phoneNumberLength": [9, 10, 11, 12],
+    "threeLetterCode": "SRB"
+  },
+  "RU": {
+    "fullName": "Russia",
+    "isdCode": "+7",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "RUS"
+  },
+  "RW": {
+    "fullName": "Rwanda",
+    "isdCode": "+250",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "RWA"
+  },
+  "SA": {
+    "fullName": "Saudi Arabia",
+    "isdCode": "+966",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "SAU"
+  },
+  "SB": {
+    "fullName": "Solomon Islands",
+    "isdCode": "+677",
+    "phoneNumberLength": [5, 6, 7],
+    "threeLetterCode": "SLB"
+  },
+  "SC": {
+    "fullName": "Seychelles",
+    "isdCode": "+248",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "SYC"
+  },
+  "SD": {
+    "fullName": "Sudan",
+    "isdCode": "+249",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "SDN"
+  },
+  "SE": {
+    "fullName": "Sweden",
+    "isdCode": "+46",
+    "phoneNumberLength": [7, 9],
+    "threeLetterCode": "SWE"
+  },
+  "SG": {
+    "fullName": "Singapore",
+    "isdCode": "+65",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "SGP"
+  },
+  "SH": {
+    "fullName": "Saint Helena",
+    "isdCode": "+290",
+    "phoneNumberLength": [4],
+    "threeLetterCode": "SHN"
+  },
+  "SI": {
+    "fullName": "Slovenia",
+    "isdCode": "+386",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "SVN"
+  },
+  "SJ": {
+    "fullName": "Svalbard and Jan Mayen",
+    "isdCode": "+47",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "SJM"
+  },
+  "SK": {
+    "fullName": "Slovakia",
+    "isdCode": "+421",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "SVK"
+  },
+  "SL": {
+    "fullName": "Sierra Leone",
+    "isdCode": "+232",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "SLE"
+  },
+  "SM": {
+    "fullName": "San Marino",
+    "isdCode": "+378",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "SMR"
+  },
+  "SN": {
+    "fullName": "Senegal",
+    "isdCode": "+221",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "SEN"
+  },
+  "SO": {
+    "fullName": "Somalia",
+    "isdCode": "+252",
+    "phoneNumberLength": [7, 8, 9],
+    "threeLetterCode": "SOM"
+  },
+  "SR": {
+    "fullName": "Suriname",
+    "isdCode": "+597",
+    "phoneNumberLength": [6, 7],
+    "threeLetterCode": "SUR"
+  },
+  "SS": {
+    "fullName": "South Sudan",
+    "isdCode": "+211",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "SSD"
+  },
+  "ST": {
+    "fullName": "São Tomé and Príncipe",
+    "isdCode": "+239",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "STP"
+  },
+  "SV": {
+    "fullName": "El Salvador",
+    "isdCode": "+503",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "SLV"
+  },
+  "SX": {
+    "fullName": "Sint Maarten",
+    "isdCode": "+1721",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "SXM"
+  },
+  "SY": {
+    "fullName": "Syria",
+    "isdCode": "+963",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "SYR"
+  },
+  "SZ": {
+    "fullName": "Eswatini",
+    "isdCode": "+268",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "SWZ"
+  },
+  "TC": {
+    "fullName": "Turks and Caicos Islands",
+    "isdCode": "+1649",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "TCA"
+  },
+  "TD": {
+    "fullName": "Chad",
+    "isdCode": "+235",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "TCD"
+  },
+  "TF": {
+    "fullName": "French Southern Territories",
+    "isdCode": "+262",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "ATF"
+  },
+  "TG": {
+    "fullName": "Togo",
+    "isdCode": "+228",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "TGO"
+  },
+  "TH": {
+    "fullName": "Thailand",
+    "isdCode": "+66",
+    "phoneNumberLength": [9, 10],
+    "threeLetterCode": "THA"
+  },
+  "TJ": {
+    "fullName": "Tajikistan",
+    "isdCode": "+992",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "TJK"
+  },
+  "TK": {
+    "fullName": "Tokelau",
+    "isdCode": "+690",
+    "phoneNumberLength": [5],
+    "threeLetterCode": "TKL"
+  },
+  "TL": {
+    "fullName": "East Timor",
+    "isdCode": "+670",
+    "phoneNumberLength": [7, 8],
+    "threeLetterCode": "TLS"
+  },
+  "TM": {
+    "fullName": "Turkmenistan",
+    "isdCode": "+993",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "TKM"
+  },
+  "TN": {
+    "fullName": "Tunisia",
+    "isdCode": "+216",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "TUN"
+  },
+  "TO": {
+    "fullName": "Tonga",
+    "isdCode": "+676",
+    "phoneNumberLength": [5, 6, 7],
+    "threeLetterCode": "TON"
+  },
+  "TR": {
+    "fullName": "Turkey",
+    "isdCode": "+90",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "TUR"
+  },
+  "TT": {
+    "fullName": "Trinidad and Tobago",
+    "isdCode": "+1868",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "TTO"
+  },
+  "TV": {
+    "fullName": "Tuvalu",
+    "isdCode": "+688",
+    "phoneNumberLength": [5],
+    "threeLetterCode": "TUV"
+  },
+  "TW": {
+    "fullName": "Taiwan",
+    "isdCode": "+886",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "TWN"
+  },
+  "TZ": {
+    "fullName": "Tanzania",
+    "isdCode": "+255",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "TZA"
+  },
+  "UA": {
+    "fullName": "Ukraine",
+    "isdCode": "+380",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "UKR"
+  },
+  "UG": {
+    "fullName": "Uganda",
+    "isdCode": "+256",
+    "phoneNumberLength": [9, 10],
+    "threeLetterCode": "UGA"
+  },
+  "US": {
+    "fullName": "United States",
+    "isdCode": "+1",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "USA"
+  },
+  "UY": {
+    "fullName": "Uruguay",
+    "isdCode": "+598",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "URY"
+  },
+  "UZ": {
+    "fullName": "Uzbekistan",
+    "isdCode": "+998",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "UZB"
+  },
+  "VA": {
+    "fullName": "Vatican City",
+    "isdCode": "+379",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "VAT"
+  },
+  "VC": {
+    "fullName": "Saint Vincent and the Grenadines",
+    "isdCode": "+1784",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "VCT"
+  },
+  "VE": {
+    "fullName": "Venezuela",
+    "isdCode": "+58",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "VEN"
+  },
+  "VG": {
+    "fullName": "British Virgin Islands",
+    "isdCode": "+1284",
+    "phoneNumberLength": [7],
+    "threeLetterCode": "VGB"
+  },
+  "VI": {
+    "fullName": "US Virgin Islands",
+    "isdCode": "+1340",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "VIR"
+  },
+  "VN": {
+    "fullName": "Vietnam",
+    "isdCode": "+84",
+    "phoneNumberLength": [9, 10],
+    "threeLetterCode": "VNM"
+  },
+  "VU": {
+    "fullName": "Vanuatu",
+    "isdCode": "+678",
+    "phoneNumberLength": [5, 6, 7],
+    "threeLetterCode": "VUT"
+  },
+  "WF": {
+    "fullName": "Wallis and Futuna",
+    "isdCode": "+681",
+    "phoneNumberLength": [6],
+    "threeLetterCode": "WLF"
+  },
+  "WS": {
+    "fullName": "Samoa",
+    "isdCode": "+685",
+    "phoneNumberLength": [5, 6, 7],
+    "threeLetterCode": "WSM"
+  },
+  "XK": {
+    "fullName": "Kosovo",
+    "isdCode": "+383",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "XKX"
+  },
+  "YE": {
+    "fullName": "Yemen",
+    "isdCode": "+967",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "YEM"
+  },
+  "YT": {
+    "fullName": "Mayotte",
+    "isdCode": "+262",
+    "phoneNumberLength": [10],
+    "threeLetterCode": "MYT"
+  },
+  "ZA": {
+    "fullName": "South Africa",
+    "isdCode": "+27",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "ZAF"
+  },
+  "ZM": {
+    "fullName": "Zambia",
+    "isdCode": "+260",
+    "phoneNumberLength": [9],
+    "threeLetterCode": "ZMB"
+  },
+  "ZW": {
+    "fullName": "Zimbabwe",
+    "isdCode": "+263",
+    "phoneNumberLength": [8],
+    "threeLetterCode": "ZWE"
+  }
+}

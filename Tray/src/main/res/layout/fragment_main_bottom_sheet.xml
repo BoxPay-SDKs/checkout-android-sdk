@@ -320,7 +320,7 @@
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_marginTop="16dp"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         android:background="@android:color/white"
                         app:cardCornerRadius="10dp"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -331,6 +331,7 @@
                             android:id="@+id/deliveryAddressConstraintLayout"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:visibility="visible"
                             android:background="@drawable/cardview_bg"
                             android:paddingBottom="16dp">
 
@@ -352,7 +353,7 @@
                                 android:fontFamily="@font/poppins_bold"
                                 android:gravity="center"
                                 android:layout_marginStart="6dp"
-                                android:text="Deliver Address"
+                                android:text="Delivery Address"
                                 android:textColor="#2D2B32"
                                 android:textSize="16sp"
                                 app:layout_constraintStart_toEndOf="@+id/deliveryAddressObjectImage"
@@ -397,7 +398,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="12dp"
                                 android:layout_marginEnd="12dp"
-                                android:src="@drawable/right_arrow"
+                                android:src="@drawable/ic_edit_details"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintTop_toBottomOf="@id/dashedLine4" />
 
@@ -454,6 +455,7 @@
                         android:layout_marginTop="16dp"
                         android:fontFamily="@font/poppins"
                         android:text="Choose payment method"
+                        android:visibility="visible"
                         android:textColor="#0A090B"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/cardView8" />
@@ -477,6 +479,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:orientation="vertical"
+                            android:visibility="visible"
                             android:weightSum="1">
 
                             <androidx.constraintlayout.widget.ConstraintLayout
@@ -927,6 +930,7 @@
                             android:layout_height="wrap_content"
                             android:background="#FFFFFF"
                             android:paddingTop="12dp"
+                            android:visibility="visible"
                             android:paddingEnd="12dp"
                             android:paddingBottom="12dp">
 
@@ -1095,6 +1099,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="#FFFFFF"
+                            android:visibility="visible"
                             android:paddingTop="12dp"
                             android:paddingEnd="12dp"
                             android:paddingBottom="12dp">
@@ -1160,256 +1165,51 @@
 
                     </androidx.cardview.widget.CardView>
 
-                    <!--                    <androidx.cardview.widget.CardView-->
-                    <!--                        android:id="@+id/cardView8"-->
-                    <!--                        android:layout_width="match_parent"-->
-                    <!--                        android:layout_height="wrap_content"-->
-                    <!--                        android:layout_marginStart="16dp"-->
-                    <!--                        android:layout_marginTop="12dp"-->
-                    <!--                        android:layout_marginEnd="16dp"-->
-                    <!--                        app:cardCornerRadius="8dp"-->
-                    <!--                        app:cardElevation="0dp"-->
-                    <!--                        app:layout_constraintEnd_toEndOf="parent"-->
-                    <!--                        app:layout_constraintStart_toStartOf="parent"-->
-                    <!--                        app:layout_constraintTop_toBottomOf="@+id/cardView7">-->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/proceedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:clickable="true"
+                        android:visibility="gone"
+                        app:cardCornerRadius="7dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/cardView3"
+                        tools:ignore="NotSibling">
 
-                    <!--                        <LinearLayout-->
-                    <!--                            android:id="@+id/emiLinearLayour"-->
-                    <!--                            android:layout_width="match_parent"-->
-                    <!--                            android:layout_height="match_parent"-->
-                    <!--                            android:orientation="vertical"-->
-                    <!--                            android:weightSum="1">-->
+                        <RelativeLayout
+                            android:id="@+id/proceedButtonRelativeLayout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/button_bg"
+                            android:padding="12dp">
 
-                    <!--                            <androidx.constraintlayout.widget.ConstraintLayout-->
-                    <!--                                android:id="@+id/emiConstraint"-->
-                    <!--                                android:layout_width="match_parent"-->
-                    <!--                                android:layout_height="wrap_content"-->
-                    <!--                                android:background="#FFFFFF"-->
-                    <!--                                android:paddingTop="12dp"-->
-                    <!--                                android:paddingEnd="12dp"-->
-                    <!--                                android:paddingBottom="12dp">-->
+                            <ProgressBar
+                                android:id="@+id/progressBar"
+                                android:layout_width="15dp"
+                                android:layout_height="15dp"
+                                android:layout_centerInParent="true"
+                                android:indeterminateDrawable="@drawable/loader_01"
+                                android:rotation="90"
+                                android:visibility="gone" />
 
-                    <!--                                <ImageView-->
-                    <!--                                    android:id="@+id/emiLogo"-->
-                    <!--                                    android:layout_width="wrap_content"-->
-                    <!--                                    android:layout_height="wrap_content"-->
-                    <!--                                    android:layout_marginStart="12dp"-->
-                    <!--                                    android:layout_marginTop="2dp"-->
-                    <!--                                    app:layout_constraintStart_toStartOf="parent"-->
-                    <!--                                    app:layout_constraintTop_toTopOf="parent"-->
-                    <!--                                    app:srcCompat="@drawable/emi_logo"/>-->
+                            <TextView
+                                android:id="@+id/textView6"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerInParent="true"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:text="Add New Address"
+                                android:textColor="#FFFFFF"
+                                android:textSize="16sp" />
 
-                    <!--                                <TextView-->
-                    <!--                                    android:id="@+id/emiTextView"-->
-                    <!--                                    android:layout_width="wrap_content"-->
-                    <!--                                    android:layout_height="wrap_content"-->
-                    <!--                                    android:layout_marginStart="6dp"-->
-                    <!--                                    android:fontFamily="@font/poppins"-->
-                    <!--                                    android:text="EMI"-->
-                    <!--                                    android:textColor="#1D1D1D"-->
-                    <!--                                    android:textSize="16sp"-->
-                    <!--                                    app:layout_constraintBottom_toBottomOf="@+id/emiLogo"-->
-                    <!--                                    app:layout_constraintStart_toEndOf="@+id/emiLogo"-->
-                    <!--                                    app:layout_constraintTop_toTopOf="@+id/emiLogo" />-->
-
-                    <!--                                <ImageView-->
-                    <!--                                    android:id="@+id/emiBankLogos"-->
-                    <!--                                    android:layout_width="wrap_content"-->
-                    <!--                                    android:layout_height="wrap_content"-->
-                    <!--                                    android:layout_marginEnd="4dp"-->
-                    <!--                                    app:layout_constraintBottom_toBottomOf="@+id/moreTextView"-->
-                    <!--                                    app:layout_constraintEnd_toStartOf="@+id/moreTextView"-->
-                    <!--                                    app:layout_constraintTop_toTopOf="@+id/moreTextView"-->
-                    <!--                                    app:srcCompat="@drawable/bank_logos" />-->
-
-                    <!--                                <TextView-->
-                    <!--                                    android:id="@+id/moreTextView"-->
-                    <!--                                    android:layout_width="wrap_content"-->
-                    <!--                                    android:layout_height="wrap_content"-->
-                    <!--                                    android:layout_marginEnd="12dp"-->
-                    <!--                                    android:fontFamily="@font/poppins"-->
-                    <!--                                    android:text="+ more"-->
-                    <!--                                    android:textColor="#474B55"-->
-                    <!--                                    android:textSize="10sp"-->
-                    <!--                                    app:layout_constraintBottom_toBottomOf="@+id/emiArrow"-->
-                    <!--                                    app:layout_constraintEnd_toStartOf="@+id/emiArrow"-->
-                    <!--                                    app:layout_constraintTop_toTopOf="@+id/emiArrow"-->
-                    <!--                                    tools:layout_marginEnd="12dp" />-->
-
-                    <!--                                <ImageView-->
-                    <!--                                    android:id="@+id/emiArrow"-->
-                    <!--                                    android:layout_width="wrap_content"-->
-                    <!--                                    android:layout_height="wrap_content"-->
-                    <!--                                    app:layout_constraintBottom_toBottomOf="@+id/emiLogo"-->
-                    <!--                                    app:layout_constraintEnd_toEndOf="parent"-->
-                    <!--                                    app:layout_constraintTop_toTopOf="@+id/emiLogo"-->
-                    <!--                                    app:srcCompat="@drawable/rightarrow" />-->
-
-
-                    <!--                            </androidx.constraintlayout.widget.ConstraintLayout>-->
-
-                    <!--                            <LinearLayout-->
-                    <!--                                android:id="@+id/emiOptionsLinearLayout"-->
-                    <!--                                android:layout_width="match_parent"-->
-                    <!--                                android:layout_height="0dp"-->
-                    <!--                                android:layout_weight="1"-->
-                    <!--                                android:background="@android:color/white"-->
-                    <!--                                android:orientation="vertical"-->
-                    <!--                                android:weightSum="3"-->
-                    <!--                                android:visibility="visible">-->
-
-
-                    <!--                                <androidx.constraintlayout.widget.ConstraintLayout-->
-                    <!--                                    android:id="@+id/creditCardEmiConstraint"-->
-                    <!--                                    android:layout_width="match_parent"-->
-                    <!--                                    android:layout_height="0dp"-->
-                    <!--                                    android:layout_weight="1"-->
-                    <!--                                    android:paddingTop="12dp"-->
-                    <!--                                    android:paddingEnd="12dp"-->
-                    <!--                                    android:paddingBottom="12dp">-->
-
-                    <!--                                    <ImageView-->
-                    <!--                                        android:id="@+id/creditCardImageView"-->
-                    <!--                                        android:layout_width="16dp"-->
-                    <!--                                        android:layout_height="16dp"-->
-                    <!--                                        android:layout_marginStart="12dp"-->
-                    <!--                                        android:layout_marginTop="2dp"-->
-                    <!--                                        app:layout_constraintStart_toStartOf="parent"-->
-                    <!--                                        app:layout_constraintTop_toTopOf="parent"-->
-                    <!--                                        app:srcCompat="@drawable/credit_card" />-->
-
-                    <!--                                    <TextView-->
-                    <!--                                        android:id="@+id/creditCardTextView"-->
-                    <!--                                        android:layout_width="wrap_content"-->
-                    <!--                                        android:layout_height="wrap_content"-->
-                    <!--                                        android:layout_marginStart="6dp"-->
-                    <!--                                        android:fontFamily="@font/poppins"-->
-                    <!--                                        android:text="Credit Card"-->
-                    <!--                                        android:textColor="#595E6A"-->
-                    <!--                                        android:textSize="16sp"-->
-                    <!--                                        app:layout_constraintBottom_toBottomOf="@+id/creditCardImageView"-->
-                    <!--                                        app:layout_constraintStart_toEndOf="@+id/creditCardImageView"-->
-                    <!--                                        app:layout_constraintTop_toTopOf="@+id/creditCardImageView" />-->
-
-                    <!--                                    <ImageView-->
-                    <!--                                        android:id="@+id/CCArrow"-->
-                    <!--                                        android:layout_width="wrap_content"-->
-                    <!--                                        android:layout_height="wrap_content"-->
-                    <!--                                        app:layout_constraintBottom_toBottomOf="@+id/creditCardTextView"-->
-                    <!--                                        app:layout_constraintEnd_toEndOf="parent"-->
-                    <!--                                        app:layout_constraintTop_toTopOf="@+id/creditCardTextView"-->
-                    <!--                                        app:srcCompat="@drawable/grey_color_right_arrow" />-->
-
-                    <!--                                </androidx.constraintlayout.widget.ConstraintLayout>-->
-
-                    <!--                                <View-->
-                    <!--                                    android:id="@+id/dashedLine2"-->
-                    <!--                                    android:layout_width="match_parent"-->
-                    <!--                                    android:layout_height="2dp"-->
-                    <!--                                    android:background="@drawable/dashed_line"-->
-                    <!--                                    app:layout_constraintEnd_toEndOf="parent"-->
-                    <!--                                    app:layout_constraintStart_toStartOf="parent"-->
-                    <!--                                    app:layout_constraintTop_toBottomOf="@+id/creditCardEmiConstraint" />-->
-
-                    <!--                                <androidx.constraintlayout.widget.ConstraintLayout-->
-                    <!--                                    android:id="@+id/debitCardEmiConstraint"-->
-                    <!--                                    android:layout_width="match_parent"-->
-                    <!--                                    android:layout_height="0dp"-->
-                    <!--                                    android:layout_weight="1"-->
-                    <!--                                    android:paddingTop="12dp"-->
-                    <!--                                    android:paddingEnd="12dp"-->
-                    <!--                                    android:paddingBottom="12dp">-->
-
-                    <!--                                    <ImageView-->
-                    <!--                                        android:id="@+id/debitCardImageView"-->
-                    <!--                                        android:layout_width="16dp"-->
-                    <!--                                        android:layout_height="wrap_content"-->
-                    <!--                                        android:layout_marginStart="12dp"-->
-                    <!--                                        android:layout_marginTop="2dp"-->
-                    <!--                                        app:layout_constraintStart_toStartOf="parent"-->
-                    <!--                                        app:layout_constraintTop_toTopOf="parent"-->
-                    <!--                                        app:srcCompat="@drawable/card_02" />-->
-
-                    <!--                                    <TextView-->
-                    <!--                                        android:id="@+id/debitCardTextView"-->
-                    <!--                                        android:layout_width="wrap_content"-->
-                    <!--                                        android:layout_height="wrap_content"-->
-                    <!--                                        android:layout_marginStart="6dp"-->
-                    <!--                                        android:fontFamily="@font/poppins"-->
-                    <!--                                        android:text="Debit Card"-->
-                    <!--                                        android:textColor="#595E6A"-->
-                    <!--                                        android:textSize="16sp"-->
-                    <!--                                        app:layout_constraintBottom_toBottomOf="@+id/debitCardImageView"-->
-                    <!--                                        app:layout_constraintStart_toEndOf="@+id/debitCardImageView"-->
-                    <!--                                        app:layout_constraintTop_toTopOf="@+id/debitCardImageView" />-->
-
-                    <!--                                    <ImageView-->
-                    <!--                                        android:id="@+id/DCArrow"-->
-                    <!--                                        android:layout_width="wrap_content"-->
-                    <!--                                        android:layout_height="wrap_content"-->
-                    <!--                                        app:layout_constraintBottom_toBottomOf="@+id/debitCardTextView"-->
-                    <!--                                        app:layout_constraintEnd_toEndOf="parent"-->
-                    <!--                                        app:layout_constraintTop_toTopOf="@+id/debitCardTextView"-->
-                    <!--                                        app:srcCompat="@drawable/grey_color_right_arrow" />-->
-
-                    <!--                                </androidx.constraintlayout.widget.ConstraintLayout>-->
-                    <!--                                <View-->
-                    <!--                                    android:id="@+id/dashedLine3"-->
-                    <!--                                    android:layout_width="match_parent"-->
-                    <!--                                    android:layout_height="2dp"-->
-                    <!--                                    android:background="@drawable/dashed_line"-->
-                    <!--                                    app:layout_constraintEnd_toEndOf="parent"-->
-                    <!--                                    app:layout_constraintStart_toStartOf="parent"-->
-                    <!--                                    app:layout_constraintTop_toBottomOf="@+id/debitCardEmiConstraint" />-->
-
-                    <!--                                <androidx.constraintlayout.widget.ConstraintLayout-->
-                    <!--                                    android:id="@+id/creditLessEmiConstraint"-->
-                    <!--                                    android:layout_width="match_parent"-->
-                    <!--                                    android:layout_height="0dp"-->
-                    <!--                                    android:layout_weight="1"-->
-                    <!--                                    android:paddingTop="12dp"-->
-                    <!--                                    android:paddingEnd="12dp"-->
-                    <!--                                    android:paddingBottom="12dp">-->
-
-                    <!--                                    <ImageView-->
-                    <!--                                        android:id="@+id/creditLessImageView"-->
-                    <!--                                        android:layout_width="16dp"-->
-                    <!--                                        android:layout_height="16dp"-->
-                    <!--                                        android:layout_marginStart="12dp"-->
-                    <!--                                        android:layout_marginTop="2dp"-->
-                    <!--                                        app:layout_constraintStart_toStartOf="parent"-->
-                    <!--                                        app:layout_constraintTop_toTopOf="parent"-->
-                    <!--                                        app:srcCompat="@drawable/plus_sign_inside_circle" />-->
-
-                    <!--                                    <TextView-->
-                    <!--                                        android:id="@+id/creditLessTextView"-->
-                    <!--                                        android:layout_width="wrap_content"-->
-                    <!--                                        android:layout_height="wrap_content"-->
-                    <!--                                        android:layout_marginStart="6dp"-->
-                    <!--                                        android:fontFamily="@font/poppins"-->
-                    <!--                                        android:text="Cardless EMI"-->
-                    <!--                                        android:textColor="#595E6A"-->
-                    <!--                                        android:textSize="16sp"-->
-                    <!--                                        app:layout_constraintBottom_toBottomOf="@+id/creditLessImageView"-->
-                    <!--                                        app:layout_constraintStart_toEndOf="@+id/creditLessImageView"-->
-                    <!--                                        app:layout_constraintTop_toTopOf="@+id/creditLessImageView" />-->
-
-                    <!--                                    <ImageView-->
-                    <!--                                        android:id="@+id/CLArrow"-->
-                    <!--                                        android:layout_width="wrap_content"-->
-                    <!--                                        android:layout_height="wrap_content"-->
-                    <!--                                        app:layout_constraintBottom_toBottomOf="@+id/creditLessImageView"-->
-                    <!--                                        app:layout_constraintEnd_toEndOf="parent"-->
-                    <!--                                        app:layout_constraintTop_toTopOf="@+id/creditLessImageView"-->
-                    <!--                                        app:srcCompat="@drawable/grey_color_right_arrow" />-->
-
-                    <!--                                </androidx.constraintlayout.widget.ConstraintLayout>-->
-
-
-                    <!--                            </LinearLayout>-->
-                    <!--                        </LinearLayout>-->
-
-                    <!--                    </androidx.cardview.widget.CardView>-->
+                        </RelativeLayout>
+                    </androidx.cardview.widget.CardView>
 
                     <LinearLayout
                         android:id="@+id/linearLayout"
@@ -1419,6 +1219,7 @@
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="120dp"
                         android:gravity="center"
+                        android:visibility="visible"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/cardView7">

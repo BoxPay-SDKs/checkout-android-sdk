@@ -22,6 +22,8 @@ class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
     private var successScreenFullReferencePath : String ?= null
     private var tokenFetchedAndOpen = false
+    private lateinit var sharedPreferences : SharedPreferences
+    private lateinit var editor : SharedPreferences.Editor
 
 
     private val binding : ActivityCheckBinding by lazy {
@@ -36,6 +38,8 @@ class Check : AppCompatActivity() {
 
         makePaymentRequest(this)
 
+        sharedPreferences = getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        editor = sharedPreferences.edit()
         binding.textView6.text = "Generating Token Please wait..."
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
         tokenLiveData.observe(this, Observer { tokenInObserve ->
@@ -129,19 +133,12 @@ class Check : AppCompatActivity() {
   "money": {"amount": "1", "currencyCode": "INR"},
   "descriptor": {"line1": "Some descriptor"},
   "shopper": {
-    "firstName": "Piyush",
-    "lastName": "Sharma",
-    "email":"piyush141001@gmail.com",
-    "uniqueReference": "x123y",
-    "phoneNumber": "919711668479",
-    "deliveryAddress": {
-      "address1": "first line",
-      "address2": "second line",
-      "city": "Mumbai",
-      "state": "Maharashtra",
-      "countryCode": "IN",
-      "postalCode": "123456"
-    }
+    "firstName": null,
+    "lastName": null,
+    "email":null,
+    "uniqueReference": "xyz",
+    "phoneNumber": null,
+    "deliveryAddress":null
   },
   "order": {
     "originalAmount": 423.73,
@@ -184,6 +181,8 @@ class Check : AppCompatActivity() {
                 val editor: SharedPreferences.Editor = sharedPreferences.edit()
                 val tokenFetched = response.getString("token")
                 Log.d("token fetched", tokenFetched)
+                editor.putString("token",tokenFetched)
+                editor.apply()
                 tokenLiveData.value = tokenFetched
                 editor.putString("token",tokenLiveData.value)
                 editor.apply()
