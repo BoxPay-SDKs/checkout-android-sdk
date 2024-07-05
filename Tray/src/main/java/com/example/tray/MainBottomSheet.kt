@@ -1786,6 +1786,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.putString("merchantId", response.getString("merchantId"))
                 editor.putString("countryCode", paymentDetailsObject.getJSONObject("context").getString("countryCode"))
                 editor.putString("legalEntity", paymentDetailsObject.getJSONObject("context").getJSONObject("legalEntity").getString("code"))
+                var countryCode : Pair<String,String>? = null
 
                 val shopperObject = paymentDetailsObject.getJSONObject("shopper")
                 if (shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.getJSONObject("deliveryAddress").isNull("address1")) {
@@ -1811,9 +1812,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (!shopperObject.isNull("gender")) {
                         editor.putString("gender", shopperObject.getString("gender"))
                     }
-                    if (!shopperObject.isNull("phoneNumber")) {
-                        editor.putString("phoneNumber", shopperObject.getString("phoneNumber"))
-                    }
                     if (!shopperObject.isNull("email")) {
                         editor.putString("email", shopperObject.getString("email"))
                     }
@@ -1831,10 +1829,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             editor.putString("address2", deliveryAddress.getString("address2"))
                         }
                         if (!deliveryAddress.isNull("countryCode")) {
-                            val countryName = getCountryName(countryCodeJson, deliveryAddress.getString("countryCode"))
-                            editor.putString("countryName",countryName?.first)
-                            editor.putString("indexCountryCodePhone", countryName?.second)
-                            editor.putString("countryCodePhoneNum", countryName?.second)
+                            countryCode = getCountryName(countryCodeJson, deliveryAddress.getString("countryCode"))
+                            editor.putString("countryName",countryCode?.first)
+                            editor.putString("indexCountryCodePhone", countryCode?.second)
+                            editor.putString("countryCodePhoneNum", countryCode?.second)
+                        }
+                        if (!shopperObject.isNull("phoneNumber")) {
+                            val cleanedPhone = countryCode?.second?.removePrefix("+")
+                            editor.putString("phoneNumber", shopperObject.getString("phoneNumber").removePrefix(cleanedPhone ?: ""))
                         }
                         if (!deliveryAddress.isNull("city")) {
                             editor.putString("city", deliveryAddress.getString("city"))
