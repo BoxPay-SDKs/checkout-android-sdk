@@ -712,19 +712,25 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
         binding.deliveryAddressConstraintLayout.setOnClickListener() {
+            if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                val cleanedPhone = countryCode?.second?.removePrefix("+")
+                editor.putString("phoneNumber", sharedPreferences.getString("phoneNumber","")?.removePrefix(cleanedPhone ?: ""))
+                editor.apply()
+            }
             val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
             bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
         }
 
 
         binding.proceedButton.setOnClickListener() {
+            if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                val cleanedPhone = countryCode?.second?.removePrefix("+")
+                editor.putString("phoneNumber", sharedPreferences.getString("phoneNumber","")?.removePrefix(cleanedPhone ?: ""))
+                editor.apply()
+            }
             val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
             bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
         }
-
-
-
-
 
         return binding.root
     }
@@ -1939,12 +1945,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.apply()
 
                 binding.nameTextView.text = sharedPreferences.getString("firstName", "") + " " + sharedPreferences.getString("lastName", "")
-                binding.mobileNumberTextViewMain.text = "${
-                    sharedPreferences.getString(
-                        "countryCodePhoneNum",
-                        ""
-                    )
-                }-${sharedPreferences.getString("phoneNumber", "")}"
+                binding.mobileNumberTextViewMain.text = sharedPreferences.getString("phoneNumber", "")
                 binding.addressTextViewMain.text = if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
                     "${sharedPreferences.getString("address1", null)}\n" +
                             "${sharedPreferences.getString("address2", null)}\n" +
@@ -2024,7 +2025,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 "countryCodePhoneNum",
                 null
             )
-        }-${sharedPreferences.getString("phoneNumber", null)}"
+        }${sharedPreferences.getString("phoneNumber", null)}"
         binding.addressTextViewMain.text = if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
             "${sharedPreferences.getString("address1", null)}\n" +
                     "${sharedPreferences.getString("address2", null)}\n" +

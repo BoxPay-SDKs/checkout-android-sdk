@@ -85,7 +85,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val screenHeight = displayMetrics.heightPixels
 
         // Calculate 50% of screen height
-        val cardViewHeight = (screenHeight * 0.45).toInt()
+        val cardViewHeight = (screenHeight * 0.50).toInt()
 
         // Set the height of the CardView dynamically
         val layoutParams = binding.cardView.layoutParams
@@ -96,7 +96,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val countryNameListAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, countryList)
         binding.countryEditText.threshold = 0
         binding.countryEditText.setAdapter(countryNameListAdapter)
-
         binding.countryEditText.setOnItemClickListener { parent, view, position, id ->
             val selectedItem = parent.getItemAtPosition(position).toString()
             Log.d("item selected : ",selectedItem)
@@ -219,17 +218,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             if (phoneNumber != null) {
                 binding.mobileNumberEditText.setText(phoneNumber)
             }
-            if (countryName != null) {
-                binding.countryEditText.setText(countryName)
-            }
+            binding.countryEditText.setText(countryName ?: "India")
+            countrySelected = true
         }else{
             binding.backButton.visibility = View.GONE
         }
-
-
-
-
-
 
         binding.fullNameEditText.addTextChangedListener(object : TextWatcher {
 
@@ -240,7 +233,14 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                checkAllFieldsEntered(false)
+                if (s?.isEmpty() == true) {
+                    binding.fullNameErrorTex.visibility = View.VISIBLE
+                    binding.fullNameEditText.background = ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
+                } else {
+                    binding.fullNameErrorTex.visibility = View.GONE
+                    binding.fullNameEditText.background = ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
+                    checkAllFieldsEntered(false)
+                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -258,11 +258,18 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (isMobileNumberValid()) {
-                    if (toCheckAllFieldsAreFilled()) {
-                        enableProceedButton()
+                if (s?.isEmpty() == true) {
+                    isMobileNumberValid()
+                    binding.mobileNumberEditText.background = ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
+                } else {
+                    binding.mobileNumberEditText.background = ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
+                    if (isMobileNumberValid()) {
+                        if (toCheckAllFieldsAreFilled()) {
+                            enableProceedButton()
+                        }
                     }
                 }
+
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -281,9 +288,15 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (isEmailValid()) {
-                    if (toCheckAllFieldsAreFilled()) {
-                        enableProceedButton()
+                if (s?.isEmpty() == true) {
+                    isEmailValid()
+                    binding.emailEditText.background = ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
+                } else {
+                    binding.emailEditText.background = ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
+                    if (isEmailValid()) {
+                        if (toCheckAllFieldsAreFilled()) {
+                            enableProceedButton()
+                        }
                     }
                 }
             }
@@ -404,7 +417,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             editor.putString("postalCode", postalCode.toString())
             editor.putString("firstName", fullName.toString())
             editor.putString("email", email.toString())
-            editor.putString("phoneNumber", mobileNumber.toString())
+            editor.putString("phoneNumber", "$countryCodePhoneNum$mobileNumber")
             editor.putString("countryCodePhoneNum", countryCodePhoneNum)
             editor.putString("countryName", country.toString())
             editor.putString("indexCountryCodePhone", indexCountryCodePhone)
@@ -539,24 +552,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 ) // Semi-transparent black background
             }
 
-            val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.5 // 90%
-            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
-//            dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-//            dialog.window?.setDimAmount(0.5f)
-
-
-//            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // Set transparent background
-//            dialog.window?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.setBackgroundResource(R.drawable.button_bg)
-
-
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
-//            bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             if(firstTime)
@@ -720,7 +717,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val mobileNumber = binding.mobileNumberEditText.text
         if (mobileNumber.length !in minPhoneLength..maxPhoneLength) {
             disableProceedButton()
-            binding.mobileErrorText.visibility = View.VISIBLE
+            binding.mobileErrorText.text = if (mobileNumber.isEmpty()) {
+                "Required"
+            } else {
+                "Mobile number must be $maxPhoneLength digits"
+            }
+                binding.mobileErrorText.visibility = View.VISIBLE
             return false
         }
         binding.mobileErrorText.visibility = View.GONE
@@ -730,7 +732,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     fun isEmailValid(): Boolean {
         val email = binding.emailEditText.text
         val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
-        if (!email.isNullOrBlank() && !email.matches(emailRegex)) {
+        if (!email.matches(emailRegex)) {
+            binding.emailErrorText.text = if (email.isEmpty()) {
+                "Required"
+            } else {
+                "Invalid Email"
+            }
             binding.emailErrorText.visibility = View.VISIBLE
             disableProceedButton()
             return false
@@ -742,6 +749,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     fun isPostalValid() : Boolean {
         val postalCode = binding.postalCodeEditText.text
         if (postalCode.isNullOrBlank() || postalCode.length != 6) {
+            binding.postalCodeErrorText.text = if (postalCode.isEmpty()) {
+                "Required"
+            } else {
+                "Zip/Postal code must be 6 digits"
+            }
             binding.postalCodeErrorText.visibility = View.VISIBLE
             disableProceedButton()
             return false
