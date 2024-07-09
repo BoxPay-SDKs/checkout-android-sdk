@@ -109,6 +109,20 @@
                             app:layout_constraintTop_toBottomOf="@+id/fullNameTextView"
                             tools:ignore="TouchTargetSizeCheck" />
 
+                        <TextView
+                            android:id="@+id/fullNameErrorTex"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:lineSpacingExtra="-1sp"
+                            android:text="Required"
+                            android:visibility="gone"
+                            android:textColor="#ffff4d4f"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/fullNameEditText" />
+
 
                         <TextView
                             android:id="@+id/mobileNumberTextView"
@@ -136,7 +150,7 @@
                                 android:layout_width="70dp"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
-                                android:background="@null"
+                                android:background="#ffffffff"
                                 tools:ignore="TouchTargetSizeCheck" />
 
                             <EditText
@@ -165,7 +179,7 @@
                             android:lineSpacingExtra="-1sp"
                             android:text="Mobile Number length is not correct"
                             android:visibility="gone"
-                            android:textColor="#ffff0000"
+                            android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/mobileNumberLinearLayout" />
 
@@ -212,7 +226,7 @@
                             android:lineSpacingExtra="-1sp"
                             android:text="Invalid Email Id"
                             android:visibility="gone"
-                            android:textColor="#ffff0000"
+                            android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/emailEditText" />
 
@@ -293,7 +307,7 @@
                             android:lineSpacingExtra="-1sp"
                             android:text="Invalid Postal Code"
                             android:visibility="gone"
-                            android:textColor="#ffff0000"
+                            android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/postalCodeEditText" />
 
