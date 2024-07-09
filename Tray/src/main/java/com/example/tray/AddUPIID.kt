@@ -18,7 +18,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
-import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -290,38 +289,16 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
 
-
-
-
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // Handle state changes
                     when (newState) {
-                        BottomSheetBehavior.STATE_EXPANDED -> {
-                            // Fully expanded
-                        }
-
-                        BottomSheetBehavior.STATE_COLLAPSED -> {
-                            // Collapsed
-
-                        }
-
-                        BottomSheetBehavior.STATE_DRAGGING -> {
-                            // The BottomSheet is being dragged
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
-                        BottomSheetBehavior.STATE_SETTLING -> {
-                            // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
                         BottomSheetBehavior.STATE_HIDDEN -> {
-                            //Hidden
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
-
+                        }
+                        else -> {
+                            // no op
                         }
                     }
                 }
@@ -336,64 +313,21 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
-        // Handle the back button press here
-        // Dismiss the dialog when the back button is pressed
         dismissAndMakeButtonsOfMainBottomSheetEnabled()
     }
-
-    override fun onStart() {
-        super.onStart()
-//        binding.editTextText.requestFocus()
-    }
-
-//    private fun fetchOTPAutomatically(){
-//        val smsReceiver = otpFetcher(requireContext())
-//        smsReceiver.onReceive()
-//    }
-
 
     override fun onDismiss(dialog: DialogInterface) {
         (parentFragment as? MainBottomSheet)?.removeOverlayFromCurrentBottomSheet()
         super.onDismiss(dialog)
     }
 
-    private fun showOverlayInCurrentBottomSheet() {
-        // Create a semi-transparent overlay view
-        overlayViewCurrentBottomSheet = View(requireContext())
-        overlayViewCurrentBottomSheet?.setBackgroundColor(Color.parseColor("#80000000")) // Adjust color and transparency as needed
-
-        // Add overlay view directly to the root view of the BottomSheet
-        binding.root.addView(
-            overlayViewCurrentBottomSheet,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-    }
-
-    public fun removeOverlayFromCurrentBottomSheet() {
-        overlayViewCurrentBottomSheet?.let {
-            // Remove the overlay view directly from the root view
-            binding.root.removeView(it)
-        }
-    }
 
     private fun postRequest(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
-
-
-        // Constructing the request body
         val requestBody = JSONObject().apply {
-
-
-            // Create the browserData JSON object
             val browserData = JSONObject().apply {
-
-                val webView = WebView(requireContext())
-
-                // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
 
-                // Get the screen height and width
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
                 put("screenWidth", displayMetrics.widthPixels.toString())
@@ -416,9 +350,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("upi", upiObject)
             }
             put("instrumentDetails", instrumentDetailsObject)
-
-
-
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email",null))

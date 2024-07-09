@@ -97,10 +97,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-
-
-
-
             val window = d.window
             window?.apply {
                 // Apply dim effect

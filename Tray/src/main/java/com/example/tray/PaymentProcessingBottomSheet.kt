@@ -38,7 +38,6 @@ internal class PaymentProcessingBottomSheet :BottomSheetDialogFragment() {
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
@@ -46,10 +45,6 @@ internal class PaymentProcessingBottomSheet :BottomSheetDialogFragment() {
             val percentageOfScreenHeight = 0.7 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
@@ -60,27 +55,11 @@ internal class PaymentProcessingBottomSheet :BottomSheetDialogFragment() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // Handle state changes
                     when (newState) {
-                        BottomSheetBehavior.STATE_EXPANDED -> {
-                            // Fully expanded
-                        }
-
-                        BottomSheetBehavior.STATE_COLLAPSED -> {
-                            // Collapsed
-                        }
-
-                        BottomSheetBehavior.STATE_DRAGGING -> {
-                            // The BottomSheet is being dragged
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
-                        BottomSheetBehavior.STATE_SETTLING -> {
-                            // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
                         BottomSheetBehavior.STATE_HIDDEN -> {
-                            //Hidden
                             dismiss()
+                        }
+                        else -> {
+                            // no op
                         }
                     }
                 }
@@ -91,9 +70,5 @@ internal class PaymentProcessingBottomSheet :BottomSheetDialogFragment() {
             })
         }
         return dialog
-    }
-
-    companion object {
-
     }
 }

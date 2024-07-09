@@ -100,24 +100,14 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-
-
-
             val screenHeight = requireContext().resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.9 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
-
 
             bottomSheetBehavior?.maxHeight = desiredHeight
 
             val window = d.window
             window?.apply {
-                // Apply dim effect
                 setDimAmount(0.5f) // 50% dimming
                 setBackgroundDrawable(ColorDrawable(Color.argb(128, 0, 0, 0))) // Semi-transparent black background
             }
@@ -128,34 +118,16 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
-
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // Handle state changes
                     when (newState) {
-                        BottomSheetBehavior.STATE_EXPANDED -> {
-                            // Fully expanded
-                        }
-
-                        BottomSheetBehavior.STATE_COLLAPSED -> {
-                            // Collapsed
-                        }
-
-                        BottomSheetBehavior.STATE_DRAGGING -> {
-                            // The BottomSheet is being dragged
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
-                        BottomSheetBehavior.STATE_SETTLING -> {
-                            // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
                         BottomSheetBehavior.STATE_HIDDEN -> {
-                            //Hidden
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        }
+                        else -> {
+                            // no op
                         }
                     }
                 }

@@ -1458,7 +1458,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-
             val screenHeight = requireContext().resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.7 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()

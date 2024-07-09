@@ -339,25 +339,8 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // Handle state changes
                     when (newState) {
-                        BottomSheetBehavior.STATE_EXPANDED -> {
-                            // Fully expanded
-                        }
-
-                        BottomSheetBehavior.STATE_COLLAPSED -> {
-                            // Collapsed
-                        }
-
-                        BottomSheetBehavior.STATE_DRAGGING -> {
-                            // The BottomSheet is being dragged
-                        }
-
-                        BottomSheetBehavior.STATE_SETTLING -> {
-                            // The BottomSheet is settling
-                        }
-
-                        BottomSheetBehavior.STATE_HIDDEN -> {
-                            //Hidden
-
+                        else -> {
+                            // no op
                         }
                     }
                 }

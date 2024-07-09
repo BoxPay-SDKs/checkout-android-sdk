@@ -44,7 +44,6 @@ internal class PaymentFailureScreen : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-
             val window = d.window
             window?.apply {
                 // Apply dim effect
@@ -59,38 +58,13 @@ internal class PaymentFailureScreen : BottomSheetDialogFragment() {
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
-
-
-
-
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // Handle state changes
                     when (newState) {
-                        BottomSheetBehavior.STATE_EXPANDED -> {
-                            // Fully expanded
-                        }
-
-                        BottomSheetBehavior.STATE_COLLAPSED -> {
-                            // Collapsed
-
-                        }
-
-                        BottomSheetBehavior.STATE_DRAGGING -> {
-                            // The BottomSheet is being dragged
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
-                        BottomSheetBehavior.STATE_SETTLING -> {
-                            // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
-                        BottomSheetBehavior.STATE_HIDDEN -> {
-                            //Hidden
-
+                        else -> {
+                            // no op
                         }
                     }
                 }
@@ -102,7 +76,4 @@ internal class PaymentFailureScreen : BottomSheetDialogFragment() {
         return dialog
     }
 
-    companion object {
-
-    }
 }
