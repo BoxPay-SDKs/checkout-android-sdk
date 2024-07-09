@@ -61,7 +61,6 @@ import com.example.tray.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -72,8 +71,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
-import java.net.Inet6Address
-import java.net.InetAddress
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.Locale
@@ -127,24 +124,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         super.onCancel(dialog)
         removeOverlayFromActivity()
         dismiss()
-    }
-
-    private fun convertIPv6ToIPv4(ipv6Address: String): String? {
-        try {
-            val inet6Address = InetAddress.getByName(ipv6Address)
-            if (inet6Address is Inet6Address) {
-                if (inet6Address.isLinkLocalAddress) {
-                    // Handle link-local address case
-                    return "127.0.0.1"
-                }
-                val inetAddress =
-                    InetAddress.getByAddress(null, inet6Address.hostAddress.toByteArray())
-                return inetAddress.hostAddress
-            }
-        } catch (e: Exception) {
-
-        }
-        return null
     }
 
     override fun onStart() {
@@ -236,7 +215,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
             if (packageManager.getLaunchIntentForPackage(app.packageName) != null) {
-                // apps with launcher intent
                 if (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0) {
                     // updated system apps
                 } else if (app.flags and ApplicationInfo.FLAG_SYSTEM != 0) {
@@ -1466,23 +1444,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             .start()
     }
 
-    fun extractSum(prices: MutableList<String>): String {
-        var finalSum = 0
-        for (price in prices) {
-
-            val numericPart = price.replace("[^0-9]".toRegex(), "")
-            if (numericPart.isEmpty()) {
-                return 0.toString()
-            } else {
-                finalSum += numericPart.toInt()
-            }
-        }
-
-        val formattedSum = String.format("₹%.2f", finalSum / 100.0)
-        return formattedSum
-
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
     }
@@ -1502,10 +1463,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val percentageOfScreenHeight = 0.7 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
 
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -1515,34 +1472,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             dialog.setCancelable(false)
 
-
-
-
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // Handle state changes
                     when (newState) {
-                        BottomSheetBehavior.STATE_EXPANDED -> {
-                            // Fully expanded
-                        }
-
-                        BottomSheetBehavior.STATE_COLLAPSED -> {
-                            // Collapsed
-                        }
-
-                        BottomSheetBehavior.STATE_DRAGGING -> {
-
-                        }
-
-                        BottomSheetBehavior.STATE_SETTLING -> {
-                            // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
                         BottomSheetBehavior.STATE_HIDDEN -> {
-                            //Hidden
                             dismiss()
                             val callback = SingletonClass.getInstance().getYourObject()
                             if (callback != null) {
@@ -1559,6 +1494,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     )
                                 )
                             }
+                        }
+                        else ->  {
+                            // no op
                         }
                     }
                 }
@@ -1592,13 +1530,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val bottomSheetFragment = WalletBottomSheet.newInstance(shippingEnabled)
         bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
-    }
-
-
-    private fun logJsonObjectUPIIntent(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-
     }
 
     private fun makeSessionDataCall() {
@@ -1885,7 +1816,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     "Invalid token/selected environment.\nPlease press back button and try again",
                     Toast.LENGTH_LONG
                 ).show()
-
             }
 
         }, { error ->
@@ -1912,8 +1842,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-
-
         editor.putString("transactionAmount", transactionAmountArgs)
         editor.apply()
     }

@@ -99,9 +99,6 @@ class Check : AppCompatActivity() {
     }
 
      private fun showBottomSheetWithOverlay() {
-
-         //tokenLiveData.value.toString()
-//         tokenLiveData.value.toString()
         val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,true)
         boxPayCheckout.display()
     }

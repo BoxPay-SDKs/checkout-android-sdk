@@ -25,18 +25,15 @@ class MerchantDetailsScreen : AppCompatActivity() {
 
         ArrayAdapter.createFromResource(
             this,
-            com.example.AndroidCheckOutSDK.R.array.environment_options,
+            R.array.environment_options,
             android.R.layout.simple_spinner_item
         ).also { adapter ->
-            // Specify the layout to use when the list of choices appears
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner
             binding.environmentSpinner.adapter = adapter
         }
 
         binding.environmentSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                // Handle the selection
                 selectedEnvironment = parent?.getItemAtPosition(position).toString()
                 binding.button.isEnabled = true
                 binding.button.text = "Proceed"
@@ -56,7 +53,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
                 Toast.makeText(this, "Select the environment", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-
 
             val token = binding.editTextText.text.toString()
             binding.button.isEnabled = false

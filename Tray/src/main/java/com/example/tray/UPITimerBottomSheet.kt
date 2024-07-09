@@ -9,7 +9,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +18,6 @@ import android.widget.FrameLayout
 import androidx.fragment.app.activityViewModels
 import com.android.volley.Request
 import com.android.volley.RequestQueue
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.example.tray.ViewModels.SharedViewModel
@@ -81,7 +79,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
@@ -341,13 +338,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                 } catch (e: JSONException) {
 
                 }
-            }) { error ->
-            Log.e("Error", "Error occurred: ${error.message}")
-            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                val errorResponse = String(error.networkResponse.data)
-                Log.e("Error", "Detailed error response: $errorResponse")
-            }
-            // Handle errors here
+            }) { _ ->
         }
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)

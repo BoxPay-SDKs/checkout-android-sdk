@@ -4,7 +4,6 @@ package com.example.tray
 import android.app.Dialog
 import android.content.res.Resources
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -118,8 +117,7 @@ internal class TrayActivity : BottomSheetDialogFragment()  {
 
 
         val coordinatorLayout = dialog?.findViewById<LinearLayout>(R.id.clayout)
-        if(coordinatorLayout == null)
-            Log.d("coordinatorLayout null","Null")
+
         coordinatorLayout?.minimumHeight = Resources.getSystem().displayMetrics.heightPixels
     }
 

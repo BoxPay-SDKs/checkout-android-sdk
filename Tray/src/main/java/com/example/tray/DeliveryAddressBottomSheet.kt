@@ -536,10 +536,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             else
                 dialog.setCancelable(true)
 
-
-
-
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {

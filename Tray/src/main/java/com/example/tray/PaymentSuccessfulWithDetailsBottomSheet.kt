@@ -6,7 +6,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,9 +45,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
         binding. proceedButton.setOnClickListener(){
             val callback =  SingletonClass.getInstance().getYourObject()
-            if(callback == null){
-                Log.d("call back is null","Failed")
-            }else{
+            if(callback != null){
                 val transactionId = sharedPreferences.getString("transactionId","").toString()
                 val operationId = sharedPreferences.getString("operationId","").toString()
                 callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
@@ -95,8 +92,6 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             dialog.setCancelable(false)
-
-
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
