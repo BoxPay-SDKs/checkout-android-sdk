@@ -16,6 +16,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "SDK_VERSION", "\"1.1.8\"")
+
+        android.buildFeatures.buildConfig = true
     }
 
     buildTypes {
