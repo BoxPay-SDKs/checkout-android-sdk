@@ -2,8 +2,6 @@ package com.example.tray
 
 
 import SingletonClass
-
-
 import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
@@ -32,7 +30,6 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.webkit.WebView
-import android.widget.ArrayAdapter
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -40,13 +37,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -78,7 +72,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.jetbrains.annotations.Nullable
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.Inet6Address
@@ -1811,7 +1804,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val paymentMethodsArray = response.getJSONObject("configs").getJSONArray("paymentMethods")
 
                     try {
-                        if (paymentDetailsObject.isNull("order")) {
+                        if (!paymentDetailsObject.isNull("order")) {
 
 
                             val itemsArray = paymentDetailsObject.getJSONObject("order").getJSONArray("items")
