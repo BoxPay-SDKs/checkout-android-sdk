@@ -351,9 +351,15 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (isPostalValid()) {
-                    if (toCheckAllFieldsAreFilled()) {
-                        enableProceedButton()
+                if (s?.isEmpty() == true) {
+                    isEmailValid()
+                    binding.postalCodeEditText.background = ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
+                } else {
+                    binding.postalCodeEditText.background = ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
+                    if (isPostalValid()) {
+                        if (toCheckAllFieldsAreFilled()) {
+                            enableProceedButton()
+                        }
                     }
                 }
             }
