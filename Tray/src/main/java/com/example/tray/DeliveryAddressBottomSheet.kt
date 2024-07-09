@@ -85,7 +85,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val screenHeight = displayMetrics.heightPixels
 
         // Calculate 50% of screen height
-        val cardViewHeight = (screenHeight * 0.50).toInt()
+        val cardViewHeight = (screenHeight * 0.52).toInt()
 
         // Set the height of the CardView dynamically
         val layoutParams = binding.cardView.layoutParams
@@ -754,7 +754,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
     fun isPostalValid() : Boolean {
         val postalCode = binding.postalCodeEditText.text
-        if (postalCode.isNullOrBlank() || postalCode.length != 6) {
+        if (postalCode.length != 6) {
             binding.postalCodeErrorText.text = if (postalCode.isEmpty()) {
                 "Required"
             } else {
