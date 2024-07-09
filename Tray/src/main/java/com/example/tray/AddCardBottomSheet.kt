@@ -1055,7 +1055,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     val status = response.getJSONObject("status").getString("status")
                     val reason = response.getJSONObject("status").getString("reason")
-                    val type = response.getJSONArray("actions").getJSONObject(0).getString("type")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
@@ -1064,7 +1063,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     if (status.contains("Rejected", ignoreCase = true)) {
                         PaymentFailureScreen().show(parentFragmentManager,"FailureScreen")
                     }else{
-
+                        val type = response.getJSONArray("actions").getJSONObject(0).getString("type")
                         if (status.contains("RequiresAction", ignoreCase = true)) {
                             editor.putString("status","RequiresAction")
                         }

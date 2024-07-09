@@ -111,7 +111,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
 //        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
         transactionID = sharedPreferences.getString("transactionId","empty")
         Log.d("transactionID fetched from sharedPreferences",transactionID.toString())
-        amount = sharedPreferences.getString("currencySymbol","2")+sharedPreferences.getString("amount","empty")
+        amount = sharedPreferences.getString("currencySymbol","₹")+sharedPreferences.getString("amount","empty")
         Log.d("success screen path fetched from sharedPreferences",amount.toString())
     }
 
