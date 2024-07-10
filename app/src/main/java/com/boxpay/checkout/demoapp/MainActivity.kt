@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 intent = Intent(
                     this,
-                    Class.forName("com.example.tray.Check")
+                    Class.forName("com.boxpay.checkout.sdk.Check")
                 )
                 startActivity(intent)
                 finish()
