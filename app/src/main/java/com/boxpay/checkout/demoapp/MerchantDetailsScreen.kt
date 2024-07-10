@@ -74,7 +74,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                 val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true)
                 checkout.display()
             }else if(selectedEnvironment == "test"){
-                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false)
+                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false, true)
                 checkout.display()
             }
         }
