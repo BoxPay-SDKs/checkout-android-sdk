@@ -1,16 +1,15 @@
 package com.example.tray.adapters
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.tray.R
 import com.example.tray.databinding.OrderSummaryItemBinding
 import com.squareup.picasso.Picasso
 
 class OrderSummaryItemsAdapter(
-    private val imagesUrls: MutableList<String>,
+    private val imagesUrls: MutableList<String>?,
     private val items: MutableList<String>,
     private val prices: MutableList<String>,
     private val context: Context
@@ -22,13 +21,12 @@ class OrderSummaryItemsAdapter(
 
         fun bind(position: Int) {
             binding.apply {
-                Log.d("imageURL",imagesUrls[position])
-                if(imagesUrls[position].isNotEmpty()) {
+                if(imagesUrls != null && imagesUrls[position].isNotEmpty()) {
                     Picasso.get()
                         .load(imagesUrls[position])
                         .into(binding.itemImage)
                 } else {
-                    binding.itemImage.visibility = View.GONE
+                    binding.itemImage.setImageResource(R.drawable.ic_placeholder_image )
                 }
                 val currencySymbol = sharedPreferences.getString("currencySymbol","")
                 itemPrice.text = currencySymbol+prices[position]
