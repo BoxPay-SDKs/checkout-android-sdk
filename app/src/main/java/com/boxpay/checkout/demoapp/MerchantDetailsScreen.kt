@@ -8,8 +8,8 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.boxpay.checkout.BoxPayCheckout
-import com.boxpay.checkout.databinding.ActivityMerchantDetailsScreenBinding
+import com.boxpay.checkout.demoapp.databinding.ActivityMerchantDetailsScreenBinding
+import com.boxpay.checkout.sdk.BoxPayCheckout
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
@@ -28,7 +28,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
 
         ArrayAdapter.createFromResource(
             this,
-            com.boxpay.checkout.R.array.environment_options,
+            R.array.environment_options,
             android.R.layout.simple_spinner_item
         ).also { adapter ->
             // Specify the layout to use when the list of choices appears

@@ -4,9 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.boxpay.checkout.FailureScreenForTesting
-import com.boxpay.checkout.SuccessScreenForTesting
 import com.boxpay.checkout.demoapp.databinding.ActivityMainBinding
+import com.boxpay.checkout.sdk.FailureScreenForTesting
+import com.boxpay.checkout.sdk.SuccessScreenForTesting
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 
 
