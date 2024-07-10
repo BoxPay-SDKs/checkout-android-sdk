@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidCheckOutSDK</string>
+    <string name="app_name">BoxPay Checkout Demo</string>
     <string-array name="environment_options">
         <item>test</item>
         <item>sandbox</item>
