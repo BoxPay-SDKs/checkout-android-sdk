@@ -1,7 +1,6 @@
 package com.boxpay.checkout.sdk.adapters
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -10,7 +9,7 @@ import com.boxpay.checkout.sdk.databinding.OrderSummaryItemBinding
 import com.squareup.picasso.Picasso
 
 class OrderSummaryItemsAdapter(
-    private val imagesUrls: MutableList<String>,
+    private val imagesUrls: MutableList<String>?,
     private val items: MutableList<String>,
     private val prices: MutableList<String>,
     private val context: Context
@@ -22,8 +21,7 @@ class OrderSummaryItemsAdapter(
 
         fun bind(position: Int) {
             binding.apply {
-                Log.d("imageURL",imagesUrls[position])
-                if(imagesUrls != null && imagesUrls[position].isNotEmpty()) {
+                if(!imagesUrls.isNullOrEmpty() && imagesUrls[position] != "null" && imagesUrls[position].isNotEmpty()) {
                     Picasso.get()
                         .load(imagesUrls[position])
                         .into(binding.itemImage)
