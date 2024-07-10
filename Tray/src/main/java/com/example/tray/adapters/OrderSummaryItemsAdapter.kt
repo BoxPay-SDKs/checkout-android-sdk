@@ -23,11 +23,14 @@ class OrderSummaryItemsAdapter(
         fun bind(position: Int) {
             binding.apply {
                 Log.d("imageURL",imagesUrls[position])
-                Picasso.get()
-                    .load(imagesUrls[position])
-                    .into(binding.itemImage)
+                if(imagesUrls[position].isNotEmpty()) {
+                    Picasso.get()
+                        .load(imagesUrls[position])
+                        .into(binding.itemImage)
+                } else {
+                    binding.itemImage.visibility = View.GONE
+                }
                 val currencySymbol = sharedPreferences.getString("currencySymbol","")
-//                itemImage.setImageResource(images[position])
                 itemPrice.text = currencySymbol+prices[position]
                 itemName.text = items[position]
             }
