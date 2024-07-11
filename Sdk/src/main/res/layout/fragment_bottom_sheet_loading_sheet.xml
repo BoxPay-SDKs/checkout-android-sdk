@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bottom_sheet_bg">
+
+    <FrameLayout
+        android:id="@+id/frameLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bottom_sheet_bg">
+
+        <RelativeLayout
+            android:id="@+id/constraintLayout123"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bottom_sheet_bg">
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/boxpayLogoLottie"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                app:lottie_fileName="boxpayLogo.json" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/boxpayLogoLottie"
+                android:layout_centerHorizontal="true"
+                android:fontFamily="@font/poppins"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="10dp"
+                android:text="Loading"
+                android:textColor="#4F4D55"/>
+
+
+        </RelativeLayout>
+
+
+    </FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

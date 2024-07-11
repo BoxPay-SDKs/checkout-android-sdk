@@ -9,4 +9,4 @@ pluginManagement {
 
 rootProject.name = "AndroidCheckOutSDK"
 include(":app")
-include(":Tray")
+include(":Sdk")
