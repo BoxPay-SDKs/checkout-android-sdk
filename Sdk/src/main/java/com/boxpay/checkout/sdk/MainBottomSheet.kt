@@ -325,9 +325,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun startFunctionCalls() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
+                delay(4000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 4 seconds
-                delay(4000)
             }
         }
     }
@@ -357,17 +357,25 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             { response ->
                 try {
                     val status = response.getString("status")
+                    val reason = response.getString("statusReason")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
-                    if (status.contains("Rejected", ignoreCase = true) || status.contains("failed",true)) {
-                        PaymentFailureScreen().show(parentFragmentManager, "FailureScreen")
+                    if (status.equals("Rejected", ignoreCase = true) || status.equals("failed",true)) {
                         job?.cancel()
+                        val cleanedMessage = reason.substringAfter(":")
+                        PaymentFailureScreen(
+                            function = {
+                                countdownTimer.cancel()
+                                showQRCode()
+                            },
+                            errorMessage = cleanedMessage
+                        ).show(parentFragmentManager, "FailureScreen")
                     } else {
-                        if (status.contains("RequiresAction", ignoreCase = true)) {
+                        if (status.equals("RequiresAction", ignoreCase = true)) {
                             editor.putString("status", "RequiresAction")
                             editor.apply()
-                        } else if (status.contains("Approved", ignoreCase = true) || status.contains("paid",true)) {
+                        } else if (status.equals("Approved", ignoreCase = true) || status.equals("paid",true)) {
                             editor.putString("status", "Success")
                             editor.apply()
 
@@ -1005,10 +1013,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val imageView: ImageView = binding.qrCodeImageView
                 imageView.setImageBitmap(bitmap)
 //                logJsonObject(response)
+                removeLoadingState()
                 startTimer()
                 startFunctionCalls()
-
-                removeLoadingState()
             },
             Response.ErrorListener { error ->
                 // Handle error

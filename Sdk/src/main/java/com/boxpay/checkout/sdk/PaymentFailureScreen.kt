@@ -15,7 +15,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
-internal class PaymentFailureScreen : BottomSheetDialogFragment() {
+internal class PaymentFailureScreen(val function: () -> Unit = {}, val errorMessage: String = "") : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentPaymentFailureScreenBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
 
@@ -28,7 +28,9 @@ internal class PaymentFailureScreen : BottomSheetDialogFragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentPaymentFailureScreenBinding.inflate(layoutInflater,container,false)
+        binding.textView12.text = errorMessage
         binding.retryButton.setOnClickListener(){
+            function()
             dismiss()
         }
         return binding.root
