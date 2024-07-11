@@ -9,11 +9,6 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.work.CoroutineWorker
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.WorkerParameters
-import androidx.work.workDataOf
 import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
@@ -21,14 +16,6 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.gson.GsonBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.ResponseBody
-import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONObject
 
 class Check : AppCompatActivity() {
@@ -44,27 +31,6 @@ class Check : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-//        val bottomSheet = QuickPayBottomSheet()
-//        bottomSheet.show(supportFragmentManager,"QuickPayTesting")
-        CoroutineScope(Dispatchers.Main).launch {
-            val latestVersion =
-                getLatestVersionFromJitPack("com.github.BoxPay-SDKs", "checkout-android-sdk")
-            val currentVersion = BuildConfig.SDK_VERSION
-            if (latestVersion != currentVersion) {
-                enqueueSdkDownload(applicationContext, latestVersion)
-            }
-        }
-
-        val prefs = applicationContext.getSharedPreferences("sdk_prefs", Context.MODE_PRIVATE)
-        val newSdkAvailable = prefs.getBoolean("newSdkAvailable", false)
-        if (newSdkAvailable) {
-            // Update the SDK
-            updateSdk()
-            with(prefs.edit()) {
-                putBoolean("newSdkAvailable", false)
-                apply()
-            }
-        }
 
         makePaymentRequest(this)
 
