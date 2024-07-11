@@ -782,6 +782,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 // Handle onFinish event if needed
                 binding.qrCodeTimer.text = "00:00"
                 binding.refreshButton.visibility = View.VISIBLE
+                job?.cancel()
                 blurImageView()
             }
         }

@@ -125,7 +125,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     "Upi"
                 )
                 val textNow = s.toString()
-                if (textNow.isNotBlank()) {
+                if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{2,64}"))) {
                     binding.proceedButtonRelativeLayout.isEnabled = true
                     binding.proceedButton.isEnabled = true
                     binding.proceedButtonRelativeLayout.setBackgroundColor(
@@ -144,6 +144,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         )
                     )
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                } else {
+                    disableProceedButton()
+                    binding.ll1InvalidUPI.visibility = View.VISIBLE
                 }
             }
 
@@ -524,8 +527,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         )
                     ) {
                         binding.textView4.text = "Payment is already done"
-                    } else {
-                        binding.textView4.text = errorMessage
                     }
                     hideLoadingInButton()
                 }
