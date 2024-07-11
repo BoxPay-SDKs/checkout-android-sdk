@@ -326,8 +326,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
-                // Delay for 5 seconds
-                delay(2000)
+                // Delay for 4 seconds
+                delay(4000)
             }
         }
     }
@@ -352,24 +352,22 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun fetchStatusAndReason(url: String) {
-
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url, null,
             { response ->
                 try {
-                    val status = response.getJSONObject("status").getString("status")
-                    val reason = response.getJSONObject("status").getString("reason")
+                    val status = response.getString("status")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
-                    if (status.contains("Rejected", ignoreCase = true)) {
+                    if (status.contains("Rejected", ignoreCase = true) || status.contains("failed",true)) {
                         PaymentFailureScreen().show(parentFragmentManager, "FailureScreen")
+                        job?.cancel()
                     } else {
-
                         if (status.contains("RequiresAction", ignoreCase = true)) {
                             editor.putString("status", "RequiresAction")
                             editor.apply()
-                        } else if (status.contains("Approved", ignoreCase = true)) {
+                        } else if (status.contains("Approved", ignoreCase = true) || status.contains("paid",true)) {
                             editor.putString("status", "Success")
                             editor.apply()
 
@@ -378,6 +376,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 parentFragmentManager,
                                 "PaymentStatusBottomSheetWithDetails"
                             )
+                            job?.cancel()
                         }
                     }
                 } catch (e: JSONException) {
@@ -1007,6 +1006,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 imageView.setImageBitmap(bitmap)
 //                logJsonObject(response)
                 startTimer()
+                startFunctionCalls()
 
                 removeLoadingState()
             },
