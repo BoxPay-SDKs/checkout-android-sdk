@@ -17,7 +17,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
 
-class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false, private val testEnabled : Boolean = false){
+class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false){
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
@@ -27,9 +27,6 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         if(sandboxEnabled){
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
-        }else if (testEnabled){
-            editor.putString("baseUrl","test-apis.boxpay.tech")
-            this.BASE_URL = "test-apis.boxpay.tech"
         } else {
             editor.putString("baseUrl","apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
