@@ -243,7 +243,7 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/emailErrorText" />
 
-                        <AutoCompleteTextView
+                        <Spinner
                             android:id="@+id/countryEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -253,7 +253,6 @@
                             android:gravity="center_vertical"
                             android:hint="Country"
                             android:inputType="text"
-                            android:padding="8dp"
                             android:textColor="#000000"
                             android:textColorHint="#7F7D83"
                             android:textSize="14sp"
@@ -344,6 +343,20 @@
                             app:layout_constraintTop_toBottomOf="@+id/stateTextView"
                             tools:ignore="TouchTargetSizeCheck" />
 
+                        <TextView
+                            android:id="@+id/stateErrorText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:lineSpacingExtra="-1sp"
+                            android:text="Required"
+                            android:visibility="gone"
+                            android:textColor="#ffff4d4f"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/stateEditText" />
+
 
                         <TextView
                             android:id="@+id/cityTextView"
@@ -379,6 +392,20 @@
                             tools:ignore="TouchTargetSizeCheck" />
 
                         <TextView
+                            android:id="@+id/cityErrortext"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:lineSpacingExtra="-1sp"
+                            android:text="Required"
+                            android:visibility="gone"
+                            android:textColor="#ffff4d4f"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/cityEditText" />
+
+                        <TextView
                             android:id="@+id/addressTextView"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -409,6 +436,20 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/addressTextView"
                             tools:ignore="TouchTargetSizeCheck" />
+
+                        <TextView
+                            android:id="@+id/address1ErrorText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center_vertical"
+                            android:lineSpacingExtra="-1sp"
+                            android:text="Required"
+                            android:visibility="gone"
+                            android:textColor="#ffff4d4f"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/addressEditText1" />
 
                         <TextView
                             android:id="@+id/addressTextView2"

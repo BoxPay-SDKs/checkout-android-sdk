@@ -1,6 +1,5 @@
 package com.boxpay.checkout.sdk
 
-import SingletonClass
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity

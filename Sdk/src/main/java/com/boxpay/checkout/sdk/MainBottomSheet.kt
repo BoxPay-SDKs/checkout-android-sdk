@@ -718,8 +718,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         binding.deliveryAddressConstraintLayout.setOnClickListener() {
             if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                val cleanedPhone = countryCode?.second?.removePrefix("+")
-                editor.putString("phoneNumber", sharedPreferences.getString("phoneNumber","")?.removePrefix(cleanedPhone ?: ""))
+                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber","")?.removePrefix(countryCode?.second ?: "")
+                editor.putString("phoneNumber", confirmPhoneNumber)
                 editor.apply()
             }
             val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
@@ -729,8 +729,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         binding.proceedButton.setOnClickListener() {
             if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                val cleanedPhone = countryCode?.second?.removePrefix("+")
-                editor.putString("phoneNumber", sharedPreferences.getString("phoneNumber","")?.removePrefix(cleanedPhone ?: ""))
+                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber","")?.removePrefix(countryCode?.second ?: "")
+                editor.putString("phoneNumber", confirmPhoneNumber)
                 editor.apply()
             }
             val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
@@ -1847,8 +1847,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             editor.putString("countryCodePhoneNum", countryCode?.second)
                         }
                         if (!shopperObject.isNull("phoneNumber")) {
-                            val cleanedPhone = countryCode?.second?.removePrefix("+")
-                            editor.putString("phoneNumber", shopperObject.getString("phoneNumber").removePrefix(cleanedPhone ?: ""))
+                            val confirmPhoneNumber = sharedPreferences.getString("phoneNumber","")?.removePrefix(countryCode?.second ?: "")
+                            editor.putString("phoneNumber", confirmPhoneNumber)
                         }
                         if (!deliveryAddress.isNull("city")) {
                             editor.putString("city", deliveryAddress.getString("city"))
@@ -2026,12 +2026,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun updateBottomSheet() {
         binding.nameTextView.text = sharedPreferences.getString("firstName", "") + " " + sharedPreferences.getString("lastName", "")
-        binding.mobileNumberTextViewMain.text = "${
-            sharedPreferences.getString(
-                "countryCodePhoneNum",
-                null
-            )
-        }${sharedPreferences.getString("phoneNumber", null)}"
+        binding.mobileNumberTextViewMain.text = sharedPreferences.getString("phoneNumber", null)
         binding.addressTextViewMain.text = if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
             "${sharedPreferences.getString("address1", null)}\n" +
                     "${sharedPreferences.getString("address2", null)}\n" +
@@ -2047,9 +2042,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         binding.cardView8.visibility = View.VISIBLE
         countryCode = Pair(sharedPreferences.getString("countryName",null) ?: "",sharedPreferences.getString("indexCountryCodePhone",null) ?: "")
-        val shopperPhoneNumber = countryCode?.second + sharedPreferences.getString("phoneNumber",null)
-        editor.putString("phoneNumber", shopperPhoneNumber)
-        editor.apply()
 
         binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
         binding.textView12.visibility = View.VISIBLE
