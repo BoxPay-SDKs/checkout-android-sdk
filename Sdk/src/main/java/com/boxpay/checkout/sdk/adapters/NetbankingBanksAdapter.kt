@@ -4,9 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
-
 import android.os.Handler
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -22,7 +20,6 @@ import coil.decode.SvgDecoder
 import coil.load
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.R
@@ -30,7 +27,6 @@ import com.boxpay.checkout.sdk.databinding.NetbankingBanksItemBinding
 import com.boxpay.checkout.sdk.dataclasses.NetbankingDataClass
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
-import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
 
@@ -57,7 +53,6 @@ class NetbankingBanksAdapter(
 
                 // Check if the background drawable is a LayerDrawable
                 if (radioButtonDrawable is LayerDrawable) {
-                    Log.d("Drawable found","success")
                     val layerDrawable = radioButtonDrawable as LayerDrawable
 
                     // Modify the solid color of the first item (assuming it's a GradientDrawable)
@@ -66,8 +61,6 @@ class NetbankingBanksAdapter(
 
                     // Apply the modified drawable back to the radioButton ImageView
                     radioButton.background = layerDrawable
-                }else{
-                    Log.d("Drawable found","failure")
                 }
 
                 val bankName = banksDetails[position].bankName
@@ -75,7 +68,6 @@ class NetbankingBanksAdapter(
                 val displayMetrics = context.resources.displayMetrics
                 val screenWidth = displayMetrics.widthPixels
                 val averageWidthPerCharacter = bankNameTextView.paint.measureText("A")
-                Log.d("char before ellipsis",screenWidth.toString()+" "+averageWidthPerCharacter.toString())
 
                 val maxCharacters = (screenWidth / averageWidthPerCharacter).toInt()
 
@@ -85,7 +77,6 @@ class NetbankingBanksAdapter(
                     bankNameTextView.text = bankName
                 }
 
-                Log.d("imageURL",banksDetails[position].bankImage)
 
 
                 binding.bankLogo.load(bankImage){
@@ -93,17 +84,8 @@ class NetbankingBanksAdapter(
                     size(80, 80)
                 }
 
-
-
-
-
-
-
-
                 if(position == checkedPosition){
-                    Log.d("Drawable found","failure if condition wallet")
                     if (radioButtonDrawable is LayerDrawable) {
-                        Log.d("Drawable found","success")
                         val layerDrawable = radioButtonDrawable as LayerDrawable
 
                         // Modify the solid color of the first item (assuming it's a GradientDrawable)
@@ -112,11 +94,8 @@ class NetbankingBanksAdapter(
 
                         // Apply the modified drawable back to the radioButton ImageView
                         radioButton.background = layerDrawable
-                    }else{
-                        Log.d("Drawable found","failure")
                     }
                 }else{
-                    Log.d("Drawable found","failure else condition netbanking")
                     radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
                 }
                 // Set a click listener for the RadioButton
@@ -148,7 +127,6 @@ class NetbankingBanksAdapter(
 
                 binding.root.setOnLongClickListener { view ->
 
-                    Log.d("long click detected","net banking adapter")
                     balloon.showAlignTop(binding.root)
                     balloon.dismissWithDelay(2000L)
                     true // Indicate that the long click event has been consumed
@@ -190,7 +168,6 @@ class NetbankingBanksAdapter(
     private fun callUIAnalytics(context: Context, event: String,paymentSubType : String, paymentType : String) {
         val environmentFetched = sharedPreferences.getString("environment", "null")
 
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
         val browserLanguage = Locale.getDefault().toString()
@@ -218,24 +195,10 @@ class NetbankingBanksAdapter(
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${environmentFetched}apis.boxpay.tech/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                // Handle response
-                try {
-
-                } catch (e: JSONException) {
-                    Log.d("status check error", e.toString())
-                }
-
+            Response.Listener { _ ->
+                // no op
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
-                }
+            Response.ErrorListener { _ ->
 
             }) {
 
@@ -258,7 +221,7 @@ class NetbankingBanksAdapter(
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }
@@ -298,7 +261,6 @@ class NetbankingBanksAdapter(
 
             // Check if the background drawable is a LayerDrawable
             if (radioButtonDrawable is LayerDrawable) {
-                Log.d("Drawable found","success")
                 val layerDrawable = radioButtonDrawable as LayerDrawable
 
                 // Modify the solid color of the first item (assuming it's a GradientDrawable)
@@ -307,8 +269,6 @@ class NetbankingBanksAdapter(
 
                 // Apply the modified drawable back to the radioButton ImageView
                 imageView.background = layerDrawable
-            }else{
-                Log.d("Drawable found","failure in handle click")
             }
             // Change the background of the clicked RadioButton
             val clickedViewHolder =

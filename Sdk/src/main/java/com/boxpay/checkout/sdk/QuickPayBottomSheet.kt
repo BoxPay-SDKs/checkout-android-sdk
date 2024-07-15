@@ -11,7 +11,6 @@ import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.StyleSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +22,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -126,7 +124,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 try {
                     if (response.length() >= 1) {
                         val latestUsedMethod = response.getJSONObject(0)
-                        logJsonObject(latestUsedMethod)
                         val type = latestUsedMethod.getString("type")
                         val brand = latestUsedMethod.getString("brand")
                         displayValue = latestUsedMethod.getString("displayValue")
@@ -182,7 +179,7 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }
@@ -207,6 +204,9 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
+
+    private fun postRequestForUPICollect(context: Context, userVPA: String) {
+        val requestQueue = Volley.newRequestQueue(context)
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
@@ -265,33 +265,12 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
-                // Handle response
-                // Log.d("Response of Successful Post API call", response.toString())
 
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
-                logJsonObject(response)
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
-                    if (errorMessage.contains(
-                            "Session is no longer accepting the payment as payment is already completed",
-                            ignoreCase = true
-                        )
-                    ) {
-
-                    } else {
-
-                    }
-
-                }
-
 
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -329,8 +308,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
 
             val window = d.window
             window?.apply {
@@ -382,9 +359,5 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             })
         }
         return dialog
-    }
-
-    companion object {
-
     }
 }

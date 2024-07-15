@@ -13,7 +13,6 @@ import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -539,25 +538,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                // Handle response
-
-                try {
-
-                } catch (e: JSONException) {
-
-                }
-
+            Response.Listener { _ ->
+                // no op
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
-
+            Response.ErrorListener { _ ->
+                // no op
             }) {
 
         }.apply {
@@ -649,25 +634,19 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
             } catch (e: Exception) {
-                e.printStackTrace()
+
             }
 
         }, { error ->
 
-            Log.e("Error", "Error occurred: ${error.message}")
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
-                Log.e("Error", " fetching wallets error response: $errorResponse")
                 binding.errorField.visibility = View.VISIBLE
                 binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
                 hideLoadingInButton()
             }
         })
         queue.add(jsonObjectAll)
-    }
-
-    private fun applyLoadingScreenState() {
-
     }
 
     override fun onCancel(dialog: DialogInterface) {
@@ -793,13 +772,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 fetchAndUpdateApiInPopularWallets()
                 removeLoadingScreenState()
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                }
+            Response.ErrorListener { _ ->
+
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -958,10 +932,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
                     binding.errorField.visibility = View.VISIBLE
                     binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
                     hideLoadingInButton()
@@ -1046,7 +1018,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }

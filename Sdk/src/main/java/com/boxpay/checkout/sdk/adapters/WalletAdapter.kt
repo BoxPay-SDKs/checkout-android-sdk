@@ -16,7 +16,6 @@ import coil.decode.SvgDecoder
 import coil.load
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.R
@@ -24,7 +23,6 @@ import com.boxpay.checkout.sdk.databinding.WalletItemBinding
 import com.boxpay.checkout.sdk.dataclasses.WalletDataClass
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
-import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
 
@@ -53,27 +51,21 @@ class WalletAdapter(
 
                 // Check if the background drawable is a LayerDrawable
                 if (radioButtonDrawable is LayerDrawable) {
-                    Log.d("Drawable found","success")
                     val layerDrawable = radioButtonDrawable as LayerDrawable
 
                     // Modify the solid color of the first item (assuming it's a GradientDrawable)
                     val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
-                    Log.d("set color function",sharedPreferences.getString("primaryButtonColor","#0D8EFF").toString())
                     shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
 
                     // Apply the modified drawable back to the radioButton ImageView
                     radioButton.background = layerDrawable
-                }else{
-                    Log.d("Drawable found","failure")
                 }
-
 
                 val walletName = walletDetails[position].walletName
                 val walletImage = walletDetails[position].walletImage
                 val displayMetrics = context.resources.displayMetrics
                 val screenWidth = displayMetrics.widthPixels
                 val averageWidthPerCharacter = walletNameTextView.paint.measureText("A")
-                Log.d("char before ellipsis",screenWidth.toString()+" "+averageWidthPerCharacter.toString())
 
                 val maxCharacters = (screenWidth / averageWidthPerCharacter).toInt()
 
@@ -89,9 +81,7 @@ class WalletAdapter(
 
 
                 if(position == checkedPosition){
-                    Log.d("Drawable found","failure if condition wallet")
                     if (radioButtonDrawable is LayerDrawable) {
-                        Log.d("Drawable found","success")
                         val layerDrawable = radioButtonDrawable as LayerDrawable
 
                         // Modify the solid color of the first item (assuming it's a GradientDrawable)
@@ -100,26 +90,16 @@ class WalletAdapter(
 
                         // Apply the modified drawable back to the radioButton ImageView
                         radioButton.background = layerDrawable
-                    }else{
-                        Log.d("Drawable found","failure")
                     }
                 }else{
-                    Log.d("Drawable found","failure else condition wallet")
                     radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
                 }
 
-//                if(position == checkedPosition){
-//                    radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
-//                }else{
-//                    radioButton.setBackgroundResource(R.drawable.custom_radio_checked)
-//                }
 
                 val radioButtonColor = sharedPreferences.getString("primaryButtonColor","#0D8EFF")
-                Log.d("radioButtonColor wallet",radioButtonColor.toString())
 
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
-                    Log.d("keyboard should hide now","WalletAdapter")
                     val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                     inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
                     handleRadioButtonClick(adapterPosition,binding.radioButton)
@@ -173,7 +153,6 @@ class WalletAdapter(
     private fun callUIAnalytics(context: Context, event: String,paymentSubType : String, paymentType : String) {
         val environmentFetched = sharedPreferences.getString("environment", "null")
 
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
         val browserLanguage = Locale.getDefault().toString()
@@ -201,26 +180,11 @@ class WalletAdapter(
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${environmentFetched}apis.boxpay.tech/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                // Handle response
-
-                try {
-
-                } catch (e: JSONException) {
-                    Log.d("status check error", e.toString())
-                }
-
+            Response.Listener { _ ->
+                // no op
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
-                }
-
+            Response.ErrorListener { _ ->
+               // no op
             }) {
 
         }.apply {
@@ -242,7 +206,6 @@ class WalletAdapter(
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
         }
         return null
     }

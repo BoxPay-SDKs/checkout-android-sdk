@@ -100,9 +100,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-
-
-
             val screenHeight = requireContext().resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.9 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
@@ -942,7 +939,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
         }
         return null
     }

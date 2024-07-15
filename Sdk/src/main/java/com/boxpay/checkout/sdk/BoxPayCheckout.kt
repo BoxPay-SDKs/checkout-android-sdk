@@ -79,18 +79,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         requestQueue.add(jsonObjectRequest)
 
     }
-    fun extractMessageFromErrorResponse(response: String): String? {
-        try {
-            // Parse the JSON string
-            val jsonObject = JSONObject(response)
-            // Retrieve the value associated with the "message" key
-            return jsonObject.getString("message")
-        } catch (e: Exception) {
-            // Handle JSON parsing exception
-            e.printStackTrace()
-        }
-        return null
-    }
+
 
     private fun openBottomSheet(){
         initializingCallBackFunctions()

@@ -201,9 +201,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Method.POST, "https://"+baseUrl + "/v0/platform/vpa-validation", requestBody,
             Response.Listener { response ->
                 try{
-                    val statusUserVPA = response.getJSONObject("status").getString("status")
+                    val statusUserVPA = response.getBoolean("vpaValid")
 
-                    if(!statusUserVPA.contains("Rejected",ignoreCase = true)){
+                    if(statusUserVPA){
                         binding.ll1InvalidUPI.visibility = View.GONE
                         postRequest(requireContext(),userVPA)
                     }else{
@@ -602,7 +602,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }

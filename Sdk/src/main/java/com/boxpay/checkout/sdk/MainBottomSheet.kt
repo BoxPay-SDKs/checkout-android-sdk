@@ -20,7 +20,6 @@ import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,7 +42,6 @@ import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -144,7 +142,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 return inetAddress.hostAddress
             }
         } catch (e: Exception) {
-            e.printStackTrace()
         }
         return null
     }
@@ -161,7 +158,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+
         }
         return ""
     }
@@ -348,7 +345,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             // Decode URL
             URLDecoder.decode(decodedString, "UTF-8")
         } catch (e: Exception) {
-            e.printStackTrace()
             ""
         }
     }
@@ -390,7 +386,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         }
                     }
                 } catch (e: JSONException) {
-                    e.printStackTrace()
+
                 }
             }) { _ ->
 
@@ -1210,19 +1206,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         requestQueue.add(jsonObjectRequest)
     }
 
-    fun extractMessageFromErrorResponse(response: String): String? {
-        try {
-            // Parse the JSON string
-            val jsonObject = JSONObject(response)
-            // Retrieve the value associated with the "message" key
-            return jsonObject.getString("message")
-        } catch (e: Exception) {
-            // Handle JSON parsing exception
-            e.printStackTrace()
-        }
-        return null
-    }
-
     private fun getPopularImageViewByNum(num: Int): ImageView {
         return when (num) {
             1 -> binding.popularUPIImageView1
@@ -1365,13 +1348,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )
                 }
             },
-            Response.ErrorListener { error ->
+            Response.ErrorListener { _ ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-
-                }
-
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -1554,10 +1532,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             dialog.setCancelable(false)
 
-
-
-
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -1706,7 +1680,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         }
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+
                 }
 
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
@@ -1944,7 +1918,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     "Invalid token/selected environment.\nPlease press back button and try again",
                     Toast.LENGTH_LONG
                 ).show()
-                e.printStackTrace()
             }
 
         }, { error ->
@@ -1953,11 +1926,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 "Invalid token/selected environment.\nPlease press back button and try again",
                 Toast.LENGTH_LONG
             ).show()
-            Log.e("Error", "Error occurred: ${error.message}")
-            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                val errorResponse = String(error.networkResponse.data)
-                Log.e("Error", "fetching methods error response: $errorResponse")
-            }
             dismiss()
         })
         queue.add(jsonObjectAll)

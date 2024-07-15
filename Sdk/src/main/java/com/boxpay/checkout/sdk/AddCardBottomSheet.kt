@@ -922,15 +922,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                try {
-                    logJsonObject(response)
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                }
+            Response.Listener { _ ->
+               // no op
             },
-            Response.ErrorListener { error ->
-
+            Response.ErrorListener { _ ->
+                // no op
             }) {
 
         }.apply {
@@ -1123,7 +1119,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
         }
         return null
     }

@@ -47,7 +47,6 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
 
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {

@@ -3,7 +3,6 @@ package com.boxpay.checkout.sdk
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,22 +40,13 @@ internal class WalletLoadingBottomSheet : BottomSheetDialogFragment() {
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
-
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
-
 
             val screenHeight = resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.7 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false

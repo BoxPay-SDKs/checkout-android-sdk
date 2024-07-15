@@ -52,7 +52,6 @@ internal class PaymentProcessingBottomSheet :BottomSheetDialogFragment() {
             dialog.setCancelable(false)
 
 
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
