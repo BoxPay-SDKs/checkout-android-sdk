@@ -1711,12 +1711,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
 
-                val originalAmount = orderObject?.getString("originalAmount")
+                val originalAmount = orderObject?.getString("originalAmount") ?: "0"
 
-                val shippingCharges = orderObject?.getString("shippingAmount")
+                val shippingCharges = orderObject?.getString("shippingAmount") ?: "0"
 
 
-                val taxes = orderObject?.getString("taxAmount")
+                val taxes = orderObject?.getString("taxAmount") ?: "0"
 
                 val additionalDetails = response.getJSONObject("configs").getJSONArray("additionalFieldSets")
 
@@ -1730,8 +1730,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (paymentDetailsObject.isNull("order"))
                     orderSummaryEnable = false
 
-                if (!orderSummaryEnable) {
-                    binding.cardView3.visibility = View.GONE
+                if (!orderSummaryEnable && !totalAmount.isNullOrEmpty()) {
+                    binding.textView9.text = "Payment Summary"
+                    binding.numberOfItems.text = "Total"
                 }
 
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
@@ -1743,17 +1744,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 transactionAmount = totalAmount
 
 
-                val itemsArray = orderObject?.getJSONArray("items")
+                val itemsArray = if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
 
 
                 try {
-                    for (i in 0 until itemsArray!!.length()) {
-                        val itemObject = itemsArray.getJSONObject(i)
+                    if (itemsArray != null) {
+                        for (i in 0 until itemsArray.length()) {
+                            val itemObject = itemsArray.getJSONObject(i)
 
-                        items.add(itemObject.getString("itemName"))
-                        prices.add(itemObject.getString("amountWithoutTaxLocale"))
-                        val quantity = itemObject.getInt("quantity")
-                        totalQuantity += quantity
+                            items.add(itemObject.getString("itemName"))
+                            prices.add(itemObject.getString("amountWithoutTaxLocale"))
+                            val quantity = itemObject.getInt("quantity")
+                            totalQuantity += quantity
+                        }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -1773,25 +1776,46 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 transactionAmount = totalAmount.toString()
 
                 binding.unopenedTotalValue.text = "${currencySymbol}${totalAmount}"
-                if (totalQuantity == 1)
+                if (totalQuantity == 0) {
+                    binding.numberOfItems.text = "Total"
+                }
+                else if (totalQuantity == 1)
                     binding.numberOfItems.text = "${totalQuantity} item"
                 else
                     binding.numberOfItems.text = "${totalQuantity} items"
                 binding.ItemsPrice.text = "${currencySymbol}${totalAmount}"
 
                 if (originalAmount != totalAmount) {
-                    binding.subtotalTextView.text = "${currencySymbol}${originalAmount}"
-                    binding.subTotalRelativeLayout.visibility = View.VISIBLE
+                    if (originalAmount == "0") {
+                        binding.subTotalRelativeLayout.visibility = View.GONE
+                    } else {
+                        binding.subtotalTextView.text = "${currencySymbol}${originalAmount}"
+                        binding.subTotalRelativeLayout.visibility = View.VISIBLE
+                    }
                 }
 
                 if (taxes != "null") {
-                    binding.taxTextView.text = "${currencySymbol}${taxes}"
-                    binding.taxesRelativeLayout.visibility = View.VISIBLE
+                    if (taxes == "0") {
+                        binding.taxesRelativeLayout.visibility = View.GONE
+                    } else {
+                        binding.taxTextView.text = "${currencySymbol}${taxes}"
+                        binding.taxesRelativeLayout.visibility = View.VISIBLE
+                    }
+
                 }
 
                 if (shippingCharges != "null") {
-                    binding.shippingChargesTextView.text = "${currencySymbol}${shippingCharges}"
-                    binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
+                    if (shippingCharges == "0") {
+                        binding.shippingChargesRelativeLayout.visibility = View.GONE
+                    } else {
+                        binding.shippingChargesTextView.text = "${currencySymbol}${shippingCharges}"
+                        binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
+                    }
+                }
+
+                if (originalAmount == "0" && shippingCharges == "0" && taxes == "0") {
+                    binding.arrowIcon.visibility = View.GONE
+                    binding.orderSummaryConstraintLayout.setOnClickListener(null)
                 }
 
                 val moneyObject = paymentDetailsObject.getJSONObject("money")
@@ -1847,8 +1871,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             editor.putString("countryCodePhoneNum", countryCode?.second)
                         }
                         if (!shopperObject.isNull("phoneNumber")) {
-                            val confirmPhoneNumber = sharedPreferences.getString("phoneNumber","")?.removePrefix(countryCode?.second ?: "")
-                            editor.putString("phoneNumber", confirmPhoneNumber)
+                            editor.putString("phoneNumber", "+" + shopperObject.getString("phoneNumber"))
                         }
                         if (!deliveryAddress.isNull("city")) {
                             editor.putString("city", deliveryAddress.getString("city"))
@@ -1869,12 +1892,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (!paymentDetailsObject.isNull("order")) {
 
 
-                            val itemsArray = paymentDetailsObject.getJSONObject("order").getJSONArray("items")
+                            val itemsArray = if (paymentDetailsObject.getJSONObject("order").optJSONArray("items") != null) paymentDetailsObject.getJSONObject("order").optJSONArray("items") else null
 
 
-                            for (i in 0 until itemsArray.length()) {
-                                val imageURL = itemsArray.getJSONObject(i).getString("imageUrl")
-                                imagesUrls.add(imageURL)
+                            if (itemsArray != null) {
+                                for (i in 0 until itemsArray.length()) {
+                                    val imageURL = itemsArray.getJSONObject(i).getString("imageUrl")
+                                    imagesUrls.add(imageURL)
+                                }
                             }
                         }
                     } catch (e: Exception) {
