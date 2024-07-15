@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -49,28 +48,18 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         binding. proceedButton.setOnClickListener(){
 //            openActivity(successScreenFullReferencePath.toString(),requireContext())
             val callback =  SingletonClass.getInstance().getYourObject()
-            if(callback == null){
-                Log.d("call back is null","Failed")
-            }else{
+            if(callback != null){
                 val transactionId = sharedPreferences.getString("transactionId","").toString()
                 val operationId = sharedPreferences.getString("operationId","").toString()
                 callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
 
                 val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
                 mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
-                Log.d("dismissViewModel","Payment Successful Sheet dismiss called Works fine")
                 dismiss()
             }
-//            callFunctionInActivity()
         }
         return binding.root
     }
-//    private fun callFunctionInActivity() {
-//        val activity = activity
-//        if (activity is OTPScreenWebView) {
-//            activity.killOTPWeViewActivity()
-//        }
-//    }
 
     private fun openActivity(activityPath: String, context: Context) {
         if (context is AppCompatActivity) {
@@ -105,13 +94,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private fun fetchTransactionDetailsFromSharedPreferences() {
         val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token","empty")
-        Log.d("data fetched from sharedPreferences",token.toString())
-//        successScreenFullReferencePath = sharedPreferences.getString("successScreenFullReferencePath","empty")
-//        Log.d("success screen path fetched from sharedPreferences",successScreenFullReferencePath.toString())
         transactionID = sharedPreferences.getString("transactionId","empty")
-        Log.d("transactionID fetched from sharedPreferences",transactionID.toString())
         amount = sharedPreferences.getString("currencySymbol","₹")+sharedPreferences.getString("amount","empty")
-        Log.d("success screen path fetched from sharedPreferences",amount.toString())
     }
 
     object SharedPreferencesHelper {
@@ -130,12 +114,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
-
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
 
             val window = d.window
             window?.apply {
@@ -144,20 +124,10 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 setBackgroundDrawable(ColorDrawable(Color.argb(128, 0, 0, 0))) // Semi-transparent black background
             }
 
-
-            val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.7 // 90%
-            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             dialog.setCancelable(false)
-
 
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
@@ -196,9 +166,5 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
             })
         }
         return dialog
-    }
-
-    companion object {
-
     }
 }

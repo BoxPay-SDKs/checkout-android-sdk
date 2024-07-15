@@ -392,13 +392,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 } catch (e: JSONException) {
                     e.printStackTrace()
                 }
-            }) { error ->
-            Log.e("Error", "Error occurred: ${error.message}")
-            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                val errorResponse = String(error.networkResponse.data)
-                Log.e("Error", "Detailed error response: $errorResponse")
-            }
-            // Handle errors here
+            }) { _ ->
+
         }
         // Add the request to the RequestQueue.
         queue?.add(jsonObjectRequest)
@@ -501,9 +496,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     PaymentFailureScreen().show(parentFragmentManager, "FailureScreenFromUPIIntent")
                 }
             },
-            Response.ErrorListener { error ->
+            Response.ErrorListener { _ ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -912,13 +906,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardView7.visibility = View.GONE
                 }
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                }
+            Response.ErrorListener { _ ->
+
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -1034,13 +1023,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 startTimer()
                 startFunctionCalls()
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                }
+            Response.ErrorListener { _ ->
+               // no op
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -1088,34 +1072,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } else {
             // Log an error or handle the case where the context is not an AppCompatActivity
         }
-    }
-
-
-    private fun fetchAllPaymentMethods() {
-        val url = "${Base_Session_API_URL}${token}"
-
-        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
-
-            try {
-//                logJsonObject(response)
-
-
-            } catch (e: Exception) {
-
-                e.printStackTrace()
-            }
-        }, { error ->
-
-            Log.e("Error", "Error occurred: ${error.message}")
-            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                val errorResponse = String(error.networkResponse.data)
-                Log.e("Error", " fetching MainBottomSheet error response: $errorResponse")
-//                binding.errorField.visibility = View.VISIBLE
-//                binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
-//                hideLoadingInButton()
-            }
-        })
-        queue?.add(jsonObjectAll)
     }
 
     fun enabledButtonsForAllPaymentMethods() {
@@ -1235,25 +1191,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                // Handle response
-
-                try {
-
-                } catch (e: JSONException) {
-
-                }
+            Response.Listener { _ ->
 
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.e("Error message", errorMessage)
-                }
+            Response.ErrorListener { _ ->
 
             }) {
 

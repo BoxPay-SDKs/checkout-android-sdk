@@ -3,17 +3,14 @@ package com.boxpay.checkout.sdk
 import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import android.webkit.WebSettings
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.CallBackFunctions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
 
@@ -64,24 +61,9 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "${BASE_URL}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-
-                try {
-
-                } catch (e: JSONException) {
-                    Log.d("status check error", e.toString())
-                }
-
+            Response.Listener { _ ->
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
-                }
+            Response.ErrorListener { _ ->
 
             }) {
 

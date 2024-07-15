@@ -15,7 +15,6 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnFocusChangeListener
@@ -109,17 +108,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     updateCardNetwork(brands)
                 }catch (e : Exception){
-                    Log.e("Exception in card bin",e.toString())
+
                 }
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                updateCardNetwork(brands)
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                }
+            Response.ErrorListener { _ ->
+
             }) {
         }
         queue.add(request)
@@ -937,13 +930,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 }
             },
             Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
 
             }) {
 
@@ -1088,16 +1074,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     }
                     editor.apply()
                 } catch (e: JSONException) {
-                    e.printStackTrace()
+
                 }
 
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
                     binding.ll1InvalidCardNumber.visibility = View.VISIBLE
                     binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
                     getMessageForFieldErrorItems(errorResponse)

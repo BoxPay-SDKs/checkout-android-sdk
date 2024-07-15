@@ -31,7 +31,6 @@ import com.boxpay.checkout.sdk.databinding.FragmentQuickPayBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
 import org.json.JSONObject
 import java.util.Locale
 
@@ -64,44 +63,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 enableProceedButton()
             }
         })
-//        val seekBar = binding.sliderButton
-//
-//        val maxProgress = 100
-//        val desiredMinProgress = (maxProgress * 0.15).toInt() // 15% progress
-//        val desiredMaxProgress = (maxProgress * 0.85).toInt() // 85% progress
-//
-//        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-//                // Check if progress exceeds desired progress
-//                if (progress > desiredMaxProgress) {
-//                    seekBar?.progress = desiredMaxProgress
-//                }
-//                if(progress < desiredMinProgress) {
-//                    seekBar?.progress = desiredMinProgress
-//                }
-//            }
-//
-//            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-//                // Not needed for this implementation
-//            }
-//
-//            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-//                // Not needed for this implementation
-//                var progress = 0
-//                if(seekBar == null){
-//                    progress = 0
-//                }else{
-//                    progress = seekBar.progress
-//                }
-//
-//                if(progress < 80){
-//                    seekBar?.progress = desiredMinProgress
-//                }else{
-//                    seekBar?.progress = desiredMaxProgress
-//                }
-//            }
-//        })
-
 
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
@@ -170,7 +131,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                         val brand = latestUsedMethod.getString("brand")
                         displayValue = latestUsedMethod.getString("displayValue")
                          val typeAllCaps = type.toUpperCase()
-                        Log.d("type and brand","type : $typeAllCaps, brand : $brand and value : $displayValue")
                         val builder = SpannableStringBuilder()
 
 // Append the type without any styling
@@ -192,31 +152,11 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
 
                     }
                 } catch (e: Exception) {
-                    Log.e("Exception in quick pay API",e.toString())
                 }
 
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Detailed error response:", "Detailed error response: $errorResponse")
-
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
-                    if (errorMessage.contains(
-                            "Session is no longer accepting the payment as payment is already completed",
-                            ignoreCase = true
-                        )
-                    ) {
-
-                    } else {
-
-                    }
-                }
-
-
+            Response.ErrorListener { _ ->
+                // no op
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -267,18 +207,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
-
-
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body QuickPay", jsonStr)
-    }
-
-    private fun postRequestForUPICollect(context: Context, userVPA: String) {
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
-        val requestQueue = Volley.newRequestQueue(context)
-
 
         // Constructing the request body
         val requestBody = JSONObject().apply {

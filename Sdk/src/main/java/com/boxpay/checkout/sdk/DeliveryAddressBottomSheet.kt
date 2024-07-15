@@ -10,7 +10,6 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -94,44 +93,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         val countryNameListAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, countryList)
         binding.countryEditText.setAdapter(countryNameListAdapter)
-//        binding.countryEditText.setOnItemClickListener { parent, view, position, id ->
-//            val selectedItem = parent.getItemAtPosition(position).toString()
-//            Log.d("item selected : ",selectedItem)
-//
-//            countrySelectedFromDropDown = selectedItem
-//            countrySelected = true
-//            selectedCountryName = findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
-//            toCheckAllFieldsAreFilled()
-//        }
-
-//        binding.countryEditText.addTextChangedListener(object : TextWatcher {
-//            private var previousLength = 0
-//
-//            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-//                // Save the length of the text before the change
-//                previousLength = s?.length ?: 0
-//            }
-//
-//            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-//                // No action needed while text is changing
-//                if (s?.isEmpty() == true) {
-//                    binding.countryErrorText.visibility = View.VISIBLE
-//                    binding.countryEditText.background = ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
-//                }
-//
-//            }
-//
-//            override fun afterTextChanged(s: Editable?) {
-//                // Check if the length of the text has decreased after the change
-//                val currentLength = s?.length ?: 0
-//                if (currentLength < previousLength) {
-//                    // Characters are being deleted
-//                    // You can handle this case here
-//                    countrySelected = false
-//                    toCheckAllFieldsAreFilled()
-//                }
-//            }
-//        })
 
         binding.countryEditText.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
@@ -142,7 +103,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             ) {
                 // Get the selected item
                 val selectedItem = parent.getItemAtPosition(position).toString()
-                Log.d("item selected : ",selectedItem)
 
                 countrySelectedFromDropDown = selectedItem
                 countrySelected = true
@@ -546,9 +506,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
-
             val window = d.window
             window?.apply {
                 // Apply dim effect
@@ -573,10 +530,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 dialog.setCancelable(false)
             else
                 dialog.setCancelable(true)
-
-
-
-
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -625,8 +578,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         ): DeliveryAddressBottomSheet {
             val fragment = DeliveryAddressBottomSheet()
             fragment.callback = callback
-
-            Log.d("Instance first time : ",firstTime.toString())
             fragment.firstTime = firstTime
             return fragment
         }

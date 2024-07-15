@@ -44,8 +44,6 @@ class Check : AppCompatActivity() {
                 handleResponseWithToken()
                 binding.textView6.text = "Opening"
                 binding.openButton.isEnabled = false
-            }else{
-                Log.d("token is empty","waiting")
             }
         })
 
