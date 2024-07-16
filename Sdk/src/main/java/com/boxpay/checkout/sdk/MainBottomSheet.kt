@@ -245,8 +245,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
             // If the app can handle the UPI intent, it's a UPI app
-            if (!upiApps.isEmpty() || appName == "Paytm" || appName == "GPay" || appName == "PhonePe") {
-                i++;
+            if (upiApps.isNotEmpty() || appName == "Paytm" || appName == "GPay" || appName == "PhonePe") {
+                i++
 
                 UPIAppsAndPackageMap[appName] = app.packageName
             }
@@ -1014,7 +1014,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 // Display the Bitmap in an ImageView
                 val imageView: ImageView = binding.qrCodeImageView
                 imageView.setImageBitmap(bitmap)
-//                logJsonObject(response)
                 removeLoadingState()
                 startTimer()
                 startFunctionCalls()
