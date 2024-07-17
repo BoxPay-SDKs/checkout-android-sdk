@@ -45,6 +45,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.Calendar
 import java.util.Locale
+import kotlin.random.Random
 
 
 internal class AddCardBottomSheet : BottomSheetDialogFragment() {
@@ -922,14 +923,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { _ ->
-               // no op
-            },
-            Response.ErrorListener { _ ->
-                // no op
-            }) {
-
-        }.apply {
+            Response.Listener { /*no response handling */ },
+            Response.ErrorListener { /*no response handling */}){}.apply {
             // Set retry policy
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
@@ -1091,7 +1086,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
 //                headers["X-Client-Connector-Name"] =  "Android SDK"
 //                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
@@ -1242,5 +1237,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             fragment.shippingEnabled = shippingEnabled
             return fragment
         }
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }

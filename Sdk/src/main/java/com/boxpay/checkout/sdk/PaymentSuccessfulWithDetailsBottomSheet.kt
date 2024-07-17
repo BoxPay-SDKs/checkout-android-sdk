@@ -46,7 +46,6 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
         binding. proceedButton.setOnClickListener(){
-//            openActivity(successScreenFullReferencePath.toString(),requireContext())
             val callback =  SingletonClass.getInstance().getYourObject()
             if(callback != null){
                 val transactionId = sharedPreferences.getString("transactionId","").toString()

@@ -195,14 +195,8 @@ class NetbankingBanksAdapter(
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${environmentFetched}apis.boxpay.tech/v0/ui-analytics", requestBody,
-            Response.Listener { _ ->
-                // no op
-            },
-            Response.ErrorListener { _ ->
-
-            }) {
-
-        }.apply {
+            Response.Listener { /*no response handling */ },
+            Response.ErrorListener { /*no response handling */}) {}.apply {
             // Set retry policy
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts

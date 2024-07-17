@@ -31,6 +31,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
 import java.util.Locale
+import kotlin.random.Random
 
 class QuickPayBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentQuickPayBottomSheetBinding
@@ -275,7 +276,7 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
 //                headers["X-Client-Connector-Name"] =  "Android SDK"
 //                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
@@ -288,7 +289,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
 
-        // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -304,10 +304,8 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
-
 
             val window = d.window
             window?.apply {
@@ -319,10 +317,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
 
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
-
-
-
-
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -339,17 +333,14 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_DRAGGING -> {
                             // The BottomSheet is being dragged
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
 
                         BottomSheetBehavior.STATE_SETTLING -> {
                             // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
-
                         }
                     }
                 }
@@ -359,5 +350,13 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             })
         }
         return dialog
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }

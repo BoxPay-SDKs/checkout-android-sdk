@@ -33,7 +33,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -59,7 +58,6 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -77,6 +75,7 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.Collections
 import java.util.Locale
+import kotlin.random.Random
 
 
 internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSheetInterface {
@@ -497,7 +496,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
 //                headers["X-Client-Connector-Name"] =  "Android SDK"
 //                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
@@ -516,16 +515,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-
 
         binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
 
         val imm =
             requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         view?.let {
-            // Hide the keyboard
             imm.hideSoftInputFromWindow(it.windowToken, 0)
         }
         binding.boxpayLogoLottie.playAnimation()
@@ -539,7 +534,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
 
-
         if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
             isTablet = false
 
@@ -548,16 +542,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             isTablet = true
         }
 
-
         val callback = SingletonClassForLoadingState.getInstance().getYourObject()
 
-        if (callback == null) {
-
-        } else {
-
-            callback.onBottomSheetOpened()
-        }
-
+        callback?.onBottomSheetOpened?.invoke()
 
         val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
 
@@ -573,22 +560,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         })
         overlayViewModel.setShowOverlay(true)
 
-
-
         hidePriceBreakUp()
 
         val callBackFunctionsForDismissing = CallbackForDismissMainSheet(::dismissMainSheet)
         SingletonForDismissMainSheet.getInstance().callBackFunctions =
             callBackFunctionsForDismissing
-//        getAndSetOrderDetails()
-//
-//
-//
-//        fetchAllPaymentMethods()
-
-
-//        getAllInstalledApps(packageManager)
-
 
         val orderSummaryAdapter =
             OrderSummaryItemsAdapter(imagesUrls, items, prices, requireContext())
@@ -624,7 +600,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         binding.backButton.setOnClickListener() {
             removeOverlayFromActivity()
-//            callFunctionInActivity()
             dismiss()
         }
 
@@ -648,8 +623,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
         }
 
-
-
         binding.addNewUPIIDConstraint.setOnClickListener() {
             binding.addNewUPIIDConstraint.isEnabled = false
             callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiCollect", "Upi")
@@ -664,7 +637,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.UPIQRConstraint.isEnabled = true
                 hideQRCode()
             } else {
-//                binding.UPIQRConstraint.isEnabled = false
                 qrCodeShown = true
                 showQRCode()
             }
@@ -675,7 +647,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
 
         binding.cardConstraint.setOnClickListener() {
-//            if (qrCodeShown)
             binding.cardConstraint.isEnabled = false
             callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Card")
             callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "", "Card")
@@ -696,17 +667,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             openNetBankingBottomSheet()
         }
 
-
         binding.refreshButton.setOnClickListener() {
             showQRCode()
         }
-
-
-        binding.popularUPIAppsConstraint.setOnClickListener {
-            // Do nothing , Just for the sake that it doesn't close the UPI options
-        }
-
-
 
         binding.deliveryAddressConstraintLayout.setOnClickListener() {
             if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
@@ -717,7 +680,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
             bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
         }
-
 
         binding.proceedButton.setOnClickListener() {
             if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
@@ -821,7 +783,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val jsonArrayRequest = object : JsonArrayRequest(
             Method.GET,
-            Base_Session_API_URL + token + "/payment-methods?customerCountryCode=$countryName",
+            "$Base_Session_API_URL$token/payment-methods?customerCountryCode=$countryName",
             null,
             Response.Listener { response ->
                 for (i in 0 until response.length()) {
@@ -883,18 +845,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardView4.visibility = View.GONE
                 }
 
-
                 if (cardsMethod) {
                     binding.cardView5.visibility = View.VISIBLE
                 } else {
                     binding.cardView5.visibility = View.GONE
                 }
+
                 if (walletMethods) {
                     binding.cardView6.visibility = View.VISIBLE
                 } else {
                     binding.cardView6.visibility = View.GONE
                 }
-
 
                 if (netBankingMethods) {
                     binding.cardView7.visibility = View.VISIBLE
@@ -902,9 +863,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardView7.visibility = View.GONE
                 }
             },
-            Response.ErrorListener { _ ->
-
-            }) {
+            Response.ErrorListener { /* no response handling */}) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 return headers
@@ -986,11 +945,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     put("deliveryAddress", deliveryAddressObject)
                 }
             }
-
             put("shopper", shopperObject)
         }
-
-        // Request a JSONObject response from the provided URL
 
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, Base_Session_API_URL + token, requestBody,
@@ -1003,27 +959,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
                 val decodedBytes: ByteArray = Base64.decode(urlBase64, Base64.DEFAULT)
-
-                // Convert byte array to Bitmap
-
-                // Convert byte array to Bitmap
                 val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-
-                // Display the Bitmap in an ImageView
-
-                // Display the Bitmap in an ImageView
                 val imageView: ImageView = binding.qrCodeImageView
                 imageView.setImageBitmap(bitmap)
                 removeLoadingState()
                 startTimer()
                 startFunctionCalls()
             },
-            Response.ErrorListener { _ ->
-               // no op
-            }) {
+            Response.ErrorListener { /* no response handling */}) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
 //                headers["X-Client-Connector-Name"] =  "Android SDK"
 //                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
@@ -1035,7 +981,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
 
-        // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -1045,30 +990,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         editor.apply()
     }
 
-    private fun openActivity(activityPath: String, context: Context) {
-        if (context is AppCompatActivity) {
-            try {
-                // Get the class object for the activity using reflection
-                val activityClass = Class.forName(activityPath)
-                // Create an instance of the activity using Kotlin reflection
-                val activityInstance =
-                    activityClass.getDeclaredConstructor().newInstance() as AppCompatActivity
-
-                // Check if the activity is a subclass of AppCompatActivity
-                if (activityInstance is AppCompatActivity) {
-                    // Start the activity
-                    context.startActivity(Intent(context, activityClass))
-                } else {
-                    // Log an error or handle the case where the activity is not a subclass of AppCompatActivity
-                }
-            } catch (e: ClassNotFoundException) {
-                // Log an error or handle the case where the activity class cannot be found
-            }
-        } else {
-            // Log an error or handle the case where the context is not an AppCompatActivity
-        }
-    }
-
     fun enabledButtonsForAllPaymentMethods() {
         binding.payUsingAnyUPIConstraint.isEnabled = true
         binding.addNewUPIIDConstraint.isEnabled = true
@@ -1076,19 +997,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.walletConstraint.isEnabled = true
         binding.netBankingConstraint.isEnabled = true
     }
-
-
-    private fun putTransactionDetailsInSharedPreferences() {
-        val sharedPreferences =
-            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString("token", token)
-
-        editor.putString("successScreenFullReferencePath", successScreenFullReferencePath)
-
-        editor.apply()
-    }
-
 
     private fun populatePopularUPIApps() {
         var i = 1
@@ -1170,7 +1078,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val eventAttrs = JSONObject().apply {
                 put("paymentType", paymentType)
 
-                if (!paymentSubType.isNotBlank())
+                if (paymentSubType.isBlank())
                     put("paymentSubType", paymentSubType)
             }
             put("eventAttrs", eventAttrs)
@@ -1183,25 +1091,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             put("browserData", browserData)
         }
 
-        // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { _ ->
-
-            },
-            Response.ErrorListener { _ ->
-
-            }) {
-
-        }.apply {
-            // Set retry policy
+            Response.Listener { /*no response handling */ },
+            Response.ErrorListener { /*no response handling */}) {}.apply {
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
             val backoffMultiplier = 1.0f // Backoff multiplier
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
-
-        // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -1214,7 +1112,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             else -> throw IllegalArgumentException("Invalid number: $num")
         }
     }
-
 
     private fun getPopularConstraintLayoutByNum(num: Int): LinearLayout {
         return when (num) {
@@ -1352,7 +1249,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
 //                headers["X-Client-Connector-Name"] =  "Android SDK"
 //                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
@@ -1364,8 +1261,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val backoffMultiplier = 1.0f // Backoff multiplier
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
-
-        // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -1374,11 +1269,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         overlayViewMainBottomSheet = View(requireContext())
         overlayViewMainBottomSheet?.setBackgroundColor(Color.parseColor("#80000000")) // Adjust the color and transparency as needed
 
-        // Get WindowManager from the parent activity's context
         val windowManager =
             requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-        // Set layout parameters for the overlay view
         val layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -1386,13 +1279,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-
-        // Add overlay view to the WindowManager
         windowManager.addView(overlayViewMainBottomSheet, layoutParams)
     }
 
     private fun removeOverlayFromActivity() {
-        // Remove the overlay view from the parent activity
         overlayViewMainBottomSheet?.let {
             val windowManager =
                 requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -1401,28 +1291,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         overlayViewMainBottomSheet = null
     }
 
-    // Method to show overlay in the first BottomSheet
-    fun showOverlayInCurrentBottomSheet() {
-        // Create a semi-transparent overlay view
-        overlayViewCurrentBottomSheet = View(requireContext())
-        overlayViewCurrentBottomSheet?.setBackgroundColor(Color.parseColor("#80000000")) // Adjust color and transparency as needed
-
-        // Add overlay view directly to the root view of the BottomSheet
-        binding.root.addView(
-            overlayViewCurrentBottomSheet,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-    }
-
-    // Method to remove overlay from the first BottomSheet
-    public fun removeOverlayFromCurrentBottomSheet() {
+    fun removeOverlayFromCurrentBottomSheet() {
         overlayViewCurrentBottomSheet?.let {
-            // Remove the overlay view directly from the root view
             binding.root.removeView(it)
         }
     }
-
 
     private fun showPriceBreakUp() {
         binding.itemsInOrderRecyclerView.visibility = View.VISIBLE
@@ -1432,9 +1305,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.arrowIcon.animate()
             .rotation(180f)
             .setDuration(250) // Set the duration of the animation in milliseconds
-            .withEndAction {
-                // Code to be executed when the animation ends
-            }
+            .withEndAction {}
             .start()
     }
 
@@ -1446,9 +1317,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.arrowIcon.animate()
             .rotation(0f)
             .setDuration(250) // Set the duration of the animation in milliseconds
-            .withEndAction {
-                // Code to be executed when the animation ends
-            }
+            .withEndAction {}
             .start()
     }
 
@@ -1457,10 +1326,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.upiOptionsLinearLayout.visibility = View.VISIBLE
         binding.textView20.typeface =
             ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
-
-
-
-
 
         if (i > 1) {
             binding.popularUPIAppsConstraint.visibility = View.VISIBLE
@@ -1476,27 +1341,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.imageView12.animate()
             .rotation(0f)
             .setDuration(500) // Set the duration of the animation in milliseconds
-            .withEndAction {
-                // Code to be executed when the animation ends
-            }
+            .withEndAction {}
             .start()
-    }
-
-    fun extractSum(prices: MutableList<String>): String {
-        var finalSum = 0
-        for (price in prices) {
-
-            val numericPart = price.replace("[^0-9]".toRegex(), "")
-            if (numericPart.isEmpty()) {
-                return 0.toString()
-            } else {
-                finalSum += numericPart.toInt()
-            }
-        }
-
-        val formattedSum = String.format("₹%.2f", finalSum / 100.0)
-        return formattedSum
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -1518,10 +1364,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val percentageOfScreenHeight = 0.7 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
 
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -1536,23 +1378,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // Handle state changes
                     when (newState) {
-                        BottomSheetBehavior.STATE_EXPANDED -> {
-                            // Fully expanded
-                        }
-
-                        BottomSheetBehavior.STATE_COLLAPSED -> {
-                            // Collapsed
-                        }
-
-                        BottomSheetBehavior.STATE_DRAGGING -> {
-
-                        }
-
-                        BottomSheetBehavior.STATE_SETTLING -> {
-                            // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
-
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
                             dismiss()
@@ -1571,6 +1396,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     )
                                 )
                             }
+                        }
+                        else -> {
+                            // no op
                         }
                     }
                 }
@@ -1604,13 +1432,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val bottomSheetFragment = WalletBottomSheet.newInstance(shippingEnabled)
         bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
-    }
-
-
-    private fun logJsonObjectUPIIntent(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-
     }
 
     private fun makeSessionDataCall() {
@@ -1666,20 +1487,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val itemsArray = if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
 
+                if (itemsArray != null) {
+                    for (i in 0 until itemsArray.length()) {
+                        val itemObject = itemsArray.getJSONObject(i)
 
-                try {
-                    if (itemsArray != null) {
-                        for (i in 0 until itemsArray.length()) {
-                            val itemObject = itemsArray.getJSONObject(i)
-
-                            items.add(itemObject.getString("itemName"))
-                            prices.add(itemObject.getString("amountWithoutTaxLocale"))
-                            val quantity = itemObject.getInt("quantity")
-                            totalQuantity += quantity
-                        }
+                        items.add(itemObject.getString("itemName"))
+                        prices.add(itemObject.getString("amountWithoutTaxLocale"))
+                        val quantity = itemObject.getInt("quantity")
+                        totalQuantity += quantity
                     }
-                } catch (e: Exception) {
-
                 }
 
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
@@ -1919,7 +1735,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 ).show()
             }
 
-        }, { error ->
+        }, { _ ->
             Toast.makeText(
                 requireContext(),
                 "Invalid token/selected environment.\nPlease press back button and try again",
@@ -1947,20 +1763,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         editor.putString("transactionAmount", transactionAmountArgs)
         editor.apply()
-    }
-
-
-    //To enable proceed button in check activity
-    private fun callFunctionInActivity() {
-        val activity = activity
-        if (activity is Check) {
-            activity.removeLoadingAndEnabledProceedButton()
-        }
-    }
-
-
-    companion object {
-
     }
 
     override fun updateBottomSheet() {
@@ -1998,14 +1800,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     }
 
-    fun readJsonFromAssets(context: Context, fileName: String): String {
+    private fun readJsonFromAssets(context: Context, fileName: String): String {
         val assetManager = context.assets
         val inputStream = assetManager.open(fileName)
         val bufferedReader = inputStream.bufferedReader()
         return bufferedReader.use { it.readText() }
     }
 
-    fun getCountryName(countryCodeJson: JSONObject, countryCode: String): Pair<String, String>? {
+    private fun getCountryName(countryCodeJson: JSONObject, countryCode: String): Pair<String, String>? {
         countryCodeJson.keys().forEach { key ->
             if (key.equals(countryCode)) {
                 val countryDetails = countryCodeJson.getJSONObject(key)
@@ -2014,8 +1816,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 return Pair(code, isd)
             }
         }
-
-        // Return null if no matching ISD code is found
         return null
+    }
+
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }

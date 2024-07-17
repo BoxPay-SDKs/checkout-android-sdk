@@ -14,12 +14,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
-import android.webkit.JavascriptInterface
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -76,15 +74,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         finish()
     }
 
-    fun setWebViewCloseListener(listener: OnWebViewCloseListener) {
-        webViewCloseListener = listener
-    }
-
-    // Call this method when you close the webView
-    private fun notifyWebViewClosed() {
-        webViewCloseListener?.onWebViewClosed()
-    }
-
     @SuppressLint("SetJavaScriptEnabled")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,7 +88,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             }
             isBottomSheetShown = false
         }
-
 
         val sharedPreferences =
             this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
@@ -131,11 +119,8 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             if (ContextCompat.checkSelfPermission(
                     this,
                     permissionReceive
-                ) == PackageManager.PERMISSION_GRANTED
+                ) != PackageManager.PERMISSION_GRANTED
             ) {
-
-            } else {
-                // Permission is not granted, request it from the user
                 ActivityCompat.requestPermissions(this, arrayOf(permissionReceive), 101)
             }
 
@@ -144,9 +129,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                     permissionRead
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                // Permission is granted, register the receiver
-            } else {
-                // Permission is not granted, request it from the user
                 ActivityCompat.requestPermissions(this, arrayOf(permissionRead), 101)
             }
 
@@ -219,19 +201,13 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
             cursor?.use { // Ensures the cursor is closed after use
                 if (it.moveToFirst()) {
-                    val address = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
                     val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
                     val extractedOTP = extractOTPFromMessage(body)
                     if (extractedOTP != null) {
                         otpFetched = extractedOTP
                         jobForFetchingSMS?.cancel()
-                    } else {
-
                     }
                     // Process SMS message here
-                } else {
-                    // No SMS found
-
                 }
             }
         } catch (e: SecurityException) {
@@ -240,8 +216,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             val permission = Manifest.permission.RECEIVE_SMS
 
             ActivityCompat.requestPermissions(this, arrayOf(permission), 101)
-        } catch (e: Exception) {
-            // Handle other exceptions
         }
     }
 
@@ -258,12 +232,8 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         }
     }
 
-
-
-
     private val runnable = object : Runnable {
         override fun run() {
-            // Call the function
             handler.postDelayed(this, delayMillis) // Schedule next execution after delay
         }
     }
@@ -277,40 +247,19 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             return matcher.group() // Return the matched OTP
         }
 
-
         return null // Return null if no OTP is found
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 1010) {
-            // Result from SMS consent activity
             if (resultCode == Activity.RESULT_OK && data != null) {
-                // User granted consent
                 val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
                 otpFetched = extractOTPFromMessage(message.toString())
-                // Handle OTP
-
-            } else {
-                // User denied consent
-                // Handle denial
             }
         }
     }
 
-    private fun unregisterReceiver() {
-        try {
-            this.unregisterReceiver(smsVerificationReceiver)
-        } catch (e: IllegalArgumentException) {
-            // Receiver not registered, do nothing
-        }
-    }
-
-    fun stopTimer() {
-        handler.removeCallbacks(runnable)
-    }
-
-    // Start scheduling the function to run initially and then at intervals
     private fun startFetchingOtpAtIntervals() {
         handler.postDelayed(runnable, delayMillis)
     }
@@ -319,18 +268,10 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         if (!isBottomSheetShown) {
             val bottomSheet = CancelConfirmationBottomSheet()
             bottomSheet.show(supportFragmentManager, "CancelConfirmationBottomSheet")
-//            isBottomSheetShown = true
         } else {
-//            isBottomSheetShown = false
             super.onBackPressed()
         }
     }
-
-    // Method to set the previous bottom sheet reference
-    fun setPreviousBottomSheet(bottomSheet: Context?) {
-        previousBottomSheet = bottomSheet
-    }
-
 
     private fun fetchStatusAndReason(url: String) {
 
@@ -343,10 +284,8 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             { response ->
                 try {
                     val status = response.getString("status")
-                    val statusReason = response.getString("statusReason")
                     val transactionId = response.getString("transactionId")
 
-                    // Check if status is success, if yes, dismiss the bottom sheet
                     if (status.contains(
                             "Approved",
                             ignoreCase = true
@@ -363,11 +302,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                             callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
                         }
 
-                        if(callbackForDismissing != null){
-                            callbackForDismissing.dismissFunction()
-                        }else{
-
-                        }
+                        callbackForDismissing?.dismissFunction?.invoke()
 
                         finish()
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
@@ -384,25 +319,14 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                         job?.cancel()
                         val callback =
                             FailureScreenCallBackSingletonClass.getInstance().getYourObject()
-                        if (callback == null) {
-
-                        } else {
-                            callback.openFailureScreen()
-                        }
-
-
+                        callback?.openFailureScreen?.invoke()
                         finish()
-                        
                     }
 
                 } catch (e: JSONException) {
 
                 }
-            }) { _ ->
-
-            // Handle errors here
-        }
-        // Add the request to the RequestQueue.
+            }) { _ -> /* no response handling */}
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -426,55 +350,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Cancel the coroutine when the activity is destroyed
         job?.cancel()
     }
-
-    companion object {
-
-    }
-
-    private fun openActivity(activityPath: String, context: Context) {
-        if (context is AppCompatActivity) {
-            try {
-                // Get the class object for the activity using reflection
-                val activityClass = Class.forName(activityPath)
-                // Create an instance of the activity using Kotlin reflection
-                val activityInstance =
-                    activityClass.getDeclaredConstructor().newInstance() as AppCompatActivity
-
-                // Check if the activity is a subclass of AppCompatActivity
-                if (activityInstance is AppCompatActivity) {
-                    // Start the activity
-                    context.startActivity(Intent(context, activityClass))
-                } else {
-                    // Log an error or handle the case where the activity is not a subclass of AppCompatActivity
-                }
-            } catch (e: ClassNotFoundException) {
-                // Log an error or handle the case where the activity class cannot be found
-            }
-        } else {
-            // Log an error or handle the case where the context is not an AppCompatActivity
-        }
-    }
-
-    class WebAppInterface(private val mContext: Context) {
-        @JavascriptInterface
-        fun showToast(message: String) {
-
-            if (message == "Success") {
-
-
-            } else {
-                Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show()
-            }
-        }
-
-
-        @JavascriptInterface
-        fun logStatement(message: String) {
-
-        }
-    }
-
 }

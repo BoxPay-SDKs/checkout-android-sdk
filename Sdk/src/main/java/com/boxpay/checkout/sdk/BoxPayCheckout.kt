@@ -14,19 +14,22 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import org.json.JSONObject
 import java.util.Locale
 
-class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false){
+class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean? = false){
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
 
     private var BASE_URL : String ?= null
     init {
-        if(sandboxEnabled){
+        if(sandboxEnabled == true){
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
-        } else {
+        } else if (sandboxEnabled == false) {
             editor.putString("baseUrl","apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
+        } else {
+            editor.putString("baseUrl","test-apis.boxpay.in")
+            this.BASE_URL = "test-apis.boxpay.tech"
         }
         editor.apply()
     }
@@ -61,13 +64,8 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "${BASE_URL}/v0/ui-analytics", requestBody,
-            Response.Listener { _ ->
-            },
-            Response.ErrorListener { _ ->
-
-            }) {
-
-        }.apply {
+            Response.Listener { /*no response handling */ },
+            Response.ErrorListener { /*no response handling */}) {}.apply {
             // Set retry policy
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
