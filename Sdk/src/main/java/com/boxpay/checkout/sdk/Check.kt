@@ -20,19 +20,17 @@ import org.json.JSONObject
 
 class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
-    private var successScreenFullReferencePath : String ?= null
+    private var successScreenFullReferencePath: String? = null
     private var tokenFetchedAndOpen = false
 
 
-    private val binding : ActivityCheckBinding by lazy {
+    private val binding: ActivityCheckBinding by lazy {
         ActivityCheckBinding.inflate(layoutInflater)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-//        val bottomSheet = QuickPayBottomSheet()
-//        bottomSheet.show(supportFragmentManager,"QuickPayTesting")
 
         makePaymentRequest(this)
 
@@ -40,17 +38,17 @@ class Check : AppCompatActivity() {
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
         tokenLiveData.observe(this, Observer { tokenInObserve ->
             // Handle the response after the token has been updated
-            if(tokenInObserve != null) {
+            if (tokenInObserve != null) {
                 handleResponseWithToken()
                 binding.textView6.text = "Opening"
                 binding.openButton.isEnabled = false
-            }else{
-                Log.d("token is empty","waiting")
+            } else {
+                Log.d("token is empty", "waiting")
             }
         })
 
         var actionInProgress = false
-        binding.openButton.setOnClickListener(){
+        binding.openButton.setOnClickListener() {
 
             // Disable the button
             if (actionInProgress) {
@@ -74,10 +72,11 @@ class Check : AppCompatActivity() {
             }
         }
     }
-    fun removeLoadingAndEnabledProceedButton(){
+
+    fun removeLoadingAndEnabledProceedButton() {
         binding.openButton.isEnabled = true
         binding.progressBar.visibility = View.GONE
-        Log.d("text will be updated here","here")
+        Log.d("text will be updated here", "here")
         binding.textView6.text = "Open Bottom Sheet"
         binding.textView6.visibility = View.VISIBLE
         binding.openButton.visibility = View.VISIBLE
@@ -93,36 +92,41 @@ class Check : AppCompatActivity() {
         binding.openButton.isEnabled = false
         rotateAnimation.start()
     }
+
     private fun handleResponseWithToken() {
-        if(tokenFetchedAndOpen)
+        if (tokenFetchedAndOpen)
             return
         Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
         showBottomSheetWithOverlay()
         tokenFetchedAndOpen = true
     }
 
-     private fun showBottomSheetWithOverlay() {
+    private fun showBottomSheetWithOverlay() {
 
-         //tokenLiveData.value.toString()
+        //tokenLiveData.value.toString()
 //         tokenLiveData.value.toString()
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,true)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,false)
+        boxPayCheckout.testEnv = true
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
 
 
-    fun onPaymentResultCallback(result : PaymentResultObject) {
-        Log.d("Result for the activity", "Payment result received: onpr ${result.status} onpr ${result.transactionId}  onpr ${result.operationId}")
+    fun onPaymentResultCallback(result: PaymentResultObject) {
+        Log.d(
+            "Result for the activity",
+            "Payment result received: onpr ${result.status} onpr ${result.transactionId}  onpr ${result.operationId}"
+        )
     }
 
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/lGhJZ2Fxv2/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
         val jsonData = JSONObject(""" {
   "context": {
     "countryCode": "IN",
-    "legalEntity": {"code": "boxpay_test"},
+    "legalEntity": {"code": "boxpay"},
     "orderId": "test12"
   },
   "paymentType": "S",
@@ -194,14 +198,12 @@ class Check : AppCompatActivity() {
                 Log.e("Error", "Error occurred: ${error.toString()}")
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    Log.d("","")
                 }
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer OvxrLXMibYlA4Tn6NjMQuUnUOqUE36OOk7N3oUrGqfy6hDWWgfJnFIKqtCxWJ1vTEhIn6wMHsUmOMlvm7aUQ4e"
+                headers["Authorization"] =  "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
                 headers["X-Client-Connector-Name"] =  "Android SDK"
                 headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
@@ -209,9 +211,9 @@ class Check : AppCompatActivity() {
         }
         queue.add(request)
     }
+
     fun logJsonObject(jsonObject: JSONObject) {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body Check", jsonStr)
     }
 }

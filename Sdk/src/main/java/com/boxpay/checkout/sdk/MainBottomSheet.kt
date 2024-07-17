@@ -319,6 +319,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (e: ActivityNotFoundException) {
             // Handle the case where no activity is found to handle the intent
 
+
         }
     }
 
@@ -327,7 +328,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             while (isActive) {
                 delay(4000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
-                // Delay for 4 seconds
             }
         }
     }
