@@ -29,6 +29,7 @@ class BoxPayCheckout(
     private var sdkUpdater: SdkUpdater = SdkUpdater(context)
 
     private var BASE_URL: String? = null
+    var testEnv = false
 
     init {
         CoroutineScope(Dispatchers.Main).launch {
@@ -36,22 +37,16 @@ class BoxPayCheckout(
             val newSdkAvailable = prefs.getBoolean("newSdkAvailable", false)
             sdkUpdater.isUpdateAvailable { isUpdateAvailable, latestVersion ->
                 if (isUpdateAvailable) {
-                    sdkUpdater.downloadUpdate(
-                        latestVersion = latestVersion
-                    ) { sdkFile ->
-                        if (sdkFile != null) {
-                            sdkUpdater.installUpdate(sdkFile) {classLoader ->
-                                if (newSdkAvailable) {
-                                    sdkUpdater.reinitializeSdk(classLoader, token)
+                    if (newSdkAvailable) {
+                        sdkUpdater.downloadUpdate(
+                            latestVersion = latestVersion
+                        ) { sdkFile ->
+                            if (sdkFile != null) {
+                                sdkUpdater.installUpdate(sdkFile) {classLoader ->
+                                    sdkUpdater.reinitializeSdk(classLoader, token, sandboxEnabled)
                                 }
                             }
-                        } else {
-                            println("failed to update the file")
                         }
-                    }
-                    with(prefs.edit()) {
-                        putBoolean("newSdkAvailable", false)
-                        apply()
                     }
                 }
             }
@@ -60,10 +55,10 @@ class BoxPayCheckout(
                 openBottomSheet()
             }
         }
-        if (sandboxEnabled == true) {
+        if (sandboxEnabled) {
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
-        } else if (sandboxEnabled == false){
+        } else if (testEnv){
             editor.putString("baseUrl", "apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
         } else {

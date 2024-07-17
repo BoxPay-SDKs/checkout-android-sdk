@@ -42,6 +42,12 @@ class SdkUpdater(private val context: Context) {
                     val lastVersionWithoutVAndOkStatus = versionsMap.filter { (version, status) ->
                         !version.contains("v") && !version.contains("beta") && status == "ok"
                     }.keys.maxWithOrNull { v1, v2 -> compareVersions(v1, v2) }
+                    val sharedPreferences =
+                        context.getSharedPreferences("sdk_prefs", Context.MODE_PRIVATE)
+                    with(sharedPreferences.edit()) {
+                        putBoolean("newSdkAvailable", true)
+                        apply()
+                    }
                     println("===new version $lastVersionWithoutVAndOkStatus")
                     callback(
                         CURRENT_VERSION != lastVersionWithoutVAndOkStatus,
@@ -76,13 +82,6 @@ class SdkUpdater(private val context: Context) {
                         outputStream.write(response.body?.bytes())
                     }
 
-                    val sharedPreferences =
-                        context.getSharedPreferences("sdk_prefs", Context.MODE_PRIVATE)
-                    with(sharedPreferences.edit()) {
-                        putBoolean("newSdkAvailable", true)
-                        apply()
-                    }
-
                     println("=====file $newSdkFile")
 
                     callback(newSdkFile)
@@ -106,26 +105,28 @@ class SdkUpdater(private val context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun reinitializeSdk(dexClassLoader: DexClassLoader, token: String) {
+    fun reinitializeSdk(dexClassLoader: DexClassLoader, token: String, sandBox: Boolean) {
         try {
             val sdkClass = dexClassLoader.loadClass("com.boxpay.checkout.sdk.BoxPayCheckout")
 
-            // Use reflection to find the correct Function1 type
             val functionType = Class.forName("kotlin.jvm.functions.Function1")
 
-            // Print available constructors for debugging
-            sdkClass.constructors.forEach { ctor ->
-                println("Constructor: ${ctor.parameterTypes.joinToString()}")
+            // Get the constructor with the correct parameter types
+
+            val sharedPreferences =
+                context.getSharedPreferences("sdk_prefs", Context.MODE_PRIVATE)
+            with(sharedPreferences.edit()) {
+                putBoolean("newSdkAvailable", false)
+                apply()
             }
 
-            // Get the constructor with the correct parameter types
             val constructor = sdkClass.constructors.firstOrNull { ctor ->
                 val paramTypes = ctor.parameterTypes
                 paramTypes.size == 4 &&
                         paramTypes[0] == Context::class.java &&
                         paramTypes[1] == String::class.java &&
                         functionType.isAssignableFrom(paramTypes[2]) &&
-                        paramTypes[3] == java.lang.Boolean::class.java
+                        paramTypes[3] == Boolean::class.java
             } ?: throw NoSuchMethodException("No matching constructor found")
 
             // Create a lambda for the payment result callback
@@ -138,18 +139,10 @@ class SdkUpdater(private val context: Context) {
                 context,
                 token,
                 paymentResultCallback,
-                false // Ensure this is a non-null Boolean
+                sandBox
             )
 
-            println("====method ${sdkClass.methods}")
             val openBottomSheetMethod = sdkClass.getDeclaredMethod("openBottomSheet")
-            val sharedPreferences =
-                context.getSharedPreferences("sdk_prefs", Context.MODE_PRIVATE)
-            with(sharedPreferences.edit()) {
-                putBoolean("newSdkAvailable", false)
-                apply()
-            }
-            println("======reinitialize $openBottomSheetMethod")
             openBottomSheetMethod.invoke(sdkInstance)
         } catch (e: Exception) {
             e.printStackTrace()
