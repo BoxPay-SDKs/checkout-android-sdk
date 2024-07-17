@@ -121,11 +121,11 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context){
         val queue = Volley.newRequestQueue(context)
-        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/lGhJZ2Fxv2/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
         val jsonData = JSONObject(""" {
   "context": {
     "countryCode": "IN",
-    "legalEntity": {"code": "boxpay_test"},
+    "legalEntity": {"code": "boxpay"},
     "orderId": "test12"
   },
   "paymentType": "S",
@@ -202,7 +202,7 @@ class Check : AppCompatActivity() {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer OvxrLXMibYlA4Tn6NjMQuUnUOqUE36OOk7N3oUrGqfy6hDWWgfJnFIKqtCxWJ1vTEhIn6wMHsUmOMlvm7aUQ4e"
+                headers["Authorization"] =  "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
                 headers["X-Client-Connector-Name"] =  "Android SDK"
                 headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers

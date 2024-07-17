@@ -319,6 +319,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (e: ActivityNotFoundException) {
             // Handle the case where no activity is found to handle the intent
 
+
         }
     }
 

@@ -5,11 +5,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.webkit.WebSettings
 import androidx.appcompat.app.AppCompatActivity
-import androidx.work.CoroutineWorker
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.WorkerParameters
-import androidx.work.workDataOf
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
@@ -19,63 +14,73 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.ResponseBody
 import org.json.JSONObject
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.util.Locale
 
-class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false){
+class BoxPayCheckout(
+    private val context: Context,
+    private val token: String,
+    val onPaymentResult: ((PaymentResultObject) -> Unit)?,
+    private val sandboxEnabled: Boolean
+) {
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
+    private var sdkUpdater: SdkUpdater = SdkUpdater(context)
 
     private var BASE_URL: String? = null
 
     init {
         CoroutineScope(Dispatchers.Main).launch {
-            val latestVersion =
-                getLatestVersionFromJitPack("com.github.BoxPay-SDKs", "checkout-android-sdk")
-            val currentVersion = BuildConfig.SDK_VERSION
-            if (latestVersion != currentVersion) {
-                enqueueSdkDownload(context, latestVersion)
-            }
             val prefs = context.getSharedPreferences("sdk_prefs", Context.MODE_PRIVATE)
             val newSdkAvailable = prefs.getBoolean("newSdkAvailable", false)
-            if (newSdkAvailable) {
-                // Update the SDK
-                updateSdk()
-                with(prefs.edit()) {
-                    putBoolean("newSdkAvailable", false)
-                    apply()
+            sdkUpdater.isUpdateAvailable { isUpdateAvailable, latestVersion ->
+                if (isUpdateAvailable) {
+                    sdkUpdater.downloadUpdate(
+                        latestVersion = latestVersion
+                    ) { sdkFile ->
+                        if (sdkFile != null) {
+                            sdkUpdater.installUpdate(sdkFile) {classLoader ->
+                                if (newSdkAvailable) {
+                                    sdkUpdater.reinitializeSdk(classLoader, token)
+                                }
+                            }
+                        } else {
+                            println("failed to update the file")
+                        }
+                    }
+                    with(prefs.edit()) {
+                        putBoolean("newSdkAvailable", false)
+                        apply()
+                    }
                 }
             }
+
+            if (!newSdkAvailable) {
+                openBottomSheet()
+            }
         }
-        if(sandboxEnabled){
+        if (sandboxEnabled == true) {
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
-        } else {
+        } else if (sandboxEnabled == false){
             editor.putString("baseUrl", "apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
+        } else {
+            editor.putString("baseUrl", "test-apis.boxpay.tech")
+            this.BASE_URL = "test-apis.boxpay.tech"
         }
         editor.apply()
     }
 
     fun display() {
         if (context is Activity) {
-            val activity =
-                context as AppCompatActivity // or FragmentActivity, depending on your activity type
-            callUIAnalytics(context, "CHECKOUT_LOADED")
+            callUIAnalytics(context)
             putTransactionDetailsInSharedPreferences()
-            openBottomSheet()
         }
     }
 
-    private fun callUIAnalytics(context: Context, event: String) {
+    private fun callUIAnalytics(context: Context) {
         val requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
         val browserLanguage = Locale.getDefault().toString()
@@ -83,7 +88,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         // Constructing the request body
         val requestBody = JSONObject().apply {
             put("callerToken", token)
-            put("uiEvent", event)
+            put("uiEvent", "CHECKOUT_LOADED")
 
             // Create browserData JSON object
             val browserData = JSONObject().apply {
@@ -97,9 +102,9 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "${BASE_URL}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
+            Response.Listener { _ ->
             },
-            Response.ErrorListener { error ->
+            Response.ErrorListener { _ ->
             }) {
 
         }.apply {
@@ -115,20 +120,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
 
     }
 
-    fun extractMessageFromErrorResponse(response: String): String? {
-        try {
-            // Parse the JSON string
-            val jsonObject = JSONObject(response)
-            // Retrieve the value associated with the "message" key
-            return jsonObject.getString("message")
-        } catch (e: Exception) {
-            // Handle JSON parsing exception
-            e.printStackTrace()
-        }
-        return null
-    }
-
-    private fun openBottomSheet() {
+    fun openBottomSheet() {
         initializingCallBackFunctions()
 
         if (context is Activity) {
@@ -141,7 +133,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         }
     }
 
-    fun initializingCallBackFunctions() {
+    private fun initializingCallBackFunctions() {
         val callBackFunctions = onPaymentResult?.let { CallBackFunctions(it) }
         SingletonClass.getInstance().callBackFunctions = callBackFunctions
     }
@@ -150,119 +142,5 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
     private fun putTransactionDetailsInSharedPreferences() {
         editor.putString("token", token)
         editor.apply()
-    }
-
-    fun updateSdk() {
-        val sdkDirectory = File(context.filesDir, "boxpay_sdk")
-        val newSdkDirectory = File(context.filesDir, "boxpay_sdk_new")
-
-        if (!newSdkDirectory.exists()) {
-            return
-        }
-
-        // Delete old SDK files
-        if (sdkDirectory.exists()) {
-            sdkDirectory.deleteRecursively()
-        }
-    }
-
-
-    suspend fun getLatestVersionFromJitPack(groupId: String, artifactId: String): String {
-        val client = OkHttpClient.Builder()
-            .build()
-
-        val request = Request.Builder()
-            .url("https://jitpack.io/api/builds/$groupId/$artifactId/")
-            .build()
-
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = client.newCall(request).execute()
-                if (!response.isSuccessful) {
-                    throw IOException("Unexpected code $response")
-                }
-
-                val responseBody = response.body?.string()
-                val json = JSONObject(responseBody)
-                val versionsObject = json.getJSONObject("com.github.BoxPay-SDKs")
-                    .getJSONObject("checkout-android-sdk")
-                val versionsMap = versionsObject.toMap()
-                val lastVersionWithoutVAndOkStatus = versionsMap.filter { (version, status) ->
-                    !version.contains("v") && !version.contains("beta") && status == "ok"
-                }.keys.maxOrNull()
-
-                println("latestversion $lastVersionWithoutVAndOkStatus")
-
-                return@withContext lastVersionWithoutVAndOkStatus ?: BuildConfig.SDK_VERSION
-            } catch (e: IOException) {
-                e.printStackTrace()
-                "Unknown"
-            }
-        }
-    }
-
-    private fun enqueueSdkDownload(context: Context, latestVersion: String) {
-        val workManager = WorkManager.getInstance(context)
-        val downloadRequest = OneTimeWorkRequestBuilder<SdkDownloadWorker>()
-            .setInputData(workDataOf("latestVersion" to latestVersion))
-            .build()
-        workManager.enqueue(downloadRequest)
-    }
-
-    fun JSONObject.toMap(): Map<String, String> {
-        val map = mutableMapOf<String, String>()
-        val keys = keys()
-        while (keys.hasNext()) {
-            val key = keys.next()
-            map[key] = getString(key)
-        }
-        return map
-    }
-}
-
-class SdkDownloadWorker(context: Context, params: WorkerParameters) :
-    CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result {
-        val latestVersion = inputData.getString("latestVersion") ?: return Result.failure()
-        val sdkUrl =
-            "https://jitpack.io/com/github/BoxPay-SDKs/checkout-android-sdk/$latestVersion/checkout-android-sdk-$latestVersion.aar"
-
-        // Implement the logic to download the SDK and save it locally
-        val client = OkHttpClient()
-        val request = Request.Builder().url(sdkUrl).build()
-        try {
-            val response = client.newCall(request).execute()
-            if (!response.isSuccessful) {
-                return Result.failure()
-            }
-
-            val body: ResponseBody = response.body ?: return Result.failure()
-            val newSdkFile = File(
-                applicationContext.filesDir,
-                "boxpay_sdk_new/checkout-android-sdk-$latestVersion.aar"
-            )
-            newSdkFile.parentFile?.mkdirs()
-
-            withContext(Dispatchers.IO) {
-                FileOutputStream(newSdkFile).use { outputStream ->
-                    outputStream.write(body.bytes())
-                }
-            }
-
-
-        } catch (e: IOException) {
-            e.printStackTrace()
-            return Result.failure()
-        }
-
-        // Notify that a new SDK is available
-        val sharedPreferences =
-            applicationContext.getSharedPreferences("sdk_prefs", Context.MODE_PRIVATE)
-        with(sharedPreferences.edit()) {
-            putBoolean("newSdkAvailable", true)
-            apply()
-        }
-
-        return Result.success()
     }
 }
