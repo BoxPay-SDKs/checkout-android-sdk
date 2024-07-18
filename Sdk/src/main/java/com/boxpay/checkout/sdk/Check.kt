@@ -1,6 +1,5 @@
 package com.boxpay.checkout.sdk
 
-import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -17,19 +16,17 @@ import org.json.JSONObject
 
 class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
-    private var successScreenFullReferencePath : String ?= null
+    private var successScreenFullReferencePath: String? = null
     private var tokenFetchedAndOpen = false
 
 
-    private val binding : ActivityCheckBinding by lazy {
+    private val binding: ActivityCheckBinding by lazy {
         ActivityCheckBinding.inflate(layoutInflater)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-//        val bottomSheet = QuickPayBottomSheet()
-//        bottomSheet.show(supportFragmentManager,"QuickPayTesting")
 
         makePaymentRequest(this)
 
@@ -37,7 +34,7 @@ class Check : AppCompatActivity() {
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
         tokenLiveData.observe(this, Observer { tokenInObserve ->
             // Handle the response after the token has been updated
-            if(tokenInObserve != null) {
+            if (tokenInObserve != null) {
                 handleResponseWithToken()
                 binding.textView6.text = "Opening"
                 binding.openButton.isEnabled = false
@@ -45,7 +42,7 @@ class Check : AppCompatActivity() {
         })
 
         var actionInProgress = false
-        binding.openButton.setOnClickListener(){
+        binding.openButton.setOnClickListener() {
 
             // Disable the button
             if (actionInProgress) {
@@ -62,57 +59,36 @@ class Check : AppCompatActivity() {
 
             if (!(tokenLiveData.value.isNullOrEmpty())) {
                 showBottomSheetWithOverlay()
-                // Enable the button after the action is completed
-                // You can remove this if you want to enable the button after a certain delay
                 actionInProgress = false
                 binding.openButton.isEnabled = true
             }
         }
     }
-    fun removeLoadingAndEnabledProceedButton(){
-        binding.openButton.isEnabled = true
-        binding.progressBar.visibility = View.GONE
-        binding.textView6.text = "Open Bottom Sheet"
-        binding.textView6.visibility = View.VISIBLE
-        binding.openButton.visibility = View.VISIBLE
-        binding.pleaseWaitTextView.visibility = View.GONE
-    }
 
-    fun showLoadingInButton() {
-        binding.textView6.visibility = View.INVISIBLE
-        binding.progressBar.visibility = View.VISIBLE
-        val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
-        rotateAnimation.duration = 3000
-        rotateAnimation.repeatCount = ObjectAnimator.INFINITE
-        binding.openButton.isEnabled = false
-        rotateAnimation.start()
-    }
     private fun handleResponseWithToken() {
-        if(tokenFetchedAndOpen)
+        if (tokenFetchedAndOpen)
             return
         showBottomSheetWithOverlay()
         tokenFetchedAndOpen = true
     }
 
-     private fun showBottomSheetWithOverlay() {
-
-         //tokenLiveData.value.toString()
-//         tokenLiveData.value.toString()
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,false)
-         boxPayCheckout.testEnv = true
+    private fun showBottomSheetWithOverlay() {
+        val boxPayCheckout =
+            BoxPayCheckout(this, tokenLiveData.value ?: "", ::onPaymentResultCallback, false)
+        boxPayCheckout.testEnv = true
         boxPayCheckout.display()
-//         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
 
 
-    fun onPaymentResultCallback(result : PaymentResultObject) {
+    fun onPaymentResultCallback(result: PaymentResultObject) {
     }
 
 
-    private fun makePaymentRequest(context: Context){
+    private fun makePaymentRequest(context: Context) {
         val queue = Volley.newRequestQueue(context)
         val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
-        val jsonData = JSONObject(""" {
+        val jsonData = JSONObject(
+            """ {
   "context": {
     "countryCode": "IN",
     "legalEntity": {"code": "boxpay"},
@@ -167,7 +143,8 @@ class Check : AppCompatActivity() {
   "statusNotifyUrl": "https://www.boxpay.tech",
   "frontendReturnUrl": "https://www.boxpay.tech",
   "frontendBackUrl": "https://www.boxpay.tech"
-}""")
+}"""
+        )
 
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
@@ -176,20 +153,19 @@ class Check : AppCompatActivity() {
                 val editor: SharedPreferences.Editor = sharedPreferences.edit()
                 val tokenFetched = response.getString("token")
                 tokenLiveData.value = tokenFetched
-                editor.putString("baseUrl","test-apis.boxpay.tech")
-                editor.putString("token",tokenLiveData.value)
+                editor.putString("baseUrl", "test-apis.boxpay.tech")
+                editor.putString("token", tokenLiveData.value)
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-
-            }) {
+            Response.ErrorListener { /* no response handling */}) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
-                headers["X-Client-Connector-Name"] =  "Android SDK"
-                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
+                headers["Authorization"] =
+                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }

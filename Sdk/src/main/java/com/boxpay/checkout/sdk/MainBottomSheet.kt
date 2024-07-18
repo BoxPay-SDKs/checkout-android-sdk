@@ -1,6 +1,5 @@
 package com.boxpay.checkout.sdk
 
-import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -8,7 +7,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -68,12 +66,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
-import java.net.Inet6Address
-import java.net.InetAddress
-import java.net.NetworkInterface
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import java.util.Collections
 import java.util.Locale
 import kotlin.random.Random
 
@@ -128,46 +122,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         dismiss()
     }
 
-    private fun convertIPv6ToIPv4(ipv6Address: String): String? {
-        try {
-            val inet6Address = InetAddress.getByName(ipv6Address)
-            if (inet6Address is Inet6Address) {
-                if (inet6Address.isLinkLocalAddress) {
-                    // Handle link-local address case
-                    return "127.0.0.1"
-                }
-                val inetAddress =
-                    InetAddress.getByAddress(null, inet6Address.hostAddress.toByteArray())
-                return inetAddress.hostAddress
-            }
-        } catch (e: Exception) {
-        }
-        return null
-    }
-
-    private fun getLocalIpAddress(): String {
-        try {
-            val networkInterfaces = NetworkInterface.getNetworkInterfaces()
-            for (networkInterface in Collections.list(networkInterfaces)) {
-                val inetAddresses = Collections.list(networkInterface.inetAddresses)
-                for (inetAddress in inetAddresses) {
-                    if (!inetAddress.isLoopbackAddress && inetAddress is InetAddress) {
-                        return inetAddress.hostAddress
-                    }
-                }
-            }
-        } catch (e: Exception) {
-
-        }
-        return ""
-    }
-
     override fun onStart() {
         super.onStart()
 
         showLoadingState("onStart") // Show loading state before initiating tasks
-        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-
 
         // Show loading state while executing time-consuming tasks
         if (firstLoad) {
@@ -201,9 +159,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         overlayViewModel.setShowOverlay(false)
         val callback = SingletonClass.getInstance().getYourObject()
         if (!dismissThroughAnotherBottomSheet) {
-            if (callback == null) {
-
-            } else {
+            if (callback != null) {
                 val statusFetched = sharedPreferences.getString("status", "")
                 val transactionIdFetched = sharedPreferences.getString("transactionId", "")
                 val operationIdFetched = sharedPreferences.getString("operationId", "")
@@ -249,17 +205,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 UPIAppsAndPackageMap[appName] = app.packageName
             }
-
-            if (packageManager.getLaunchIntentForPackage(app.packageName) != null) {
-                // apps with launcher intent
-                if (app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0) {
-                    // updated system apps
-                } else if (app.flags and ApplicationInfo.FLAG_SYSTEM != 0) {
-                    // system apps
-                } else {
-                    // user installed apps
-                }
-            }
         }
     }
 
@@ -272,11 +217,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun showLoadingState(source: String) {
 
         binding.loadingRelativeLayout.visibility = View.VISIBLE
-//        binding.boxpayLogoLottie.apply {
-//            setAnimation("boxpayLogo.json") // Replace with your Lottie animation file
-//            repeatCount = LottieDrawable.INFINITE // Set repeat count to infinite
-//            playAnimation() // Start the animation
-//        }
     }
 
     private fun removeLoadingState() {
@@ -286,20 +226,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-
         job?.cancel()
-        if (requestCode == 121) {
-            if (resultCode == Activity.RESULT_OK) {
-                // The child activity was successful
-                // Handle the success here
-
-            } else if (resultCode == Activity.RESULT_CANCELED) {
-                // The child activity was canceled or failed
-                // Handle the cancellation or failure here
-
-            }
-        }
     }
 
     private fun launchUPIIntent(url: String) {
@@ -314,9 +241,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             startActivityForResult(intent, 121)
 
             removeLoadingState()
-        } catch (e: ActivityNotFoundException) {
-            // Handle the case where no activity is found to handle the intent
-
+        } catch (_: ActivityNotFoundException) {
         }
     }
 
@@ -384,7 +309,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             job?.cancel()
                         }
                     }
-                } catch (e: JSONException) {
+                } catch (_: JSONException) {
 
                 }
             }) { _ ->
@@ -399,9 +324,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val requestQueue = Volley.newRequestQueue(context)
         val requestBody = JSONObject().apply {
             val browserData = JSONObject().apply {
-
-                val webView = WebView(requireContext())
-
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
@@ -476,7 +398,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                     if (status.contains("rejected", ignoreCase = true)) {
                         removeLoadingState()
-                        PaymentFailureScreen().show(
+                        val cleanedMessage = reason.substringAfter(":")
+                        PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
                             "FailureScreenFromUPIIntent"
                         )
@@ -821,8 +744,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         netBankingMethods = true
                     }
                 }
-
-
 
                 if (upiAvailable) {
                     binding.cardView4.visibility = View.VISIBLE
@@ -1224,7 +1145,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                     if (status.contains("rejected", ignoreCase = true)) {
                         removeLoadingState()
-                        PaymentFailureScreen().show(
+                        val cleanedMessage = reason.substringAfter(":")
+                        PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
                             "FailureScreenFromUPIIntent"
                         )
@@ -1244,9 +1166,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )
                 }
             },
-            Response.ErrorListener { _ ->
-                // Handle error
-            }) {
+            Response.ErrorListener { /* no response handling */}) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
@@ -1630,11 +1550,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                     try {
                         if (!paymentDetailsObject.isNull("order")) {
-
-
                             val itemsArray = if (paymentDetailsObject.getJSONObject("order").optJSONArray("items") != null) paymentDetailsObject.getJSONObject("order").optJSONArray("items") else null
-
-
                             if (itemsArray != null) {
                                 for (i in 0 until itemsArray.length()) {
                                     val imageURL = itemsArray.getJSONObject(i).getString("imageUrl")

@@ -60,11 +60,6 @@ internal class PaymentFailureScreen(val function: () -> Unit = {}, val errorMess
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
-
-
-
-
-
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -76,22 +71,18 @@ internal class PaymentFailureScreen(val function: () -> Unit = {}, val errorMess
 
                         BottomSheetBehavior.STATE_COLLAPSED -> {
                             // Collapsed
-
                         }
 
                         BottomSheetBehavior.STATE_DRAGGING -> {
                             // The BottomSheet is being dragged
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
 
                         BottomSheetBehavior.STATE_SETTLING -> {
                             // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
-
                         }
                     }
                 }
@@ -101,9 +92,5 @@ internal class PaymentFailureScreen(val function: () -> Unit = {}, val errorMess
             })
         }
         return dialog
-    }
-
-    companion object {
-
     }
 }
