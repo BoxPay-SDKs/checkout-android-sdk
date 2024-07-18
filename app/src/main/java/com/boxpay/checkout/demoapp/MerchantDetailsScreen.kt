@@ -63,13 +63,16 @@ class MerchantDetailsScreen : AppCompatActivity() {
             binding.button.text = "Please Wait"
             if(selectedEnvironment == "prod") {
                 val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false)
+                checkout.testEnv = false
                 checkout.display()
             }
             else if(selectedEnvironment == "sandbox"){
                 val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true)
+                checkout.testEnv = false
                 checkout.display()
             }else if(selectedEnvironment == "test"){
-                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, null)
+                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false)
+                checkout.testEnv = true
                 checkout.display()
             }
         }

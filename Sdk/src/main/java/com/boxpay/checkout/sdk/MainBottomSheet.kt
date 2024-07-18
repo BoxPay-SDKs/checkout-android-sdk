@@ -1607,7 +1607,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             editor.putString("countryCodePhoneNum", countryCode?.second)
                         }
                         if (!shopperObject.isNull("phoneNumber")) {
-                            editor.putString("phoneNumber", "+" + shopperObject.getString("phoneNumber"))
+                            if (shopperObject.getString("phoneNumber").contains('+')) {
+                                editor.putString("phoneNumber", shopperObject.getString("phoneNumber"))
+                            } else {
+                                editor.putString("phoneNumber", "+" + shopperObject.getString("phoneNumber"))
+                            }
                         }
                         if (!deliveryAddress.isNull("city")) {
                             editor.putString("city", deliveryAddress.getString("city"))

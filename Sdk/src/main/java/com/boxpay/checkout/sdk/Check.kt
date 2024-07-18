@@ -98,7 +98,8 @@ class Check : AppCompatActivity() {
 
          //tokenLiveData.value.toString()
 //         tokenLiveData.value.toString()
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,null)
+        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,false)
+         boxPayCheckout.testEnv = true
         boxPayCheckout.display()
 //         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }

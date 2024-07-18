@@ -14,22 +14,24 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import org.json.JSONObject
 import java.util.Locale
 
-class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean? = false){
+class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false){
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
 
+    var testEnv = false
+
     private var BASE_URL : String ?= null
     init {
-        if(sandboxEnabled == true){
+        if(sandboxEnabled){
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
-        } else if (sandboxEnabled == false) {
-            editor.putString("baseUrl","apis.boxpay.in")
-            this.BASE_URL = "apis.boxpay.in"
-        } else {
+        } else if (testEnv) {
             editor.putString("baseUrl","test-apis.boxpay.in")
             this.BASE_URL = "test-apis.boxpay.tech"
+        } else {
+            editor.putString("baseUrl","apis.boxpay.in")
+            this.BASE_URL = "apis.boxpay.in"
         }
         editor.apply()
     }
