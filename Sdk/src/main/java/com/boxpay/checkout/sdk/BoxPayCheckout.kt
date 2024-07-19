@@ -22,20 +22,19 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
     var testEnv = false
 
     private var BASE_URL : String ?= null
-    init {
+
+    fun display() {
         if(sandboxEnabled){
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
         } else if (testEnv) {
-            editor.putString("baseUrl","test-apis.boxpay.in")
+            editor.putString("baseUrl","test-apis.boxpay.tech")
             this.BASE_URL = "test-apis.boxpay.tech"
         } else {
             editor.putString("baseUrl","apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
         }
         editor.apply()
-    }
-    fun display() {
         if (context is Activity) {
             val activity = context as AppCompatActivity // or FragmentActivity, depending on your activity type
             callUIAnalytics(context,"CHECKOUT_LOADED")

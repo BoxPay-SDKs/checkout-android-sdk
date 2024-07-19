@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.example.tray.test", appContext.packageName)
+        assertEquals("com.boxpay.checkout.sdk.test", appContext.packageName)
     }
 }
