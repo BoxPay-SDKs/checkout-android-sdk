@@ -1632,7 +1632,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.apply()
 
                 binding.nameTextView.text = sharedPreferences.getString("firstName", "") + " " + sharedPreferences.getString("lastName", "")
-                binding.mobileNumberTextViewMain.text = sharedPreferences.getString("phoneNumber", "")
+                binding.mobileNumberTextViewMain.text = "(${sharedPreferences.getString("phoneNumber", "")})"
                 binding.addressTextViewMain.text = if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
                     "${sharedPreferences.getString("address1", null)}\n" +
                             "${sharedPreferences.getString("address2", null)}\n" +
@@ -1687,7 +1687,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun updateBottomSheet() {
         binding.nameTextView.text = sharedPreferences.getString("firstName", "") + " " + sharedPreferences.getString("lastName", "")
-        binding.mobileNumberTextViewMain.text = sharedPreferences.getString("phoneNumber", null)
+        binding.mobileNumberTextViewMain.text = "(${sharedPreferences.getString("phoneNumber", "")})"
         binding.addressTextViewMain.text = if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
             "${sharedPreferences.getString("address1", null)}\n" +
                     "${sharedPreferences.getString("address2", null)}\n" +

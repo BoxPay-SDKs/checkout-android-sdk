@@ -8,6 +8,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
+import android.text.InputType
 import android.text.TextWatcher
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
@@ -83,7 +84,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val screenHeight = displayMetrics.heightPixels
 
         // Calculate 50% of screen height
-        val cardViewHeight = (screenHeight * 0.52).toInt()
+        val cardViewHeight = (screenHeight * 0.60).toInt()
 
         // Set the height of the CardView dynamically
         val layoutParams = binding.cardView.layoutParams
@@ -106,7 +107,19 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
                 countrySelectedFromDropDown = selectedItem
                 countrySelected = true
+                countryCodePhoneNum = setPhoneCodeUsingCountryName(countryCodeJson, countrySelectedFromDropDown.toString())
                 selectedCountryName = findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
+                binding.spinnerDialCodes.setSelection(getPhoneNumberCode(countryCodesArray, countryCodePhoneNum))
+                phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
+                minPhoneLength = phoneLength.first
+                maxPhoneLength = phoneLength.second
+                isMobileNumberValid()
+                if (countryCodePhoneNum.equals("+91", true)) {
+                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+                } else {
+                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+                }
+                isPostalValid()
                 toCheckAllFieldsAreFilled()
             }
 
@@ -132,9 +145,17 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 }
                 countryCodePhoneNum = selectedDialCode
                 indexCountryCodePhone = selectedDialCode
+                countrySelectedFromDropDown = setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
+                binding.countryEditText.setSelection(getCountryName(countryList, countrySelectedFromDropDown.toString()))
                 phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
                 minPhoneLength = phoneLength.first
                 maxPhoneLength = phoneLength.second
+                if (countryCodePhoneNum.equals("+91", true)) {
+                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+                } else {
+                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+                }
+                isPostalValid()
             }
             
 
@@ -336,12 +357,15 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
 
 
-
         binding.postalCodeEditText.addTextChangedListener(object : TextWatcher {
 
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
+                if (countryCodePhoneNum.equals("+91", true)) {
+                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+                } else {
+                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+                }
 
             }
 
@@ -458,7 +482,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
 
         if (toCheckAllFieldsAreFilled()) {
-            binding.textView.text = "Edit address"
+            binding.textView.text = "Edit Address"
             enableProceedButton()
         }
 
@@ -646,6 +670,29 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         return null
     }
 
+
+    fun setPhoneCodeUsingCountryName(countryCodeJson: JSONObject, countryName: String): String {
+        countryCodeJson.keys().forEach {key ->
+            val countryDetails = countryCodeJson.getJSONObject(key)
+            val code = countryDetails.getString("fullName")
+            if (code.equals(countryName)) {
+                return countryDetails.getString("isdCode")
+            }
+        }
+        return ""
+    }
+
+    fun setCountryNameUsingPhoneCode(countryCodeJson: JSONObject, isdCode: String): String {
+        countryCodeJson.keys().forEach {key ->
+            val countryDetails = countryCodeJson.getJSONObject(key)
+            val code = countryDetails.getString("isdCode")
+            if (code.equals(isdCode)) {
+                return countryDetails.getString("fullName")
+            }
+        }
+        return ""
+    }
+
     fun getMinMaxLength(countryCodeJson: JSONObject,isdCode: String) : Pair<Int, Int> {
         countryCodeJson.keys().forEach { key ->
             val countryDetails = countryCodeJson.getJSONObject(key)
@@ -709,7 +756,17 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
     fun isPostalValid() : Boolean {
         val postalCode = binding.postalCodeEditText.text
-        if (postalCode.length != 6) {
+        if (!countryCodePhoneNum.equals("+91",true) && postalCode.isEmpty()) {
+            binding.postalCodeErrorText.text = if (postalCode.isEmpty()) {
+                "Required"
+            } else {
+                ""
+            }
+            binding.postalCodeErrorText.visibility = View.VISIBLE
+            disableProceedButton()
+            return false
+        }
+        if (countryCodePhoneNum.equals("+91",true) && postalCode.length != 6) {
             binding.postalCodeErrorText.text = if (postalCode.isEmpty()) {
                 "Required"
             } else {
@@ -720,6 +777,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             return false
         }
         binding.postalCodeErrorText.visibility = View.GONE
+        binding.stateEditText.isEnabled = false
         return true
     }
 

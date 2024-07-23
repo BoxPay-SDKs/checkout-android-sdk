@@ -88,7 +88,6 @@
                 android:fontFamily="@font/inter_semibold"
                 android:textColor="#010102"
                 android:textSize="10sp"
-                app:layout_constraintBottom_toBottomOf="@+id/textView14"
                 app:layout_constraintStart_toEndOf="@+id/textView14"
                 app:layout_constraintTop_toTopOf="@+id/textView14" />
 

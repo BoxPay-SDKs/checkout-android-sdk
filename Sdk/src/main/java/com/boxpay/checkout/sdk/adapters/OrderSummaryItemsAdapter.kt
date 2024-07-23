@@ -28,7 +28,7 @@ class OrderSummaryItemsAdapter(
                 } else {
                     binding.itemImage.setImageResource(R.drawable.ic_placeholder_image )
                 }
-                val currencySymbol = sharedPreferences.getString("currencySymbol","")
+                val currencySymbol = sharedPreferences.getString("currencySymbol","₹")
                 itemPrice.text = currencySymbol+prices[position]
                 itemName.text = items[position]
             }
