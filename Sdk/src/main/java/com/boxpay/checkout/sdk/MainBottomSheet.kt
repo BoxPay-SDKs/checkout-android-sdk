@@ -537,15 +537,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
         }
 
-        binding.payUsingAnyUPIConstraint.setOnClickListener {
-            binding.payUsingAnyUPIConstraint.isEnabled = false
-            showLoadingState("payUsingAnyUPIConstraint")
-            getUrlForDefaultUPIIntent()
-            callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiIntent", "Upi")
-            callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
-            callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
-        }
-
         binding.addNewUPIIDConstraint.setOnClickListener() {
             binding.addNewUPIIDConstraint.isEnabled = false
             callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiCollect", "Upi")
@@ -747,9 +738,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (upiAvailable) {
                     binding.cardView4.visibility = View.VISIBLE
-                    if (upiIntentMethod) {
-                        binding.payUsingAnyUPIConstraint.visibility = View.VISIBLE
-                    }
+
 
                     if (upiCollectMethod) {
                         binding.addNewUPIIDConstraint.visibility = View.VISIBLE
@@ -912,7 +901,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     fun enabledButtonsForAllPaymentMethods() {
-        binding.payUsingAnyUPIConstraint.isEnabled = true
         binding.addNewUPIIDConstraint.isEnabled = true
         binding.cardConstraint.isEnabled = true
         binding.walletConstraint.isEnabled = true
@@ -973,9 +961,22 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             i++
         }
 
-        if (i == 1) {
-            binding.popularUPIAppsConstraint.visibility = View.GONE
+        val imageView = getPopularImageViewByNum(i)
+        val textView = getPopularTextViewByNum(i)
+        imageView.setImageResource(R.drawable.ic_others)
+        textView.text = "Others"
+
+        getPopularConstraintLayoutByNum(i).setOnClickListener() {
+            showLoadingState("payUsingAnyUPIConstraint")
+            getUrlForDefaultUPIIntent()
+            callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiIntent", "Upi")
+            callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
+            callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
         }
+
+//        if (i == 1) {
+//            binding.popularUPIAppsConstraint.visibility = View.GONE
+//        }
     }
 
     private fun callUIAnalytics(
@@ -1059,7 +1060,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         startFunctionCalls()
         startActivityForResult(intent, 121)
         removeLoadingState()
-        binding.payUsingAnyUPIConstraint.isEnabled = true
     }
 
     private fun getUrlForDefaultUPIIntent() {
@@ -1596,9 +1596,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                     if (upiAvailable) {
                         binding.cardView4.visibility = View.VISIBLE
-                        if (upiIntentMethod) {
-                            binding.payUsingAnyUPIConstraint.visibility = View.VISIBLE
-                        }
+
                         if (upiCollectMethod) {
                             binding.addNewUPIIDConstraint.visibility = View.VISIBLE
                         }

@@ -1,9 +1,6 @@
 package com.boxpay.checkout
 
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.test.core.app.ActivityScenario
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
@@ -14,30 +11,13 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.boxpay.checkout.demoapp.MainActivity
 import com.boxpay.checkout.demoapp.R
-import com.boxpay.checkout.server.MockWebServerRule
 import org.hamcrest.Matchers.anything
-import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 
 @RunWith(AndroidJUnit4::class)
 class EnvironmentTest {
-
-    private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var editor: SharedPreferences.Editor
-
-    @get:Rule
-    val serverRule = MockWebServerRule()
-
-    @Before
-    fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        sharedPreferences =
-            context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        editor = sharedPreferences.edit()
-    }
 
     @Test
     fun openSdkThroughDefaultToken() {
