@@ -974,9 +974,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
         }
 
-//        if (i == 1) {
-//            binding.popularUPIAppsConstraint.visibility = View.GONE
-//        }
+        if (i == 1 || i < 1) {
+            binding.popularUPIAppsConstraint.visibility = View.GONE
+        }
     }
 
     private fun callUIAnalytics(
