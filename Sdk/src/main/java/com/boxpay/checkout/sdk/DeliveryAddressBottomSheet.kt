@@ -14,6 +14,7 @@ import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.FrameLayout
@@ -59,6 +60,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         var phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
         minPhoneLength = phoneLength.first
         maxPhoneLength = phoneLength.second
+        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
 
         sharedPreferences =
@@ -730,7 +732,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             } else {
                 "Mobile number must be $maxPhoneLength digits"
             }
-                binding.mobileErrorText.visibility = View.VISIBLE
+            binding.mobileErrorText.visibility = View.VISIBLE
             return false
         }
         binding.mobileErrorText.visibility = View.GONE
@@ -777,7 +779,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             return false
         }
         binding.postalCodeErrorText.visibility = View.GONE
-        binding.stateEditText.isEnabled = false
+        binding.stateEditText.isEnabled = sharedPreferences.getString("postalCode", "")?.equals(
+            binding.postalCodeEditText.text.toString(), true) == false
         return true
     }
 
