@@ -86,7 +86,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val screenHeight = displayMetrics.heightPixels
 
         // Calculate 50% of screen height
-        val cardViewHeight = (screenHeight * 0.60).toInt()
+        val cardViewHeight = (screenHeight * 0.55).toInt()
 
         // Set the height of the CardView dynamically
         val layoutParams = binding.cardView.layoutParams
