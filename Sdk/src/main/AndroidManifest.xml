@@ -7,12 +7,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
     <application>
-        <activity
-            android:name=".BottomSheetLoadingSheet"
-            android:exported="false" />
         <activity
             android:name=".TestingPurpose"
             android:exported="false" />
@@ -28,9 +26,6 @@
         <activity
             android:name=".Check"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:exported="false" />
-        <activity
-            android:name=".TrayActivity"
             android:exported="false" />
 
         <receiver android:name=".SmsReceiver"
