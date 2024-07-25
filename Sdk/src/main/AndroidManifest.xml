@@ -11,9 +11,6 @@
 
     <application>
         <activity
-            android:name=".BottomSheetLoadingSheet"
-            android:exported="false" />
-        <activity
             android:name=".TestingPurpose"
             android:exported="false" />
         <activity
