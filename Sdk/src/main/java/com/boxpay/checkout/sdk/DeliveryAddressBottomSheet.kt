@@ -115,13 +115,18 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
                 minPhoneLength = phoneLength.first
                 maxPhoneLength = phoneLength.second
-                isMobileNumberValid()
+                if (binding.mobileNumberEditText.text.isNotEmpty()) {
+                    isMobileNumberValid()
+                }
                 if (countryCodePhoneNum.equals("+91", true)) {
                     binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
                 } else {
                     binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
                 }
-                isPostalValid()
+
+                if (binding.postalCodeEditText.text.isNotEmpty()) {
+                    isPostalValid()
+                }
                 toCheckAllFieldsAreFilled()
             }
 
@@ -157,7 +162,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
                 }
-                isPostalValid()
+                if (binding.postalCodeEditText.text.isNotEmpty()) {
+                    isPostalValid()
+                }
             }
             
 
@@ -247,7 +254,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.fullNameErrorTex.visibility = View.GONE
                     binding.fullNameEditText.background = ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
-                    toCheckAllFieldsAreFilled()
+                }
+                if (toCheckAllFieldsAreFilled()) {
+                    enableProceedButton()
+                } else {
+                    disableProceedButton()
                 }
             }
 
@@ -467,7 +478,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             editor.putString("countryCode", selectedCountryName)
             editor.putString("postalCode", postalCode.toString())
             editor.putString("firstName", firstName)
-            editor.putString("lastName", lastName)
+            if (!lastName.isNullOrBlank()) {
+                editor.putString("lastName", lastName)
+            }
             editor.putString("email", email.toString())
             editor.putString("phoneNumber", "$countryCodePhoneNum$mobileNumber")
             editor.putString("countryCodePhoneNum", countryCodePhoneNum)
