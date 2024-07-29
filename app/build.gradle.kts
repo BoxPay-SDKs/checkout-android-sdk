@@ -1,5 +1,3 @@
-import java.util.Locale
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -50,46 +48,32 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    applicationVariants.map { variant ->
-        // Extract variant name and capitalize the first letter
-        val variantName = variant.name.replaceFirstChar {
-            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-        }
-        // Define task names for unit tests and Android tests
-        val unitTests = "test${variantName}UnitTest"
-        val androidTests = "connected${variantName}AndroidTest"
-        // Register a JacocoReport task for code coverage analysis
-        tasks.register<JacocoReport>("Jacoco${variantName}CodeCoverage") {
-            // Depend on unit tests and Android tests tasks
-            dependsOn(listOf(unitTests, androidTests))
-            // Set task grouping and description
-            group = "Reporting"
-            description = "Execute UI and unit tests, generate and combine Jacoco coverage report"
-            // Configure reports to generate both XML and HTML formats
-            reports {
-                xml.required.set(true)
-                html.required.set(true)
-            }
-            // Set source directories to the main source directory
-            sourceDirectories.setFrom(layout.projectDirectory.dir("src/main/java"))
-            // Set class directories to compiled Java and Kotlin classes, excluding specified exclusions
-            classDirectories.setFrom(files(
-                fileTree(layout.buildDirectory.dir("intermediates/javac/")) {
-                    exclude("androidx/**", "com/example/data/**")
-                },
-                fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/")) {
-                    exclude("androidx/**", "com/example/data/**")
-                }
-            ))
-            // Collect execution data from .exec and .ec files generated during test execution
-            executionData.setFrom(files(
-                fileTree(layout.buildDirectory) { include(listOf("**/*.exec", "**/*.ec")) }
-            ))
-        }
-    }
 }
+
 jacoco {
     version = "0.8.7" // Set to the desired version
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+    val fileFilter = listOf("**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*", "**/*Test*.*")
+    val debugTree = fileTree("${project.buildDir}/intermediates/classes/debug") {
+        exclude(fileFilter)
+    }
+    val kotlinDebugTree = fileTree("${project.buildDir}/tmp/kotlin-classes/debug") {
+        exclude(fileFilter)
+    }
+    val mainSrc = "${project.projectDir}/src/main/java"
+
+    sourceDirectories.setFrom(files(listOf(mainSrc)))
+    classDirectories.setFrom(files(listOf(debugTree, kotlinDebugTree)))
+    executionData.setFrom(files("${project.buildDir}/jacoco/testDebugUnitTest.exec"))
 }
 
 dependencies {
