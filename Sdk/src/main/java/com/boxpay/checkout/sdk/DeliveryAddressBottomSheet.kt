@@ -10,7 +10,6 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.InputType
 import android.text.TextWatcher
-import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +17,7 @@ import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.FrameLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import com.boxpay.checkout.sdk.databinding.FragmentDeliveryAddressBottomSheetBinding
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
@@ -80,18 +80,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         // Set adapter to spinner
         spinnerDialCodes.adapter = adapter
-
-        val displayMetrics = DisplayMetrics()
-        requireActivity().windowManager.defaultDisplay.getMetrics(displayMetrics)
-        val screenHeight = displayMetrics.heightPixels
-
-        // Calculate 50% of screen height
-        val cardViewHeight = (screenHeight * 0.55).toInt()
-
-        // Set the height of the CardView dynamically
-        val layoutParams = binding.cardView.layoutParams
-        layoutParams.height = cardViewHeight
-        binding.cardView.layoutParams = layoutParams
 
 
         val countryNameListAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, countryList)
@@ -543,7 +531,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-            }
+
 
             val window = d.window
             window?.apply {
@@ -560,6 +548,17 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     )
                 ) // Semi-transparent black background
             }
+
+            val displayMetrics = context?.resources?.displayMetrics
+            val screenHeight = displayMetrics?.heightPixels ?: 0
+            val desiredHeight = (screenHeight * 0.6).toInt() // 50% of screen height
+
+            val layoutParams = bottomSheet.layoutParams
+            if (layoutParams is CoordinatorLayout.LayoutParams) {
+                layoutParams.height = desiredHeight
+                bottomSheet.layoutParams = layoutParams
+            }
+
 
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
@@ -586,7 +585,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_SETTLING -> {
                             // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
@@ -602,6 +601,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 }
             })
         }
+            }
         return dialog
     }
 
@@ -743,7 +743,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             binding.mobileErrorText.visibility = View.VISIBLE
             return false
         }
-        binding.mobileErrorText.visibility = View.GONE
+        binding.mobileErrorText.visibility = View.INVISIBLE
         return true
     }
 
@@ -760,7 +760,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             disableProceedButton()
             return false
         }
-        binding.emailErrorText.visibility = View.GONE
+        binding.emailErrorText.visibility = View.INVISIBLE
         return true
     }
 
@@ -786,7 +786,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             disableProceedButton()
             return false
         }
-        binding.postalCodeErrorText.visibility = View.GONE
+        binding.postalCodeErrorText.visibility = View.INVISIBLE
         binding.stateEditText.isEnabled = sharedPreferences.getString("postalCode", "")?.equals(
             binding.postalCodeEditText.text.toString(), true) == false
         return true
@@ -799,7 +799,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             binding.address1ErrorText.visibility = View.VISIBLE
             return false
         }
-        binding.address1ErrorText.visibility = View.GONE
+        binding.address1ErrorText.visibility = View.INVISIBLE
         return true
     }
 
@@ -810,7 +810,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             binding.stateErrorText.visibility = View.VISIBLE
             return false
         }
-        binding.stateErrorText.visibility = View.GONE
+        binding.stateErrorText.visibility = View.INVISIBLE
         return true
     }
 
@@ -821,7 +821,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             binding.cityErrortext.visibility = View.VISIBLE
             return false
         }
-        binding.cityErrortext.visibility = View.GONE
+        binding.cityErrortext.visibility = View.INVISIBLE
         return true
     }
 

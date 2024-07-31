@@ -8,14 +8,14 @@
     <LinearLayout
         android:id="@+id/frameLayout1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout123"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@drawable/bottom_sheet_bg">
 
 
@@ -54,7 +54,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
@@ -121,7 +121,7 @@
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
                             android:text="Required"
-                            android:visibility="gone"
+                            android:visibility="invisible"
                             android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/fullNameEditText" />
@@ -181,7 +181,7 @@
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
                             android:text="Mobile Number length is not correct"
-                            android:visibility="gone"
+                            android:visibility="invisible"
                             android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/mobileNumberLinearLayout" />
@@ -228,7 +228,7 @@
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
                             android:text="Invalid Email Id"
-                            android:visibility="gone"
+                            android:visibility="invisible"
                             android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/emailEditText" />
@@ -244,7 +244,7 @@
                             android:text="Country*"
                             android:textColor="@android:color/black"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/emailErrorText" />
+                            app:layout_constraintTop_toBottomOf="@+id/emailEditText" />
 
                         <Spinner
                             android:id="@+id/countryEditText"
@@ -308,7 +308,7 @@
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
                             android:text="Invalid Postal Code"
-                            android:visibility="gone"
+                            android:visibility="invisible"
                             android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/postalCodeEditText" />
@@ -355,7 +355,7 @@
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
                             android:text="Required"
-                            android:visibility="gone"
+                            android:visibility="invisible"
                             android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/stateEditText" />
@@ -403,7 +403,7 @@
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
                             android:text="Required"
-                            android:visibility="gone"
+                            android:visibility="invisible"
                             android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/cityEditText" />
@@ -449,7 +449,7 @@
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
                             android:text="Required"
-                            android:visibility="gone"
+                            android:visibility="invisible"
                             android:textColor="#ffff4d4f"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/addressEditText1" />

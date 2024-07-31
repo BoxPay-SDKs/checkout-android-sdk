@@ -178,8 +178,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         val editor = sharedPreferences.edit()
 
 
-        val environmentFetched = sharedPreferences.getString("environment", "null")
-        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
+        val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
+        Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
 
@@ -318,9 +318,33 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
+                        val callback = SingletonClass.getInstance().getYourObject()
+                        val callbackForDismissing =
+                            SingletonForDismissMainSheet.getInstance().getYourObject()
+                        if (callback != null) {
+                            callback.onPaymentResult(
+                                PaymentResultObject(
+                                    "RequiresAction",
+                                    transactionId,
+                                    transactionId
+                                )
+                            )
+                        }
                     } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status", "Posted")
+                        editor.putString("status", "Processing")
                         editor.apply()
+                        val callback = SingletonClass.getInstance().getYourObject()
+                        val callbackForDismissing =
+                            SingletonForDismissMainSheet.getInstance().getYourObject()
+                        if (callback != null) {
+                            callback.onPaymentResult(
+                                PaymentResultObject(
+                                    "Processing",
+                                    transactionId,
+                                    transactionId
+                                )
+                            )
+                        }
                     } else if (status.contains("FAILED", ignoreCase = true)) {
                         editor.putString("status", "Failed")
                         editor.apply()

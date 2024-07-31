@@ -93,8 +93,6 @@ dependencies {
     implementation ("com.android.volley:volley:1.2.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     androidTestImplementation("androidx.test:rules:1.4.0")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
-    androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
 
 }
 
