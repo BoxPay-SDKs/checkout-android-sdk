@@ -21,7 +21,7 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
-import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.SearchView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -155,7 +155,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun unselectItemsInPopularLayout() {
         if (popularWalletsSelectedIndex != -1) {
-            fetchImageView(popularWalletsSelectedIndex).setBackgroundResource(R.drawable.popular_item_unselected_bg)
+            fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(R.drawable.popular_item_unselected_bg)
         }
         popularWalletsSelected = false
     }
@@ -187,7 +187,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 if (index < walletDetailsOriginal.size) {
                     val walletDetail = walletDetailsOriginal[index]
 
-                    val relativeLayout = fetchImageView(index)
+                    val relativeLayout = fetchRelativeLayout(index)
                     val imageView = when (index) {
                         0 -> popularWalletImageView1
                         1 -> popularWalletImageView2
@@ -219,7 +219,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         } else {
                             // Remove background from the previously selected constraint layout
                             if (popularWalletsSelectedIndex != -1)
-                                fetchImageView(popularWalletsSelectedIndex).setBackgroundResource(
+                                fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(
                                     R.drawable.popular_item_unselected_bg
                                 )
                             // Set background for the clicked constraint layout
@@ -267,6 +267,10 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private fun removeLoadingScreenState() {
         binding.loadingRelativeLayout.visibility = View.GONE
         binding.walletsRecyclerView.visibility = View.VISIBLE
+        binding.popularItemRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        binding.popularItemRelativeLayout2.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        binding.popularItemRelativeLayout3.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        binding.popularItemRelativeLayout4.setBackgroundResource(R.drawable.popular_item_unselected_bg)
         colorAnimation.cancel()
     }
 
@@ -277,19 +281,19 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         dismiss()
     }
 
-    private fun fetchImageView(num: Int): ImageView {
-        val relativeLayout: ImageView = when (num) {
+    private fun fetchRelativeLayout(num: Int): RelativeLayout {
+        val relativeLayout: RelativeLayout = when (num) {
             0 ->
-                binding.popularWalletImageView1
+                binding.popularItemRelativeLayout1
 
             1 ->
-                binding.popularWalletImageView2
+                binding.popularItemRelativeLayout2
 
             2 ->
-                binding.popularWalletImageView3
+                binding.popularItemRelativeLayout3
 
             3 ->
-                binding.popularWalletImageView4
+                binding.popularItemRelativeLayout4
 
             else -> throw IllegalArgumentException("Invalid number Relative layout")
         }
@@ -542,11 +546,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun createColorAnimation(startColor: Int, endColor: Int): ValueAnimator {
 
-        val layouts = Array<ImageView?>(4) { null }
-        layouts[0] = binding.popularWalletImageView1
-        layouts[1] = binding.popularWalletImageView2
-        layouts[2] = binding.popularWalletImageView3
-        layouts[3] = binding.popularWalletImageView4
+        val layouts = Array<RelativeLayout?>(4) { null }
+        layouts[0] = binding.popularItemRelativeLayout1
+        layouts[1] = binding.popularItemRelativeLayout2
+        layouts[2] = binding.popularItemRelativeLayout3
+        layouts[3] = binding.popularItemRelativeLayout4
         return ValueAnimator.ofObject(ArgbEvaluator(), startColor, endColor).apply {
             duration = 500 // duration in milliseconds
             interpolator = AccelerateDecelerateInterpolator()
@@ -653,7 +657,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         for (wallet in walletDetailsOriginal) {
             if (query.toString().isBlank() || query.toString().isBlank()) {
                 showAllWallets()
-            } else if (wallet.walletName.contains(query.toString(), ignoreCase = true)) {
+            } else if (wallet.walletName.startsWith(query.toString(), ignoreCase = true)) {
                 walletDetailsFiltered.add(
                     WalletDataClass(
                         wallet.walletName,

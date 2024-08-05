@@ -95,7 +95,7 @@ class Check : AppCompatActivity() {
     "orderId": "test12"
   },
   "paymentType": "S",
-  "money": {"amount": "1", "currencyCode": "INR"},
+  "money": {"amount": "100", "currencyCode": "INR"},
   "descriptor": {"line1": "Some descriptor"},
   "shopper": {
     "firstName": "Ishika",
@@ -124,6 +124,25 @@ class Check : AppCompatActivity() {
         "itemName": "Sample Item",
         "description": "testProduct",
         "quantity": 1,
+        "manufacturer": null,
+        "brand": null,
+        "color": null,
+        "productUrl": null,
+        "imageUrl":
+            "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+        "categories": null,
+        "amountWithoutTax": 423.73,
+        "taxAmount": 76.27,
+        "taxPercentage": null,
+        "discountedAmount": null,
+        "amountWithoutTaxLocale": "10",
+        "amountWithoutTaxLocaleFull": "10"
+      },
+      {
+        "id": "test",
+        "itemName": "item no 2",
+        "description": "testProduct",
+        "quantity": 3,
         "manufacturer": null,
         "brand": null,
         "color": null,

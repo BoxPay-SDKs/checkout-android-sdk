@@ -100,6 +100,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var netBankingMethods = false
     private var overLayPresent = false
     private var items = mutableListOf<String>()
+    private var itemQty = mutableListOf<String>()
     private var imagesUrls = mutableListOf<String>()
     private var prices = mutableListOf<String>()
     private lateinit var Base_Session_API_URL: String
@@ -490,7 +491,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             callBackFunctionsForDismissing
 
         val orderSummaryAdapter =
-            OrderSummaryItemsAdapter(imagesUrls, items, prices, requireContext())
+            OrderSummaryItemsAdapter(imagesUrls, items, prices,itemQty, requireContext())
         binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
@@ -1414,6 +1415,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         items.add(itemObject.getString("itemName"))
                         prices.add(itemObject.getString("amountWithoutTaxLocale"))
                         val quantity = itemObject.getInt("quantity")
+                        itemQty.add(quantity.toString())
                         totalQuantity += quantity
                     }
                 }

@@ -133,7 +133,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         )
                     )
                     binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
                     binding.textView6.setTextColor(
                         Color.parseColor(
                             sharedPreferences.getString(
@@ -154,11 +154,11 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 if (textNow.isBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
                 }
             }
         })
-        binding.ll1InvalidUPI.visibility = View.GONE
+        binding.ll1InvalidUPI.visibility = View.INVISIBLE
 
         binding.proceedButton.setOnClickListener() {
             userVPA = binding.editText.text.toString()
@@ -168,7 +168,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiCollect", "Upi")
 
             if(checkString(userVPA!!)){
-                binding.ll1InvalidUPI.visibility = View.GONE
+                binding.ll1InvalidUPI.visibility = View.INVISIBLE
                 validateAPICall(requireContext(), userVPA!!)
                 showLoadingInButton()
             }else{
@@ -205,7 +205,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     val statusUserVPA = response.getBoolean("vpaValid")
 
                     if(statusUserVPA){
-                        binding.ll1InvalidUPI.visibility = View.GONE
+                        binding.ll1InvalidUPI.visibility = View.INVISIBLE
                         postRequest(requireContext(),userVPA)
                     }else{
                         binding.ll1InvalidUPI.visibility = View.VISIBLE
@@ -216,7 +216,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
 
-                binding.ll1InvalidUPI.visibility = View.GONE
+                binding.ll1InvalidUPI.visibility = View.INVISIBLE
                 postRequest(requireContext(),userVPA)
 
             }) {

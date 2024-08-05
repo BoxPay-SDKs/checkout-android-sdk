@@ -51,7 +51,7 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="6dp"
                 android:fontFamily="@font/poppins"
-                android:text="Amount : "
+                android:text="Qty : "
                 android:textColor="#010102"
                 android:textSize="10sp"
                 app:layout_constraintStart_toEndOf="@+id/itemImage"
@@ -83,6 +83,17 @@
 
             <TextView
                 android:id="@+id/itemPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:fontFamily="@font/poppins_semibold"
+                android:textColor="#010102"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/itemImage" />
+
+            <TextView
+                android:id="@+id/itemQty"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_semibold"

@@ -345,18 +345,18 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                                 )
                             )
                         }
-                    } else if (status.contains("FAILED", ignoreCase = true)) {
+                    } else if (status.contains("FAILED", ignoreCase = true) || status.contains("REJECTED", ignoreCase = true)) {
                         editor.putString("status", "Failed")
                         editor.apply()
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
-                        val callback =
-                            FailureScreenCallBackSingletonClass.getInstance().getYourObject()
-                        if(callback!=null) {
-                            callback.openFailureScreen()
-                        }
-                        dismiss()
-
+                        PaymentFailureScreen(
+                            function = {
+                                sharedViewModel.dismissBottomSheet()
+                                dismiss()
+                            },
+                            errorMessage = statusReason
+                        ).show(parentFragmentManager,"FailureScreen")
                     }
                     editor.apply()
                 } catch (e: JSONException) {

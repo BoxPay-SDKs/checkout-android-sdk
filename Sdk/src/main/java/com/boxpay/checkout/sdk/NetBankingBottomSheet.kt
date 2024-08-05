@@ -203,6 +203,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                                 bankInstrumentTypeValue
                             )
                         )
+                        banksDetailsOriginal = ArrayList(banksDetailsOriginal.sortedBy { it.bankBrand })
                     }
                 }
                 showAllBanks()
@@ -447,7 +448,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         for (bank in banksDetailsOriginal) {
             if (query.toString().isBlank() || query.toString().isBlank()) {
                 showAllBanks()
-            } else if (bank.bankName.contains(query.toString(), ignoreCase = true)) {
+            } else if (bank.bankBrand.startsWith(query.toString(), ignoreCase = true)) {
                 banksDetailsFiltered.add(
                     NetbankingDataClass(
                         bank.bankName,

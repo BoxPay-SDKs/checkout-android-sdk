@@ -25,7 +25,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:fontFamily="@font/poppins_bold"
-                android:text="Payment methods"
+                android:text="Payment Methods"
                 android:textColor="#2D2B32"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -102,7 +102,7 @@
                         android:background="@drawable/edittext_bg"
                         android:iconifiedByDefault="false"
                         android:queryBackground="@null"
-                        android:queryHint="Search for banks"
+                        android:queryHint="Search Banks"
                         android:searchIcon="@drawable/searchicon"
                         android:textColor="#000000"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -173,8 +173,8 @@
 
                                         <ImageView
                                             android:id="@+id/popularBanksImageView1"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
+                                            android:layout_width="32dp"
+                                            android:layout_height="32dp"
                                             android:layout_centerInParent="true"
                                             app:layout_constraintEnd_toEndOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
@@ -215,8 +215,8 @@
 
                                         <ImageView
                                             android:id="@+id/popularBanksImageView2"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
+                                            android:layout_width="32dp"
+                                            android:layout_height="32dp"
                                             android:layout_centerInParent="true"
                                             app:layout_constraintEnd_toEndOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
@@ -257,8 +257,8 @@
 
                                         <ImageView
                                             android:id="@+id/popularBanksImageView3"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
+                                            android:layout_width="32dp"
+                                            android:layout_height="32dp"
                                             android:layout_centerInParent="true"
                                             app:layout_constraintEnd_toEndOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
@@ -299,8 +299,8 @@
 
                                         <ImageView
                                             android:id="@+id/popularBanksImageView4"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
+                                            android:layout_width="32dp"
+                                            android:layout_height="32dp"
                                             android:layout_centerInParent="true" />
                                     </RelativeLayout>
 

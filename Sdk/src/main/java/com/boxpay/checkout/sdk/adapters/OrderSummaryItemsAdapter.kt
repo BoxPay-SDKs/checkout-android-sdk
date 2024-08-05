@@ -12,6 +12,7 @@ class OrderSummaryItemsAdapter(
     private val imagesUrls: MutableList<String>?,
     private val items: MutableList<String>,
     private val prices: MutableList<String>,
+    private val itemQtys: MutableList<String>,
     private val context: Context
 ) : RecyclerView.Adapter<OrderSummaryItemsAdapter.OrderSummaryViewHolder>() {
     val sharedPreferences =
@@ -31,6 +32,7 @@ class OrderSummaryItemsAdapter(
                 val currencySymbol = sharedPreferences.getString("currencySymbol","₹")
                 itemPrice.text = currencySymbol+prices[position]
                 itemName.text = items[position]
+                itemQty.text = itemQtys[position]
             }
         }
     }

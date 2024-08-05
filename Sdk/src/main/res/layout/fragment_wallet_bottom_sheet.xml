@@ -161,6 +161,14 @@
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp"
                                     >
+                                    <RelativeLayout
+                                        android:id="@+id/popularItemRelativeLayout1"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        android:background="@drawable/loading_state"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent">
 
                                     <ImageView
                                         android:id="@+id/popularWalletImageView1"
@@ -171,6 +179,8 @@
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent" />
+                                    </RelativeLayout>
+
 
                                     <TextView
                                         android:id="@+id/popularWalletsNameTextView1"
@@ -185,7 +195,7 @@
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toBottomOf="@+id/popularWalletImageView1"/>
+                                        app:layout_constraintTop_toBottomOf="@+id/popularItemRelativeLayout1"/>
 
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -196,6 +206,15 @@
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp">
 
+                                    <RelativeLayout
+                                        android:id="@+id/popularItemRelativeLayout2"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        android:background="@drawable/loading_state"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent">
+
                                     <ImageView
                                         android:id="@+id/popularWalletImageView2"
                                         android:layout_width="32dp"
@@ -205,6 +224,7 @@
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent" />
+                                    </RelativeLayout>
 
                                         <TextView
                                             android:id="@+id/popularWalletsNameTextView2"
@@ -219,7 +239,7 @@
                                             app:layout_constraintBottom_toBottomOf="parent"
                                             app:layout_constraintEnd_toEndOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toBottomOf="@+id/popularWalletImageView2"/>
+                                            app:layout_constraintTop_toBottomOf="@+id/popularItemRelativeLayout2"/>
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -227,6 +247,16 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp">
+
+
+                                    <RelativeLayout
+                                        android:id="@+id/popularItemRelativeLayout3"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        android:background="@drawable/loading_state"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent">
 
                                     <ImageView
                                         android:id="@+id/popularWalletImageView3"
@@ -237,6 +267,7 @@
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent" />
+                                    </RelativeLayout>
                                     <TextView
                                         android:id="@+id/popularWalletsNameTextView3"
                                         android:layout_width="wrap_content"
@@ -250,7 +281,7 @@
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toBottomOf="@+id/popularWalletImageView3"/>
+                                        app:layout_constraintTop_toBottomOf="@+id/popularItemRelativeLayout3"/>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -259,6 +290,15 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp">
+
+                                    <RelativeLayout
+                                        android:id="@+id/popularItemRelativeLayout4"
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        android:background="@drawable/loading_state"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent">
 
                                     <ImageView
                                         android:id="@+id/popularWalletImageView4"
@@ -269,6 +309,7 @@
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent" />
+                                    </RelativeLayout>
                                     <TextView
                                         android:id="@+id/popularWalletsNameTextView4"
                                         android:layout_width="wrap_content"
@@ -282,7 +323,7 @@
                                         app:layout_constraintBottom_toBottomOf="parent"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toBottomOf="@+id/popularWalletImageView4"/>
+                                        app:layout_constraintTop_toBottomOf="@+id/popularItemRelativeLayout4"/>
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
 
