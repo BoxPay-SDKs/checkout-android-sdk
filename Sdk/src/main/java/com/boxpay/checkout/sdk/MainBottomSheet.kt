@@ -97,6 +97,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var upiQRMethod = false
     private var cardsMethod = false
     private var walletMethods = false
+    private var bnplMethod = false
     private var netBankingMethods = false
     private var overLayPresent = false
     private var items = mutableListOf<String>()
@@ -575,6 +576,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             openWalletBottomSheet()
         }
 
+        binding.bnplConstraint.setOnClickListener() {
+            binding.bnplConstraint.isEnabled = false
+            callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "BuyNowPayLater")
+            openBNPLBottomSheet()
+        }
+
 
         binding.netBankingConstraint.setOnClickListener() {
             binding.netBankingConstraint.isEnabled = false
@@ -732,6 +739,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (paymentMethodName == "Wallet") {
                         walletMethods = true
                     }
+                    if (paymentMethodName == "BuyNowPayLater") {
+                        bnplMethod = true
+                    }
                     if (paymentMethodName == "NetBanking") {
                         netBankingMethods = true
                     }
@@ -746,7 +756,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
 
                     if (upiQRMethod) {
-                        if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods) {
+                        if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod) {
                             showQRCode()
                         }
                         binding.UPIQRConstraint.visibility = View.VISIBLE
@@ -766,6 +776,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardView6.visibility = View.VISIBLE
                 } else {
                     binding.cardView6.visibility = View.GONE
+                }
+
+                if (bnplMethod) {
+                    binding.cardView9.visibility = View.VISIBLE
+                } else {
+                    binding.cardView9.visibility = View.GONE
                 }
 
                 if (netBankingMethods) {
@@ -906,6 +922,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.cardConstraint.isEnabled = true
         binding.walletConstraint.isEnabled = true
         binding.netBankingConstraint.isEnabled = true
+        binding.bnplConstraint.isEnabled = true
     }
 
     private fun populatePopularUPIApps() {
@@ -1355,6 +1372,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
     }
 
+    private fun openBNPLBottomSheet() {
+
+        val bottomSheetFragment = BNPLBottomSheet.newInstance(shippingEnabled)
+        bottomSheetFragment.show(parentFragmentManager, "BnplBottomSheet")
+    }
+
     private fun makeSessionDataCall() {
 
         val url = "${Base_Session_API_URL}${token}"
@@ -1591,6 +1614,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (paymentMethodName == "Wallet") {
                             walletMethods = true
                         }
+                        if (paymentMethodName == "BuyNowPayLater") {
+                            bnplMethod= true
+                        }
                         if (paymentMethodName == "NetBanking") {
                             netBankingMethods = true
                         }
@@ -1603,7 +1629,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             binding.addNewUPIIDConstraint.visibility = View.VISIBLE
                         }
                         if (upiQRMethod) {
-                            if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods) {
+                            if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod) {
                                 showQRCode()
                             }
                             binding.UPIQRConstraint.visibility = View.VISIBLE
@@ -1621,6 +1647,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         binding.cardView6.visibility = View.VISIBLE
                     } else {
                         binding.cardView6.visibility = View.GONE
+                    }
+                    if (bnplMethod) {
+                        binding.cardView9.visibility = View.VISIBLE
+                    } else {
+                        binding.cardView9.visibility = View.GONE
                     }
                     if (netBankingMethods) {
                         binding.cardView7.visibility = View.VISIBLE

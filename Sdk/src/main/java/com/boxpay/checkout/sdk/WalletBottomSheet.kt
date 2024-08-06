@@ -316,16 +316,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         editor.apply()
     }
 
-    private val requestQueue: RequestQueue by lazy {
-        Volley.newRequestQueue(requireContext())
-    }
-
-    private fun hideKeyboard() {
-        val imm =
-            requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

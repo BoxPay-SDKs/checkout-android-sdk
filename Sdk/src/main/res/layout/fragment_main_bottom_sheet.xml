@@ -1084,6 +1084,69 @@
                     </androidx.cardview.widget.CardView>
 
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/cardView9"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginEnd="16dp"
+                        android:visibility="gone"
+                        app:cardCornerRadius="8dp"
+                        app:cardElevation="0dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/cardView7">
+
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/bnplConstraint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#FFFFFF"
+                            android:paddingTop="12dp"
+                            android:paddingEnd="12dp"
+                            android:paddingBottom="12dp"
+                            android:visibility="visible">
+
+                            <ImageView
+                                android:id="@+id/bnplImageView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:layout_marginTop="2dp"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:srcCompat="@drawable/ic_bnpl" />
+
+                            <TextView
+                                android:id="@+id/bnplTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:fontFamily="@font/poppins"
+                                android:text="Buy Now Pay Later"
+                                android:textColor="#1D1D1D"
+                                android:textSize="16sp"
+                                app:layout_constraintBottom_toBottomOf="@+id/bnplImageView"
+                                app:layout_constraintStart_toEndOf="@+id/bnplImageView"
+                                app:layout_constraintTop_toTopOf="@+id/bnplImageView" />
+
+
+                            <ImageView
+                                android:id="@+id/imageView30"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                app:layout_constraintBottom_toBottomOf="@+id/bnplImageView"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="@+id/bnplImageView"
+                                app:srcCompat="@drawable/rightarrow" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
                         android:id="@+id/proceedButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -1140,7 +1203,7 @@
                         android:visibility="visible"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardView7">
+                        app:layout_constraintTop_toBottomOf="@+id/cardView9">
 
                         <TextView
                             android:id="@+id/textView5"
