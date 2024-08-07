@@ -125,7 +125,7 @@ class WalletAdapter(
                 }
 
                 binding.root.setOnLongClickListener { view ->
-                    balloon.showAlignTop(binding.root)
+                    balloon.showAlignBottom(binding.root)
                     balloon.dismissWithDelay(2000L)
                     true // Indicate that the long click event has been consumed
                 }

@@ -665,7 +665,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
 
 
-        balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.TOP)
+        balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.BOTTOM)
         balloon.dismissWithDelay(2000L)
     }
 

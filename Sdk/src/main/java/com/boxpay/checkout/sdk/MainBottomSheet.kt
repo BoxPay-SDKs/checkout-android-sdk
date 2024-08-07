@@ -112,6 +112,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var callBackFunctions: CallBackFunctions? = null
     private var shippingEnabled: Boolean = false
     private var dismissThroughAnotherBottomSheet: Boolean = false
+    private lateinit var bottomSheet : DeliveryAddressBottomSheet
     private var firstLoad: Boolean = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -458,6 +459,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+        bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
 
         if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
             isTablet = false
@@ -599,17 +601,16 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.putString("phoneNumber", confirmPhoneNumber)
                 editor.apply()
             }
-            val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
             bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
         }
 
         binding.proceedButton.setOnClickListener() {
             if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber","")?.removePrefix(countryCode?.second ?: "")
+                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                    ?.removePrefix(countryCode?.second ?: "")
                 editor.putString("phoneNumber", confirmPhoneNumber)
                 editor.apply()
             }
-            val bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
             bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
         }
 
@@ -1516,10 +1517,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardView5.visibility = View.GONE
                     binding.cardView7.visibility = View.GONE
                     binding.netBankingConstraint.visibility = View.GONE
+                    binding.bnplConstraint.visibility = View.GONE
                     binding.cardConstraint.visibility = View.GONE
+                    binding.walletConstraint.visibility = View.GONE
                     binding.linearLayout.visibility = View.GONE
                     binding.proceedButton.visibility = View.VISIBLE
                     priceBreakUpVisible = true
+                    bottomSheet = DeliveryAddressBottomSheet.newInstance(this, true)
                     showPriceBreakUp()
                 } else {
                     binding.proceedButton.visibility = View.GONE

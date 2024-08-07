@@ -259,6 +259,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             countrySelected = true
         } else {
             binding.backButton.visibility = View.GONE
+            disableProceedButton()
         }
 
         binding.fullNameEditText.addTextChangedListener(object : TextWatcher {
