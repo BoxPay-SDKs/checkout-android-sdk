@@ -209,6 +209,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         postRequest(requireContext(),userVPA)
                     }else{
                         binding.ll1InvalidUPI.visibility = View.VISIBLE
+                        hideLoadingInButton()
                     }
                 }catch (e : Exception){
                     postRequest(requireContext(),userVPA)

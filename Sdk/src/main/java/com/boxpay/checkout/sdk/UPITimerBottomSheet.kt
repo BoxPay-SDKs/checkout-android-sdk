@@ -318,36 +318,13 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        val callback = SingletonClass.getInstance().getYourObject()
-                        val callbackForDismissing =
-                            SingletonForDismissMainSheet.getInstance().getYourObject()
-                        if (callback != null) {
-                            callback.onPaymentResult(
-                                PaymentResultObject(
-                                    "RequiresAction",
-                                    transactionId,
-                                    transactionId
-                                )
-                            )
-                        }
                     } else if (status.contains("Processing", ignoreCase = true)) {
                         editor.putString("status", "Processing")
                         editor.apply()
-                        val callback = SingletonClass.getInstance().getYourObject()
-                        val callbackForDismissing =
-                            SingletonForDismissMainSheet.getInstance().getYourObject()
-                        if (callback != null) {
-                            callback.onPaymentResult(
-                                PaymentResultObject(
-                                    "Processing",
-                                    transactionId,
-                                    transactionId
-                                )
-                            )
-                        }
                     } else if (status.contains("FAILED", ignoreCase = true) || status.contains("REJECTED", ignoreCase = true)) {
                         editor.putString("status", "Failed")
                         editor.apply()
+                        val cleanedMessage = statusReason.substringAfter(":")
                         countdownTimer.cancel()
                         countdownTimerForAPI.cancel()
                         PaymentFailureScreen(
@@ -355,7 +332,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                                 sharedViewModel.dismissBottomSheet()
                                 dismiss()
                             },
-                            errorMessage = statusReason
+                            errorMessage = cleanedMessage
                         ).show(parentFragmentManager,"FailureScreen")
                     }
                     editor.apply()

@@ -1408,18 +1408,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 var orderSummaryEnable = false
 
-                for (i in 0 until additionalDetails.length()) {
-                    if (additionalDetails.get(i) == "ORDER_ITEM_DETAILS") {
-                        orderSummaryEnable = true
-                    }
-                }
-                if (paymentDetailsObject.isNull("order"))
-                    orderSummaryEnable = false
-
-                if (!orderSummaryEnable && !totalAmount.isNullOrEmpty()) {
-                    binding.textView9.text = "Payment Summary"
-                    binding.numberOfItems.text = "Total"
-                }
 
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
                 if (currencySymbol == "")
@@ -1572,6 +1560,30 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             editor.putString("postalCode", deliveryAddress.getString("postalCode"))
                         }
                     }
+                }
+
+                var showBillingAddress: Boolean = false
+
+                for (i in 0 until additionalDetails.length()) {
+                    if (additionalDetails.get(i) == "ORDER_ITEM_DETAILS") {
+                        orderSummaryEnable = true
+                    }
+                    if (additionalDetails.get(i).equals("BILLING_ADDRESS") || additionalDetails.get(i).equals("SHIPPING_ADDRESS")) {
+                        showBillingAddress = true
+                    }
+                }
+                if (paymentDetailsObject.isNull("order"))
+                    orderSummaryEnable = false
+
+                if (!orderSummaryEnable && !totalAmount.isNullOrEmpty()) {
+                    binding.textView9.text = "Payment Summary"
+                    binding.numberOfItems.text = "Total"
+                }
+
+                if (showBillingAddress) {
+                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+                } else {
+                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                 }
 
                 if (!shippingEnabled) {
