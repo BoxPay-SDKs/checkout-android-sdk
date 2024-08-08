@@ -281,9 +281,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun fetchStatusAndReason(url: String) {
-        val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.GET, url, null,
-            { response ->
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.GET, url, null,
+            Response.Listener{ response ->
                 try {
                     val status = response.getString("status")
                     val reason = response.getString("statusReason")
@@ -327,7 +327,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 } catch (_: JSONException) {
 
                 }
-            }) { _ ->
+            },
+            Response.ErrorListener {
+
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                return headers
+            }
 
         }
         // Add the request to the RequestQueue.

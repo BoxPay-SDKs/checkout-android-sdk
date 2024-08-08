@@ -23,8 +23,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
@@ -42,6 +42,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import java.util.regex.Pattern
+import kotlin.random.Random
 
 
 internal class OTPScreenWebView() : AppCompatActivity() {
@@ -279,9 +280,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
 
-        val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.GET, url, null,
-            { response ->
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.GET, url, null,
+            Response.Listener{ response ->
                 try {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId")
@@ -326,7 +327,16 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 } catch (e: JSONException) {
 
                 }
-            }) { _ -> /* no response handling */}
+            },
+            Response.ErrorListener {
+                // no op
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                return headers
+            }
+        }
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -351,5 +361,13 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         job?.cancel()
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }
