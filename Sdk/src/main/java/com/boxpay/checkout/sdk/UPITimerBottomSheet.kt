@@ -15,8 +15,8 @@ import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.widget.FrameLayout
 import androidx.fragment.app.activityViewModels
-import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
@@ -27,6 +27,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONException
+import kotlin.random.Random
 
 internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     CancelConfirmationBottomSheet.ConfirmationListener {
@@ -279,9 +280,9 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
 
-        val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.GET, url, null,
-            { response ->
+        val jsonObjectRequest = object :JsonObjectRequest(
+            Method.GET, url, null,
+            Response.Listener{ response ->
                 try {
                     val status = response.getString("status")
                     val statusReason = response.getString("statusReason")
@@ -339,9 +340,15 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                 } catch (e: JSONException) {
 
                 }
-            }) { error ->
+            },
+            Response.ErrorListener {
 
-            // Handle errors here
+            }){
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                return headers
+            }
         }
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
@@ -359,5 +366,13 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 
     override fun onConfirmation() {
         dismiss()
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }

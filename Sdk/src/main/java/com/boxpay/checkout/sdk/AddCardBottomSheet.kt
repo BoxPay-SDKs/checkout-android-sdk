@@ -1053,7 +1053,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     var url = ""
 
                     if (status.contains("Rejected", ignoreCase = true)) {
-                        PaymentFailureScreen(errorMessage = reason).show(parentFragmentManager, "FailureScreen")
+                        val cleanedMessage = reason.substringAfter(":")
+                        PaymentFailureScreen(errorMessage = cleanedMessage).show(parentFragmentManager, "FailureScreen")
                     } else {
                         val type =
                             response.getJSONArray("actions").getJSONObject(0).getString("type")

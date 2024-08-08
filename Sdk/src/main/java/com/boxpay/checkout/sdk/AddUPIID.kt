@@ -474,7 +474,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 updateTransactionIDInSharedPreferences(transactionId!!)
 
                 if (status.contains("Rejected", ignoreCase = true)) {
-                    PaymentFailureScreen().show(parentFragmentManager,"FailureScreen")
+                    val cleanedMessage = reason.substringAfter(":")
+                    PaymentFailureScreen(errorMessage = cleanedMessage).show(parentFragmentManager,"FailureScreen")
                 }else {
 
                     if (status.contains("RequiresAction", ignoreCase = true)) {

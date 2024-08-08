@@ -38,6 +38,10 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var firstTime: Boolean = false
     private var selectedCountryName = "IN"
     private var countrySelected = false
+    private var isShippingEnabled = false
+    private var isNameEnabled = false
+    private var isPhoneEnabled = false
+    private var isEmailEnabled = false
     private var minPhoneLength = 10
     val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
     private var maxPhoneLength = 10
@@ -260,6 +264,38 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         } else {
             binding.backButton.visibility = View.GONE
             disableProceedButton()
+            binding.spinnerDialCodes.setSelection(
+                getPhoneNumberCode(
+                    countryCodesArray,countryCodePhoneNum
+                )
+            )
+            phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
+            minPhoneLength = phoneLength.first
+            maxPhoneLength = phoneLength.second
+
+            binding.countryEditText.setSelection(
+                getCountryName(
+                    countryList, "India"
+                )
+            )
+            countrySelected = true
+        }
+
+        if (!isNameEnabled) {
+            binding.fullNameLayout.visibility = View.GONE
+        }
+
+        if (!isPhoneEnabled) {
+            binding.mobileNumberLayout.visibility = View.GONE
+        }
+
+        if (!isEmailEnabled) {
+            binding.emailLayout.visibility = View.GONE
+        }
+
+
+        if (!isShippingEnabled) {
+            binding.addressLayout.visibility = View.GONE
         }
 
         binding.fullNameEditText.addTextChangedListener(object : TextWatcher {
@@ -532,8 +568,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
 
         if (toCheckAllFieldsAreFilled()) {
-            binding.textView.text = "Edit Address"
+            binding.textView.text = if (isShippingEnabled) "Edit Address" else "Edit Personal Details"
             enableProceedButton()
+        } else {
+            binding.textView.text = if (isShippingEnabled) "Add Address" else "Add Personal Details"
+            disableProceedButton()
         }
 
         return binding.root
@@ -597,7 +636,13 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
                 val displayMetrics = context?.resources?.displayMetrics
                 val screenHeight = displayMetrics?.heightPixels ?: 0
-                val desiredHeight = (screenHeight * 0.6).toInt() // 50% of screen height
+                var desiredHeight: Int
+                if (isShippingEnabled) {
+                    desiredHeight = (screenHeight * 0.6).toInt()
+                } else {
+                    desiredHeight = (screenHeight * 0.45).toInt()
+                }
+                 // 50% of screen height
 
                 val layoutParams = bottomSheet.layoutParams
                 if (layoutParams is CoordinatorLayout.LayoutParams) {
@@ -654,25 +699,41 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     companion object {
         fun newInstance(
             callback: UpdateMainBottomSheetInterface,
-            firstTime: Boolean
+            firstTime: Boolean = false,
+            isNameEnabled : Boolean,
+            isPhoneEnabled: Boolean,
+            isEmailEnabled: Boolean,
+            isShippingEnabled: Boolean
         ): DeliveryAddressBottomSheet {
             val fragment = DeliveryAddressBottomSheet()
             fragment.callback = callback
             fragment.firstTime = firstTime
+            fragment.isNameEnabled = isNameEnabled
+            fragment.isPhoneEnabled = isPhoneEnabled
+            fragment.isEmailEnabled = isEmailEnabled
+            fragment.isShippingEnabled = isShippingEnabled
             return fragment
         }
     }
 
     fun toCheckAllFieldsAreFilled(): Boolean {
-        return !binding.fullNameEditText.text.isNullOrBlank() &&
-                !binding.mobileNumberEditText.text.isNullOrBlank() &&
-                !binding.emailEditText.text.isNullOrBlank() &&
-                !binding.addressEditText1.text.isNullOrBlank() &&
-                countrySelected &&
-                !binding.postalCodeEditText.text.isNullOrBlank() && !binding.stateEditText.text.isNullOrBlank() &&
-                !binding.cityEditText.text.isNullOrBlank() &&
-                binding.mobileNumberEditText.text.length in minPhoneLength..maxPhoneLength &&
-                binding.emailEditText.text.matches(emailRegex)
+        if ((isPhoneEnabled || isEmailEnabled || isNameEnabled) && isShippingEnabled) {
+            return !binding.fullNameEditText.text.isNullOrBlank() &&
+                    !binding.mobileNumberEditText.text.isNullOrBlank() &&
+                    !binding.emailEditText.text.isNullOrBlank() &&
+                    !binding.addressEditText1.text.isNullOrBlank() &&
+                    countrySelected &&
+                    !binding.postalCodeEditText.text.isNullOrBlank() && !binding.stateEditText.text.isNullOrBlank() &&
+                    !binding.cityEditText.text.isNullOrBlank() &&
+                    binding.mobileNumberEditText.text.length in minPhoneLength..maxPhoneLength &&
+                    binding.emailEditText.text.matches(emailRegex)
+        } else {
+            return !binding.fullNameEditText.text.isNullOrBlank() &&
+                    !binding.mobileNumberEditText.text.isNullOrBlank() &&
+                    !binding.emailEditText.text.isNullOrBlank() &&
+                    binding.mobileNumberEditText.text.length in minPhoneLength..maxPhoneLength &&
+                    binding.emailEditText.text.matches(emailRegex)
+        }
     }
 
     fun readJsonFromAssets(context: Context, fileName: String): String {

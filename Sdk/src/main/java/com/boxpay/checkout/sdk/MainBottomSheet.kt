@@ -87,9 +87,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var job: Job? = null
     private var isTablet = false
-    private  var priceBreakUpVisible = false
+    private var showName = false
+    private var showEmail = false
+    private var showShipping = false
+    private var showPhone = false
+    private var priceBreakUpVisible = false
     private var i = 1
-    var countryCode : Pair<String,String>? = null
+    var countryCode: Pair<String, String>? = null
     private var transactionAmount: String? = null
     private var upiAvailable = false
     private var upiCollectMethod = false
@@ -112,7 +116,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var callBackFunctions: CallBackFunctions? = null
     private var shippingEnabled: Boolean = false
     private var dismissThroughAnotherBottomSheet: Boolean = false
-    private lateinit var bottomSheet : DeliveryAddressBottomSheet
+    private lateinit var bottomSheet: DeliveryAddressBottomSheet
     private var firstLoad: Boolean = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -153,7 +157,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 populatePopularUPIApps()
             }
             firstLoad = false
-        }else{
+        } else {
             removeLoadingState()
         }
     }
@@ -286,7 +290,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
-                    if (status.equals("Rejected", ignoreCase = true) || status.equals("failed",true)) {
+                    if (status.equals("Rejected", ignoreCase = true) || status.equals(
+                            "failed",
+                            true
+                        )
+                    ) {
                         job?.cancel()
                         val cleanedMessage = reason.substringAfter(":")
                         PaymentFailureScreen(
@@ -300,7 +308,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (status.equals("RequiresAction", ignoreCase = true)) {
                             editor.putString("status", "RequiresAction")
                             editor.apply()
-                        } else if (status.equals("Approved", ignoreCase = true) || status.equals("paid",true)) {
+                        } else if (status.equals(
+                                "Approved",
+                                ignoreCase = true
+                            ) || status.equals("paid", true)
+                        ) {
                             editor.putString("status", "Success")
                             editor.apply()
 
@@ -459,7 +471,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        bottomSheet = DeliveryAddressBottomSheet.newInstance(this, false)
+        bottomSheet = DeliveryAddressBottomSheet.newInstance(
+            this,
+            false,
+            showName,
+            showPhone,
+            showEmail,
+            showShipping
+        )
 
         if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
             isTablet = false
@@ -494,7 +513,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             callBackFunctionsForDismissing
 
         val orderSummaryAdapter =
-            OrderSummaryItemsAdapter(imagesUrls, items, prices,itemQty, requireContext())
+            OrderSummaryItemsAdapter(imagesUrls, items, prices, itemQty, requireContext())
         binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
@@ -597,10 +616,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         binding.deliveryAddressConstraintLayout.setOnClickListener() {
             if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber","")?.removePrefix(countryCode?.second ?: "")
+                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                    ?.removePrefix(countryCode?.second ?: "")
                 editor.putString("phoneNumber", confirmPhoneNumber)
                 editor.apply()
             }
+            bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                this,
+                false,
+                showName,
+                showPhone,
+                showEmail,
+                showShipping
+            )
             bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
         }
 
@@ -791,7 +819,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardView7.visibility = View.GONE
                 }
             },
-            Response.ErrorListener { /* no response handling */}) {
+            Response.ErrorListener { /* no response handling */ }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 return headers
@@ -894,7 +922,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 startTimer()
                 startFunctionCalls()
             },
-            Response.ErrorListener { /* no response handling */}) {
+            Response.ErrorListener { /* no response handling */ }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
@@ -1035,7 +1063,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
             Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */}) {}.apply {
+            Response.ErrorListener { /*no response handling */ }) {}.apply {
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
             val backoffMultiplier = 1.0f // Backoff multiplier
@@ -1185,7 +1213,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )
                 }
             },
-            Response.ErrorListener { /* no response handling */}) {
+            Response.ErrorListener { /* no response handling */ }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
@@ -1336,6 +1364,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 )
                             }
                         }
+
                         else -> {
                             // no op
                         }
@@ -1391,8 +1420,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")
 
 
-                var orderObject : JSONObject ?= null
-                if(!paymentDetailsObject.isNull("order")){
+                var orderObject: JSONObject? = null
+                if (!paymentDetailsObject.isNull("order")) {
                     orderObject = paymentDetailsObject.getJSONObject("order")
                 }
 
@@ -1404,10 +1433,36 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val taxes = orderObject?.getString("taxAmount") ?: "0"
 
-                val additionalDetails = response.getJSONObject("configs").getJSONArray("additionalFieldSets")
+                val additionalDetails =
+                    response.getJSONObject("configs").getJSONArray("additionalFieldSets")
 
                 var orderSummaryEnable = false
 
+                for (i in 0 until additionalDetails.length()) {
+                    if (additionalDetails.get(i) == "ORDER_ITEM_DETAILS") {
+                        orderSummaryEnable = true
+                    }
+                    if (additionalDetails.get(i).equals("BILLING_ADDRESS") || additionalDetails.get(
+                            i
+                        ).equals("SHIPPING_ADDRESS")
+                    ) {
+                        showShipping = true
+                    }
+                    if (additionalDetails.get(i).equals("SHOPPER_EMAIL")) {
+                        showEmail = true
+                    }
+                    if (additionalDetails.get(i).equals("SHOPPER_NAME")) {
+                        showName = true
+                    }
+                    if (additionalDetails.get(i).equals("SHOPPER_PHONE")) {
+                        showPhone = true
+                    }
+                }
+                if (showShipping) {
+                    binding.textView6.text = "Add New Address"
+                } else {
+                    binding.textView6.text = "Add Personal Details"
+                }
 
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
                 if (currencySymbol == "")
@@ -1418,7 +1473,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 transactionAmount = totalAmount
 
 
-                val itemsArray = if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
+                val itemsArray =
+                    if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
 
                 if (itemsArray != null) {
                     for (i in 0 until itemsArray.length()) {
@@ -1435,12 +1491,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
                 val checkoutThemeObject = merchantDetailsObject.getJSONObject("checkoutTheme")
 
-                val sharedPreferences = requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+                val sharedPreferences = requireContext().getSharedPreferences(
+                    "TransactionDetails",
+                    Context.MODE_PRIVATE
+                )
                 val editor = sharedPreferences.edit()
 
                 editor.putString("headerColor", checkoutThemeObject.getString("headerColor"))
-                editor.putString("primaryButtonColor", checkoutThemeObject.getString("primaryButtonColor"))
-                editor.putString("buttonTextColor", checkoutThemeObject.getString("buttonTextColor"))
+                editor.putString(
+                    "primaryButtonColor",
+                    checkoutThemeObject.getString("primaryButtonColor")
+                )
+                editor.putString(
+                    "buttonTextColor",
+                    checkoutThemeObject.getString("buttonTextColor")
+                )
                 editor.apply()
 
                 transactionAmount = totalAmount.toString()
@@ -1448,8 +1513,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.unopenedTotalValue.text = "${currencySymbol}${totalAmount}"
                 if (totalQuantity == 0) {
                     binding.numberOfItems.text = "Total"
-                }
-                else if (totalQuantity == 1)
+                } else if (totalQuantity == 1)
                     binding.numberOfItems.text = "${totalQuantity} item"
                 else
                     binding.numberOfItems.text = "${totalQuantity} items"
@@ -1491,14 +1555,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val moneyObject = paymentDetailsObject.getJSONObject("money")
                 editor.putString("amount", moneyObject.getString("amount"))
                 editor.putString("merchantId", response.getString("merchantId"))
-                editor.putString("countryCode", paymentDetailsObject.getJSONObject("context").getString("countryCode"))
-                editor.putString("legalEntity", paymentDetailsObject.getJSONObject("context").getJSONObject("legalEntity").getString("code"))
+                editor.putString(
+                    "countryCode",
+                    paymentDetailsObject.getJSONObject("context").getString("countryCode")
+                )
+                editor.putString(
+                    "legalEntity",
+                    paymentDetailsObject.getJSONObject("context").getJSONObject("legalEntity")
+                        .getString("code")
+                )
 
                 val shopperObject = paymentDetailsObject.getJSONObject("shopper")
                 if (!shopperObject.isNull("uniqueReference")) {
                     editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
                 }
-                if (shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.getJSONObject("deliveryAddress").isNull("address1")) {
+                if (shopperObject.isNull("deliveryAddress") && showShipping) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -1511,9 +1582,38 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.linearLayout.visibility = View.GONE
                     binding.proceedButton.visibility = View.VISIBLE
                     priceBreakUpVisible = true
-                    bottomSheet = DeliveryAddressBottomSheet.newInstance(this, true)
+                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                        this,
+                        true,
+                        showName,
+                        showPhone,
+                        showEmail,
+                        showShipping
+                    )
                     showPriceBreakUp()
-                } else {
+                } else if (shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber")) {
+                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.textView12.visibility = View.GONE
+                    binding.upiLinearLayout.visibility = View.GONE
+                    binding.cardView5.visibility = View.GONE
+                    binding.cardView7.visibility = View.GONE
+                    binding.netBankingConstraint.visibility = View.GONE
+                    binding.bnplConstraint.visibility = View.GONE
+                    binding.cardConstraint.visibility = View.GONE
+                    binding.walletConstraint.visibility = View.GONE
+                    binding.linearLayout.visibility = View.GONE
+                    binding.proceedButton.visibility = View.VISIBLE
+                    priceBreakUpVisible = true
+                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                        this,
+                        true,
+                        showName,
+                        showPhone,
+                        showEmail,
+                        showShipping
+                    )
+                    showPriceBreakUp()
+                }else {
                     binding.proceedButton.visibility = View.GONE
                     if (!shopperObject.isNull("firstName")) {
                         editor.putString("firstName", shopperObject.getString("firstName"))
@@ -1527,10 +1627,25 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (!shopperObject.isNull("email")) {
                         editor.putString("email", shopperObject.getString("email"))
                     }
+                    if (!shopperObject.isNull("phoneNumber")) {
+                        if (shopperObject.getString("phoneNumber").contains('+')) {
+                            editor.putString(
+                                "phoneNumber",
+                                shopperObject.getString("phoneNumber")
+                            )
+                        } else {
+                            editor.putString(
+                                "phoneNumber",
+                                "+" + shopperObject.getString("phoneNumber")
+                            )
+                        }
+                    }
+                    val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
+                    val countryCodeJson = JSONObject(jsonString)
+                    val countryCodesArray = loadCountryCodes(countryCodeJson)
+                    countryCode = getCountryCode(countryCodesArray, sharedPreferences.getString("phoneNumber", null) ?: "+91")
                     if (!shopperObject.isNull("deliveryAddress")) {
                         val deliveryAddress = shopperObject.getJSONObject("deliveryAddress")
-                        val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
-                        val countryCodeJson = JSONObject(jsonString)
                         if (!deliveryAddress.isNull("address1")) {
                             editor.putString("address1", deliveryAddress.getString("address1"))
                         }
@@ -1538,17 +1653,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             editor.putString("address2", deliveryAddress.getString("address2"))
                         }
                         if (!deliveryAddress.isNull("countryCode")) {
-                            countryCode = getCountryName(countryCodeJson, deliveryAddress.getString("countryCode"))
-                            editor.putString("countryName",countryCode?.first)
+                            countryCode = getCountryName(
+                                countryCodeJson,
+                                deliveryAddress.getString("countryCode")
+                            )
+                            editor.putString("countryName", countryCode?.first)
                             editor.putString("indexCountryCodePhone", countryCode?.second)
                             editor.putString("countryCodePhoneNum", countryCode?.second)
-                        }
-                        if (!shopperObject.isNull("phoneNumber")) {
-                            if (shopperObject.getString("phoneNumber").contains('+')) {
-                                editor.putString("phoneNumber", shopperObject.getString("phoneNumber"))
-                            } else {
-                                editor.putString("phoneNumber", "+" + shopperObject.getString("phoneNumber"))
-                            }
                         }
                         if (!deliveryAddress.isNull("city")) {
                             editor.putString("city", deliveryAddress.getString("city"))
@@ -1562,16 +1673,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 }
 
-                var showBillingAddress: Boolean = false
 
-                for (i in 0 until additionalDetails.length()) {
-                    if (additionalDetails.get(i) == "ORDER_ITEM_DETAILS") {
-                        orderSummaryEnable = true
-                    }
-                    if (additionalDetails.get(i).equals("BILLING_ADDRESS") || additionalDetails.get(i).equals("SHIPPING_ADDRESS")) {
-                        showBillingAddress = true
-                    }
-                }
                 if (paymentDetailsObject.isNull("order"))
                     orderSummaryEnable = false
 
@@ -1580,18 +1682,16 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.numberOfItems.text = "Total"
                 }
 
-                if (showBillingAddress) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
-                } else {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
-                }
-
                 if (!shippingEnabled) {
-                    val paymentMethodsArray = response.getJSONObject("configs").getJSONArray("paymentMethods")
+                    val paymentMethodsArray =
+                        response.getJSONObject("configs").getJSONArray("paymentMethods")
 
                     try {
                         if (!paymentDetailsObject.isNull("order")) {
-                            val itemsArray = if (paymentDetailsObject.getJSONObject("order").optJSONArray("items") != null) paymentDetailsObject.getJSONObject("order").optJSONArray("items") else null
+                            val itemsArray = if (paymentDetailsObject.getJSONObject("order")
+                                    .optJSONArray("items") != null
+                            ) paymentDetailsObject.getJSONObject("order")
+                                .optJSONArray("items") else null
                             if (itemsArray != null) {
                                 for (i in 0 until itemsArray.length()) {
                                     val imageURL = itemsArray.getJSONObject(i).getString("imageUrl")
@@ -1617,7 +1717,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 upiAvailable = true
                             }
                             if (brand == "UpiQr") {
-                                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                                val userAgentHeader =
+                                    WebSettings.getDefaultUserAgent(requireContext())
                                 if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
                                     upiQRMethod = true
                                 }
@@ -1631,7 +1732,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             walletMethods = true
                         }
                         if (paymentMethodName == "BuyNowPayLater") {
-                            bnplMethod= true
+                            bnplMethod = true
                         }
                         if (paymentMethodName == "NetBanking") {
                             netBankingMethods = true
@@ -1678,23 +1779,35 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 editor.apply()
 
-                binding.nameTextView.text = sharedPreferences.getString("firstName", "") + " " + sharedPreferences.getString("lastName", "")
-                binding.mobileNumberTextViewMain.text = "(${sharedPreferences.getString("phoneNumber", "")})"
-                binding.addressTextViewMain.text = if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
-                    "${sharedPreferences.getString("address1", null)}\n" +
-                            "${sharedPreferences.getString("address2", null)}\n" +
-                            "${sharedPreferences.getString("city", null)}" +
-                            ", ${sharedPreferences.getString("state", "null")}" +
-                            ", ${sharedPreferences.getString("postalCode", "null")}"
-                } else {
-                    "${sharedPreferences.getString("address1", null)}\n" +
-                            "${sharedPreferences.getString("city", null)}" +
-                            ", ${sharedPreferences.getString("state", "null")}" +
-                            ", ${sharedPreferences.getString("postalCode", "null")}"
-                }
+                binding.nameTextView.text = sharedPreferences.getString(
+                    "firstName",
+                    ""
+                ) + " " + sharedPreferences.getString("lastName", "")
+                binding.mobileNumberTextViewMain.text =
+                    "(${sharedPreferences.getString("phoneNumber", "")})"
+                binding.addressTextViewMain.text =
+                    if (!showShipping) {
+                        binding.textView2.text = "Personal details"
+                        sharedPreferences.getString("email", null)
+                    } else {
+                        binding.textView2.text = "Delivery Address"
+                        if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
+                            "${sharedPreferences.getString("address1", null)}\n" +
+                                    "${sharedPreferences.getString("address2", null)}\n" +
+                                    "${sharedPreferences.getString("city", null)}" +
+                                    ", ${sharedPreferences.getString("state", "null")}" +
+                                    ", ${sharedPreferences.getString("postalCode", "null")}"
+                        } else {
+                            "${sharedPreferences.getString("address1", null)}\n" +
+                                    "${sharedPreferences.getString("city", null)}" +
+                                    ", ${sharedPreferences.getString("state", "null")}" +
+                                    ", ${sharedPreferences.getString("postalCode", "null")}"
+                        }
+                    }
                 removeLoadingState()
 
             } catch (e: Exception) {
+                println("======e $e")
                 Toast.makeText(
                     requireContext(),
                     "Invalid token/selected environment.\nPlease press back button and try again",
@@ -1733,23 +1846,36 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     override fun updateBottomSheet() {
-        binding.nameTextView.text = sharedPreferences.getString("firstName", "") + " " + sharedPreferences.getString("lastName", "")
-        binding.mobileNumberTextViewMain.text = "(${sharedPreferences.getString("phoneNumber", "")})"
-        binding.addressTextViewMain.text = if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
-            "${sharedPreferences.getString("address1", null)}\n" +
-                    "${sharedPreferences.getString("address2", null)}\n" +
-                    "${sharedPreferences.getString("city", null)}" +
-                    ", ${sharedPreferences.getString("state", "null")}" +
-                    ", ${sharedPreferences.getString("postalCode", "null")}"
-        } else {
-            "${sharedPreferences.getString("address1", null)}\n" +
-                    "${sharedPreferences.getString("city", null)}" +
-                    ", ${sharedPreferences.getString("state", "null")}" +
-                    ", ${sharedPreferences.getString("postalCode", "null")}"
-        }
-
+        binding.nameTextView.text = sharedPreferences.getString(
+            "firstName",
+            ""
+        ) + " " + sharedPreferences.getString("lastName", "")
+        binding.mobileNumberTextViewMain.text =
+            "(${sharedPreferences.getString("phoneNumber", "")})"
+        binding.addressTextViewMain.text =
+            if (!showShipping) {
+                binding.textView2.text = "Personal details"
+                sharedPreferences.getString("email", null)
+            } else {
+                binding.textView2.text = "Delivery Address"
+                if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
+                    "${sharedPreferences.getString("address1", null)}\n" +
+                            "${sharedPreferences.getString("address2", null)}\n" +
+                            "${sharedPreferences.getString("city", null)}" +
+                            ", ${sharedPreferences.getString("state", "null")}" +
+                            ", ${sharedPreferences.getString("postalCode", "null")}"
+                } else {
+                    "${sharedPreferences.getString("address1", null)}\n" +
+                            "${sharedPreferences.getString("city", null)}" +
+                            ", ${sharedPreferences.getString("state", "null")}" +
+                            ", ${sharedPreferences.getString("postalCode", "null")}"
+                }
+            }
         binding.cardView8.visibility = View.VISIBLE
-        countryCode = Pair(sharedPreferences.getString("countryName",null) ?: "",sharedPreferences.getString("indexCountryCodePhone",null) ?: "")
+        countryCode = Pair(
+            sharedPreferences.getString("countryName", null) ?: "",
+            sharedPreferences.getString("indexCountryCodePhone", null) ?: ""
+        )
 
         binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
         binding.textView12.visibility = View.VISIBLE
@@ -1774,7 +1900,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         return bufferedReader.use { it.readText() }
     }
 
-    private fun getCountryName(countryCodeJson: JSONObject, countryCode: String): Pair<String, String>? {
+    private fun getCountryName(
+        countryCodeJson: JSONObject,
+        countryCode: String
+    ): Pair<String, String>? {
         countryCodeJson.keys().forEach { key ->
             if (key.equals(countryCode)) {
                 val countryDetails = countryCodeJson.getJSONObject(key)
@@ -1786,12 +1915,40 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         return null
     }
 
+    private fun getCountryCode(
+        countryCodeJson: Array<String>,
+        phoneNumber: String
+    ): Pair<String, String>? {
+        countryCodeJson.forEach { key ->
+            if (phoneNumber.startsWith(key)) {
+                return Pair("", key)
+            }
+        }
+        return null
+    }
+
 
     fun generateRandomAlphanumericString(length: Int): String {
-        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length)
             .map { Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
+    }
+
+    fun loadCountryCodes(countryCodeJson: JSONObject): Array<String> {
+        val isdCodes = mutableSetOf<String>()
+
+        // Iterate through each country and extract the isdCode
+        countryCodeJson.keys().forEach { key ->
+            val countryDetails = countryCodeJson.getJSONObject(key)
+            val isdCode = countryDetails.getString("isdCode")
+            isdCodes.add(isdCode)
+        }
+
+        // Sort ISD codes in ascending order
+        val sorted = isdCodes.sorted()
+
+        return sorted.toTypedArray()
     }
 }
