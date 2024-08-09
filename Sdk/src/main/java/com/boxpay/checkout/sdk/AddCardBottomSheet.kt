@@ -32,7 +32,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentAddCardBottomSheetBinding
@@ -1119,22 +1118,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
                 // Handle error
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    binding.ll1InvalidCardNumber.visibility = View.VISIBLE
-                    binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
-                    getMessageForFieldErrorItems(errorResponse)
-                    hideLoadingInButton()
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    if (errorMessage.contains(
-                            "Session is no longer accepting the payment as payment is already completed",
-                            ignoreCase = true
-                        )
-                    ) {
-                        binding.textView4.text = "Payment is already done"
-                    }
-                }
-
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()

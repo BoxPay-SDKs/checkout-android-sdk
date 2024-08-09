@@ -910,12 +910,10 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
                 // Handle error
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    binding.errorField.visibility = View.VISIBLE
-                    binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
-                    hideLoadingInButton()
-                }
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+                hideLoadingInButton()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
