@@ -289,6 +289,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             Response.Listener { response ->
                 try {
                     val status = response.getString("status")
+                    println("========timer status $status")
                     val statusReason = response.getString("statusReason")
                     val transactionId = response.getString("transactionId")
 

@@ -115,6 +115,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private lateinit var countdownTimer: CountDownTimer
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
+    var isGpayReturned = false
+    var isOthersReturned = false
+    var isPhonePe = false
+    var isPaytmReturned = false
     private var callBackFunctions: CallBackFunctions? = null
     private var shippingEnabled: Boolean = false
     private var dismissThroughAnotherBottomSheet: Boolean = false
@@ -271,11 +275,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             } else {
                 // Payment was canceled by the user or some error occurred
-                editor.putString("status", "Failed")
-                editor.apply()
-                PaymentFailureScreen(
-                    errorMessage = "Payment failed with Gpay. Please retry payment with a different UPI app"
-                ).show(parentFragmentManager, "FailureScreen")
+                isGpayReturned = true
             }
         } else if (requestCode == 122) {
             if (resultCode == Activity.RESULT_OK) {
@@ -313,11 +313,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             } else {
                 // Payment was canceled by the user or some error occurred
-                editor.putString("status", "Failed")
-                editor.apply()
-                PaymentFailureScreen(
-                    errorMessage = "Payment failed with Paytm. Please retry payment with a different UPI app"
-                ).show(parentFragmentManager, "FailureScreen")
+                isPaytmReturned = true
             }
         } else if (requestCode == 123){
             if (resultCode == Activity.RESULT_OK) {
@@ -355,11 +351,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             } else {
                 // Payment was canceled by the user or some error occurred
-                editor.putString("status", "Failed")
-                editor.apply()
-                PaymentFailureScreen(
-                    errorMessage = "Payment failed with PhonePe. Please retry payment with a different UPI app"
-                ).show(parentFragmentManager, "FailureScreen")
+               isPhonePe = true
             }
         } else {
             if (resultCode == Activity.RESULT_OK) {
@@ -397,11 +389,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             } else {
                 // Payment was canceled by the user or some error occurred
-                editor.putString("status", "Failed")
-                editor.apply()
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
+                isOthersReturned = true
             }
         }
     }
@@ -430,6 +418,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun startFunctionCalls() {
+        job?.cancel()
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 delay(4000)
@@ -464,8 +453,41 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 try {
                     val status = response.getString("status")
                     val reason = response.getString("statusReason")
+                    println()
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
+                    if (status.equals("Pending",ignoreCase = true) && isGpayReturned) {
+                        editor.putString("status", "Failed")
+                        editor.apply()
+                        PaymentFailureScreen(
+                            errorMessage = "Payment failed with Gpay. Please retry payment with a different UPI app"
+                        ).show(parentFragmentManager, "FailureScreen")
+                        isGpayReturned = false
+                    }
+                    if (status.equals("Pending",ignoreCase = true) && isPhonePe) {
+                        editor.putString("status", "Failed")
+                        editor.apply()
+                        PaymentFailureScreen(
+                            errorMessage = "Payment failed with PhonePe. Please retry payment with a different UPI app"
+                        ).show(parentFragmentManager, "FailureScreen")
+                        isPhonePe = false
+                    }
+                    if (status.equals("Pending", ignoreCase = true) && isOthersReturned) {
+                        editor.putString("status", "Failed")
+                        editor.apply()
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                        isOthersReturned = false
+                    }
+                    if (status.equals("Pending",ignoreCase = true) && isPaytmReturned) {
+                        editor.putString("status", "Failed")
+                        editor.apply()
+                        PaymentFailureScreen(
+                            errorMessage = "Payment failed with Paytm. Please retry payment with a different UPI app"
+                        ).show(parentFragmentManager, "FailureScreen")
+                        isPaytmReturned = false
+                    }
 
                     if (status.equals("Rejected", ignoreCase = true) || status.equals(
                             "failed",
@@ -479,8 +501,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             val cleanedMessage = reason.substringAfter(":")
                             PaymentFailureScreen(
                                 function = {
-                                    countdownTimer.cancel()
-                                    showQRCode()
+                                    if (qrCodeShown) {
+                                        countdownTimer.cancel()
+                                        showQRCode()
+                                    }
                                 },
                                 errorMessage = cleanedMessage
                             ).show(parentFragmentManager, "FailureScreen")
@@ -762,6 +786,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiCollect", "Upi")
             callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Upi")
             callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiCollect", "Upi")
+            job?.cancel()
             openAddUPIIDBottomSheet()
         }
 

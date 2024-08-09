@@ -1331,6 +1331,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 binding.editTextCardNumber.text.isNotEmpty() &&
                 isValidCardNumberByLuhn(binding.editTextCardNumber.text.toString().replace("\\s".toRegex(), "")) &&
                 isValidCVC(binding.editTextCardCVV.text.toString().toInt()) &&
+                binding.editTextCardValidity.text.length == 5 &&
                 isValidExpirationDate(binding.editTextCardValidity.text.toString().substring(0,2),binding.editTextCardValidity.text.toString().substring(3,5)) &&
                 isNameOnCardValid
     }

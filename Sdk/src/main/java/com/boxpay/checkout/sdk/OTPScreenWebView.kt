@@ -343,9 +343,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private fun startFunctionCalls() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
+                delay(4000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 5 seconds
-                delay(2000)
             }
         }
     }
