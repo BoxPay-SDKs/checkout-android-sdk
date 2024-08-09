@@ -1,6 +1,8 @@
 package com.boxpay.checkout.sdk
 
+import android.app.Activity
 import android.app.Dialog
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -104,7 +106,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var bnplMethod = false
     private var netBankingMethods = false
     private var overLayPresent = false
-    private var isIntentApiCall = false
     private var items = mutableListOf<String>()
     private var itemQty = mutableListOf<String>()
     private var imagesUrls = mutableListOf<String>()
@@ -134,10 +135,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         showLoadingState("onStart") // Show loading state before initiating tasks
 
-        val coroutineScope = CoroutineScope(Dispatchers.Main)
-        coroutineScope.launch {
-            startFunctionCalls()
-        }
 
         // Show loading state while executing time-consuming tasks
         if (firstLoad) {
@@ -239,6 +236,176 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         job?.cancel()
+        if (requestCode == 121) {
+            if (resultCode == Activity.RESULT_OK) {
+                val responseUri: Uri? = data?.data
+                if (responseUri != null) {
+                    val responseString = responseUri.toString()
+                    if (responseString.contains("success", ignoreCase = true)) {
+                        // Payment was successful
+                        editor.putString("status", "Success")
+                        editor.apply()
+
+                        if (isAdded && isResumed) {
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            job?.cancel()
+                        }
+                    } else if (responseString.contains("fail", ignoreCase = true) || responseString.contains("decline", ignoreCase = true)) {
+                        // Payment was declined or failed
+                        editor.putString("status", "Failed")
+                        editor.apply()
+                        if (isAdded && isResumed) {
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = ""
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    } else {
+                        // User returned without completing payment or other cases
+                    }
+                } else {
+                    // User returned without completing payment or other cases
+                }
+            } else {
+                // Payment was canceled by the user or some error occurred
+                editor.putString("status", "Failed")
+                editor.apply()
+                PaymentFailureScreen(
+                    errorMessage = "Payment failed with Gpay. Please retry payment with a different UPI app"
+                ).show(parentFragmentManager, "FailureScreen")
+            }
+        } else if (requestCode == 122) {
+            if (resultCode == Activity.RESULT_OK) {
+                val responseUri: Uri? = data?.data
+                if (responseUri != null) {
+                    val responseString = responseUri.toString()
+                    if (responseString.contains("success", ignoreCase = true)) {
+                        // Payment was successful
+                        editor.putString("status", "Success")
+                        editor.apply()
+
+                        if (isAdded && isResumed) {
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            job?.cancel()
+                        }
+                    } else if (responseString.contains("fail", ignoreCase = true) || responseString.contains("decline", ignoreCase = true)) {
+                        // Payment was declined or failed
+                        editor.putString("status", "Failed")
+                        editor.apply()
+                        if (isAdded && isResumed) {
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = ""
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    } else {
+                        // User returned without completing payment or other cases
+                    }
+                } else {
+                    // User returned without completing payment or other cases
+                }
+            } else {
+                // Payment was canceled by the user or some error occurred
+                editor.putString("status", "Failed")
+                editor.apply()
+                PaymentFailureScreen(
+                    errorMessage = "Payment failed with Paytm. Please retry payment with a different UPI app"
+                ).show(parentFragmentManager, "FailureScreen")
+            }
+        } else if (requestCode == 123){
+            if (resultCode == Activity.RESULT_OK) {
+                val responseUri: Uri? = data?.data
+                if (responseUri != null) {
+                    val responseString = responseUri.toString()
+                    if (responseString.contains("success", ignoreCase = true)) {
+                        // Payment was successful
+                        editor.putString("status", "Success")
+                        editor.apply()
+
+                        if (isAdded && isResumed) {
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            job?.cancel()
+                        }
+                    } else if (responseString.contains("fail", ignoreCase = true) || responseString.contains("decline", ignoreCase = true)) {
+                        // Payment was declined or failed
+                        editor.putString("status", "Failed")
+                        editor.apply()
+                        if (isAdded && isResumed) {
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = ""
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    } else {
+                        // User returned without completing payment or other cases
+                    }
+                } else {
+                    // User returned without completing payment or other cases
+                }
+            } else {
+                // Payment was canceled by the user or some error occurred
+                editor.putString("status", "Failed")
+                editor.apply()
+                job?.cancel()
+                PaymentFailureScreen(
+                    errorMessage = "Payment failed with PhonePe. Please retry payment with a different UPI app"
+                ).show(parentFragmentManager, "FailureScreen")
+            }
+        } else {
+            if (resultCode == Activity.RESULT_OK) {
+                val responseUri: Uri? = data?.data
+                if (responseUri != null) {
+                    val responseString = responseUri.toString()
+                    if (responseString.contains("success", ignoreCase = true)) {
+                        // Payment was successful
+                        editor.putString("status", "Success")
+                        editor.apply()
+
+                        if (isAdded && isResumed) {
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            job?.cancel()
+                        }
+                    } else if (responseString.contains("fail", ignoreCase = true) || responseString.contains("decline", ignoreCase = true)) {
+                        // Payment was declined or failed
+                        editor.putString("status", "Failed")
+                        editor.apply()
+                        if (isAdded && isResumed) {
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = ""
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    } else {
+                        // User returned without completing payment or other cases
+                    }
+                } else {
+                    // User returned without completing payment or other cases
+                }
+            } else {
+                // Payment was canceled by the user or some error occurred
+                editor.putString("status", "Failed")
+                editor.apply()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+            }
+        }
     }
 
     private fun launchUPIIntent(url: String) {
@@ -246,8 +413,22 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val uri = Uri.parse(url)
         intent.data = uri
-        startActivity(intent)
-        removeLoadingState()
+        try {
+            var resultCode : Int
+            startFunctionCalls()
+            if (url.startsWith("tez")) {
+                resultCode = 121
+            } else if (url.startsWith("paytm")) {
+                resultCode = 122
+            } else {
+                resultCode = 123
+            }
+
+            startActivityForResult(intent, resultCode)
+
+            removeLoadingState()
+        } catch (_: ActivityNotFoundException) {
+        }
     }
 
     private fun startFunctionCalls() {
@@ -284,7 +465,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             Response.Listener { response ->
                 try {
                     val status = response.getString("status")
-                    println("====main==status $status")
                     val reason = response.getString("statusReason")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
@@ -294,6 +474,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             true
                         )
                     ) {
+                        editor.putString("status", "Failed")
+                        editor.apply()
                         if (isAdded && isResumed) {
                             job?.cancel()
                             val cleanedMessage = reason.substringAfter(":")
@@ -332,11 +514,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             },
             Response.ErrorListener {
-
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                headers["X-Trace-Id"] = generateRandomAlphanumericString(10)
                 return headers
             }
 
@@ -419,7 +603,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val urlForIntent = actionsArray.getJSONObject(0).getString("url")
                     val status = response.getJSONObject("status").getString("status")
                     val reason = response.getJSONObject("status").getString("reason")
-                    isIntentApiCall = true
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
@@ -443,6 +626,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             },
             Response.ErrorListener { _ ->
                 // Handle error
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
                 removeLoadingState()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -832,7 +1018,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardView7.visibility = View.GONE
                 }
             },
-            Response.ErrorListener { /* no response handling */ }) {
+            Response.ErrorListener { /* no response handling */
+                removeLoadingState()
+                removeLoadingState()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")}) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 return headers
@@ -933,8 +1124,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 imageView.setImageBitmap(bitmap)
                 removeLoadingState()
                 startTimer()
+                startFunctionCalls()
             },
-            Response.ErrorListener { /* no response handling */ }) {
+            Response.ErrorListener { /* no response handling */
+                removeLoadingState()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")}) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
@@ -1116,7 +1312,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun openDefaultUPIIntentBottomSheetFromAndroid(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        startActivity(intent)
+        startFunctionCalls()
+        startActivityForResult(intent, 124)
         removeLoadingState()
     }
 
@@ -1199,7 +1396,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val status = response.getJSONObject("status").getString("status")
                     val reason = response.getJSONObject("status").getString("reason")
                     transactionId = response.getString("transactionId").toString()
-                    isIntentApiCall = true
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
                     if (status.contains("rejected", ignoreCase = true)) {
@@ -1227,6 +1423,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             },
             Response.ErrorListener { /* no response handling */
                 removeLoadingState()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -1838,7 +2037,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 removeLoadingState()
 
             } catch (e: Exception) {
-                println("======e $e")
                 Toast.makeText(
                     requireContext(),
                     "Invalid token/selected environment.\nPlease press back button and try again",
@@ -1908,7 +2106,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             sharedPreferences.getString("indexCountryCodePhone", null) ?: ""
         )
 
-        binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+//        binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
         binding.textView12.visibility = View.VISIBLE
         binding.upiLinearLayout.visibility = View.VISIBLE
         binding.cardView5.visibility = View.VISIBLE
