@@ -28,7 +28,6 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
-import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.ActivityOtpscreenWebViewBinding
 import com.boxpay.checkout.sdk.interfaces.OnWebViewCloseListener
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
@@ -298,12 +297,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
                         job?.cancel()
                         val callback = SingletonClass.getInstance().getYourObject()
-                        val callbackForDismissing = SingletonForDismissMainSheet.getInstance().getYourObject()
                         if(callback!= null){
                             callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
                         }
-
-                        callbackForDismissing?.dismissFunction?.invoke()
 
                         finish()
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
