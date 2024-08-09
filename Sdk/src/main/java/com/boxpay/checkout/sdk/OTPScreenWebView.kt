@@ -31,7 +31,6 @@ import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
 import com.boxpay.checkout.sdk.databinding.ActivityOtpscreenWebViewBinding
 import com.boxpay.checkout.sdk.interfaces.OnWebViewCloseListener
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
-import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -294,12 +293,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
                         editor.putString("status","Success")
                         editor.apply()
-
-                        job?.cancel()
-                        val callback = SingletonClass.getInstance().getYourObject()
-                        if(callback!= null){
-                            callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
-                        }
 
                         finish()
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {

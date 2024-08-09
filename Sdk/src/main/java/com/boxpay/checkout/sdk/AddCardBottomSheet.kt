@@ -1367,14 +1367,29 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         editor.putString("status","Success")
                         editor.apply()
 
-                        job?.cancel()
-                        val callback = SingletonClass.getInstance().getYourObject()
-                        val callbackForDismissing = SingletonForDismissMainSheet.getInstance().getYourObject()
-                        if(callback!= null){
-                            callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
+                        if (isAdded && isResumed) {
+                            val callback = SingletonClass.getInstance().getYourObject()
+                            val callbackForDismissing =
+                                SingletonForDismissMainSheet.getInstance().getYourObject()
+                            job?.cancel()
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            if (callback != null) {
+                                callback.onPaymentResult(
+                                    PaymentResultObject(
+                                        "Success",
+                                        transactionId,
+                                        transactionId
+                                    )
+                                )
+                            }
+                            if (callbackForDismissing != null) {
+                                callbackForDismissing.dismissFunction()
+                            }
                         }
-
-                        callbackForDismissing?.dismissFunction?.invoke()
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status","RequiresAction")
