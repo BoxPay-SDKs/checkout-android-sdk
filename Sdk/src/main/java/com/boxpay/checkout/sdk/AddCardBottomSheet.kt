@@ -31,15 +31,24 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.android.volley.DefaultRetryPolicy
+import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.FragmentAddCardBottomSheetBinding
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
+import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Calendar
@@ -55,9 +64,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var bottomSheet: FrameLayout? = null
     private lateinit var Base_Session_API_URL: String
+    private lateinit var requestQueue: RequestQueue
     private var token: String? = null
     private var cardNumber: String? = null
     private var cardExpiryYYYY_MM: String? = null
+    private var job: Job? = null
     private var cvv: String? = null
     private var cardHolderName: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
@@ -210,6 +221,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentAddCardBottomSheetBinding.inflate(inflater, container, false)
+        requestQueue = Volley.newRequestQueue(context)
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
@@ -1106,6 +1118,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
                             intent.putExtra("type", type)
+                            startFunctionCalls()
                             startActivity(intent)
                         }
 
@@ -1334,5 +1347,77 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 binding.editTextCardValidity.text.length == 5 &&
                 isValidExpirationDate(binding.editTextCardValidity.text.toString().substring(0,2),binding.editTextCardValidity.text.toString().substring(3,5)) &&
                 isNameOnCardValid
+    }
+
+    private fun fetchStatusAndReason(url: String) {
+
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.GET, url, null,
+            Response.Listener{ response ->
+                try {
+                    val status = response.getString("status")
+                    val transactionId = response.getString("transactionId")
+
+                    if (status.contains(
+                            "Approved",
+                            ignoreCase = true
+                        ) || status.contains("PAID", ignoreCase = true)
+                    ) {
+
+                        editor.putString("status","Success")
+                        editor.apply()
+
+                        job?.cancel()
+                        val callback = SingletonClass.getInstance().getYourObject()
+                        val callbackForDismissing = SingletonForDismissMainSheet.getInstance().getYourObject()
+                        if(callback!= null){
+                            callback.onPaymentResult(PaymentResultObject("Success",transactionId,transactionId))
+                        }
+
+                        callbackForDismissing?.dismissFunction?.invoke()
+
+                    } else if (status.contains("RequiresAction", ignoreCase = true)) {
+                        editor.putString("status","RequiresAction")
+                        editor.apply()
+                    } else if (status.contains("Processing", ignoreCase = true)) {
+                        editor.putString("status","Posted")
+                        editor.apply()
+                    } else if (status.contains("FAILED", ignoreCase = true)) {
+
+                        editor.putString("status","Failed")
+                        editor.apply()
+
+                        if (isAdded && isResumed) {
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    }
+
+                } catch (e: JSONException) {
+
+                }
+            },
+            Response.ErrorListener {
+                // no op
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                return headers
+            }
+        }
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    private fun startFunctionCalls() {
+        job = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                delay(6000)
+                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+                // Delay for 5 seconds
+            }
+        }
     }
 }

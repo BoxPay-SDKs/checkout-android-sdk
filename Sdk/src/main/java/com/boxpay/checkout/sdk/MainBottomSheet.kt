@@ -875,7 +875,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         handler.postDelayed({
             val cardBottomSheet =
                 parentFragmentManager.findFragmentByTag("AddCardBottomSheet") as? AddCardBottomSheet
-            cardBottomSheet?.dismissCurrentBottomSheet()
+            if (cardBottomSheet?.isResumed == true) {
+                cardBottomSheet?.dismissCurrentBottomSheet()
+            }
             val addUPIID =
                 parentFragmentManager.findFragmentByTag("AddUPIBottomSheet") as? AddUPIID
             addUPIID?.dismissCurrentBottomSheet()

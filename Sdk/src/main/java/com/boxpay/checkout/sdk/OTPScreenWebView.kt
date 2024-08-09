@@ -316,11 +316,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
                         editor.putString("status","Failed")
                         editor.apply()
-
-                        job?.cancel()
-                        val callback =
-                            FailureScreenCallBackSingletonClass.getInstance().getYourObject()
-                        callback?.openFailureScreen?.invoke()
                         finish()
                     }
 
