@@ -235,7 +235,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        job?.cancel()
         if (requestCode == 121) {
             if (resultCode == Activity.RESULT_OK) {
                 val responseUri: Uri? = data?.data
@@ -358,7 +357,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 // Payment was canceled by the user or some error occurred
                 editor.putString("status", "Failed")
                 editor.apply()
-                job?.cancel()
                 PaymentFailureScreen(
                     errorMessage = "Payment failed with PhonePe. Please retry payment with a different UPI app"
                 ).show(parentFragmentManager, "FailureScreen")
