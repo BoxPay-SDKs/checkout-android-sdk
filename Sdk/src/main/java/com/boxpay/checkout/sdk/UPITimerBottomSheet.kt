@@ -254,11 +254,15 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     }
 
     private fun startTimerForAPICalls() {
+        var elapsedTime = 0L
         countdownTimerForAPI = object : CountDownTimer(300000, 3000) {
 
             override fun onTick(millisUntilFinished: Long) {
+                elapsedTime += 3000
                 // Update TextView with the remaining time
-                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+                if (elapsedTime >= 4000) {
+                    fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+                }
             }
 
             override fun onFinish() {
@@ -280,9 +284,9 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
 
-        val jsonObjectRequest = object :JsonObjectRequest(
+        val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
-            Response.Listener{ response ->
+            Response.Listener { response ->
                 try {
                     val status = response.getString("status")
                     val statusReason = response.getString("statusReason")
@@ -296,23 +300,24 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     ) {
                         editor.putString("status", "Success")
                         editor.apply()
-                        countdownTimer.cancel()
-                        countdownTimerForAPI.cancel()
-                        val callback = SingletonClass.getInstance().getYourObject()
-                        val callbackForDismissing =
-                            SingletonForDismissMainSheet.getInstance().getYourObject()
-                        if (callback != null) {
-                            callback.onPaymentResult(
-                                PaymentResultObject(
-                                    "Success",
-                                    transactionId,
-                                    transactionId
+                        if (isAdded && isResumed) {
+                            countdownTimer.cancel()
+                            countdownTimerForAPI.cancel()
+                            val callback = SingletonClass.getInstance().getYourObject()
+                            val callbackForDismissing =
+                                SingletonForDismissMainSheet.getInstance().getYourObject()
+                            if (callback != null) {
+                                callback.onPaymentResult(
+                                    PaymentResultObject(
+                                        "Success",
+                                        transactionId,
+                                        transactionId
+                                    )
                                 )
-                            )
-                        }
-
-                        if (callbackForDismissing != null) {
-                            callbackForDismissing.dismissFunction()
+                            }
+                            if (callbackForDismissing != null) {
+                                callbackForDismissing.dismissFunction()
+                            }
                         }
 
                         dismiss()
@@ -322,19 +327,25 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     } else if (status.contains("Processing", ignoreCase = true)) {
                         editor.putString("status", "Processing")
                         editor.apply()
-                    } else if (status.contains("FAILED", ignoreCase = true) || status.contains("REJECTED", ignoreCase = true)) {
+                    } else if (status.contains(
+                            "FAILED",
+                            ignoreCase = true
+                        ) || status.contains("REJECTED", ignoreCase = true)
+                    ) {
                         editor.putString("status", "Failed")
                         editor.apply()
-                        val cleanedMessage = statusReason.substringAfter(":")
-                        countdownTimer.cancel()
-                        countdownTimerForAPI.cancel()
-                        PaymentFailureScreen(
-                            function = {
-                                sharedViewModel.dismissBottomSheet()
-                                dismiss()
-                            },
-                            errorMessage = cleanedMessage
-                        ).show(parentFragmentManager,"FailureScreen")
+                        if (isAdded && isResumed) {
+                            val cleanedMessage = statusReason.substringAfter(":")
+                            countdownTimer.cancel()
+                            countdownTimerForAPI.cancel()
+                            PaymentFailureScreen(
+                                function = {
+                                    sharedViewModel.dismissBottomSheet()
+                                    dismiss()
+                                },
+                                errorMessage = cleanedMessage
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
                     }
                     editor.apply()
                 } catch (e: JSONException) {
@@ -343,7 +354,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             },
             Response.ErrorListener {
 
-            }){
+            }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
@@ -369,7 +380,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     }
 
     fun generateRandomAlphanumericString(length: Int): String {
-        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length)
             .map { Random.nextInt(0, charPool.size) }
             .map(charPool::get)

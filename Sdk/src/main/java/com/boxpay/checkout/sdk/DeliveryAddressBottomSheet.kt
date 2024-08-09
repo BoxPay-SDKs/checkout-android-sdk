@@ -44,6 +44,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isEmailEnabled = false
     private var minPhoneLength = 10
     val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
+    val numberRegex = "^[0-9]+$".toRegex()
     private var maxPhoneLength = 10
     private var countrySelectedFromDropDown: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -540,8 +541,17 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val city = binding.cityEditText.text
             val nameParts = fullName.split(" ")
 
-            val firstName = nameParts[0]
-            val lastName = if (nameParts.size > 1) nameParts[1] else ""
+            val firstName = if (nameParts.size > 1) {
+                nameParts.dropLast(1).joinToString(" ")
+            } else {
+                nameParts[0]
+            }
+
+            val lastName = if (nameParts.size > 1) {
+                nameParts.last()
+            } else {
+                ""
+            }
 
 
             editor.putString("address1", address1.toString())
@@ -640,7 +650,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 if (isShippingEnabled) {
                     desiredHeight = (screenHeight * 0.6).toInt()
                 } else {
-                    desiredHeight = (screenHeight * 0.45).toInt()
+                    desiredHeight = (screenHeight * 0.5).toInt()
                 }
                  // 50% of screen height
 
@@ -845,7 +855,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
     fun isMobileNumberValid(): Boolean {
         val mobileNumber = binding.mobileNumberEditText.text
-        if (mobileNumber.length !in minPhoneLength..maxPhoneLength) {
+        if (mobileNumber.length !in minPhoneLength..maxPhoneLength || !mobileNumber.matches(numberRegex)) {
             disableProceedButton()
             binding.mobileErrorText.text = if (mobileNumber.isEmpty()) {
                 "Required"

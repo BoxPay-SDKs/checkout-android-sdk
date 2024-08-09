@@ -381,12 +381,12 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="12dp"
+                                android:layout_marginTop="12dp"
                                 android:fontFamily="@font/poppins_medium"
                                 android:text="Person Name"
                                 android:textColor="#010102"
-                                app:layout_constraintBottom_toBottomOf="@+id/homeIcon"
                                 app:layout_constraintStart_toEndOf="@id/homeIcon"
-                                app:layout_constraintTop_toTopOf="@+id/homeIcon" />
+                                app:layout_constraintTop_toBottomOf="@+id/dashedLine4" />
 
                             <ImageView
                                 android:id="@+id/right_arrow"
@@ -402,13 +402,20 @@
                                 android:id="@+id/mobileNumberTextViewMain"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:ellipsize="end"
                                 android:fontFamily="@font/poppins_medium"
+                                android:maxLines="1"
                                 android:paddingStart="4dp"
+                                android:paddingEnd="4dp"
                                 android:text="(+911234567890)"
                                 android:textColor="#010102"
+                                app:layout_constrainedWidth="true"
                                 app:layout_constraintBottom_toBottomOf="@+id/nameTextView"
+                                app:layout_constraintEnd_toStartOf="@id/right_arrow"
+                                app:layout_constraintHorizontal_bias="0.13"
                                 app:layout_constraintStart_toEndOf="@+id/nameTextView"
-                                app:layout_constraintTop_toTopOf="@+id/nameTextView" />
+                                app:layout_constraintTop_toTopOf="@+id/nameTextView"
+                                app:layout_constraintVertical_bias="2.0" />
 
                             <TextView
                                 android:id="@+id/addressTextViewMain"

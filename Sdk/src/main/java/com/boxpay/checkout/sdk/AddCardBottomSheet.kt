@@ -471,6 +471,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.editTextCardCVV.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
+                if (isAmericanExpressCard.value == true) {
+                    binding.editTextCardCVV.filters = arrayOf(InputFilter.LengthFilter(4))
+                } else {
+                    binding.editTextCardCVV.filters = arrayOf(InputFilter.LengthFilter(3))
+                }
                 bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
             }
 
@@ -480,24 +485,41 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                 val textNow = s.toString()
                 if (textNow.isNotBlank()) {
-                    if (textNow.length >= 3) {
-                        isCardCVVValid = true
-                        proceedButtonIsEnabled.value = true
-                        binding.invalidCVV.visibility = View.INVISIBLE
+                    if (isAmericanExpressCard.value == true) {
+                        if (textNow.length == 4) {
+                            isCardCVVValid = true
+                            proceedButtonIsEnabled.value = true
+                            binding.invalidCVV.visibility = View.INVISIBLE
+                        } else {
+                            isCardCVVValid = false
+                            proceedButtonIsEnabled.value = false
+                        }
                     } else {
-                        isCardCVVValid = false
-                        proceedButtonIsEnabled.value = false
+                        if (textNow.length == 3) {
+                            isCardCVVValid = true
+                            proceedButtonIsEnabled.value = true
+                            binding.invalidCVV.visibility = View.INVISIBLE
+                        } else {
+                            isCardCVVValid = false
+                            proceedButtonIsEnabled.value = false
+                        }
                     }
-
                     callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "", "Card")
                 } else {
                     isCardCVVValid = false
                     proceedButtonIsEnabled.value = false
                 }
 
-                if (textNow.length == 4) {
-                    binding.editTextNameOnCard.requestFocus()
-                    binding.editTextNameOnCard.requestFocus()
+                if(isAmericanExpressCard.value == true) {
+                    if (textNow.length == 4) {
+                        binding.editTextNameOnCard.requestFocus()
+                        binding.editTextNameOnCard.requestFocus()
+                    }
+                } else {
+                    if (textNow.length == 3) {
+                        binding.editTextNameOnCard.requestFocus()
+                        binding.editTextNameOnCard.requestFocus()
+                    }
                 }
                 enableProceedButton()
             }
@@ -1249,6 +1271,15 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             if (errorMessage.contains("Invalid instrumentDetails.card.expiry", ignoreCase = true)) {
                 binding.invalidCardValidity.visibility = View.VISIBLE
                 binding.textView7.text = "Invalid Validity"
+            }
+
+            if (errorMessage.contains(
+                    "instrumentDetails.card.number is invalid",
+                    ignoreCase = true
+                )
+            ) {
+                binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                binding.textView4.text = "Invalid Card Number"
             }
 
             if (errorMessage.contains(

@@ -98,7 +98,7 @@ class Check : AppCompatActivity() {
   "money": {"amount": "100", "currencyCode": "INR"},
   "descriptor": {"line1": "Some descriptor"},
   "shopper": {
-    "firstName": "Ishika",
+    "firstName": "Ishika baniya",
     "lastName": "Bansal",
     "email":"ishika.bansal@boxpay.tech",
     "uniqueReference": "x123y",
@@ -113,11 +113,6 @@ class Check : AppCompatActivity() {
     }
   },
   "order": {
-    "originalAmount": 423.73,
-    "shippingAmount": 50,
-    "voucherCode": "VOUCHER",
-    "taxAmount": 76.27,
-    "totalAmountWithoutTax": 423.73,
     "items": [
       {
         "id": "test",
