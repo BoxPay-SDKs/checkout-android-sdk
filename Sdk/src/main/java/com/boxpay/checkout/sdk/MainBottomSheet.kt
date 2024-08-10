@@ -498,7 +498,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.apply()
                         if (isAdded && isResumed) {
                             job?.cancel()
-                            val cleanedMessage = reason.substringAfter(":")
+                            var cleanedMessage = reason.substringAfter(":")
+                            if (cleanedMessage.contains("authentication",true)) {
+                                cleanedMessage = "Please retry using other payment method or try again in sometime"
+                            }
                             PaymentFailureScreen(
                                 function = {
                                     if (qrCodeShown) {
@@ -630,7 +633,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                     if (status.contains("rejected", ignoreCase = true)) {
                         removeLoadingState()
-                        val cleanedMessage = reason.substringAfter(":")
+                        var cleanedMessage = reason.substringAfter(":")
+                        if (cleanedMessage.contains("authentication",true)) {
+                            cleanedMessage = "Please retry using other payment method or try again in sometime"
+                        }
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
                             "FailureScreenFromUPIIntent"
@@ -1425,7 +1431,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                     if (status.contains("rejected", ignoreCase = true)) {
                         removeLoadingState()
-                        val cleanedMessage = reason.substringAfter(":")
+                        var cleanedMessage = reason.substringAfter(":")
+                        if (cleanedMessage.contains("authentication",true)) {
+                            cleanedMessage = "Please retry using other payment method or try again in sometime"
+                        }
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
                             "FailureScreenFromUPIIntent"

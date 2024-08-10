@@ -336,7 +336,10 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                         editor.putString("status", "Failed")
                         editor.apply()
                         if (isAdded && isResumed) {
-                            val cleanedMessage = statusReason.substringAfter(":")
+                            var cleanedMessage = statusReason.substringAfter(":")
+                            if (cleanedMessage.contains("authentication",true)) {
+                                cleanedMessage = "Please retry using other payment method or try again in sometime"
+                            }
                             countdownTimer.cancel()
                             countdownTimerForAPI.cancel()
                             PaymentFailureScreen(

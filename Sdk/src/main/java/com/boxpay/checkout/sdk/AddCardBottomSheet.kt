@@ -1079,6 +1079,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     logJsonObject(response)
 
                     val status = response.getJSONObject("status").getString("status")
+                    println("tatdb =======$status")
                     val reason = response.getJSONObject("status").getString("reason")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
@@ -1086,7 +1087,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     var url = ""
 
                     if (status.contains("Rejected", ignoreCase = true)) {
-                        val cleanedMessage = reason.substringAfter(":")
+                        var cleanedMessage = reason.substringAfter(":")
+                        if (cleanedMessage.contains("authentication",true)) {
+                            cleanedMessage = "Please retry using other payment method or try again in sometime"
+                        }
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(parentFragmentManager, "FailureScreen")
                     } else {
                         val type =
@@ -1254,7 +1258,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     fun getMessageForFieldErrorItems(errorString: String) {
-        1
 
         // Parse JSON response
         val jsonObject = JSONObject(errorString)
