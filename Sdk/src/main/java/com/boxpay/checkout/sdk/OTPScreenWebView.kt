@@ -62,6 +62,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private var previousBottomSheet: Context? = null
     private lateinit var Base_Session_API_URL: String
     private lateinit var sharedViewModel: SharedViewModel
+    private var delay = 4000L
     private val handler = Handler()
     private val delayMillis = 4000L
     private val SMS_CONSENT_REQUEST = 1010
@@ -175,6 +176,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                     startedCallsForOTPInject = true
                     startFetchingOtpAtIntervals()
                 }
+                if (url?.contains("boxpay") == true) {
+                    finish()
+                }
             }
 
             override fun onReceivedError(
@@ -284,6 +288,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 try {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId")
+                    delay = 200L
 
                     if (status.contains(
                             "Approved",
@@ -327,7 +332,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private fun startFunctionCalls() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
-                delay(4000)
+                delay(delay)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 5 seconds
             }
