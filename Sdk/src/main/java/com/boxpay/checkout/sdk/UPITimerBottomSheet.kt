@@ -291,7 +291,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     val status = response.getString("status")
                     val statusReason = response.getString("statusReason")
                     val reasonCode = response.getString("reasonCode")
-                    println("========timer status $statusReason")
                     val transactionId = response.getString("transactionId")
 
                     // Check if status is success, if yes, dismiss the bottom sheet

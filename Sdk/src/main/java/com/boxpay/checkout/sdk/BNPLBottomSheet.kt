@@ -561,8 +561,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
                 } catch (e: JSONException) {
 
-                    println("========$e")
-
                 }
 
             },

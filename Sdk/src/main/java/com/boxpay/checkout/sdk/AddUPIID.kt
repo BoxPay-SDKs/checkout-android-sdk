@@ -474,7 +474,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 updateTransactionIDInSharedPreferences(transactionId!!)
 
                 if (status.contains("Rejected", ignoreCase = true)) {
-                    println("=======upi=reason $reason")
                     var cleanedMessage = reason.substringAfter(":")
                     if (cleanedMessage.contains("virtual address", true)) {
                         cleanedMessage = "Invalid UPI Id"

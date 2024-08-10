@@ -1080,7 +1080,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     val status = response.getJSONObject("status").getString("status")
                     val reasonCode = response.getJSONObject("status").getString("reasonCode")
-                    println("tatdb =======$status")
                     val reason = response.getJSONObject("status").getString("reason")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
