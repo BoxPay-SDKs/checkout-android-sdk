@@ -8,7 +8,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -16,9 +15,8 @@ import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.widget.FrameLayout
 import androidx.fragment.app.activityViewModels
-import com.android.volley.Request
 import com.android.volley.RequestQueue
-import com.android.volley.VolleyError
+import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
@@ -29,6 +27,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONException
+import kotlin.random.Random
 
 internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     CancelConfirmationBottomSheet.ConfirmationListener {
@@ -180,8 +179,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         val editor = sharedPreferences.edit()
 
 
-        val environmentFetched = sharedPreferences.getString("environment", "null")
-        Base_Session_API_URL = "https://${environmentFetched}apis.boxpay.tech/v0/checkout/sessions/"
+        val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
+        Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
 
         fetchTransactionDetailsFromSharedPreferences()
 
@@ -255,11 +254,15 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     }
 
     private fun startTimerForAPICalls() {
+        var elapsedTime = 0L
         countdownTimerForAPI = object : CountDownTimer(300000, 3000) {
 
             override fun onTick(millisUntilFinished: Long) {
+                elapsedTime += 3000
                 // Update TextView with the remaining time
-                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+                if (elapsedTime >= 4000) {
+                    fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+                }
             }
 
             override fun onFinish() {
@@ -281,12 +284,13 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
 
-        val jsonObjectRequest = JsonObjectRequest(
-            Request.Method.GET, url, null,
-            { response ->
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.GET, url, null,
+            Response.Listener { response ->
                 try {
                     val status = response.getString("status")
                     val statusReason = response.getString("statusReason")
+                    val reasonCode = response.getString("reasonCode")
                     val transactionId = response.getString("transactionId")
 
                     // Check if status is success, if yes, dismiss the bottom sheet
@@ -297,23 +301,24 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     ) {
                         editor.putString("status", "Success")
                         editor.apply()
-                        countdownTimer.cancel()
-                        countdownTimerForAPI.cancel()
-                        val callback = SingletonClass.getInstance().getYourObject()
-                        val callbackForDismissing =
-                            SingletonForDismissMainSheet.getInstance().getYourObject()
-                        if (callback != null) {
-                            callback.onPaymentResult(
-                                PaymentResultObject(
-                                    "Success",
-                                    transactionId,
-                                    transactionId
+                        if (isAdded && isResumed) {
+                            countdownTimer.cancel()
+                            countdownTimerForAPI.cancel()
+                            val callback = SingletonClass.getInstance().getYourObject()
+                            val callbackForDismissing =
+                                SingletonForDismissMainSheet.getInstance().getYourObject()
+                            if (callback != null) {
+                                callback.onPaymentResult(
+                                    PaymentResultObject(
+                                        "Success",
+                                        transactionId,
+                                        transactionId
+                                    )
                                 )
-                            )
-                        }
-
-                        if (callbackForDismissing != null) {
-                            callbackForDismissing.dismissFunction()
+                            }
+                            if (callbackForDismissing != null) {
+                                callbackForDismissing.dismissFunction()
+                            }
                         }
 
                         dismiss()
@@ -321,32 +326,44 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                         editor.putString("status", "RequiresAction")
                         editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status", "Posted")
+                        editor.putString("status", "Processing")
                         editor.apply()
-                    } else if (status.contains("FAILED", ignoreCase = true)) {
+                    } else if (status.contains(
+                            "FAILED",
+                            ignoreCase = true
+                        ) || status.contains("REJECTED", ignoreCase = true)
+                    ) {
                         editor.putString("status", "Failed")
                         editor.apply()
-                        countdownTimer.cancel()
-                        countdownTimerForAPI.cancel()
-                        val callback =
-                            FailureScreenCallBackSingletonClass.getInstance().getYourObject()
-                        if(callback!=null) {
-                            callback.openFailureScreen()
+                        if (isAdded && isResumed) {
+                            var cleanedMessage = statusReason.substringAfter(":")
+                            if (!reasonCode.startsWith("uf", true)) {
+                                cleanedMessage = "Please retry using other payment method or try again in sometime"
+                            }
+                            countdownTimer.cancel()
+                            countdownTimerForAPI.cancel()
+                            PaymentFailureScreen(
+                                function = {
+                                    sharedViewModel.dismissBottomSheet()
+                                    dismiss()
+                                },
+                                errorMessage = cleanedMessage
+                            ).show(parentFragmentManager, "FailureScreen")
                         }
-                        dismiss()
-
                     }
                     editor.apply()
                 } catch (e: JSONException) {
-                    e.printStackTrace()
+
                 }
-            }) { error ->
-            Log.e("Error", "Error occurred: ${error.message}")
-            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                val errorResponse = String(error.networkResponse.data)
-                Log.e("Error", "Detailed error response: $errorResponse")
+            },
+            Response.ErrorListener {
+
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                return headers
             }
-            // Handle errors here
         }
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
@@ -364,5 +381,13 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 
     override fun onConfirmation() {
         dismiss()
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }

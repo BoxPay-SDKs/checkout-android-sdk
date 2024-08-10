@@ -13,7 +13,6 @@ import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,7 +37,6 @@ import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -59,6 +57,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
+import kotlin.random.Random
 
 
 internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
@@ -98,12 +97,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
-
-
-
 
             val screenHeight = requireContext().resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.9 // 70%
@@ -207,6 +202,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                                 bankInstrumentTypeValue
                             )
                         )
+                        banksDetailsOriginal = ArrayList(banksDetailsOriginal.sortedBy { it.bankBrand })
                     }
                 }
                 showAllBanks()
@@ -214,12 +210,10 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 fetchAndUpdateApiInPopularBanks()
 
             } catch (e: Exception) {
-                e.printStackTrace()
+
             }
 
-        }, { error ->
-
-            Log.e("error here", "RESPONSE IS $error")
+        }, { _ ->
             Toast.makeText(requireContext(), "Fail to get response", Toast.LENGTH_SHORT)
                 .show()
         })
@@ -429,27 +423,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                // Handle response
-                try {
-
-                } catch (e: JSONException) {
-
-                }
-
-            },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
-
-            }) {
-
-        }.apply {
+            Response.Listener { /*no response handling */ },
+            Response.ErrorListener { /*no response handling */}) {}.apply {
             // Set retry policy
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
@@ -472,7 +447,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         for (bank in banksDetailsOriginal) {
             if (query.toString().isBlank() || query.toString().isBlank()) {
                 showAllBanks()
-            } else if (bank.bankName.contains(query.toString(), ignoreCase = true)) {
+            } else if (bank.bankBrand.startsWith(query.toString(), ignoreCase = true)) {
                 banksDetailsFiltered.add(
                     NetbankingDataClass(
                         bank.bankName,
@@ -528,13 +503,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 removeLoadingScreenState()
                 fetchAndUpdateApiInPopularBanks()
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                }
+            Response.ErrorListener { _ ->
+
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -694,7 +664,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
 
 
-        balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.TOP)
+        balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.BOTTOM)
         balloon.dismissWithDelay(2000L)
     }
 
@@ -873,25 +843,21 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 } catch (e: JSONException) {
                     binding.errorField.visibility = View.VISIBLE
                     binding.textView4.text = "Error requesting payment"
-                    Log.e("Error in handling response",e.toString())
-                    e.printStackTrace()
                 }
 
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    binding.errorField.visibility = View.VISIBLE
-                    binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
-                    hideLoadingInButton()
-                }
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+                hideLoadingInButton()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+//                headers["X-Client-Connector-Name"] =  "Android SDK"
+//                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -961,7 +927,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
         }
         return null
     }
@@ -983,5 +948,13 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             fragment.shippingEnabled = shippingEnabled
             return fragment
         }
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }

@@ -250,9 +250,9 @@
         <item name="android:windowSoftInputMode">adjustResize|stateVisible</item>
     </style>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>
-    </style>
+<!--    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">-->
+<!--        <item name="bottomSheetDialogTheme">@style/AppBottomSheetDialogTheme</item>-->
+<!--    </style>-->
 
     <style name="AppBottomSheetDialogTheme" parent="Theme.Design.Light.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/AppModalStyle</item>
@@ -262,6 +262,11 @@
         <item name="android:background">@drawable/bottom_sheet_bg</item>
     </style>
 
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Other theme attributes -->
+        <item name="android:forceDarkAllowed">false</item>
+    </style>
     <color name="custom_progress_color">#FF4081</color>
     <dimen name="heightOfRecyclerViewIndp">160dp</dimen>
     <color name="colorStart">#F1F1F1</color>

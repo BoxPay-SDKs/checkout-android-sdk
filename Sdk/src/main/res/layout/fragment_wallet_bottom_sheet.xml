@@ -23,8 +23,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
-                android:fontFamily="@font/poppins_medium"
-                android:text="Payment methods"
+                android:fontFamily="@font/poppins_bold"
+                android:text="Payment Methods"
                 android:textColor="#2D2B32"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -36,7 +36,7 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:orientation="vertical"
                 app:layout_constraintStart_toStartOf="parent"
@@ -102,7 +102,7 @@
                         android:iconifiedByDefault="false"
                         android:queryBackground="@null"
                         android:textColor="#000000"
-                        android:queryHint="Search for wallets"
+                        android:queryHint="Search Wallets"
                         android:searchIcon="@drawable/searchicon"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="@+id/imageView"
@@ -161,7 +161,6 @@
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp"
                                     >
-
                                     <RelativeLayout
                                         android:id="@+id/popularItemRelativeLayout1"
                                         android:layout_width="50dp"
@@ -171,18 +170,21 @@
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
 
-                                        <ImageView
-                                            android:id="@+id/popularWalletImageView1"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_centerInParent="true"
-                                            app:layout_constraintEnd_toEndOf="parent"
-                                            app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toTopOf="parent" />
+                                    <ImageView
+                                        android:id="@+id/popularWalletImageView1"
+                                        android:layout_width="32dp"
+                                        android:layout_height="32dp"
+                                        android:layout_centerInParent="true"
+                                        android:background="#FFFFFF"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
+
+
                                     <TextView
                                         android:id="@+id/popularWalletsNameTextView1"
-                                        android:layout_width="match_parent"
+                                        android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:gravity="center"
                                         android:maxLines="1"
@@ -213,19 +215,20 @@
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
 
-                                        <ImageView
-                                            android:id="@+id/popularWalletImageView2"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_centerInParent="true"
-                                            app:layout_constraintEnd_toEndOf="parent"
-                                            app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toTopOf="parent" />
+                                    <ImageView
+                                        android:id="@+id/popularWalletImageView2"
+                                        android:layout_width="32dp"
+                                        android:layout_height="32dp"
+                                        android:layout_centerInParent="true"
+                                        android:background="#FFFFFF"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
 
                                         <TextView
                                             android:id="@+id/popularWalletsNameTextView2"
-                                            android:layout_width="match_parent"
+                                            android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:gravity="center"
                                             android:maxLines="1"
@@ -245,6 +248,7 @@
                                     android:layout_height="match_parent"
                                     android:layout_marginEnd="16dp">
 
+
                                     <RelativeLayout
                                         android:id="@+id/popularItemRelativeLayout3"
                                         android:layout_width="50dp"
@@ -254,18 +258,19 @@
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
 
-                                        <ImageView
-                                            android:id="@+id/popularWalletImageView3"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_centerInParent="true"
-                                            app:layout_constraintEnd_toEndOf="parent"
-                                            app:layout_constraintStart_toStartOf="parent"
-                                            app:layout_constraintTop_toTopOf="parent" />
+                                    <ImageView
+                                        android:id="@+id/popularWalletImageView3"
+                                        android:layout_width="32dp"
+                                        android:layout_height="32dp"
+                                        android:layout_centerInParent="true"
+                                        android:background="#FFFFFF"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
                                     <TextView
                                         android:id="@+id/popularWalletsNameTextView3"
-                                        android:layout_width="match_parent"
+                                        android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:gravity="center"
                                         android:maxLines="1"
@@ -291,20 +296,23 @@
                                         android:layout_width="50dp"
                                         android:layout_height="50dp"
                                         android:background="@drawable/loading_state"
-
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="parent">
 
-                                        <ImageView
-                                            android:id="@+id/popularWalletImageView4"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_centerInParent="true" />
+                                    <ImageView
+                                        android:id="@+id/popularWalletImageView4"
+                                        android:layout_width="32dp"
+                                        android:layout_height="32dp"
+                                        android:layout_centerInParent="true"
+                                        android:background="#FFFFFF"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent" />
                                     </RelativeLayout>
                                     <TextView
                                         android:id="@+id/popularWalletsNameTextView4"
-                                        android:layout_width="match_parent"
+                                        android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:gravity="center"
                                         android:maxLines="1"

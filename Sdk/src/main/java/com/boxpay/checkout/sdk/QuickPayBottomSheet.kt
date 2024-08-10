@@ -11,7 +11,6 @@ import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.StyleSpan
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,7 +22,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -31,9 +29,9 @@ import com.boxpay.checkout.sdk.databinding.FragmentQuickPayBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
 import org.json.JSONObject
 import java.util.Locale
+import kotlin.random.Random
 
 class QuickPayBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentQuickPayBottomSheetBinding
@@ -64,44 +62,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 enableProceedButton()
             }
         })
-//        val seekBar = binding.sliderButton
-//
-//        val maxProgress = 100
-//        val desiredMinProgress = (maxProgress * 0.15).toInt() // 15% progress
-//        val desiredMaxProgress = (maxProgress * 0.85).toInt() // 85% progress
-//
-//        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-//            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-//                // Check if progress exceeds desired progress
-//                if (progress > desiredMaxProgress) {
-//                    seekBar?.progress = desiredMaxProgress
-//                }
-//                if(progress < desiredMinProgress) {
-//                    seekBar?.progress = desiredMinProgress
-//                }
-//            }
-//
-//            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-//                // Not needed for this implementation
-//            }
-//
-//            override fun onStopTrackingTouch(seekBar: SeekBar?) {
-//                // Not needed for this implementation
-//                var progress = 0
-//                if(seekBar == null){
-//                    progress = 0
-//                }else{
-//                    progress = seekBar.progress
-//                }
-//
-//                if(progress < 80){
-//                    seekBar?.progress = desiredMinProgress
-//                }else{
-//                    seekBar?.progress = desiredMaxProgress
-//                }
-//            }
-//        })
-
 
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
@@ -165,12 +125,10 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 try {
                     if (response.length() >= 1) {
                         val latestUsedMethod = response.getJSONObject(0)
-                        logJsonObject(latestUsedMethod)
                         val type = latestUsedMethod.getString("type")
                         val brand = latestUsedMethod.getString("brand")
                         displayValue = latestUsedMethod.getString("displayValue")
                          val typeAllCaps = type.toUpperCase()
-                        Log.d("type and brand","type : $typeAllCaps, brand : $brand and value : $displayValue")
                         val builder = SpannableStringBuilder()
 
 // Append the type without any styling
@@ -192,31 +150,11 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
 
                     }
                 } catch (e: Exception) {
-                    Log.e("Exception in quick pay API",e.toString())
                 }
 
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Detailed error response:", "Detailed error response: $errorResponse")
-
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
-                    if (errorMessage.contains(
-                            "Session is no longer accepting the payment as payment is already completed",
-                            ignoreCase = true
-                        )
-                    ) {
-
-                    } else {
-
-                    }
-                }
-
-
+            Response.ErrorListener { _ ->
+                // no op
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -242,7 +180,7 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }
@@ -268,17 +206,8 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
-
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body QuickPay", jsonStr)
-    }
-
     private fun postRequestForUPICollect(context: Context, userVPA: String) {
-        Log.d("postRequestCalled", System.currentTimeMillis().toString())
         val requestQueue = Volley.newRequestQueue(context)
-
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
@@ -337,38 +266,19 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
-                // Handle response
-                // Log.d("Response of Successful Post API call", response.toString())
 
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
-                logJsonObject(response)
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    Log.d("Error message", errorMessage)
-                    if (errorMessage.contains(
-                            "Session is no longer accepting the payment as payment is already completed",
-                            ignoreCase = true
-                        )
-                    ) {
-
-                    } else {
-
-                    }
-
-                }
-
 
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+//                headers["X-Client-Connector-Name"] =  "Android SDK"
+//                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -379,7 +289,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
 
-        // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -395,12 +304,8 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
-
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
 
             val window = d.window
             window?.apply {
@@ -412,10 +317,6 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
 
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
-
-
-
-
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -432,17 +333,14 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
 
                         BottomSheetBehavior.STATE_DRAGGING -> {
                             // The BottomSheet is being dragged
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
 
                         BottomSheetBehavior.STATE_SETTLING -> {
                             // The BottomSheet is settling
-//                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                         }
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
-
                         }
                     }
                 }
@@ -454,7 +352,11 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         return dialog
     }
 
-    companion object {
-
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }

@@ -13,7 +13,6 @@ import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -57,6 +56,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
+import kotlin.random.Random
 
 internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentWalletBottomSheetBinding
@@ -95,13 +95,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
-
-
-
-
 
             val window = d.window
             window?.apply {
@@ -201,7 +196,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         else -> null
                     }
 
-                    val sizeInPixels = (50 * resources.displayMetrics.density).toInt()
 
                     imageView?.load(walletDetail.walletImage){
                         decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
@@ -260,15 +254,13 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             setAlpha(0.9f)
             setText(walletName)
             setTextColorResource(R.color.colorEnd)
-//                    setIconDrawable(ContextCompat.getDrawable(context, R.drawable.ic_profile))
             setBackgroundColorResource(R.color.tooltip_bg)
-//                    setOnBalloonClickListener(onBalloonClickListener)
             setBalloonAnimation(BalloonAnimation.FADE)
             setLifecycleOwner(lifecycleOwner)
         }
 
 
-        balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.TOP)
+        balloon.showAtCenter(constraintLayout, 0, 0, BalloonCenterAlign.BOTTOM)
         balloon.dismissWithDelay(2000L)
     }
 
@@ -322,16 +314,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         editor.putString("transactionId", transactionIdArg)
         editor.putString("operationId",transactionIdArg)
         editor.apply()
-    }
-
-    private val requestQueue: RequestQueue by lazy {
-        Volley.newRequestQueue(requireContext())
-    }
-
-    private fun hideKeyboard() {
-        val imm =
-            requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
     }
 
 
@@ -539,28 +521,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                // Handle response
-
-                try {
-
-                } catch (e: JSONException) {
-
-                }
-
-            },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
-
-            }) {
-
-        }.apply {
+            Response.Listener { /*no response handling */ },
+            Response.ErrorListener { /*no response handling */}) {}.apply {
             // Set retry policy
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
@@ -640,6 +602,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         )
                     }
                 }
+                walletDetailsOriginal = ArrayList(walletDetailsOriginal.sortedBy { it.walletBrand })
 
                 // Print the filtered wallet payment methods
                 showAllWallets()
@@ -649,25 +612,19 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
             } catch (e: Exception) {
-                e.printStackTrace()
+
             }
 
         }, { error ->
 
-            Log.e("Error", "Error occurred: ${error.message}")
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
-                Log.e("Error", " fetching wallets error response: $errorResponse")
                 binding.errorField.visibility = View.VISIBLE
                 binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
                 hideLoadingInButton()
             }
         })
         queue.add(jsonObjectAll)
-    }
-
-    private fun applyLoadingScreenState() {
-
     }
 
     override fun onCancel(dialog: DialogInterface) {
@@ -690,7 +647,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         for (wallet in walletDetailsOriginal) {
             if (query.toString().isBlank() || query.toString().isBlank()) {
                 showAllWallets()
-            } else if (wallet.walletName.contains(query.toString(), ignoreCase = true)) {
+            } else if (wallet.walletName.startsWith(query.toString(), ignoreCase = true)) {
                 walletDetailsFiltered.add(
                     WalletDataClass(
                         wallet.walletName,
@@ -793,13 +750,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 fetchAndUpdateApiInPopularWallets()
                 removeLoadingScreenState()
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                }
+            Response.ErrorListener { _ ->
+
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -958,18 +910,16 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    binding.errorField.visibility = View.VISIBLE
-                    binding.textView4.text = extractMessageFromErrorResponse(errorResponse)
-                    hideLoadingInButton()
-                }
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+                hideLoadingInButton()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+//                headers["X-Client-Connector-Name"] =  "Android SDK"
+//                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -1044,7 +994,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }
@@ -1058,5 +1008,13 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             fragment.shippingEnabled = shippingEnabled
             return fragment
         }
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }

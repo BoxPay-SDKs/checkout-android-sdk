@@ -1,4 +1,3 @@
-import android.util.Log
 import androidx.lifecycle.ViewModel
 
 class DismissViewModel : ViewModel() {
@@ -8,7 +7,6 @@ class DismissViewModel : ViewModel() {
 
     // Function to notify ViewModel when child bottom sheet is dismissed
     fun onChildDismissed() {
-        Log.d("dismissViewModel","onChildDismissed called")
         _childDismissed.call()
     }
 }

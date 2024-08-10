@@ -7,7 +7,6 @@ import android.graphics.drawable.LayerDrawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.widget.ImageView
 import androidx.lifecycle.MutableLiveData
@@ -19,32 +18,31 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.R
+import com.boxpay.checkout.sdk.adapters.WalletAdapter.WalletAdapterViewHolder
 import com.boxpay.checkout.sdk.databinding.WalletItemBinding
-import com.boxpay.checkout.sdk.dataclasses.WalletDataClass
+import com.boxpay.checkout.sdk.dataclasses.BnplDataClass
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import org.json.JSONObject
 import java.util.Locale
 
-class WalletAdapter(
-    private val walletDetails: ArrayList<WalletDataClass>,
+class BnplAdapters(
+    private val walletDetails: ArrayList<BnplDataClass>,
     private val recyclerView: RecyclerView,
-    private var liveDataPopularItemSelectedOrNot: MutableLiveData<Boolean>,
     private val context: Context,
-    private val searchView : android.widget.SearchView,
-    private val token : String
-) : RecyclerView.Adapter<WalletAdapter.WalletAdapterViewHolder>() {
+    private val token: String
+) : RecyclerView.Adapter<BnplAdapters.BnplAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
     var checkPositionLiveData = MutableLiveData<Int>()
     val sharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
 
-    inner class WalletAdapterViewHolder(val binding: WalletItemBinding) :
+    inner class BnplAdapterViewHolder(val binding: WalletItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
             binding.apply {
 
-                binding.walletNameTextView.text = walletDetails[position].walletName
+                binding.walletNameTextView.text = walletDetails[position].bnplName
 
                 // Get the background drawable of radioButton
                 val radioButtonDrawable = radioButton.background
@@ -55,14 +53,21 @@ class WalletAdapter(
 
                     // Modify the solid color of the first item (assuming it's a GradientDrawable)
                     val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
-                    shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
+                    shapeDrawable?.setColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "primaryButtonColor",
+                                "#0D8EFF"
+                            )
+                        )
+                    ) // Change color to red dynamically
 
                     // Apply the modified drawable back to the radioButton ImageView
                     radioButton.background = layerDrawable
                 }
 
-                val walletName = walletDetails[position].walletName
-                val walletImage = walletDetails[position].walletImage
+                val walletName = walletDetails[position].bnplName
+                val walletImage = walletDetails[position].bnplImagee
                 val displayMetrics = context.resources.displayMetrics
                 val screenWidth = displayMetrics.widthPixels
                 val averageWidthPerCharacter = walletNameTextView.paint.measureText("A")
@@ -74,38 +79,52 @@ class WalletAdapter(
                 } else {
                     walletNameTextView.text = walletName
                 }
-                binding.walletLogo.load(walletImage){
-                    decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
+                binding.walletLogo.load(walletImage) {
+                    decoderFactory { result, options, _ -> SvgDecoder(result.source, options) }
                     size(80, 80)
                 }
 
 
-                if(position == checkedPosition){
+                if (position == checkedPosition) {
                     if (radioButtonDrawable is LayerDrawable) {
                         val layerDrawable = radioButtonDrawable as LayerDrawable
 
                         // Modify the solid color of the first item (assuming it's a GradientDrawable)
                         val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
-                        shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
+                        shapeDrawable?.setColor(
+                            Color.parseColor(
+                                sharedPreferences.getString(
+                                    "primaryButtonColor",
+                                    "#0D8EFF"
+                                )
+                            )
+                        ) // Change color to red dynamically
 
                         // Apply the modified drawable back to the radioButton ImageView
                         radioButton.background = layerDrawable
                     }
-                }else{
+                } else {
                     radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
                 }
 
 
-                val radioButtonColor = sharedPreferences.getString("primaryButtonColor","#0D8EFF")
+                val radioButtonColor = sharedPreferences.getString("primaryButtonColor", "#0D8EFF")
 
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
-                    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
-                    handleRadioButtonClick(adapterPosition,binding.radioButton)
-                    liveDataPopularItemSelectedOrNot.value = false
-                    callUIAnalytics(context,"PAYMENT_INSTRUMENT_PROVIDED",walletDetails[position].walletBrand,"Wallet")
-                    callUIAnalytics(context,"PAYMENT_METHOD_SELECTED",walletDetails[position].walletBrand,"Wallet")
+                    handleRadioButtonClick(adapterPosition, binding.radioButton)
+                    callUIAnalytics(
+                        context,
+                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        walletDetails[position].bnplBrand,
+                        "BNPL"
+                    )
+                    callUIAnalytics(
+                        context,
+                        "PAYMENT_METHOD_SELECTED",
+                        walletDetails[position].bnplBrand,
+                        "BNPL"
+                    )
                 }
 
                 val balloon = createBalloon(context) {
@@ -125,7 +144,7 @@ class WalletAdapter(
                 }
 
                 binding.root.setOnLongClickListener { view ->
-                    balloon.showAlignBottom(binding.root)
+                    balloon.showAlignTop(binding.root)
                     balloon.dismissWithDelay(2000L)
                     true // Indicate that the long click event has been consumed
                 }
@@ -133,8 +152,8 @@ class WalletAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WalletAdapterViewHolder {
-        return WalletAdapterViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BnplAdapterViewHolder {
+        return BnplAdapterViewHolder(
             WalletItemBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
@@ -147,10 +166,64 @@ class WalletAdapter(
         return walletDetails.size
     }
 
-    override fun onBindViewHolder(holder: WalletAdapterViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: BnplAdapterViewHolder, position: Int) {
         holder.bind(position)
     }
-    private fun callUIAnalytics(context: Context, event: String,paymentSubType : String, paymentType : String) {
+
+    private fun handleRadioButtonClick(position: Int, imageView: ImageView) {
+        if (checkedPosition != position) {
+            // Change the background of the previously checked RadioButton
+            val previousCheckedViewHolder =
+                recyclerView.findViewHolderForAdapterPosition(checkedPosition) as? WalletAdapterViewHolder
+            previousCheckedViewHolder?.binding?.radioButton?.setBackgroundResource(
+                R.drawable.custom_radio_unchecked
+            )
+
+            imageView.setBackgroundResource(R.drawable.custom_radio_checked)
+
+            val radioButtonDrawable = imageView.background
+
+            // Check if the background drawable is a LayerDrawable
+            if (radioButtonDrawable is LayerDrawable) {
+                Log.d("Drawable found", "success")
+                val layerDrawable = radioButtonDrawable as LayerDrawable
+
+                // Modify the solid color of the first item (assuming it's a GradientDrawable)
+                val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
+                shapeDrawable?.setColor(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "primaryButtonColor",
+                            "#0D8EFF"
+                        )
+                    )
+                ) // Change color to red dynamically
+
+                // Apply the modified drawable back to the radioButton ImageView
+                imageView.background = layerDrawable
+            } else {
+                Log.d("Drawable found", "failure in handle click")
+            }
+
+//             Change the background of the clicked RadioButton
+            val clickedViewHolder =
+                recyclerView.findViewHolderForAdapterPosition(position) as? WalletAdapterViewHolder
+            clickedViewHolder?.binding?.radioButton?.setBackgroundResource(
+                R.drawable.custom_radio_checked
+            )
+
+            // Update the checked position
+            checkedPosition = position
+            checkPositionLiveData.value = checkedPosition
+        }
+    }
+
+    private fun callUIAnalytics(
+        context: Context,
+        event: String,
+        paymentSubType: String,
+        paymentType: String
+    ) {
         val environmentFetched = sharedPreferences.getString("environment", "null")
 
         val requestQueue = Volley.newRequestQueue(context)
@@ -179,9 +252,11 @@ class WalletAdapter(
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${environmentFetched}apis.boxpay.tech/v0/ui-analytics", requestBody,
+            Method.POST,
+            "https://${environmentFetched}apis.boxpay.tech/v0/ui-analytics",
+            requestBody,
             Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */}) {}.apply {
+            Response.ErrorListener { /*no response handling */ }) {}.apply {
             // Set retry policy
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
@@ -191,58 +266,6 @@ class WalletAdapter(
 
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
-    }
-    fun extractMessageFromErrorResponse(response: String): String? {
-        try {
-            // Parse the JSON string
-            val jsonObject = JSONObject(response)
-            // Retrieve the value associated with the "message" key
-            return jsonObject.getString("message")
-        } catch (e: Exception) {
-            // Handle JSON parsing exception
-        }
-        return null
-    }
-
-    private fun handleRadioButtonClick(position: Int, imageView : ImageView) {
-        if (checkedPosition != position) {
-            // Change the background of the previously checked RadioButton
-            val previousCheckedViewHolder =
-                recyclerView.findViewHolderForAdapterPosition(checkedPosition) as? WalletAdapterViewHolder
-            previousCheckedViewHolder?.binding?.radioButton?.setBackgroundResource(
-                R.drawable.custom_radio_unchecked
-            )
-
-            imageView.setBackgroundResource(R.drawable.custom_radio_checked)
-
-            val radioButtonDrawable = imageView.background
-
-            // Check if the background drawable is a LayerDrawable
-            if (radioButtonDrawable is LayerDrawable) {
-                Log.d("Drawable found","success")
-                val layerDrawable = radioButtonDrawable as LayerDrawable
-
-                // Modify the solid color of the first item (assuming it's a GradientDrawable)
-                val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
-                shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
-
-                // Apply the modified drawable back to the radioButton ImageView
-                imageView.background = layerDrawable
-            }else{
-                Log.d("Drawable found","failure in handle click")
-            }
-
-//             Change the background of the clicked RadioButton
-            val clickedViewHolder =
-                recyclerView.findViewHolderForAdapterPosition(position) as? WalletAdapterViewHolder
-            clickedViewHolder?.binding?.radioButton?.setBackgroundResource(
-                R.drawable.custom_radio_checked
-            )
-
-            // Update the checked position
-            checkedPosition = position
-            checkPositionLiveData.value = checkedPosition
-        }
     }
 
     fun deselectSelectedItem() {
@@ -256,9 +279,4 @@ class WalletAdapter(
             checkPositionLiveData.value = RecyclerView.NO_POSITION
         }
     }
-
-    fun getCheckedPosition(): Int {
-        return checkedPosition
-    }
-
 }

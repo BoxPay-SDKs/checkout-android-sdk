@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,16 +26,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentAddUPIIDBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
+import kotlin.random.Random
 
 
 internal class AddUPIID : BottomSheetDialogFragment() {
@@ -134,7 +132,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         )
                     )
                     binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
                     binding.textView6.setTextColor(
                         Color.parseColor(
                             sharedPreferences.getString(
@@ -155,11 +153,11 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 if (textNow.isBlank()) {
                     binding.proceedButtonRelativeLayout.isEnabled = false
                     binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                    binding.ll1InvalidUPI.visibility = View.GONE
+                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
                 }
             }
         })
-        binding.ll1InvalidUPI.visibility = View.GONE
+        binding.ll1InvalidUPI.visibility = View.INVISIBLE
 
         binding.proceedButton.setOnClickListener() {
             userVPA = binding.editText.text.toString()
@@ -169,7 +167,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiCollect", "Upi")
 
             if(checkString(userVPA!!)){
-                binding.ll1InvalidUPI.visibility = View.GONE
+                binding.ll1InvalidUPI.visibility = View.INVISIBLE
                 validateAPICall(requireContext(), userVPA!!)
                 showLoadingInButton()
             }else{
@@ -203,13 +201,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Method.POST, "https://"+baseUrl + "/v0/platform/vpa-validation", requestBody,
             Response.Listener { response ->
                 try{
-                    val statusUserVPA = response.getJSONObject("status").getString("status")
+                    val statusUserVPA = response.getBoolean("vpaValid")
 
-                    if(!statusUserVPA.contains("Rejected",ignoreCase = true)){
-                        binding.ll1InvalidUPI.visibility = View.GONE
+                    if(statusUserVPA){
+                        binding.ll1InvalidUPI.visibility = View.INVISIBLE
                         postRequest(requireContext(),userVPA)
                     }else{
                         binding.ll1InvalidUPI.visibility = View.VISIBLE
+                        hideLoadingInButton()
                     }
                 }catch (e : Exception){
                     postRequest(requireContext(),userVPA)
@@ -217,19 +216,15 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
 
-                binding.ll1InvalidUPI.visibility = View.GONE
+                binding.ll1InvalidUPI.visibility = View.INVISIBLE
                 postRequest(requireContext(),userVPA)
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
+
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+//                headers["X-Client-Connector-Name"] =  "Android SDK"
+//                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -300,18 +295,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
-//            dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-//            dialog.window?.setDimAmount(0.5f)
-
-
-//            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT)) // Set transparent background
-//            dialog.window?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.setBackgroundResource(R.drawable.button_bg)
-
-
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
@@ -486,11 +469,19 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
                 val status = response.getJSONObject("status").getString("status")
                 val reason = response.getJSONObject("status").getString("reason")
+                val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
 
                 if (status.contains("Rejected", ignoreCase = true)) {
-                    PaymentFailureScreen().show(parentFragmentManager,"FailureScreen")
+                    var cleanedMessage = reason.substringAfter(":")
+                    if (cleanedMessage.contains("virtual address", true)) {
+                        cleanedMessage = "Invalid UPI Id"
+                    }
+                    else if (!reasonCode.startsWith("uf", true)) {
+                        cleanedMessage = "Please retry using other payment method or try again in sometime"
+                    }
+                    PaymentFailureScreen(errorMessage = cleanedMessage).show(parentFragmentManager,"FailureScreen")
                 }else {
 
                     if (status.contains("RequiresAction", ignoreCase = true)) {
@@ -515,27 +506,16 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
                 // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    binding.ll1InvalidUPI.visibility = View.VISIBLE
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                    if (errorMessage.contains(
-                            "Session is no longer accepting the payment as payment is already completed",
-                            ignoreCase = true
-                        )
-                    ) {
-                        binding.textView4.text = "Payment is already done"
-                    }
-                    hideLoadingInButton()
-                }
-
-
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+                hideLoadingInButton()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = token.toString()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+//                headers["X-Client-Connector-Name"] =  "Android SDK"
+//                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -620,7 +600,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
-            e.printStackTrace()
+
         }
         return null
     }
@@ -668,28 +648,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { response ->
-                // Handle response
-
-                try {
-
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                }
-
-            },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.message}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    val errorMessage = extractMessageFromErrorResponse(errorResponse).toString()
-                }
-
-            }) {
-
-        }.apply {
+            Response.Listener { /*no response handling */ },
+            Response.ErrorListener { /*no response handling */}) {}.apply {
             // Set retry policy
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
@@ -710,5 +670,13 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             fragment.shippingEnabled = shippingEnabled
             return fragment
         }
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
     }
 }

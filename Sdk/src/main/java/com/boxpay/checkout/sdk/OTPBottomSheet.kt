@@ -11,7 +11,6 @@ import android.content.pm.PackageManager
 import android.database.Cursor
 import android.os.Bundle
 import android.provider.Telephony
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,24 +41,10 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
             val bottomSheet =
                 d.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
             if (bottomSheet != null) {
-//                bottomSheet.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                 bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
             }
 
-            if (bottomSheetBehavior == null)
-                Log.d("bottomSheetBehavior is null", "check here")
-
-
-            val screenHeight = resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.7 // 90%
-            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-
 
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
@@ -123,7 +108,6 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun readSms() {
-        Log.d("Message Received","readSms Function")
         val contentResolver: ContentResolver = requireActivity().contentResolver
         val cursor: Cursor? = contentResolver.query(
             Telephony.Sms.CONTENT_URI,
@@ -137,7 +121,6 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
             if (it.moveToFirst()) {
                 val address = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
                 val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
-                Log.d("Message Received",body)
                 binding.sampleTextView.text = body
                 smsList.add("Sender: $address\nMessage: $body")
             }
@@ -155,7 +138,6 @@ internal class OTPBottomSheet : BottomSheetDialogFragment() {
     private inner class SmsReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION == intent.action) {
-                Log.d("Message Received","onReceiver")
                 readSms()
             }
         }

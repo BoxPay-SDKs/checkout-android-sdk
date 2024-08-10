@@ -6,3 +6,11 @@ data class WalletDataClass(
     val walletBrand : String,
     val instrumentTypeValue : String
 )
+
+
+data class BnplDataClass(
+    val bnplName: String,
+    val bnplImagee: String,
+    val bnplBrand: String,
+    val instrumentTypeValue: String
+)

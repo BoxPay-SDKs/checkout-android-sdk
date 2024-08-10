@@ -89,8 +89,11 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("com.android.volley:volley:1.2.1")
+    implementation ("com.google.code.gson:gson:2.10.1")
+    implementation ("com.android.volley:volley:1.2.1")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    androidTestImplementation("androidx.test:rules:1.4.0")
+
 }
 
 allprojects {

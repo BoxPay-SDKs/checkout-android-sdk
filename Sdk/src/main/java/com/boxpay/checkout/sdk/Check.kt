@@ -1,38 +1,32 @@
 package com.boxpay.checkout.sdk
 
-import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.google.gson.GsonBuilder
 import org.json.JSONObject
 
 class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
-    private var successScreenFullReferencePath : String ?= null
+    private var successScreenFullReferencePath: String? = null
     private var tokenFetchedAndOpen = false
 
 
-    private val binding : ActivityCheckBinding by lazy {
+    private val binding: ActivityCheckBinding by lazy {
         ActivityCheckBinding.inflate(layoutInflater)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-//        val bottomSheet = QuickPayBottomSheet()
-//        bottomSheet.show(supportFragmentManager,"QuickPayTesting")
 
         makePaymentRequest(this)
 
@@ -40,17 +34,15 @@ class Check : AppCompatActivity() {
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
         tokenLiveData.observe(this, Observer { tokenInObserve ->
             // Handle the response after the token has been updated
-            if(tokenInObserve != null) {
+            if (tokenInObserve != null) {
                 handleResponseWithToken()
                 binding.textView6.text = "Opening"
                 binding.openButton.isEnabled = false
-            }else{
-                Log.d("token is empty","waiting")
             }
         })
 
         var actionInProgress = false
-        binding.openButton.setOnClickListener(){
+        binding.openButton.setOnClickListener() {
 
             // Disable the button
             if (actionInProgress) {
@@ -67,69 +59,46 @@ class Check : AppCompatActivity() {
 
             if (!(tokenLiveData.value.isNullOrEmpty())) {
                 showBottomSheetWithOverlay()
-                // Enable the button after the action is completed
-                // You can remove this if you want to enable the button after a certain delay
                 actionInProgress = false
                 binding.openButton.isEnabled = true
             }
         }
     }
-    fun removeLoadingAndEnabledProceedButton(){
-        binding.openButton.isEnabled = true
-        binding.progressBar.visibility = View.GONE
-        Log.d("text will be updated here","here")
-        binding.textView6.text = "Open Bottom Sheet"
-        binding.textView6.visibility = View.VISIBLE
-        binding.openButton.visibility = View.VISIBLE
-        binding.pleaseWaitTextView.visibility = View.GONE
-    }
 
-    fun showLoadingInButton() {
-        binding.textView6.visibility = View.INVISIBLE
-        binding.progressBar.visibility = View.VISIBLE
-        val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
-        rotateAnimation.duration = 3000
-        rotateAnimation.repeatCount = ObjectAnimator.INFINITE
-        binding.openButton.isEnabled = false
-        rotateAnimation.start()
-    }
     private fun handleResponseWithToken() {
-        if(tokenFetchedAndOpen)
+        if (tokenFetchedAndOpen)
             return
-        Log.d("Token", "Token has been updated. Using token: ${tokenLiveData.value}")
         showBottomSheetWithOverlay()
         tokenFetchedAndOpen = true
     }
 
-     private fun showBottomSheetWithOverlay() {
-
-         //tokenLiveData.value.toString()
-//         tokenLiveData.value.toString()
-        val boxPayCheckout = BoxPayCheckout(this, tokenLiveData.value ?: "",:: onPaymentResultCallback,true)
+    private fun showBottomSheetWithOverlay() {
+        val boxPayCheckout =
+            BoxPayCheckout(this, tokenLiveData.value ?: "", ::onPaymentResultCallback, false)
+        boxPayCheckout.testEnv = true
         boxPayCheckout.display()
-//         QuickPayBottomSheet().show(supportFragmentManager,"QuickPayTesting")
     }
 
 
-    fun onPaymentResultCallback(result : PaymentResultObject) {
-        Log.d("Result for the activity", "Payment result received: onpr ${result.status} onpr ${result.transactionId}  onpr ${result.operationId}")
+    fun onPaymentResultCallback(result: PaymentResultObject) {
     }
 
 
-    private fun makePaymentRequest(context: Context){
+    private fun makePaymentRequest(context: Context) {
         val queue = Volley.newRequestQueue(context)
-        val url = "https://sandbox-apis.boxpay.tech/v0/merchants/lGhJZ2Fxv2/sessions"
-        val jsonData = JSONObject(""" {
+        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
+        val jsonData = JSONObject(
+            """ {
   "context": {
     "countryCode": "IN",
-    "legalEntity": {"code": "boxpay_test"},
+    "legalEntity": {"code": "boxpay"},
     "orderId": "test12"
   },
   "paymentType": "S",
-  "money": {"amount": "1", "currencyCode": "INR"},
+  "money": {"amount": "100", "currencyCode": "INR"},
   "descriptor": {"line1": "Some descriptor"},
   "shopper": {
-    "firstName": "Ishika",
+    "firstName": "Ishika baniya",
     "lastName": "Bansal",
     "email":"ishika.bansal@boxpay.tech",
     "uniqueReference": "x123y",
@@ -144,11 +113,6 @@ class Check : AppCompatActivity() {
     }
   },
   "order": {
-    "originalAmount": 423.73,
-    "shippingAmount": 50,
-    "voucherCode": "VOUCHER",
-    "taxAmount": 76.27,
-    "totalAmountWithoutTax": 423.73,
     "items": [
       {
         "id": "test",
@@ -168,50 +132,57 @@ class Check : AppCompatActivity() {
         "discountedAmount": null,
         "amountWithoutTaxLocale": "10",
         "amountWithoutTaxLocaleFull": "10"
+      },
+      {
+        "id": "test",
+        "itemName": "item no 2",
+        "description": "testProduct",
+        "quantity": 3,
+        "manufacturer": null,
+        "brand": null,
+        "color": null,
+        "productUrl": null,
+        "imageUrl":
+            "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+        "categories": null,
+        "amountWithoutTax": 423.73,
+        "taxAmount": 76.27,
+        "taxPercentage": null,
+        "discountedAmount": null,
+        "amountWithoutTaxLocale": "10",
+        "amountWithoutTaxLocaleFull": "10"
       }
     ]
   },
   "statusNotifyUrl": "https://www.boxpay.tech",
   "frontendReturnUrl": "https://www.boxpay.tech",
   "frontendBackUrl": "https://www.boxpay.tech"
-}""")
+}"""
+        )
 
         val request = object : JsonObjectRequest(Method.POST, url, jsonData,
             { response ->
-                logJsonObject(response)
                 val sharedPreferences =
                     this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
                 val editor: SharedPreferences.Editor = sharedPreferences.edit()
                 val tokenFetched = response.getString("token")
-                Log.d("token fetched", tokenFetched)
                 tokenLiveData.value = tokenFetched
-                editor.putString("token",tokenLiveData.value)
+                editor.putString("baseUrl", "test-apis.boxpay.tech")
+                editor.putString("token", tokenLiveData.value)
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                // Handle error
-                Log.e("Error", "Error occurred: ${error.toString()}")
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("Error", "Detailed error response: $errorResponse")
-                    Log.d("","")
-                }
-            }) {
+            Response.ErrorListener { /* no response handling */}) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
-                headers["Authorization"] =  "Bearer OvxrLXMibYlA4Tn6NjMQuUnUOqUE36OOk7N3oUrGqfy6hDWWgfJnFIKqtCxWJ1vTEhIn6wMHsUmOMlvm7aUQ4e"
-                headers["X-Client-Connector-Name"] =  "Android SDK"
-                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
+                headers["Authorization"] =
+                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }
         queue.add(request)
-    }
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("Request Body Check", jsonStr)
     }
 }
