@@ -289,8 +289,9 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             Response.Listener { response ->
                 try {
                     val status = response.getString("status")
-                    println("========timer status $status")
                     val statusReason = response.getString("statusReason")
+                    val reasonCode = response.getString("reasonCode")
+                    println("========timer status $statusReason")
                     val transactionId = response.getString("transactionId")
 
                     // Check if status is success, if yes, dismiss the bottom sheet
@@ -337,7 +338,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                         editor.apply()
                         if (isAdded && isResumed) {
                             var cleanedMessage = statusReason.substringAfter(":")
-                            if (cleanedMessage.contains("authentication",true)) {
+                            if (!reasonCode.startsWith("uf", true)) {
                                 cleanedMessage = "Please retry using other payment method or try again in sometime"
                             }
                             countdownTimer.cancel()

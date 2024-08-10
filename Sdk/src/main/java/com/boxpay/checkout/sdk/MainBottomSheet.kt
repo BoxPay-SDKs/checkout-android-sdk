@@ -453,40 +453,40 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 try {
                     val status = response.getString("status")
                     val reason = response.getString("statusReason")
-                    println()
+                    val reasonCode = response.getString("reasonCode")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
                     if (status.equals("Pending",ignoreCase = true) && isGpayReturned) {
+                        isGpayReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
                         PaymentFailureScreen(
                             errorMessage = "Payment failed with Gpay. Please retry payment with a different UPI app"
                         ).show(parentFragmentManager, "FailureScreen")
-                        isGpayReturned = false
                     }
                     if (status.equals("Pending",ignoreCase = true) && isPhonePe) {
+                        isPhonePe = false
                         editor.putString("status", "Failed")
                         editor.apply()
                         PaymentFailureScreen(
                             errorMessage = "Payment failed with PhonePe. Please retry payment with a different UPI app"
                         ).show(parentFragmentManager, "FailureScreen")
-                        isPhonePe = false
                     }
                     if (status.equals("Pending", ignoreCase = true) && isOthersReturned) {
+                        isOthersReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
                         PaymentFailureScreen(
                             errorMessage = "Please retry using other payment method or try again in sometime"
                         ).show(parentFragmentManager, "FailureScreen")
-                        isOthersReturned = false
                     }
                     if (status.equals("Pending",ignoreCase = true) && isPaytmReturned) {
+                        isPaytmReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
                         PaymentFailureScreen(
                             errorMessage = "Payment failed with Paytm. Please retry payment with a different UPI app"
                         ).show(parentFragmentManager, "FailureScreen")
-                        isPaytmReturned = false
                     }
 
                     if (status.equals("Rejected", ignoreCase = true) || status.equals(
@@ -499,7 +499,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (isAdded && isResumed) {
                             job?.cancel()
                             var cleanedMessage = reason.substringAfter(":")
-                            if (cleanedMessage.contains("authentication",true)) {
+                            if (!reasonCode.startsWith("uf", true)) {
                                 cleanedMessage = "Please retry using other payment method or try again in sometime"
                             }
                             PaymentFailureScreen(
@@ -628,13 +628,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val urlForIntent = actionsArray.getJSONObject(0).getString("url")
                     val status = response.getJSONObject("status").getString("status")
                     val reason = response.getJSONObject("status").getString("reason")
+                    val reasonCode = response.getJSONObject("status").getString("reasonCode")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
                     if (status.contains("rejected", ignoreCase = true)) {
                         removeLoadingState()
                         var cleanedMessage = reason.substringAfter(":")
-                        if (cleanedMessage.contains("authentication",true)) {
+                        if (!reasonCode.startsWith("uf", true)) {
                             cleanedMessage = "Please retry using other payment method or try again in sometime"
                         }
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(
@@ -1426,13 +1427,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                     val status = response.getJSONObject("status").getString("status")
                     val reason = response.getJSONObject("status").getString("reason")
+                    val reasonCode = response.getJSONObject("status").getString("reasonCode")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
                     if (status.contains("rejected", ignoreCase = true)) {
                         removeLoadingState()
                         var cleanedMessage = reason.substringAfter(":")
-                        if (cleanedMessage.contains("authentication",true)) {
+                        if (!reasonCode.startsWith("uf", true)) {
                             cleanedMessage = "Please retry using other payment method or try again in sometime"
                         }
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(

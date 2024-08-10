@@ -469,15 +469,17 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
                 val status = response.getJSONObject("status").getString("status")
                 val reason = response.getJSONObject("status").getString("reason")
+                val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
 
                 if (status.contains("Rejected", ignoreCase = true)) {
+                    println("=======upi=reason $reason")
                     var cleanedMessage = reason.substringAfter(":")
                     if (cleanedMessage.contains("virtual address", true)) {
                         cleanedMessage = "Invalid UPI Id"
                     }
-                    if (cleanedMessage.contains("authentication",true)) {
+                    else if (!reasonCode.startsWith("uf", true)) {
                         cleanedMessage = "Please retry using other payment method or try again in sometime"
                     }
                     PaymentFailureScreen(errorMessage = cleanedMessage).show(parentFragmentManager,"FailureScreen")
