@@ -74,7 +74,6 @@ dependencies {
     testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
     testImplementation("org.mockito:mockito-core:5.7.0") // Replace with the latest version
-    testImplementation("org.mockito:mockito-inline:5.7.0")
 }
 
 
