@@ -18,7 +18,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SDK_VERSION", "\"1.1.10\"")
+        buildConfigField("String", "SDK_VERSION", "\"1.1.11\"")
 
         buildFeatures.buildConfig = true
     }
