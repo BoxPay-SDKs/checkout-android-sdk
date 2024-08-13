@@ -29,6 +29,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
@@ -41,6 +42,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.WalletAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentWalletBottomSheetBinding
@@ -89,9 +91,17 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var Base_Session_API_URL : String
+    private var isOtpReturned = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
+        sharedViewModel.isOtpCancelReturned.observe(this) { dismissed ->
+            if (dismissed) {
+                isOtpReturned = true
+                sharedViewModel.isNotOtpCancel()
+            }
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -929,7 +939,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
                             startFunctionCalls()
-                            startActivityForResult(intent, 333)
+                            startActivity(intent)
                         } else {
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
@@ -1073,25 +1083,24 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             .map(charPool::get)
             .joinToString("")
     }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 333) {
-            if (resultCode == Activity.RESULT_OK) {
-                job?.cancel()
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
-            }
-        }
-    }
     private fun fetchStatusAndReason(url: String) {
+
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
             Response.Listener{ response ->
                 try {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId")
+
+                    if (status.contains("Pending") && isOtpReturned) {
+                        if (isAdded && isResumed) {
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
+                            isOtpReturned = false
+                        }
+                    }
 
                     if (status.contains(
                             "Approved",
