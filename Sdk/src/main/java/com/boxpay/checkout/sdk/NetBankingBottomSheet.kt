@@ -4,6 +4,7 @@ import FailureScreenSharedViewModel
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -29,7 +30,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
@@ -41,7 +41,6 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.NetbankingBanksAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentNetBankingBottomSheetBinding
@@ -71,7 +70,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private lateinit var allBanksAdapter: NetbankingBanksAdapter
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var banksDetailsOriginal: ArrayList<NetbankingDataClass> = ArrayList()
-    private lateinit var sharedViewModel: SharedViewModel
     private var banksDetailsFiltered: ArrayList<NetbankingDataClass> = ArrayList()
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
@@ -96,13 +94,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
-        sharedViewModel.isOtpCancelReturned.observe(this) { dismissed ->
-            if (dismissed) {
-                isOtpReturned = true
-                sharedViewModel.isNotOtpCancel()
-            }
-        }
     }
 
 
@@ -860,7 +851,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
                             startFunctionCalls()
-                            startActivity(intent)
+                            startActivityForResult(intent, 333)
                         } else {
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
@@ -996,16 +987,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId")
 
-                    if (status.contains("Pending") && isOtpReturned) {
-                        if (isAdded && isResumed) {
-                            job?.cancel()
-                            PaymentFailureScreen(
-                                errorMessage = "Please retry using other payment method or try again in sometime"
-                            ).show(parentFragmentManager, "FailureScreen")
-                            isOtpReturned = false
-                        }
-                    }
-
                     if (status.contains(
                             "Approved",
                             ignoreCase = true
@@ -1080,6 +1061,18 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 delay(3000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 5 seconds
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 333) {
+            if (resultCode == Activity.RESULT_OK) {
+                job?.cancel()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
             }
         }
     }
