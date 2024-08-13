@@ -29,6 +29,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
@@ -41,6 +42,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.WalletAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentWalletBottomSheetBinding
@@ -70,8 +72,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private var walletDetailsFiltered: ArrayList<WalletDataClass> = ArrayList()
     private var overlayViewCurrentBottomSheet: View? = null
     private var token: String? = null
+    private lateinit var sharedViewModel: SharedViewModel
     private lateinit var requestQueue: RequestQueue
-    private var job: Job? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private var checkedPosition: Int? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
@@ -84,14 +86,23 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             value = false
         }
     private var popularWalletsSelected: Boolean = false
+    private var job: Job? = null
     private var popularWalletsSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var Base_Session_API_URL : String
+    private var isOtpReturned = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
+        sharedViewModel.isOtpCancelReturned.observe(this) { dismissed ->
+            if (dismissed) {
+                isOtpReturned = true
+                sharedViewModel.isNotOtpCancel()
+            }
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

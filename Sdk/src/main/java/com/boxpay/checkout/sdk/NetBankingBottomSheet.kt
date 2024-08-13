@@ -30,6 +30,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
@@ -42,6 +43,7 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
+import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
 import com.boxpay.checkout.sdk.adapters.NetbankingBanksAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentNetBankingBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.NetbankingDataClass
@@ -70,6 +72,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private lateinit var allBanksAdapter: NetbankingBanksAdapter
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var banksDetailsOriginal: ArrayList<NetbankingDataClass> = ArrayList()
+    private lateinit var sharedViewModel: SharedViewModel
     private var banksDetailsFiltered: ArrayList<NetbankingDataClass> = ArrayList()
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
@@ -82,6 +85,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     private lateinit var Base_Session_API_URL : String
     private lateinit var requestQueue: RequestQueue
+    private var isOtpReturned = false
     private var job: Job? = null
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
@@ -94,6 +98,13 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
+        sharedViewModel.isOtpCancelReturned.observe(this) { dismissed ->
+            if (dismissed) {
+                isOtpReturned = true
+                sharedViewModel.isNotOtpCancel()
+            }
+        }
     }
 
 
@@ -820,18 +831,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
                     // Retrieve the "actions" array
-                    val actionsArray = response.getJSONArray("actions")
                     val status = response.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
-                    for (i in 0 until actionsArray.length()) {
-                        val actionObject = actionsArray.getJSONObject(i)
-                        url = actionObject.getString("url")
-                        // Do something with the URL
-
-                    }
-
-
                     if (status.equals("Approved")) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                         bottomSheet.show(
