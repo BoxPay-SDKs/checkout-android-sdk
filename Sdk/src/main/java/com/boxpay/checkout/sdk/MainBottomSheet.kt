@@ -842,6 +842,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
                     ?.removePrefix(countryCode?.second ?: "")
                 editor.putString("phoneNumber", confirmPhoneNumber)
+                editor.putString("phoneCode", countryCode?.second)
                 editor.apply()
             }
             bottomSheet = DeliveryAddressBottomSheet.newInstance(
@@ -860,6 +861,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
                     ?.removePrefix(countryCode?.second ?: "")
                 editor.putString("phoneNumber", confirmPhoneNumber)
+                editor.putString("phoneCode", countryCode?.second)
                 editor.apply()
             }
             bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
@@ -1905,7 +1907,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                             editor.putString("countryName", countryCode?.first)
                             editor.putString("indexCountryCodePhone", countryCode?.second)
-                            editor.putString("countryCodePhoneNum", countryCode?.second)
+                            editor.putString("phoneCode", countryCode?.second)
                         }
                         if (!deliveryAddress.isNull("city")) {
                             editor.putString("city", deliveryAddress.getString("city"))
@@ -2025,12 +2027,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 editor.apply()
 
-                binding.nameTextView.text = sharedPreferences.getString(
+                binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
                     "firstName",
                     ""
-                ) + " " + sharedPreferences.getString("lastName", "")
-                binding.mobileNumberTextViewMain.text =
-                    "(${sharedPreferences.getString("phoneNumber", "")})"
+                ) + " " + sharedPreferences.getString("lastName", "") + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
                 binding.addressTextViewMain.text =
                     if (!showShipping) {
                         binding.textView2.text = "Personal details"
@@ -2105,12 +2105,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     override fun updateBottomSheet() {
-        binding.nameTextView.text = sharedPreferences.getString(
+        binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
             "firstName",
             ""
-        ) + " " + sharedPreferences.getString("lastName", "")
-        binding.mobileNumberTextViewMain.text =
-            "(${sharedPreferences.getString("phoneNumber", "")})"
+        ) + " " + sharedPreferences.getString("lastName", "") + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
         binding.addressTextViewMain.text =
             if (!showShipping) {
                 binding.textView2.text = "Personal details"
@@ -2132,11 +2130,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
         binding.cardView8.visibility = View.VISIBLE
         countryCode = Pair(
-            sharedPreferences.getString("countryName", null) ?: "",
-            sharedPreferences.getString("indexCountryCodePhone", null) ?: ""
+            sharedPreferences.getString("countryName", "") ?: "",
+            sharedPreferences.getString("phoneCode", null) ?: ""
         )
 
-//        binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+        binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
         binding.textView12.visibility = View.VISIBLE
         binding.upiLinearLayout.visibility = View.VISIBLE
         binding.cardView5.visibility = View.VISIBLE

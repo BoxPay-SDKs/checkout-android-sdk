@@ -153,12 +153,15 @@
                                 android:layout_marginTop="5dp"
                                 android:background="@drawable/edittext_bg">
 
-                                <Spinner
+                                <AutoCompleteTextView
                                     android:id="@+id/spinner_dial_codes"
                                     android:layout_width="70dp"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:background="#ffffffff"
+                                    android:textSize="14sp"
+                                    android:paddingStart="4dp"
+                                    android:inputType="number"
                                     tools:ignore="TouchTargetSizeCheck" />
 
                                 <EditText
@@ -256,7 +259,7 @@
                                 android:text="Country*"
                                 android:textColor="@android:color/black"/>
 
-                            <Spinner
+                            <AutoCompleteTextView
                                 android:id="@+id/countryEditText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -266,9 +269,10 @@
                                 android:gravity="center_vertical"
                                 android:hint="Country"
                                 android:inputType="text"
+                                android:padding="8dp"
                                 android:textColor="#000000"
                                 android:textColorHint="#7F7D83"
-                                android:textSize="12sp"
+                                android:textSize="14sp"
                                 tools:ignore="TouchTargetSizeCheck" />
 
                             <TextView

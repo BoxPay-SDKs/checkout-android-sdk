@@ -14,8 +14,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Filter
 import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
@@ -58,7 +58,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         // Inflate the layout for this fragment
         binding =
             FragmentDeliveryAddressBottomSheetBinding.inflate(layoutInflater, container, false)
-        val spinnerDialCodes = binding.spinnerDialCodes
         val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
         val countryCodeJson = JSONObject(jsonString)
         val countryCodesArray = loadCountryCodes(countryCodeJson)
@@ -74,116 +73,76 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         editor = sharedPreferences.edit()
 
         // Create an ArrayAdapter using the string array and a default spinner layout
-        val adapter = ArrayAdapter(
+        val adapter = CustomArrayAdapter(
             requireContext(),
-            android.R.layout.simple_spinner_item,
             countryCodesArray
         )
-        val indexCountryPhone = sharedPreferences.getString("indexCountryCodePhone", null)
+        val indexCountryPhone = sharedPreferences.getString("phoneCode", null)
 
         // Set custom dropdown layout
         adapter.setDropDownViewResource(R.layout.custom_dial_code_item)
 
         // Set adapter to spinner
-        spinnerDialCodes.adapter = adapter
+        binding.spinnerDialCodes.setAdapter(adapter)
 
 
         val countryNameListAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, countryList)
+            CustomArrayAdapter(requireContext(), countryList)
         binding.countryEditText.setAdapter(countryNameListAdapter)
 
-        binding.countryEditText.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    // Get the selected item
-                    val selectedItem = parent.getItemAtPosition(position).toString()
+        binding.countryEditText.setOnItemClickListener { parent, view, position, id ->
+            val selectedItem = parent.getItemAtPosition(position).toString()
 
-                    countrySelectedFromDropDown = selectedItem
-                    countrySelected = true
-                    countryCodePhoneNum = setPhoneCodeUsingCountryName(
-                        countryCodeJson,
-                        countrySelectedFromDropDown.toString()
-                    )
-                    selectedCountryName =
-                        findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
-                    binding.spinnerDialCodes.setSelection(
-                        getPhoneNumberCode(
-                            countryCodesArray,
-                            countryCodePhoneNum
-                        )
-                    )
-                    phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
-                    minPhoneLength = phoneLength.first
-                    maxPhoneLength = phoneLength.second
-                    if (binding.mobileNumberEditText.text.isNotEmpty()) {
-                        isMobileNumberValid()
-                    }
-                    if (countryCodePhoneNum.equals("+91", true)) {
-                        binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                    } else {
-                        binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
-                    }
-
-                    if (binding.postalCodeEditText.text.isNotEmpty()) {
-                        isPostalValid()
-                    }
-                    toCheckAllFieldsAreFilled()
-                }
-
-
-                override fun onNothingSelected(parent: AdapterView<*>) {
-                    // Do nothing, or you can handle this case if needed
-                }
+            countrySelectedFromDropDown = selectedItem
+            countrySelected = true
+            countryCodePhoneNum = setPhoneCodeUsingCountryName(
+                countryCodeJson,
+                countrySelectedFromDropDown.toString()
+            )
+            selectedCountryName =
+                findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
+            binding.spinnerDialCodes.setText(countryCodePhoneNum)
+            phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
+            minPhoneLength = phoneLength.first
+            maxPhoneLength = phoneLength.second
+            if (binding.mobileNumberEditText.text.isNotEmpty()) {
+                isMobileNumberValid()
+            }
+            if (countryCodePhoneNum.equals("+91", true)) {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+            } else {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
             }
 
-
-        spinnerDialCodes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                // Get the selected item
-                val selectedDialCode = parent.getItemAtPosition(position).toString()
-                // Display or use the selected item
-                if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty() && selectedDialCode != indexCountryPhone) {
-                    binding.mobileNumberEditText.setText("")
-                }
-                countryCodePhoneNum = selectedDialCode
-                indexCountryCodePhone = selectedDialCode
-                countrySelectedFromDropDown =
-                    setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
-                binding.countryEditText.setSelection(
-                    getCountryName(
-                        countryList,
-                        countrySelectedFromDropDown.toString()
-                    )
-                )
-                phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
-                minPhoneLength = phoneLength.first
-                maxPhoneLength = phoneLength.second
-                if (countryCodePhoneNum.equals("+91", true)) {
-                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                } else {
-                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
-                }
-                if (binding.postalCodeEditText.text.isNotEmpty()) {
-                    isPostalValid()
-                }
+            if (binding.postalCodeEditText.text.isNotEmpty()) {
+                isPostalValid()
             }
-
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing, or you can handle this case if needed
-            }
+            toCheckAllFieldsAreFilled()
         }
 
+        binding.spinnerDialCodes.setOnItemClickListener { parent, view, position, id ->
+            val selectedDialCode = parent.getItemAtPosition(position).toString()
+            // Display or use the selected item
+            if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty() && selectedDialCode != indexCountryPhone) {
+                binding.mobileNumberEditText.setText("")
+            }
+            countryCodePhoneNum = selectedDialCode
+            indexCountryCodePhone = selectedDialCode
+            countrySelectedFromDropDown =
+                setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
+            binding.countryEditText.setText(countrySelectedFromDropDown)
+            phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
+            minPhoneLength = phoneLength.first
+            maxPhoneLength = phoneLength.second
+            if (countryCodePhoneNum.equals("+91", true)) {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+            } else {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+            }
+            if (binding.postalCodeEditText.text.isNotEmpty()) {
+                isPostalValid()
+            }
+        }
 
         val allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890. "
         val filter = InputFilter { source, _, _, _, _, _ ->
@@ -217,12 +176,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         if (!firstTime) {
             binding.backButton.visibility = View.VISIBLE
 
-            binding.spinnerDialCodes.setSelection(
-                getPhoneNumberCode(
-                    countryCodesArray,
-                    indexCountryPhone ?: countryCodePhoneNum
-                )
-            )
+            binding.spinnerDialCodes.setText(indexCountryPhone)
             phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
             minPhoneLength = phoneLength.first
             maxPhoneLength = phoneLength.second
@@ -255,30 +209,18 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             if (phoneNumber != null) {
                 binding.mobileNumberEditText.setText(phoneNumber)
             }
-            binding.countryEditText.setSelection(
-                getCountryName(
-                    countryList,
-                    if (countryName.isNullOrEmpty()) "India" else countryName
-                )
-            )
+            binding.countryEditText.setText(countryName)
+            countrySelectedFromDropDown = countryName
             countrySelected = true
         } else {
             binding.backButton.visibility = View.GONE
             disableProceedButton()
-            binding.spinnerDialCodes.setSelection(
-                getPhoneNumberCode(
-                    countryCodesArray,countryCodePhoneNum
-                )
-            )
+            binding.spinnerDialCodes.setText(countryCodePhoneNum)
             phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
             minPhoneLength = phoneLength.first
             maxPhoneLength = phoneLength.second
 
-            binding.countryEditText.setSelection(
-                getCountryName(
-                    countryList, "India"
-                )
-            )
+            binding.countryEditText.setText(countryName ?: "India")
             countrySelected = true
         }
 
@@ -564,21 +506,20 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             editor.putString("lastName", lastName)
             editor.putString("email", email.toString())
             editor.putString("phoneNumber", "$countryCodePhoneNum$mobileNumber")
-            editor.putString("countryCodePhoneNum", countryCodePhoneNum)
+            editor.putString("phoneCode", countryCodePhoneNum)
             editor.putString("countryName", country.toString())
             editor.putString("indexCountryCodePhone", indexCountryCodePhone)
 
 
             editor.apply()
 
-
-
             callback?.updateBottomSheet()
             dismiss()
         }
 
         if (toCheckAllFieldsAreFilled()) {
-            binding.textView.text = if (isShippingEnabled) "Edit Address" else "Edit Personal Details"
+            binding.textView.text =
+                if (isShippingEnabled) "Edit Address" else "Edit Personal Details"
             enableProceedButton()
         } else {
             binding.textView.text = if (isShippingEnabled) "Add Address" else "Add Personal Details"
@@ -650,9 +591,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 if (isShippingEnabled) {
                     desiredHeight = (screenHeight * 0.6).toInt()
                 } else {
-                    desiredHeight = (screenHeight * 0.5).toInt()
+                    desiredHeight = (screenHeight * 0.54).toInt()
                 }
-                 // 50% of screen height
+                // 50% of screen height
 
                 val layoutParams = bottomSheet.layoutParams
                 if (layoutParams is CoordinatorLayout.LayoutParams) {
@@ -710,7 +651,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         fun newInstance(
             callback: UpdateMainBottomSheetInterface,
             firstTime: Boolean = false,
-            isNameEnabled : Boolean,
+            isNameEnabled: Boolean,
             isPhoneEnabled: Boolean,
             isEmailEnabled: Boolean,
             isShippingEnabled: Boolean
@@ -839,23 +780,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         return Pair(10, 10)
     }
 
-
-    fun getPhoneNumberCode(countryCodeJson: Array<String>, isdCode: String): Int {
-        var index = 0
-        countryCodeJson.forEach { key ->
-            if (key.equals(isdCode)) {
-                return index
-            }
-            index++
-        }
-
-        // Return null if no matching ISD code is found
-        return index
-    }
-
     fun isMobileNumberValid(): Boolean {
         val mobileNumber = binding.mobileNumberEditText.text
-        if (mobileNumber.length !in minPhoneLength..maxPhoneLength || !mobileNumber.matches(numberRegex)) {
+        if (mobileNumber.length !in minPhoneLength..maxPhoneLength || !mobileNumber.matches(
+                numberRegex
+            )
+        ) {
             disableProceedButton()
             binding.mobileErrorText.text = if (mobileNumber.isEmpty()) {
                 "Required"
@@ -946,17 +876,52 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.cityErrortext.visibility = View.INVISIBLE
         return true
     }
+}
 
-    fun getCountryName(countryCodeJson: Array<String>, countryName: String): Int {
-        var index = 0
-        countryCodeJson.forEach { key ->
-            if (key.equals(countryName, true)) {
-                return index
+class CustomArrayAdapter(
+    context: Context,
+    private val originalArray: Array<String>
+) : ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line, originalArray) {
+
+    private var filteredArray: Array<String> = originalArray
+
+    override fun getCount(): Int {
+        return filteredArray.size
+    }
+
+    override fun getItem(position: Int): String? {
+        return filteredArray[position]
+    }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val results = FilterResults()
+
+                if (constraint != null) {
+                    val filteredResults = originalArray.filter {
+                        it.contains(constraint, ignoreCase = true)
+                    }.sorted().toTypedArray()
+
+                    results.values = filteredResults
+                    results.count = filteredResults.size
+                } else {
+                    results.values = originalArray
+                    results.count = originalArray.size
+                }
+
+                return results
             }
-            index++
-        }
 
-        // Return null if no matching ISD code is found
-        return index
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                if (results != null && results.values is Array<*>) {
+                    // Cast the results.values to Array<String>
+                    filteredArray = results.values as Array<String>
+                } else {
+                    filteredArray = originalArray
+                }
+                notifyDataSetChanged()
+            }
+        }
     }
 }
