@@ -33,7 +33,6 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
-import androidx.lifecycle.ViewModelProvider
 import coil.transform.CircleCropTransformation
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
@@ -71,12 +70,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private lateinit var allBanksAdapter: NetbankingBanksAdapter
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var banksDetailsOriginal: ArrayList<NetbankingDataClass> = ArrayList()
-    private lateinit var sharedViewModel: SharedViewModel
     private var banksDetailsFiltered: ArrayList<NetbankingDataClass> = ArrayList()
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
-    private lateinit var requestQueue: RequestQueue
-    private var job: Job? = null
     private var checkedPosition: Int? = null
     private var successScreenFullReferencePath: String? = null
     var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> =
@@ -85,6 +81,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
 
     private lateinit var Base_Session_API_URL : String
+    private lateinit var requestQueue: RequestQueue
+    private var job: Job? = null
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
@@ -96,13 +94,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
-        sharedViewModel.isOtpCancelReturned.observe(this) { dismissed ->
-            if (dismissed) {
-                isOtpReturned = true
-                sharedViewModel.isNotOtpCancel()
-            }
-        }
     }
 
 
@@ -1005,16 +996,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId")
 
-                    if (status.contains("Pending") && isOtpReturned) {
-                        if (isAdded && isResumed) {
-                            job?.cancel()
-                            PaymentFailureScreen(
-                                errorMessage = "Please retry using other payment method or try again in sometime"
-                            ).show(parentFragmentManager, "FailureScreen")
-                            isOtpReturned = false
-                        }
-                    }
-
                     if (status.contains(
                             "Approved",
                             ignoreCase = true
@@ -1089,6 +1070,18 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 delay(3000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 5 seconds
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 333) {
+            if (resultCode == Activity.RESULT_OK) {
+                job?.cancel()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
             }
         }
     }

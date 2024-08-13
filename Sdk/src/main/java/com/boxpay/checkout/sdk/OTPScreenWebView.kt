@@ -71,6 +71,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
 
     fun explicitDismiss() {
+        val resultIntent = Intent()
+        resultIntent.putExtra("closed", "Your Result Data")
+        setResult(Activity.RESULT_OK, resultIntent)
         finish()
     }
 
