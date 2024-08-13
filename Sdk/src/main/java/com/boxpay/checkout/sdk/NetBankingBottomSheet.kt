@@ -30,7 +30,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
@@ -72,7 +71,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private lateinit var allBanksAdapter: NetbankingBanksAdapter
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var banksDetailsOriginal: ArrayList<NetbankingDataClass> = ArrayList()
-    private lateinit var sharedViewModel: SharedViewModel
     private var banksDetailsFiltered: ArrayList<NetbankingDataClass> = ArrayList()
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
@@ -85,7 +83,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     private lateinit var Base_Session_API_URL : String
     private lateinit var requestQueue: RequestQueue
-    private var isOtpReturned = false
     private var job: Job? = null
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
@@ -98,13 +95,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
-        sharedViewModel.isOtpCancelReturned.observe(this) { dismissed ->
-            if (dismissed) {
-                isOtpReturned = true
-                sharedViewModel.isNotOtpCancel()
-            }
-        }
     }
 
 
