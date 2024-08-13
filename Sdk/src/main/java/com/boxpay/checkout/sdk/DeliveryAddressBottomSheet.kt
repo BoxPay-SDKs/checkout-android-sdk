@@ -675,7 +675,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 if (isShippingEnabled) {
                     desiredHeight = (screenHeight * 0.6).toInt()
                 } else {
-                    desiredHeight = (screenHeight * 0.5).toInt()
+                    desiredHeight = (screenHeight * 0.54).toInt()
                 }
                 // 50% of screen height
 
@@ -960,7 +960,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.cityErrortext.visibility = View.INVISIBLE
         return true
     }
-
     fun inValidPhoneCode(countryCodeJson: JSONObject): Boolean {
         countryCodeJson.keys().forEach { key ->
             val countryDetails = countryCodeJson.getJSONObject(key)
@@ -971,6 +970,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
         return false
     }
+
 }
 
 class CustomArrayAdapter(
