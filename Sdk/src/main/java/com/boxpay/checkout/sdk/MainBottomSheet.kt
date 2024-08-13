@@ -1819,6 +1819,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
+                    binding.cardView6.visibility = View.GONE
                     binding.cardView7.visibility = View.GONE
                     binding.netBankingConstraint.visibility = View.GONE
                     binding.bnplConstraint.visibility = View.GONE
@@ -1841,6 +1842,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
+                    binding.cardView6.visibility = View.GONE
                     binding.cardView7.visibility = View.GONE
                     binding.netBankingConstraint.visibility = View.GONE
                     binding.bnplConstraint.visibility = View.GONE
@@ -2143,6 +2145,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.walletConstraint.visibility = View.VISIBLE
         binding.netBankingConstraint.visibility = View.VISIBLE
         binding.cardConstraint.visibility = View.VISIBLE
+        binding.walletConstraint.visibility = View.VISIBLE
         binding.linearLayout.visibility = View.VISIBLE
         binding.proceedButton.visibility = View.GONE
         priceBreakUpVisible = true

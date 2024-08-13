@@ -39,6 +39,7 @@ class CancelConfirmationBottomSheet : BottomSheetDialogFragment() {
         binding = FragmentCancelConfirmationBottomSheetBinding.inflate(layoutInflater,container,false)
         binding.yesButton.setOnClickListener {
             sharedViewModel.dismissBottomSheet()
+            sharedViewModel.isOtpCanceled()
             dismiss()
         }
         binding.noButton.setOnClickListener(){

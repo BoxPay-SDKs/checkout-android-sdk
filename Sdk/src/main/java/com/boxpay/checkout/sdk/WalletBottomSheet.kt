@@ -29,6 +29,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
@@ -41,6 +42,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.WalletAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentWalletBottomSheetBinding
@@ -70,6 +72,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private var walletDetailsFiltered: ArrayList<WalletDataClass> = ArrayList()
     private var overlayViewCurrentBottomSheet: View? = null
     private var token: String? = null
+    private lateinit var sharedViewModel: SharedViewModel
     private lateinit var requestQueue: RequestQueue
     private var job: Job? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
@@ -88,10 +91,18 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private lateinit var colorAnimation: ValueAnimator
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
-    private lateinit var Base_Session_API_URL: String
+    private lateinit var Base_Session_API_URL : String
+    private var isOtpReturned = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedViewModel = ViewModelProvider(this).get(SharedViewModel::class.java)
+        sharedViewModel.isOtpCancelReturned.observe(this) { dismissed ->
+            if (dismissed) {
+                isOtpReturned = true
+                sharedViewModel.isNotOtpCancel()
+            }
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -343,6 +354,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        requestQueue = Volley.newRequestQueue(context)
         binding = FragmentWalletBottomSheetBinding.inflate(layoutInflater, container, false)
 
 
@@ -896,20 +908,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 hideLoadingInButton()
 
                 try {
-
-
-                    val actionsArray = response.getJSONArray("actions")
                     val status = response.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
-                    for (i in 0 until actionsArray.length()) {
-                        val actionObject = actionsArray.getJSONObject(i)
-                        url = actionObject.getString("url")
-                        // Do something with the URL
-
-                    }
-
-
 
                     if (status.equals("Approved")) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
@@ -919,14 +920,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-
-                        if (!response.isNull("actions") && response.getJSONArray("actions")
-                                .length() != 0
-                        ) {
+                        if (!response.isNull("actions") && response.getJSONArray("actions").length() != 0) {
                             val type =
                                 response.getJSONArray("actions").getJSONObject(0).getString("type")
                             if (status.contains("RequiresAction", ignoreCase = true)) {
-                                editor.putString("status", "RequiresAction")
+                                editor.putString("status","RequiresAction")
                             }
                             if (type.contains("html", true)) {
                                 url = response
@@ -942,7 +940,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
                             startFunctionCalls()
-                            startActivityForResult(intent, 333)
+                            startActivity(intent)
                         } else {
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
@@ -1086,26 +1084,24 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             .map(charPool::get)
             .joinToString("")
     }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 333) {
-            if (resultCode == Activity.RESULT_OK) {
-                job?.cancel()
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
-            }
-        }
-    }
-
     private fun fetchStatusAndReason(url: String) {
+
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
-            Response.Listener { response ->
+            Response.Listener{ response ->
                 try {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId")
+
+                    if (status.contains("Pending") && isOtpReturned) {
+                        if (isAdded && isResumed) {
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
+                            isOtpReturned = false
+                        }
+                    }
 
                     if (status.contains(
                             "Approved",
@@ -1113,7 +1109,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
 
-                        editor.putString("status", "Success")
+                        editor.putString("status","Success")
                         editor.apply()
 
                         if (isAdded && isResumed) {
@@ -1141,14 +1137,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status", "RequiresAction")
+                        editor.putString("status","RequiresAction")
                         editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status", "Posted")
+                        editor.putString("status","Posted")
                         editor.apply()
                     } else if (status.contains("FAILED", ignoreCase = true)) {
 
-                        editor.putString("status", "Failed")
+                        editor.putString("status","Failed")
                         editor.apply()
 
                         if (isAdded && isResumed) {
