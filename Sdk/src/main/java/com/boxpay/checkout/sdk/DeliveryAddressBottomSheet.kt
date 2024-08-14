@@ -44,6 +44,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isPhoneEnabled = false
     private var isEmailEnabled = false
     private var minPhoneLength = 10
+    val emailRegex = "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
     val emailRegex =
         "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
     val numberRegex = "^[0-9]+$".toRegex()
