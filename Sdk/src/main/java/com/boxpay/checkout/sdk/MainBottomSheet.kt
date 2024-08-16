@@ -1556,6 +1556,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             .withEndAction {}
             .start()
     }
+    
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -1814,7 +1815,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!shopperObject.isNull("uniqueReference")) {
                     editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
                 }
-                if (shopperObject.isNull("deliveryAddress") && showShipping) {
+                if (shopperObject.isNull("deliveryAddress") && (showName || showEmail || showPhone || showShipping)) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -1837,7 +1838,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showShipping
                     )
                     showPriceBreakUp()
-                } else if (shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber")) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber")) && (showName || showEmail || showPhone || showShipping)) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2028,6 +2029,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 editor.apply()
+                if (showEmail || showShipping || showPhone || showName) {
+                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+                } else {
+                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                }
 
                 binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
                     "firstName",
