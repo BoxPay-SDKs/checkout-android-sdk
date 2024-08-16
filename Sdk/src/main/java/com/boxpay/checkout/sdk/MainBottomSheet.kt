@@ -1558,6 +1558,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
     }
@@ -1821,29 +1822,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!shopperObject.isNull("uniqueReference")) {
                     editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
                 }
-                if (shopperObject.isNull("deliveryAddress")) {
-                    editor.putString("address1", null)
-                    editor.putString("address2",null)
-                    editor.putString("countryName", null)
-                    editor.putString("indexCountryCodePhone", null)
-                    editor.putString("phoneCode", null)
-                    editor.putString("city", null)
-                    editor.putString("state", null)
-                    editor.putString("postalCode", null)
-                }
-                if (shopperObject.isNull("firstName")) {
-                    editor.putString("firstName",null)
-                }
-                if (shopperObject.isNull("lastName")) {
-                    editor.putString("lastName", null)
-                }
-                if (shopperObject.isNull("email")) {
-                    editor.putString("email", null)
-                }
-                if (shopperObject.isNull("phoneNumber")) {
-                    editor.putString("phoneNumber", null)
-                }
-                if (shopperObject.isNull("deliveryAddress") && showShipping) {
+                if (shopperObject.isNull("deliveryAddress") && (showName || showEmail || showPhone || showShipping)) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -1866,7 +1845,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showShipping
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber")) && (showName || showEmail || showPhone)) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber")) && (showName || showEmail || showPhone || showShipping)) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2057,6 +2036,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 editor.apply()
+                if (showEmail || showShipping || showPhone || showName) {
+                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+                } else {
+                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                }
 
                 binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
                     "firstName",
