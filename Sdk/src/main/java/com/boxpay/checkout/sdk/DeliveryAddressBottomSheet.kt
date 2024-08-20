@@ -289,7 +289,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             countrySelectedFromDropDown = countryName
             countrySelected = true
         } else {
-            binding.backButton.visibility = View.GONE
+            binding.backButton.visibility = View.VISIBLE
             disableProceedButton()
             binding.spinnerDialCodes.setText(countryCodePhoneNum)
             phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
@@ -297,6 +297,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             maxPhoneLength = phoneLength.second
 
             binding.countryEditText.setText(countryName ?: "India")
+            countrySelectedFromDropDown = countryName ?: "India"
             countrySelected = true
         }
 
