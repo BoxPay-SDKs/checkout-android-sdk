@@ -45,8 +45,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isEmailEnabled = false
     private var minPhoneLength = 10
     val emailRegex = "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
-    val emailRegex =
-        "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
     val numberRegex = "^[0-9]+$".toRegex()
     private var maxPhoneLength = 10
     private var countrySelectedFromDropDown: String? = null
@@ -148,78 +146,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
             if (binding.postalCodeEditText.text.isNotEmpty()) {
                 isPostalValid()
-            }
-        }
-
-        binding.countryEditText.setOnDismissListener {
-            val countryAvailable =
-                countryCodesArray.find { it.equals(binding.countryEditText.text.toString(), true) }
-            if (binding.countryEditText.text.toString().isNotEmpty()) {
-                if (countryAvailable != null) {
-                    val selectedItem = binding.countryEditText.text.toString()
-
-                    countrySelectedFromDropDown = selectedItem
-                    countrySelected = true
-                    countryCodePhoneNum = setPhoneCodeUsingCountryName(
-                        countryCodeJson,
-                        countrySelectedFromDropDown.toString()
-                    )
-                    selectedCountryName =
-                        findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
-                    binding.spinnerDialCodes.setText(countryCodePhoneNum)
-                    phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
-                    minPhoneLength = phoneLength.first
-                    maxPhoneLength = phoneLength.second
-                    if (binding.mobileNumberEditText.text.isNotEmpty()) {
-                        isMobileNumberValid()
-                    }
-                    if (countryCodePhoneNum.equals("+91", true)) {
-                        binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                    } else {
-                        binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
-                    }
-
-                    if (binding.postalCodeEditText.text.isNotEmpty()) {
-                        isPostalValid()
-                    }
-                    toCheckAllFieldsAreFilled()
-                } else {
-                    binding.countryEditText.setText(countrySelectedFromDropDown)
-                    binding.countryEditText.dismissDropDown()
-                }
-            }
-        }
-
-        binding.spinnerDialCodes.setOnDismissListener {
-            if (binding.spinnerDialCodes.text.toString() != "+" && binding.spinnerDialCodes.text.toString().length >= 2) {
-                val selectedDialCode = binding.spinnerDialCodes.text.toString()
-                if (inValidPhoneCode(countryCodeJson)) {
-                    if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty() && selectedDialCode != indexCountryPhone) {
-                        binding.mobileNumberEditText.setText("")
-                    }
-                    countryCodePhoneNum = selectedDialCode
-                    indexCountryCodePhone = selectedDialCode
-                    phoneCodeSelected = true
-                    countrySelectedFromDropDown =
-                        setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
-                    binding.countryEditText.setText(countrySelectedFromDropDown)
-                    phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
-                    minPhoneLength = phoneLength.first
-                    maxPhoneLength = phoneLength.second
-                    if (countryCodePhoneNum.equals("+91", true)) {
-                        binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                    } else {
-                        binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
-                    }
-                    if (binding.postalCodeEditText.text.isNotEmpty()) {
-                        isPostalValid()
-                    }
-                    binding.spinnerDialCodes.dismissDropDown()
-                    toCheckAllFieldsAreFilled()
-                } else {
-                    binding.spinnerDialCodes.setText(countryCodePhoneNum)
-                    binding.spinnerDialCodes.dismissDropDown()
-                }
             }
         }
 
