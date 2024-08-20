@@ -44,7 +44,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isPhoneEnabled = false
     private var isEmailEnabled = false
     private var minPhoneLength = 10
-    val emailRegex = "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
+    val emailRegex =
+        "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
     val numberRegex = "^[0-9]+$".toRegex()
     private var maxPhoneLength = 10
     private var countrySelectedFromDropDown: String? = null
@@ -150,7 +151,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.countryEditText.setOnDismissListener {
-            val countryAvailable = countryCodesArray.find { it.equals(binding.countryEditText.text.toString(), true) }
+            val countryAvailable =
+                countryCodesArray.find { it.equals(binding.countryEditText.text.toString(), true) }
             if (binding.countryEditText.text.toString().isNotEmpty()) {
                 if (countryAvailable != null) {
                     val selectedItem = binding.countryEditText.text.toString()
@@ -673,7 +675,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 if (isShippingEnabled) {
                     desiredHeight = (screenHeight * 0.6).toInt()
                 } else {
-                    desiredHeight = (screenHeight * 0.54).toInt()
+                    desiredHeight = (screenHeight * 0.5).toInt()
                 }
                 // 50% of screen height
 
@@ -971,55 +973,55 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     }
 }
 
-    class CustomArrayAdapter(
-        context: Context,
-        private val originalArray: Array<String>,
-        private val isPhoneCodeCheck: Boolean
-    ) : ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line, originalArray) {
+class CustomArrayAdapter(
+    context: Context,
+    private val originalArray: Array<String>,
+    private val isPhoneCodeCheck: Boolean
+) : ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line, originalArray) {
 
-        private var filteredArray: Array<String> = originalArray
+    private var filteredArray: Array<String> = originalArray
 
-        override fun getCount(): Int {
-            return filteredArray.size
-        }
+    override fun getCount(): Int {
+        return filteredArray.size
+    }
 
-        override fun getItem(position: Int): String? {
-            return filteredArray[position]
-        }
+    override fun getItem(position: Int): String? {
+        return filteredArray[position]
+    }
 
-        override fun getFilter(): Filter {
-            return object : Filter() {
-                override fun performFiltering(constraint: CharSequence?): FilterResults {
-                    val results = FilterResults()
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val results = FilterResults()
 
-                    if (constraint != null) {
-                        val filteredResults = originalArray.filter {
-                            if (isPhoneCodeCheck) {
-                                it.contains(constraint, ignoreCase = true)
-                            } else {
-                                it.startsWith(constraint, ignoreCase = true)
-                            }
-                        }.sorted().toTypedArray()
+                if (constraint != null) {
+                    val filteredResults = originalArray.filter {
+                        if (isPhoneCodeCheck) {
+                            it.contains(constraint, ignoreCase = true)
+                        } else {
+                            it.startsWith(constraint, ignoreCase = true)
+                        }
+                    }.sorted().toTypedArray()
 
-                        results.values = filteredResults
-                        results.count = filteredResults.size
-                    } else {
-                        results.values = originalArray
-                        results.count = originalArray.size
-                    }
-
-                    return results
+                    results.values = filteredResults
+                    results.count = filteredResults.size
+                } else {
+                    results.values = originalArray
+                    results.count = originalArray.size
                 }
 
-                override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-                    if (results != null && results.values is Array<*>) {
-                        // Cast the results.values to Array<String>
-                        filteredArray = results.values as Array<String>
-                    } else {
-                        filteredArray = originalArray
-                    }
-                    notifyDataSetChanged()
+                return results
+            }
+
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                if (results != null && results.values is Array<*>) {
+                    // Cast the results.values to Array<String>
+                    filteredArray = results.values as Array<String>
+                } else {
+                    filteredArray = originalArray
                 }
+                notifyDataSetChanged()
             }
         }
     }
+}

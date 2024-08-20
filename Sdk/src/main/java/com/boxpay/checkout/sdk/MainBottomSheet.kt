@@ -1822,6 +1822,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!shopperObject.isNull("uniqueReference")) {
                     editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
                 }
+                if (shopperObject.isNull("deliveryAddress")) {
+                    editor.putString("firstName",null)
+                    editor.putString("lastName", null)
+                    editor.putString("gender", null)
+                    editor.putString("email", null)
+                    editor.putString("phoneNumber", null)
+                    editor.putString("address1", null)
+                    editor.putString("address2",null)
+                    editor.putString("countryName", null)
+                    editor.putString("indexCountryCodePhone", null)
+                    editor.putString("phoneCode", null)
+                    editor.putString("city", null)
+                    editor.putString("state", null)
+                    editor.putString("postalCode", null)
+                }
                 if (shopperObject.isNull("deliveryAddress") && (showName || showEmail || showPhone || showShipping)) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
