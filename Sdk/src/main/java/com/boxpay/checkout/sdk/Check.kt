@@ -98,24 +98,12 @@ class Check : AppCompatActivity() {
   "money": {"amount": "100", "currencyCode": "INR"},
   "descriptor": {"line1": "Some descriptor"},
   "shopper": {
-    "firstName": "Ishika",
-    "lastName": "Bansal",
-    "email":"ishika@boxpay.com",
-    "firstName": "Ishika baniya",
-    "lastName": "Bansal",
-    "email":"ishika.bansal@boxpay.tech",
+    "firstName": null,
+    "lastName": null,
+    "email":null,
     "uniqueReference": "x123y",
-    "phoneNumber": "+919876543211",
+    "phoneNumber": null,
     "deliveryAddress": null
-    "phoneNumber": "919876543210",
-    "deliveryAddress": {
-      "address1": "first line",
-      "address2": "second line",
-      "city": "New Delhi",
-      "state": "Delhi",
-      "countryCode": "IN",
-      "postalCode": "147147"
-    }
   },
   "order": {
     "items": [
