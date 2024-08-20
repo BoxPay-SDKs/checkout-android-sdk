@@ -155,7 +155,7 @@
 
                                 <AutoCompleteTextView
                                     android:id="@+id/spinner_dial_codes"
-                                    android:layout_width="70dp"
+                                    android:layout_width="60dp"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:background="#ffffffff"

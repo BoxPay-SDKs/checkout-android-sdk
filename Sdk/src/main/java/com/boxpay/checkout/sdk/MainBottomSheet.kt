@@ -1821,6 +1821,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!shopperObject.isNull("uniqueReference")) {
                     editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
                 }
+                if (shopperObject.isNull("deliveryAddress")) {
+                    editor.putString("firstName",null)
+                    editor.putString("lastName", null)
+                    editor.putString("gender", null)
+                    editor.putString("email", null)
+                    editor.putString("phoneNumber", null)
+                    editor.putString("address1", null)
+                    editor.putString("address2",null)
+                    editor.putString("countryName", null)
+                    editor.putString("indexCountryCodePhone", null)
+                    editor.putString("phoneCode", null)
+                    editor.putString("city", null)
+                    editor.putString("state", null)
+                    editor.putString("postalCode", null)
+                }
                 if (shopperObject.isNull("deliveryAddress") && (showName || showEmail || showPhone || showShipping)) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
@@ -2040,26 +2055,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     "firstName",
                     ""
                 ) + " " + sharedPreferences.getString("lastName", "") + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-                binding.addressTextViewMain.text =
-                    if (!showShipping) {
-                        binding.textView2.text = "Personal details"
-                        binding.homeIcon.visibility = View.GONE
-                        binding.deliveryAddressObjectImage.setImageDrawable(
-                            ContextCompat.getDrawable(
-                                context!!,
-                                R.drawable.ic_personal_details
-                            )
-                        )
-                        sharedPreferences.getString("email", null)
-                    } else {
-                        binding.textView2.text = "Delivery Address"
-                        binding.homeIcon.visibility = View.VISIBLE
-                        binding.deliveryAddressObjectImage.setImageDrawable(
-                            ContextCompat.getDrawable(
-                                context!!,
-                                R.drawable.truck
-                            )
-                        )
+                binding.emailTextView.text = sharedPreferences.getString("email","")
+                if (showShipping) {
+                    binding.textView2.text = "Delivery Address"
+                    binding.addressTextViewMain.text =
                         if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
                             "${sharedPreferences.getString("address1", null)}\n" +
                                     "${sharedPreferences.getString("address2", null)}\n" +
@@ -2072,7 +2071,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     ", ${sharedPreferences.getString("state", "null")}" +
                                     ", ${sharedPreferences.getString("postalCode", "null")}"
                         }
-                    }
+                } else {
+                    binding.textView2.text = "Personal details"
+                    binding.homeIcon.visibility = View.GONE
+                    binding.deliveryAddressObjectImage.setImageDrawable(
+                        ContextCompat.getDrawable(
+                            context!!,
+                            R.drawable.ic_personal_details
+                        )
+                    )
+                    binding.addressTextViewMain.visibility = View.GONE
+                }
                 removeLoadingState()
 
             } catch (e: Exception) {
@@ -2118,25 +2127,26 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             "firstName",
             ""
         ) + " " + sharedPreferences.getString("lastName", "") + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-        binding.addressTextViewMain.text =
-            if (!showShipping) {
-                binding.textView2.text = "Personal details"
-                sharedPreferences.getString("email", null)
+        binding.emailTextView.text = sharedPreferences.getString("email","")
+        if (showShipping) {
+            binding.textView2.text = "Delivery Address"
+            binding.addressTextViewMain.text =
+            if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
+                "${sharedPreferences.getString("address1", null)}\n" +
+                        "${sharedPreferences.getString("address2", null)}\n" +
+                        "${sharedPreferences.getString("city", null)}" +
+                        ", ${sharedPreferences.getString("state", "null")}" +
+                        ", ${sharedPreferences.getString("postalCode", "null")}"
             } else {
-                binding.textView2.text = "Delivery Address"
-                if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
-                    "${sharedPreferences.getString("address1", null)}\n" +
-                            "${sharedPreferences.getString("address2", null)}\n" +
-                            "${sharedPreferences.getString("city", null)}" +
-                            ", ${sharedPreferences.getString("state", "null")}" +
-                            ", ${sharedPreferences.getString("postalCode", "null")}"
-                } else {
-                    "${sharedPreferences.getString("address1", null)}\n" +
-                            "${sharedPreferences.getString("city", null)}" +
-                            ", ${sharedPreferences.getString("state", "null")}" +
-                            ", ${sharedPreferences.getString("postalCode", "null")}"
-                }
+                "${sharedPreferences.getString("address1", null)}\n" +
+                        "${sharedPreferences.getString("city", null)}" +
+                        ", ${sharedPreferences.getString("state", "null")}" +
+                        ", ${sharedPreferences.getString("postalCode", "null")}"
             }
+        } else {
+            binding.textView2.text = "Personal details"
+            binding.addressTextViewMain.visibility = View.GONE
+        }
         binding.cardView8.visibility = View.VISIBLE
         countryCode = Pair(
             sharedPreferences.getString("countryName", "") ?: "",

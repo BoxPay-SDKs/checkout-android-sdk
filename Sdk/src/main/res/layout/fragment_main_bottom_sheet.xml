@@ -382,8 +382,6 @@
                                 android:layout_marginStart="12dp"
                                 android:layout_marginTop="12dp"
                                 android:paddingEnd="8dp"
-                                android:ellipsize="end"
-                                android:maxLines="1"
                                 android:fontFamily="@font/poppins_medium"
                                 android:text="Person Name"
                                 android:textColor="#010102"
@@ -404,6 +402,19 @@
                                 app:layout_constraintTop_toBottomOf="@id/dashedLine4" />
 
                             <TextView
+                                android:id="@+id/emailTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:paddingEnd="8dp"
+                                android:fontFamily="@font/poppins"
+                                android:text="Person Email"
+                                android:textColor="#010102"
+                                app:layout_constrainedWidth="true"
+                                app:layout_constraintStart_toStartOf="@+id/nameAndMobileTextViewMain"
+                                app:layout_constraintTop_toBottomOf="@+id/nameAndMobileTextViewMain"
+                                app:layout_constraintHorizontal_bias="0.03"/>
+
+                            <TextView
                                 android:id="@+id/addressTextViewMain"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -414,7 +425,7 @@
                                 android:textSize="12sp"
                                 android:textStyle="bold"
                                 app:layout_constraintStart_toStartOf="@+id/nameAndMobileTextViewMain"
-                                app:layout_constraintTop_toBottomOf="@+id/nameAndMobileTextViewMain" />
+                                app:layout_constraintTop_toBottomOf="@+id/emailTextView" />
 
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
