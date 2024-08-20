@@ -1710,6 +1710,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.textView6.text = "Add Personal Details"
                 }
 
+                if (showEmail || showShipping || showPhone || showName) {
+                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+                } else {
+                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                }
+
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
                 if (currencySymbol == "")
                     currencySymbol = "₹"
@@ -2029,11 +2035,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 editor.apply()
-                if (showEmail || showShipping || showPhone || showName) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
-                } else {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
-                }
 
                 binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
                     "firstName",
