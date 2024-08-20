@@ -2036,11 +2036,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 editor.apply()
-                if (showEmail || showShipping || showPhone || showName) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
-                } else {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
-                }
 
                 binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
                     "firstName",
