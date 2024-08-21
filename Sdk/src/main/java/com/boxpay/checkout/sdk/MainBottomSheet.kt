@@ -1823,11 +1823,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
                 }
                 if (shopperObject.isNull("deliveryAddress")) {
-                    editor.putString("firstName",null)
-                    editor.putString("lastName", null)
-                    editor.putString("gender", null)
-                    editor.putString("email", null)
-                    editor.putString("phoneNumber", null)
                     editor.putString("address1", null)
                     editor.putString("address2",null)
                     editor.putString("countryName", null)
@@ -1836,6 +1831,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("city", null)
                     editor.putString("state", null)
                     editor.putString("postalCode", null)
+                }
+                if (shopperObject.isNull("firstName")) {
+                    editor.putString("firstName",null)
+                }
+                if (shopperObject.isNull("lastName")) {
+                    editor.putString("lastName", null)
+                }
+                if (shopperObject.isNull("email")) {
+                    editor.putString("email", null)
+                }
+                if (shopperObject.isNull("phoneNumber")) {
+                    editor.putString("phoneNumber", null)
                 }
                 if (shopperObject.isNull("deliveryAddress") && (showName || showEmail || showPhone || showShipping)) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE

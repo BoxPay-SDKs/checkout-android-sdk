@@ -98,10 +98,15 @@ class Check : AppCompatActivity() {
   "money": {"amount": "100", "currencyCode": "INR"},
   "descriptor": {"line1": "Some descriptor"},
   "shopper": {
+    "firstName": "Ishika",
+    "lastName": "Bansal",
+    "email":"ishika@boxpay.com",
     "firstName": "Ishika baniya",
     "lastName": "Bansal",
     "email":"ishika.bansal@boxpay.tech",
     "uniqueReference": "x123y",
+    "phoneNumber": "+919876543211",
+    "deliveryAddress": null
     "phoneNumber": "919876543210",
     "deliveryAddress": {
       "address1": "first line",
