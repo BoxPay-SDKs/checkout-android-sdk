@@ -1844,7 +1844,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (shopperObject.isNull("phoneNumber")) {
                     editor.putString("phoneNumber", null)
                 }
-                if (shopperObject.isNull("deliveryAddress") && (showName || showEmail || showPhone || showShipping)) {
+                if (shopperObject.isNull("deliveryAddress") && showShipping) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -1867,7 +1867,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showShipping
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber")) && (showName || showEmail || showPhone || showShipping)) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber")) && (showName || showEmail || showPhone)) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
