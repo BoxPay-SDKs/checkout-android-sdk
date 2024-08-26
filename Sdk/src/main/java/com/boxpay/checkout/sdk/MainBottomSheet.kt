@@ -1270,7 +1270,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             recommendedInstrumentationList.add(pair)
                         }
                         println("=====instumentation $recommendedInstrumentationList")
-                        if (recommendedInstrumentationList.isNotEmpty()) {
+                        if (recommendedInstrumentationList.isNotEmpty() && binding.upiLinearLayout.isVisible) {
                             binding.recommendedCardView.visibility = View.VISIBLE
                             binding.recommendedLinearLayout.visibility = View.VISIBLE
                         } else {
@@ -1646,6 +1646,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun showRecommendedOptions() {
+        if (binding.upiOptionsLinearLayout.isVisible) {
+            upiOptionsShown = false
+            hideUPIOptions()
+        }
         binding.recomendedConstraint.setBackgroundColor(Color.parseColor("#E0F1FF"))
         binding.recomendedRecyclerView.visibility = View.VISIBLE
         binding.recomendedOptionsLinearLayout.visibility = View.VISIBLE
@@ -1995,6 +1999,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.netBankingConstraint.visibility = View.GONE
                     binding.bnplConstraint.visibility = View.GONE
                     binding.cardConstraint.visibility = View.GONE
+                    binding.recommendedCardView.visibility = View.GONE
+                    binding.recommendedLinearLayout.visibility = View.GONE
                     binding.walletConstraint.visibility = View.GONE
                     binding.linearLayout.visibility = View.GONE
                     binding.proceedButton.visibility = View.VISIBLE
@@ -2021,6 +2027,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.walletConstraint.visibility = View.GONE
                     binding.linearLayout.visibility = View.GONE
                     binding.proceedButton.visibility = View.VISIBLE
+                    binding.recommendedCardView.visibility = View.GONE
+                    binding.recommendedLinearLayout.visibility = View.GONE
                     priceBreakUpVisible = true
                     bottomSheet = DeliveryAddressBottomSheet.newInstance(
                         this,
@@ -2329,6 +2337,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.proceedButton.visibility = View.GONE
         priceBreakUpVisible = true
         hidePriceBreakUp()
+        if (recommendedInstrumentationList.isNotEmpty() && binding.upiLinearLayout.isVisible) {
+            binding.recommendedCardView.visibility = View.VISIBLE
+            binding.recommendedLinearLayout.visibility = View.VISIBLE
+            showRecommendedOptions()
+        } else {
+            upiOptionsShown = true
+            showUPIOptions()
+        }
 
         callPaymentMethodRules(requireContext())
 
