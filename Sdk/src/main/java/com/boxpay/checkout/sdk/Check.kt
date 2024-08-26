@@ -159,7 +159,7 @@ class Check : AppCompatActivity() {
   "statusNotifyUrl": "https://www.boxpay.tech",
   "frontendReturnUrl": "https://www.boxpay.tech",
   "frontendBackUrl": "https://www.boxpay.tech",
-  "createShopperToken":false
+  "createShopperToken":true
 }"""
         )
 

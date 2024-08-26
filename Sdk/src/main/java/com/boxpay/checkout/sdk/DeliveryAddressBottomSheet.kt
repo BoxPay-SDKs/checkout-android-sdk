@@ -308,15 +308,15 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             countrySelected = true
         }
 
-        if (!isNameEnabled) {
+        if (!isNameEnabled && !isShippingEnabled) {
             binding.fullNameLayout.visibility = View.GONE
         }
 
-        if (!isPhoneEnabled) {
+        if (!isPhoneEnabled && !isShippingEnabled) {
             binding.mobileNumberLayout.visibility = View.GONE
         }
 
-        if (!isEmailEnabled) {
+        if (!isEmailEnabled && !isShippingEnabled) {
             binding.emailLayout.visibility = View.GONE
         }
 
@@ -752,7 +752,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     }
 
     fun toCheckAllFieldsAreFilled(): Boolean {
-        if ((isPhoneEnabled || isEmailEnabled || isNameEnabled) && isShippingEnabled) {
+        if ((isPhoneEnabled || isEmailEnabled || isNameEnabled) ||  isShippingEnabled) {
             return !binding.fullNameEditText.text.isNullOrBlank() &&
                     !binding.mobileNumberEditText.text.isNullOrBlank() &&
                     !binding.emailEditText.text.isNullOrBlank() &&
