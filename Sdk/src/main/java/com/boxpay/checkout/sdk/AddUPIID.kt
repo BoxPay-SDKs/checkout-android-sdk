@@ -196,7 +196,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
 
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
-        println("===request body validation $requestBody")
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://"+baseUrl + "/v0/platform/vpa-validation", requestBody,
@@ -469,7 +468,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Response.Listener { response ->
 
                 val status = response.getJSONObject("status").getString("status")
-                println("===status $status")
                 val reason = response.getJSONObject("status").getString("reason")
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
@@ -485,6 +483,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     }
                     PaymentFailureScreen(errorMessage = cleanedMessage).show(parentFragmentManager,"FailureScreen")
                 }else {
+
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status","RequiresAction")
                         editor.apply()
@@ -515,6 +514,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                if (sharedPreferences.getString("shopperToken", "") != null && sharedPreferences.getString("shopperToken", "") != "") {
+                    headers["Authorization"] = "Session ${sharedPreferences.getString("shopperToken", "")}"
+                }
                 headers["X-Client-Connector-Name"] =  "Android SDK"
                 headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers

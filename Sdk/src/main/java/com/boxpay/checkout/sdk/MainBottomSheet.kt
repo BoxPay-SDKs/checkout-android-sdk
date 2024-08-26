@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk
 
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
@@ -34,9 +35,11 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -50,6 +53,7 @@ import com.boxpay.checkout.sdk.ViewModels.OverlayViewModel
 import com.boxpay.checkout.sdk.ViewModels.SingletonClassForLoadingState
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.OrderSummaryItemsAdapter
+import com.boxpay.checkout.sdk.adapters.RecommendedItemsAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
@@ -71,6 +75,7 @@ import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.Locale
+import java.util.Objects
 import kotlin.random.Random
 
 
@@ -84,15 +89,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private val overlayViewModel: OverlayViewModel by activityViewModels()
     private var overlayViewCurrentBottomSheet: View? = null
     private var token: String? = null
+    private var customerShopperToken: String? = null
+    private var recommendedInstrumentationList = mutableListOf<Pair<String, String>>()
+    private var uniqueReference: String? = null
     private var successScreenFullReferencePath: String? = null
     private var UPIAppsAndPackageMap: MutableMap<String, String> = mutableMapOf()
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var job: Job? = null
     private var isTablet = false
     private var showName = false
+    private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
     private var showShipping = false
     private var showPhone = false
+    var upiOptionsShown = false
     private var priceBreakUpVisible = false
     var countryCode: Pair<String, String>? = null
     private var transactionAmount: String? = null
@@ -251,7 +261,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                             job?.cancel()
                         }
-                    } else if (responseString.contains("fail", ignoreCase = true) || responseString.contains("decline", ignoreCase = true)) {
+                    } else if (responseString.contains(
+                            "fail",
+                            ignoreCase = true
+                        ) || responseString.contains("decline", ignoreCase = true)
+                    ) {
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -289,7 +303,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                             job?.cancel()
                         }
-                    } else if (responseString.contains("fail", ignoreCase = true) || responseString.contains("decline", ignoreCase = true)) {
+                    } else if (responseString.contains(
+                            "fail",
+                            ignoreCase = true
+                        ) || responseString.contains("decline", ignoreCase = true)
+                    ) {
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -309,7 +327,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 // Payment was canceled by the user or some error occurred
                 isPaytmReturned = true
             }
-        } else if (requestCode == 123){
+        } else if (requestCode == 123) {
             if (resultCode == Activity.RESULT_OK) {
                 val responseUri: Uri? = data?.data
                 if (responseUri != null) {
@@ -327,7 +345,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                             job?.cancel()
                         }
-                    } else if (responseString.contains("fail", ignoreCase = true) || responseString.contains("decline", ignoreCase = true)) {
+                    } else if (responseString.contains(
+                            "fail",
+                            ignoreCase = true
+                        ) || responseString.contains("decline", ignoreCase = true)
+                    ) {
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -345,7 +367,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             } else {
                 // Payment was canceled by the user or some error occurred
-               isPhonePe = true
+                isPhonePe = true
             }
         } else {
             if (resultCode == Activity.RESULT_OK) {
@@ -365,7 +387,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                             job?.cancel()
                         }
-                    } else if (responseString.contains("fail", ignoreCase = true) || responseString.contains("decline", ignoreCase = true)) {
+                    } else if (responseString.contains(
+                            "fail",
+                            ignoreCase = true
+                        ) || responseString.contains("decline", ignoreCase = true)
+                    ) {
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -394,7 +420,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val uri = Uri.parse(url)
         intent.data = uri
         try {
-            var resultCode : Int
+            var resultCode: Int
             startFunctionCalls()
             if (url.startsWith("tez")) {
                 resultCode = 121
@@ -450,7 +476,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val reasonCode = response.getString("reasonCode")
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
-                    if (status.equals("Pending",ignoreCase = true) && isGpayReturned) {
+                    if (status.equals("Pending", ignoreCase = true) && isGpayReturned) {
                         isGpayReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -458,7 +484,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             errorMessage = "Payment failed with Gpay. Please retry payment with a different UPI app"
                         ).show(parentFragmentManager, "FailureScreen")
                     }
-                    if (status.equals("Pending",ignoreCase = true) && isPhonePe) {
+                    if (status.equals("Pending", ignoreCase = true) && isPhonePe) {
                         isPhonePe = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -474,7 +500,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             errorMessage = "Please retry using other payment method or try again in sometime"
                         ).show(parentFragmentManager, "FailureScreen")
                     }
-                    if (status.equals("Pending",ignoreCase = true) && isPaytmReturned) {
+                    if (status.equals("Pending", ignoreCase = true) && isPaytmReturned) {
                         isPaytmReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -494,7 +520,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             job?.cancel()
                             var cleanedMessage = reason.substringAfter(":")
                             if (!reasonCode.startsWith("uf", true)) {
-                                cleanedMessage = "Please retry using other payment method or try again in sometime"
+                                cleanedMessage =
+                                    "Please retry using other payment method or try again in sometime"
                             }
                             PaymentFailureScreen(
                                 function = {
@@ -630,7 +657,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         removeLoadingState()
                         var cleanedMessage = reason.substringAfter(":")
                         if (!reasonCode.startsWith("uf", true)) {
-                            cleanedMessage = "Please retry using other payment method or try again in sometime"
+                            cleanedMessage =
+                                "Please retry using other payment method or try again in sometime"
                         }
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
@@ -739,12 +767,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
+        val recommendedInstrumentsAdapter = RecommendedItemsAdapter(
+            recommendedInstrumentationList, binding.recomendedRecyclerView, requireContext()
+        )
+        binding.recomendedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
         var currencySymbol = sharedPreferences.getString("currencySymbol", "")
         updateTransactionAmountInSharedPreferences(currencySymbol + transactionAmount.toString())
         if (currencySymbol == "")
             currencySymbol = "₹"
-
-        showUPIOptions()
 
 
         // Set click listeners
@@ -758,6 +789,33 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 priceBreakUpVisible = false
             }
         }
+
+        binding.recommendedLinearLayout.setOnClickListener {
+            upiOptionsShown = false
+            hideUPIOptions()
+            if (binding.recomendedOptionsLinearLayout.isVisible) {
+                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
+                hideRecommendedOptions()
+            } else {
+                showRecommendedOptions()
+            }
+        }
+
+        recommendedInstrumentsAdapter.checkPositionLiveData.observe(viewLifecycleOwner) { checkedPositon ->
+            recommendedCheckedPosition = checkedPositon
+            if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
+                binding.recommendedProceedButton.visibility = View.VISIBLE
+            }
+        }
+
+        binding.recommendedProceedButton.setOnClickListener {
+            println("==========proceed clicked ${recommendedInstrumentationList[recommendedCheckedPosition!!]}")
+            postRecommendedInstruments(
+                "upi/collect",
+                recommendedInstrumentationList[recommendedCheckedPosition!!].first,
+                recommendedInstrumentationList[recommendedCheckedPosition!!].second
+            )
+        }
         binding.itemsInOrderRecyclerView.setOnClickListener() {
             //Just to preventing user from clicking here and closing the order summary
         }
@@ -770,9 +828,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             removeOverlayFromActivity()
             dismiss()
         }
-
-        var upiOptionsShown = true
         binding.upiLinearLayout.setOnClickListener() {
+            recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
+            hideRecommendedOptions()
             if (!upiOptionsShown) {
                 upiOptionsShown = true
                 showUPIOptions()
@@ -807,6 +865,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
 
         binding.cardConstraint.setOnClickListener() {
+            recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
+            hideRecommendedOptions()
             binding.cardConstraint.isEnabled = false
             callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Card")
             callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "", "Card")
@@ -815,12 +875,16 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
         binding.walletConstraint.setOnClickListener() {
+            recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
+            hideRecommendedOptions()
             binding.walletConstraint.isEnabled = false
             callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Wallet")
             openWalletBottomSheet()
         }
 
         binding.bnplConstraint.setOnClickListener() {
+            recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
+            hideRecommendedOptions()
             binding.bnplConstraint.isEnabled = false
             callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "BuyNowPayLater")
             openBNPLBottomSheet()
@@ -828,6 +892,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
         binding.netBankingConstraint.setOnClickListener() {
+            recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
+            hideRecommendedOptions()
             binding.netBankingConstraint.isEnabled = false
             callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "NetBanking")
             openNetBankingBottomSheet()
@@ -1051,7 +1117,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 removeLoadingState()
                 PaymentFailureScreen(
                     errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")}) {
+                ).show(parentFragmentManager, "FailureScreen")
+            }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 return headers
@@ -1158,7 +1225,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 removeLoadingState()
                 PaymentFailureScreen(
                     errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")}) {
+                ).show(parentFragmentManager, "FailureScreen")
+            }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
@@ -1173,6 +1241,61 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
         }
 
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    fun getRecommendedInstrumentation() {
+        val requestQueue = Volley.newRequestQueue(context)
+        uniqueReference = sharedPreferences.getString("uniqueReference", null)
+        val jsonObjectRequest = object : JsonArrayRequest(
+            Method.GET,
+            Base_Session_API_URL + token + "/shoppers/$uniqueReference/recommended-instruments",
+            null,
+            Response.Listener { response ->
+                try {
+                    val jsonArray = response
+
+                    // Map each element in the JSONArray
+                    if (jsonArray != emptyArray<Objects>()) {
+                        val mappedList = (0 until jsonArray.length()).map { index ->
+                            val instrumentationRef =
+                                jsonArray.getJSONObject(index)
+                                    .getString("instrumentRef")
+                            val displayValue =
+                                jsonArray.getJSONObject(index)
+                                    .getString("displayValue")
+                            val pair = Pair(
+                                instrumentationRef, displayValue
+                            )
+                            recommendedInstrumentationList.add(pair)
+                        }
+                        println("=====instumentation $recommendedInstrumentationList")
+                        if (recommendedInstrumentationList.isNotEmpty()) {
+                            binding.recommendedCardView.visibility = View.VISIBLE
+                            binding.recommendedLinearLayout.visibility = View.VISIBLE
+                        } else {
+                            upiOptionsShown = true
+                            showUPIOptions()
+                        }
+                        removeLoadingState()
+                        showRecommendedOptions()
+                    }
+                } catch (e: JSONException) {
+                    println("========exception $e")
+                    removeLoadingState()
+                }
+            },
+            Response.ErrorListener {
+                println("======message ${it.message.toString()}")
+                removeLoadingState()
+                // no op
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["Authorization"] = "Session $customerShopperToken"
+                return headers
+            }
+        }
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -1431,7 +1554,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         removeLoadingState()
                         var cleanedMessage = reason.substringAfter(":")
                         if (!reasonCode.startsWith("uf", true)) {
-                            cleanedMessage = "Please retry using other payment method or try again in sometime"
+                            cleanedMessage =
+                                "Please retry using other payment method or try again in sometime"
                         }
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
@@ -1519,6 +1643,23 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             .setDuration(250) // Set the duration of the animation in milliseconds
             .withEndAction {}
             .start()
+    }
+
+    private fun showRecommendedOptions() {
+        binding.recomendedConstraint.setBackgroundColor(Color.parseColor("#E0F1FF"))
+        binding.recomendedRecyclerView.visibility = View.VISIBLE
+        binding.recomendedOptionsLinearLayout.visibility = View.VISIBLE
+        binding.recomendedText.typeface =
+            ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
+    }
+
+    private fun hideRecommendedOptions() {
+        binding.recomendedConstraint.setBackgroundColor(Color.parseColor("#FFFFFF"))
+        binding.recomendedRecyclerView.visibility = View.GONE
+        binding.recomendedText.typeface = ResourcesCompat.getFont(requireContext(), R.font.poppins)
+        binding.recomendedOptionsLinearLayout.visibility = View.GONE
+        recommendedCheckedPosition = null
+        binding.recommendedProceedButton.visibility = View.GONE
     }
 
     private fun hidePriceBreakUp() {
@@ -1824,7 +1965,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 if (shopperObject.isNull("deliveryAddress")) {
                     editor.putString("address1", null)
-                    editor.putString("address2",null)
+                    editor.putString("address2", null)
                     editor.putString("countryName", null)
                     editor.putString("indexCountryCodePhone", null)
                     editor.putString("phoneCode", null)
@@ -1833,7 +1974,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("postalCode", null)
                 }
                 if (shopperObject.isNull("firstName")) {
-                    editor.putString("firstName",null)
+                    editor.putString("firstName", null)
                 }
                 if (shopperObject.isNull("lastName")) {
                     editor.putString("lastName", null)
@@ -2062,8 +2203,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
                     "firstName",
                     ""
-                ) + " " + sharedPreferences.getString("lastName", "") + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-                binding.emailTextView.text = sharedPreferences.getString("email","")
+                ) + " " + sharedPreferences.getString(
+                    "lastName",
+                    ""
+                ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
+                binding.emailTextView.text = sharedPreferences.getString("email", "")
                 if (showShipping) {
                     binding.textView2.text = "Delivery Address"
                     binding.addressTextViewMain.text =
@@ -2090,7 +2234,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )
                     binding.addressTextViewMain.visibility = View.GONE
                 }
-                removeLoadingState()
+                if (customerShopperToken != null && customerShopperToken != "") {
+                    getRecommendedInstrumentation()
+                } else {
+                    upiOptionsShown = true
+                    showUPIOptions()
+                    removeLoadingState()
+                }
 
             } catch (e: Exception) {
                 Toast.makeText(
@@ -2115,6 +2265,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val sharedPreferences =
             requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token", "empty")
+        customerShopperToken = sharedPreferences.getString("shopperToken", "")
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }
@@ -2134,23 +2285,26 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
             "firstName",
             ""
-        ) + " " + sharedPreferences.getString("lastName", "") + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-        binding.emailTextView.text = sharedPreferences.getString("email","")
+        ) + " " + sharedPreferences.getString(
+            "lastName",
+            ""
+        ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
+        binding.emailTextView.text = sharedPreferences.getString("email", "")
         if (showShipping) {
             binding.textView2.text = "Delivery Address"
             binding.addressTextViewMain.text =
-            if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
-                "${sharedPreferences.getString("address1", null)}\n" +
-                        "${sharedPreferences.getString("address2", null)}\n" +
-                        "${sharedPreferences.getString("city", null)}" +
-                        ", ${sharedPreferences.getString("state", "null")}" +
-                        ", ${sharedPreferences.getString("postalCode", "null")}"
-            } else {
-                "${sharedPreferences.getString("address1", null)}\n" +
-                        "${sharedPreferences.getString("city", null)}" +
-                        ", ${sharedPreferences.getString("state", "null")}" +
-                        ", ${sharedPreferences.getString("postalCode", "null")}"
-            }
+                if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
+                    "${sharedPreferences.getString("address1", null)}\n" +
+                            "${sharedPreferences.getString("address2", null)}\n" +
+                            "${sharedPreferences.getString("city", null)}" +
+                            ", ${sharedPreferences.getString("state", "null")}" +
+                            ", ${sharedPreferences.getString("postalCode", "null")}"
+                } else {
+                    "${sharedPreferences.getString("address1", null)}\n" +
+                            "${sharedPreferences.getString("city", null)}" +
+                            ", ${sharedPreferences.getString("state", "null")}" +
+                            ", ${sharedPreferences.getString("postalCode", "null")}"
+                }
         } else {
             binding.textView2.text = "Personal details"
             binding.addressTextViewMain.visibility = View.GONE
@@ -2237,5 +2391,184 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val sorted = isdCodes.sorted()
 
         return sorted.toTypedArray()
+    }
+
+    fun postRecommendedInstruments(type: String, instrumentationRef: String, displayName: String) {
+        showLoadingInButton()
+        val requestQueue = Volley.newRequestQueue(context)
+
+
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+
+
+            // Create the browserData JSON object
+            val browserData = JSONObject().apply {
+
+                val webView = WebView(requireContext())
+
+                // Get the default User-Agent string
+                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+
+                // Get the screen height and width
+                val displayMetrics = resources.displayMetrics
+                put("screenHeight", displayMetrics.heightPixels.toString())
+                put("screenWidth", displayMetrics.widthPixels.toString())
+                put("acceptHeader", "application/json")
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", Locale.getDefault().toString())
+                put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
+                put("javaEnabled", true) // Example value
+                put("packageId", requireActivity().packageName)
+            }
+            put("browserData", browserData)
+
+            // Instrument Details
+            val instrumentDetailsObject = JSONObject().apply {
+                put("type", type)
+
+                val upiObject = JSONObject().apply {
+                    put("instrumentRef", instrumentationRef)
+                }
+                put("upi", upiObject)
+            }
+            put("instrumentDetails", instrumentDetailsObject)
+
+
+            val shopperObject = JSONObject().apply {
+                put("email", sharedPreferences.getString("email", null))
+                put("firstName", sharedPreferences.getString("firstName", null))
+                if (sharedPreferences.getString("gender", null) == null)
+                    put("gender", JSONObject.NULL)
+                else
+                    put("gender", sharedPreferences.getString("gender", null))
+                put("lastName", sharedPreferences.getString("lastName", null))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+
+                if (shippingEnabled) {
+                    val deliveryAddressObject = JSONObject().apply {
+
+                        put("address1", sharedPreferences.getString("address1", null))
+                        put("address2", sharedPreferences.getString("address2", null))
+                        put("city", sharedPreferences.getString("city", null))
+                        put("countryCode", sharedPreferences.getString("countryCode", null))
+                        put("postalCode", sharedPreferences.getString("postalCode", null))
+                        put("state", sharedPreferences.getString("state", null))
+                        put("city", sharedPreferences.getString("city", null))
+                        put("email", sharedPreferences.getString("email", null))
+                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+                        put("countryName", sharedPreferences.getString("countryName", null))
+
+                    }
+                    put("deliveryAddress", deliveryAddressObject)
+                }
+            }
+
+            put("shopper", shopperObject)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, Base_Session_API_URL + token, requestBody,
+            Response.Listener { response ->
+
+                val status = response.getJSONObject("status").getString("status")
+                val reason = response.getJSONObject("status").getString("reason")
+                val reasonCode = response.getJSONObject("status").getString("reasonCode")
+                transactionId = response.getString("transactionId").toString()
+                updateTransactionIDInSharedPreferences(transactionId!!)
+
+                if (status.contains("Rejected", ignoreCase = true)) {
+                    var cleanedMessage = reason.substringAfter(":")
+                    if (cleanedMessage.contains("virtual address", true)) {
+                        cleanedMessage = "Invalid UPI Id"
+                    } else if (!reasonCode.startsWith("uf", true)) {
+                        cleanedMessage =
+                            "Please retry using other payment method or try again in sometime"
+                    }
+                    PaymentFailureScreen(errorMessage = cleanedMessage).show(
+                        parentFragmentManager,
+                        "FailureScreen"
+                    )
+                } else {
+                    if (status.contains("RequiresAction", ignoreCase = true)) {
+                        editor.putString("status", "RequiresAction")
+                        editor.apply()
+                        val bottomSheetFragment = UPITimerBottomSheet.newInstance(displayName)
+                        bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
+                    } else if (status.contains("Approved", ignoreCase = true)) {
+                        editor.putString("status", "Success")
+                        editor.apply()
+
+                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                        bottomSheet.show(
+                            parentFragmentManager,
+                            "PaymentStatusBottomSheetWithDetails"
+                        )
+                        enabledButtonsForAllPaymentMethods()
+                    }
+                }
+                hideLoadingInButton()
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                hideLoadingInButton()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                headers["Authorization"] = "Session $customerShopperToken"
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
+                return headers
+            }
+        }.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    fun showLoadingInButton() {
+        binding.proceedtext.visibility = View.INVISIBLE
+        binding.progress.visibility = View.VISIBLE
+        val rotateAnimation =
+            ObjectAnimator.ofFloat(binding.progress, "rotation", 0f, 360f)
+        rotateAnimation.duration = 3000 // Set the duration of the rotation in milliseconds
+        rotateAnimation.repeatCount = ObjectAnimator.INFINITE // Set to repeat indefinitely
+        binding.recommendedProceedButton.isEnabled = false
+
+        rotateAnimation.start()
+    }
+
+    fun hideLoadingInButton() {
+        binding.progress.visibility = View.INVISIBLE
+        binding.proceedtext.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
+            )
+        )
+        binding.proceedtext.visibility = View.VISIBLE
+        binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )
+        )
+        binding.recommendedProceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.recommendedProceedButton.isEnabled = true
+//        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 }

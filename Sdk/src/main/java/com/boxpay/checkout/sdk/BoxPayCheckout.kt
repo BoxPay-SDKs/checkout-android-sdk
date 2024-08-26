@@ -14,7 +14,13 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import org.json.JSONObject
 import java.util.Locale
 
-class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false){
+class BoxPayCheckout(
+    private val context: Context,
+    private val token: String,
+    val onPaymentResult: ((PaymentResultObject) -> Unit)?,
+    private val sandboxEnabled: Boolean = false,
+    private val customerShopperToken: String = ""
+){
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
@@ -101,6 +107,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
 
     private fun putTransactionDetailsInSharedPreferences() {
         editor.putString("token", token)
+        editor.putString("shopperToken",customerShopperToken)
         editor.apply()
     }
 }
