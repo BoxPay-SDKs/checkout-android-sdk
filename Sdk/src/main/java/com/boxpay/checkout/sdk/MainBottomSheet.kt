@@ -94,7 +94,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var showShipping = false
     private var showPhone = false
     private var priceBreakUpVisible = false
-    private var i = 1
     var countryCode: Pair<String, String>? = null
     private var transactionAmount: String? = null
     private var upiAvailable = false
@@ -160,7 +159,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             coroutine.invokeOnCompletion {
                 val packageManager = requireContext().packageManager
                 getAllInstalledApps(packageManager)
-                populatePopularUPIApps()
             }
             firstLoad = false
         } else {
@@ -194,32 +192,28 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun getAllInstalledApps(packageManager: PackageManager) {
-
-        val apps = packageManager.getInstalledApplications(PackageManager.GET_GIDS)
+        // List of known UPI-supported apps and their corresponding package names
+        val upiAppPackages = setOf(
+            "com.google.android.apps.nbu.paisa.user", // GPay
+            "com.phonepe.app",                        // PhonePe
+            "net.one97.paytm"                         // Paytm
+        )
+        var i = 0
+        val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
 
         for (app in apps) {
             val appName = packageManager.getApplicationLabel(app).toString()
 
-
-            // Check if the app supports UPI transactions
-            val upiIntent = Intent(Intent.ACTION_VIEW)
-            upiIntent.data = Uri.parse("upi://pay")
-            upiIntent.setPackage(app.packageName)
-            val upiApps = packageManager.queryIntentActivities(upiIntent, 0)
-
-            if (appName == "PhonePe") {
-                i++;
-                UPIAppsAndPackageMap[appName] = app.packageName
-            }
-
-            // If the app can handle the UPI intent, it's a UPI app
-            if (upiApps.isNotEmpty() || appName == "Paytm" || appName == "GPay" || appName == "PhonePe") {
+            // Check if the app's package is in the known UPI apps list
+            if (upiAppPackages.contains(app.packageName)) {
                 i++
-
                 UPIAppsAndPackageMap[appName] = app.packageName
             }
         }
+
+        populatePopularUPIApps()
     }
+
 
     private fun fetchUPIIntentURL(context: Context, appName: String) {
 
@@ -1543,7 +1537,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView20.typeface =
             ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
 
-        if (i > 1) {
+        if (UPIAppsAndPackageMap.isNotEmpty()) {
             binding.popularUPIAppsConstraint.visibility = View.VISIBLE
         }
     }

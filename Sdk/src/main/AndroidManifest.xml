@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.boxpay.checkout.sdk">
+
+    <!-- Queries section for UPI apps like GPay, PhonePe, and Paytm -->
+    <queries>
+        <!-- Example Store and Services (existing entries) -->
+        <package android:name="com.example.store" />
+        <package android:name="com.example.services" />
+
+        <!-- GPay -->
+        <package android:name="com.google.android.apps.nbu.paisa.user" />
+
+        <!-- PhonePe -->
+        <package android:name="com.phonepe.app" />
+
+        <!-- Paytm -->
+        <package android:name="net.one97.paytm" />
+    </queries>
     <uses-feature
     android:name="android.hardware.telephony"
     android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
