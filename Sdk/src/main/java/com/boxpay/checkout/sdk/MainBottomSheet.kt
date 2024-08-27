@@ -415,7 +415,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         job?.cancel()
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
-                delay(4000)
+                delay(3000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
                 // Delay for 4 seconds
             }
