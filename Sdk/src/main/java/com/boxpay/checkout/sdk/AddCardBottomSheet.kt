@@ -992,6 +992,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     fun postRequest(context: Context) {
+        job?.cancel()
         val requestQueue = Volley.newRequestQueue(context)
 
 

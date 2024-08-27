@@ -91,7 +91,7 @@ class Check : AppCompatActivity() {
             """ {
   "context": {
     "countryCode": "IN",
-    "legalEntity": {"code": "boxpay"},
+    "legalEntity": {"code": "razorpay"},
     "orderId": "test12"
   },
   "paymentType": "S",
