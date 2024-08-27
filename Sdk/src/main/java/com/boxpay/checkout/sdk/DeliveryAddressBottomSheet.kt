@@ -752,7 +752,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     }
 
     fun toCheckAllFieldsAreFilled(): Boolean {
-        if ((isPhoneEnabled || isEmailEnabled || isNameEnabled) ||  isShippingEnabled) {
+        if (isShippingEnabled) {
             return !binding.fullNameEditText.text.isNullOrBlank() &&
                     !binding.mobileNumberEditText.text.isNullOrBlank() &&
                     !binding.emailEditText.text.isNullOrBlank() &&

@@ -100,7 +100,7 @@ class Check : AppCompatActivity() {
             """ {
   "context": {
     "countryCode": "IN",
-    "legalEntity": {"code": "razorpay"},
+    "legalEntity": {"code": "billdesk"},
     "orderId": "test12"
   },
   "paymentType": "S",
