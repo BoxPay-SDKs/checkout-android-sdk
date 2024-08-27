@@ -4,6 +4,7 @@ import FailureScreenSharedViewModel
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -40,9 +41,11 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.NetbankingBanksAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentNetBankingBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.NetbankingDataClass
+import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -52,7 +55,9 @@ import com.skydoves.balloon.BalloonCenterAlign
 import com.skydoves.balloon.createBalloon
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
@@ -68,6 +73,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private var banksDetailsFiltered: ArrayList<NetbankingDataClass> = ArrayList()
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
+    private lateinit var requestQueue: RequestQueue
+    private var job: Job? = null
     private var checkedPosition: Int? = null
     private var successScreenFullReferencePath: String? = null
     var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> =
@@ -257,6 +264,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
+        requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
         if(userAgentHeader.contains("Mobile",ignoreCase = true)){
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -831,12 +839,32 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-                        if (status.contains("RequiresAction", ignoreCase = true)) {
-                            editor.putString("status","RequiresAction")
+                        if (!response.isNull("actions") && response.getJSONArray("actions").length() != 0) {
+                            val type =
+                                response.getJSONArray("actions").getJSONObject(0).getString("type")
+                            if (status.contains("RequiresAction", ignoreCase = true)) {
+                                editor.putString("status","RequiresAction")
+                            }
+                            if (type.contains("html", true)) {
+                                url = response
+                                    .getJSONArray("actions")
+                                    .getJSONObject(0)
+                                    .getString("htmlPageString")
+                            } else {
+                                url = response
+                                    .getJSONArray("actions")
+                                    .getJSONObject(0)
+                                    .getString("url")
+                            }
+                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                            intent.putExtra("url", url)
+                            startFunctionCalls()
+                            startActivityForResult(intent, 333)
+                        } else {
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
                         }
-                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                        intent.putExtra("url", url)
-                        startActivity(intent)
                     }
                     editor.apply()
 
@@ -956,5 +984,104 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             .map { Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
+    }
+
+    private fun fetchStatusAndReason(url: String) {
+
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.GET, url, null,
+            Response.Listener{ response ->
+                try {
+                    val status = response.getString("status")
+                    val transactionId = response.getString("transactionId")
+
+                    if (status.contains(
+                            "Approved",
+                            ignoreCase = true
+                        ) || status.contains("PAID", ignoreCase = true)
+                    ) {
+
+                        editor.putString("status","Success")
+                        editor.apply()
+
+                        if (isAdded && isResumed) {
+                            val callback = SingletonClass.getInstance().getYourObject()
+                            val callbackForDismissing =
+                                SingletonForDismissMainSheet.getInstance().getYourObject()
+                            job?.cancel()
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            if (callback != null) {
+                                callback.onPaymentResult(
+                                    PaymentResultObject(
+                                        "Success",
+                                        transactionId,
+                                        transactionId
+                                    )
+                                )
+                            }
+                            if (callbackForDismissing != null) {
+                                callbackForDismissing.dismissFunction()
+                            }
+                        }
+
+                    } else if (status.contains("RequiresAction", ignoreCase = true)) {
+                        editor.putString("status","RequiresAction")
+                        editor.apply()
+                    } else if (status.contains("Processing", ignoreCase = true)) {
+                        editor.putString("status","Posted")
+                        editor.apply()
+                    } else if (status.contains("FAILED", ignoreCase = true)) {
+
+                        editor.putString("status","Failed")
+                        editor.apply()
+
+                        if (isAdded && isResumed) {
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    }
+
+                } catch (e: JSONException) {
+
+                }
+            },
+            Response.ErrorListener {
+                // no op
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                return headers
+            }
+        }
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    private fun startFunctionCalls() {
+        job = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                delay(3000)
+                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+                // Delay for 5 seconds
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 333) {
+            if (resultCode == Activity.RESULT_OK) {
+                job?.cancel()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+            }
+        }
     }
 }

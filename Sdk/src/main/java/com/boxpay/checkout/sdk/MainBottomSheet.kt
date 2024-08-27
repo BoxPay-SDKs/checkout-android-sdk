@@ -222,7 +222,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun showLoadingState(source: String) {
-
+        binding.boxpayLogoLottie.playAnimation()
         binding.loadingRelativeLayout.visibility = View.VISIBLE
     }
 
@@ -1763,7 +1763,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.ItemsPrice.text = "${currencySymbol}${totalAmount}"
 
                 if (originalAmount != totalAmount) {
-                    if (originalAmount == "null" || originalAmount == "0") {
+                    if (originalAmount == null || originalAmount == "0" || originalAmount == "null") {
                         binding.subTotalRelativeLayout.visibility = View.GONE
                     } else {
                         binding.subtotalTextView.text = "${currencySymbol}${originalAmount}"
@@ -2140,7 +2140,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView12.visibility = View.VISIBLE
         binding.upiLinearLayout.visibility = View.VISIBLE
         binding.cardView5.visibility = View.VISIBLE
+        binding.cardView6.visibility = View.VISIBLE
         binding.cardView7.visibility = View.VISIBLE
+        binding.walletConstraint.visibility = View.VISIBLE
         binding.netBankingConstraint.visibility = View.VISIBLE
         binding.cardConstraint.visibility = View.VISIBLE
         binding.linearLayout.visibility = View.VISIBLE
