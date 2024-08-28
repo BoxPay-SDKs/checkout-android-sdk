@@ -100,20 +100,27 @@ class Check : AppCompatActivity() {
             """ {
   "context": {
     "countryCode": "IN",
-    "legalEntity": {"code": "billdesk"},
+    "legalEntity": {"code": "razorpay"},
     "orderId": "test12"
   },
   "paymentType": "S",
   "money": {"amount": "100", "currencyCode": "INR"},
   "descriptor": {"line1": "Some descriptor"},
   "shopper": {
-    "firstName": null,
-    "lastName": null,
-    "email":null,
-    "uniqueReference": "x123y",
-    "phoneNumber": null,
-    "deliveryAddress": null
-  },
+        "firstName": "Ishika cnsjbc cnbhsbc jbcydsbc bcydbc",
+        "lastName": "Bansal",
+        "email": "ishika.bansal@boxpay.tech",
+        "uniqueReference": "x123y",
+        "phoneNumber": "919876543210",
+        "deliveryAddress": {
+            "address1": "first line",
+            "address2": "second line",
+            "city": "New Delhi",
+            "state": "Delhi",
+            "countryCode": "IN",
+            "postalCode": "147147"
+        }
+    },
   "order": {
     "items": [
       {

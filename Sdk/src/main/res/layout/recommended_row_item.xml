@@ -45,20 +45,22 @@
             app:layout_constraintTop_toTopOf="@+id/recomendedLogo"
             app:layout_constraintBottom_toTopOf="@+id/belowTextImage" />
 
-        <!-- New ImageView below the text -->
-        <ImageView
+        <TextView
             android:id="@+id/belowTextImage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:fontFamily="@font/poppins"
+            android:gravity="center"
+            android:textColor="#0D8EFF"
+            android:visibility="visible"
+            android:text="Last Used"
+            android:textSize="8sp"
+            android:background="@drawable/recommended_drawable_last_used"
             app:layout_constraintTop_toBottomOf="@+id/recomededItemText"
             app:layout_constraintBottom_toBottomOf="@+id/recomendedLogo"
-            app:layout_constraintStart_toStartOf="@+id/recomededItemText"
-            android:src="@drawable/recently_paid_tag"
-            android:visibility="visible" />
-        <!-- Set visibility to gone for the next item -->
-
+            app:layout_constraintStart_toStartOf="@+id/recomededItemText" />
         <View
+            android:id="@+id/divider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#DBDBDB"

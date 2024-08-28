@@ -36,6 +36,8 @@ class RecommendedItemsAdapter(
 
         fun bind(position: Int) {
             val radioButtonDrawable = binding.radioButton.background
+            val isLastPosition = position == items.size - 1
+            binding.divider.visibility = if (isLastPosition) View.GONE else View.VISIBLE
 
             // Check if the background drawable is a LayerDrawable
             if (radioButtonDrawable is LayerDrawable) {

@@ -685,8 +685,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                headers["X-Client-Connector-Name"] =  "Android SDK"
-                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -809,7 +809,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
 
         binding.recommendedProceedButton.setOnClickListener {
-            println("==========proceed clicked ${recommendedInstrumentationList[recommendedCheckedPosition!!]}")
             postRecommendedInstruments(
                 "upi/collect",
                 recommendedInstrumentationList[recommendedCheckedPosition!!].first,
@@ -1230,8 +1229,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                headers["X-Client-Connector-Name"] =  "Android SDK"
-                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -1257,7 +1256,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                     // Map each element in the JSONArray
                     if (jsonArray != emptyArray<Objects>()) {
-                        val mappedList = (0 until jsonArray.length()).map { index ->
+                        val mappedList = (0 until minOf(2, jsonArray.length())).map { index ->
                             val instrumentationRef =
                                 jsonArray.getJSONObject(index)
                                     .getString("instrumentRef")
@@ -1269,7 +1268,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                             recommendedInstrumentationList.add(pair)
                         }
-                        println("=====instumentation $recommendedInstrumentationList")
                         if (recommendedInstrumentationList.isNotEmpty() && binding.upiLinearLayout.isVisible) {
                             binding.recommendedCardView.visibility = View.VISIBLE
                             binding.recommendedLinearLayout.visibility = View.VISIBLE
@@ -1586,8 +1584,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                headers["X-Client-Connector-Name"] =  "Android SDK"
-                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -1703,7 +1701,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
     }
@@ -1807,6 +1804,23 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
 
             try {
+                val status = response.getString("status")
+                if (status.equals(
+                        "Approved",
+                        ignoreCase = true
+                    ) || status.equals("paid", true)
+                ) {
+                    editor.putString("status", "Success")
+                    editor.apply()
+
+                    if (isAdded && isResumed) {
+                        val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                        bottomSheet.show(
+                            parentFragmentManager,
+                            "PaymentStatusBottomSheetWithDetails"
+                        )
+                    }
+                }
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
 
                 val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")
@@ -1950,6 +1964,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.orderSummaryConstraintLayout.setOnClickListener(null)
                 }
 
+                if (!binding.shippingChargesRelativeLayout.isVisible && !binding.taxesRelativeLayout.isVisible && !binding.subTotalRelativeLayout.isVisible) {
+                    binding.blackLine.visibility = View.GONE
+                }
+
+                val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
+                val countryCodeJson = JSONObject(jsonString)
+                val countryCodesArray = loadCountryCodes(countryCodeJson)
                 val moneyObject = paymentDetailsObject.getJSONObject("money")
                 editor.putString("amount", moneyObject.getString("amount"))
                 editor.putString("merchantId", response.getString("merchantId"))
@@ -1976,18 +1997,68 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("city", null)
                     editor.putString("state", null)
                     editor.putString("postalCode", null)
+                } else {
+                    editor.putString(
+                        "postalCode",
+                        shopperObject.getJSONObject("deliveryAddress").getString("postalCode")
+                    )
+                    editor.putString(
+                        "state",
+                        shopperObject.getJSONObject("deliveryAddress").getString("state")
+                    )
+                    editor.putString(
+                        "city",
+                        shopperObject.getJSONObject("deliveryAddress").getString("city")
+                    )
+                    countryCode = getCountryName(
+                        countryCodeJson,
+                        shopperObject.getJSONObject("deliveryAddress").getString("countryCode")
+                    )
+                    editor.putString("countryName", countryCode?.first)
+                    editor.putString("indexCountryCodePhone", countryCode?.second)
+                    editor.putString("phoneCode", countryCode?.second)
+                    editor.putString(
+                        "address2",
+                        shopperObject.getJSONObject("deliveryAddress").getString("address2")
+                    )
+                    editor.putString(
+                        "address1",
+                        shopperObject.getJSONObject("deliveryAddress").getString("address1")
+                    )
                 }
                 if (shopperObject.isNull("firstName")) {
                     editor.putString("firstName", null)
+                } else {
+                    editor.putString("firstName", shopperObject.getString("firstName"))
                 }
                 if (shopperObject.isNull("lastName")) {
                     editor.putString("lastName", null)
+                } else {
+                    editor.putString("lastName", shopperObject.getString("lastName"))
                 }
                 if (shopperObject.isNull("email")) {
                     editor.putString("email", null)
+                } else {
+                    editor.putString("email", shopperObject.getString("email"))
                 }
                 if (shopperObject.isNull("phoneNumber")) {
                     editor.putString("phoneNumber", null)
+                } else {
+                    if (shopperObject.getString("phoneNumber").contains('+')) {
+                        editor.putString(
+                            "phoneNumber",
+                            shopperObject.getString("phoneNumber")
+                        )
+                    } else {
+                        editor.putString(
+                            "phoneNumber",
+                            "+" + shopperObject.getString("phoneNumber")
+                        )
+                    }
+                    countryCode = getCountryCode(
+                        countryCodesArray,
+                        sharedPreferences.getString("phoneNumber", null) ?: "+91"
+                    )
                 }
                 if (shopperObject.isNull("deliveryAddress") && showShipping) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
@@ -2066,9 +2137,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                         }
                     }
-                    val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
-                    val countryCodeJson = JSONObject(jsonString)
-                    val countryCodesArray = loadCountryCodes(countryCodeJson)
                     countryCode = getCountryCode(
                         countryCodesArray,
                         sharedPreferences.getString("phoneNumber", null) ?: "+91"
@@ -2332,6 +2400,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.walletConstraint.visibility = View.VISIBLE
         binding.netBankingConstraint.visibility = View.VISIBLE
         binding.cardConstraint.visibility = View.VISIBLE
+        binding.bnplConstraint.visibility = View.VISIBLE
         binding.walletConstraint.visibility = View.VISIBLE
         binding.linearLayout.visibility = View.VISIBLE
         binding.proceedButton.visibility = View.GONE
