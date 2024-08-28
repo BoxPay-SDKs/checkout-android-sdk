@@ -69,11 +69,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         minPhoneLength = phoneLength.first
         maxPhoneLength = phoneLength.second
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        val indexCountryPhone = sharedPreferences.getString("phoneCode", "+91")
 
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
+
+        val indexCountryPhone = sharedPreferences.getString("phoneCode", "+91")
 
         // Create an ArrayAdapter using the string array and a default spinner layout
         binding.spinnerDialCodes.apply {
