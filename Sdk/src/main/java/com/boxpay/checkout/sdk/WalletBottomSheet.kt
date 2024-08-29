@@ -928,6 +928,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                             }
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
+                            intent.putExtra("type",type)
                             startFunctionCalls()
                             startActivityForResult(intent, 333)
                         } else {
@@ -983,7 +984,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -1020,7 +1021,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
 

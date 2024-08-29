@@ -850,6 +850,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             }
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
+                            intent.putExtra("type",type)
                             startFunctionCalls()
                             startActivityForResult(intent, 333)
                         } else {
@@ -901,10 +902,22 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun enableProceedButton() {
+        binding.proceedButtonRelativeLayout.isEnabled = true
         binding.proceedButton.isEnabled = true
-        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
+        binding.proceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            )
+        )
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#000000"
+                )
+            )
+        )
     }
 
     private fun disableProceedButton() {
@@ -925,7 +938,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         )
         binding.textView6.visibility = View.VISIBLE
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
 

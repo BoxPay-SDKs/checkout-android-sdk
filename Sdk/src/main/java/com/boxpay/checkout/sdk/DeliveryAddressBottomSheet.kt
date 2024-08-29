@@ -123,7 +123,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                         binding.spinnerDialCodes.setText(countryCodePhoneNum)
                         binding.spinnerDialCodes.dismissDropDown()
                     }
-                    enableProceedButton()
+                    if (isMobileNumberValid()) {
+                        enableProceedButton()
+                    }
                 }
             }
         }
@@ -166,7 +168,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                         minPhoneLength = phoneLength.first
                         maxPhoneLength = phoneLength.second
                         if (binding.mobileNumberEditText.text.isNotEmpty()) {
-                            isMobileNumberValid()
+                           if(isMobileNumberValid()) {
+                               enableProceedButton()
+                           }
                         }
                         if (countryCodePhoneNum.equals("+91", true)) {
                             binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
@@ -182,7 +186,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                         binding.countryEditText.setText(countrySelectedFromDropDown)
                         binding.countryEditText.dismissDropDown()
                     }
-                    enableProceedButton()
+
                 }
             }
         }
@@ -264,7 +268,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             minPhoneLength = phoneLength.first
             maxPhoneLength = phoneLength.second
             if (binding.mobileNumberEditText.text.isNotEmpty()) {
-                isMobileNumberValid()
+                if(isMobileNumberValid()) {
+                    enableProceedButton()
+                }
             }
             if (countryCodePhoneNum.equals("+91", true)) {
                 binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
@@ -275,15 +281,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             if (binding.postalCodeEditText.text.isNotEmpty()) {
                 isPostalValid()
             }
-            enableProceedButton()
         }
 
         binding.spinnerDialCodes.setOnItemClickListener { parent, view, position, id ->
             val selectedDialCode = parent.getItemAtPosition(position).toString()
             // Display or use the selected item
-            if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty() && selectedDialCode != indexCountryPhone) {
-                binding.mobileNumberEditText.setText("")
-            }
             countryCodePhoneNum = selectedDialCode
             indexCountryCodePhone = selectedDialCode
             phoneCodeSelected = true
@@ -301,7 +303,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             if (binding.postalCodeEditText.text.isNotEmpty()) {
                 isPostalValid()
             }
-            enableProceedButton()
+            if (isMobileNumberValid()) {
+                enableProceedButton()
+            }
         }
 
         val allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890. "
@@ -375,22 +379,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
         binding.countryEditText.setText(countryName)
         countrySelectedFromDropDown = countryName
+        countryCodePhoneNum = indexCountryPhone ?: "+91"
         countrySelected = true
         disableProceedButton()
-//        if (!firstTime) {
-//
-//        } else {
-//            binding.backButton.visibility = View.VISIBLE
-//            disableProceedButton()
-//            binding.spinnerDialCodes.setText(countryCodePhoneNum)
-//            phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
-//            minPhoneLength = phoneLength.first
-//            maxPhoneLength = phoneLength.second
-//
-//            binding.countryEditText.setText("India")
-//            countrySelectedFromDropDown = "India"
-//            countrySelected = true
-//        }
 
         if (!isNameEnabled && !isShippingEnabled) {
             binding.fullNameLayout.visibility = View.GONE

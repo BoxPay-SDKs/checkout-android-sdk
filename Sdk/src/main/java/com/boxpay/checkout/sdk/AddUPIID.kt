@@ -124,23 +124,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 )
                 val textNow = s.toString()
                 if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{2,64}"))) {
-                    binding.proceedButtonRelativeLayout.isEnabled = true
-                    binding.proceedButton.isEnabled = true
-                    binding.proceedButtonRelativeLayout.setBackgroundColor(
-                        Color.parseColor(
-                            sharedPreferences.getString("primaryButtonColor", "#000000")
-                        )
-                    )
-                    binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
-                    binding.textView6.setTextColor(
-                        Color.parseColor(
-                            sharedPreferences.getString(
-                                "buttonTextColor",
-                                "#000000"
-                            )
-                        )
-                    )
+                    enableProceedButton()
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 } else {
                     disableProceedButton()
@@ -553,7 +537,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
 //        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
@@ -571,13 +555,21 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     }
 
     private fun enableProceedButton() {
+        binding.proceedButtonRelativeLayout.isEnabled = true
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            )
+        )
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.ll1InvalidUPI.visibility = View.INVISIBLE
         binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#000000"
+                )
             )
         )
     }

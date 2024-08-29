@@ -563,6 +563,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 PaymentFailureScreen(
                     errorMessage = "Please retry using other payment method or try again in sometime"
                 ).show(parentFragmentManager, "FailureScreen")
+                job?.cancel()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -1865,9 +1866,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 }
                 if (showShipping) {
-                    binding.textView6.text = "Add New Address"
+                    binding.textView6.text = "Continue to Add New Address"
                 } else {
-                    binding.textView6.text = "Add Personal Details"
+                    binding.textView6.text = "Continue to Add Personal Details"
                 }
 
                 if (showEmail || showShipping || showPhone || showName) {
@@ -2085,7 +2086,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showShipping
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber")) && (showName || showEmail || showPhone)) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone)) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2137,10 +2138,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                         }
                     }
-                    countryCode = getCountryCode(
-                        countryCodesArray,
-                        sharedPreferences.getString("phoneNumber", null) ?: "+91"
-                    )
                     if (!shopperObject.isNull("deliveryAddress")) {
                         val deliveryAddress = shopperObject.getJSONObject("deliveryAddress")
                         if (!deliveryAddress.isNull("address1")) {
