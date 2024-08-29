@@ -95,45 +95,35 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     showDropDown()
                 } else {
                     dismissDropDown()
-                    if (binding.spinnerDialCodes.text.toString() != "+" && binding.spinnerDialCodes.text.toString().length >= 2 && binding.spinnerDialCodes.hasFocus()) {
-                        val selectedDialCode = binding.spinnerDialCodes.text.toString()
-                        if (inValidPhoneCode(countryCodeJson)) {
-                            if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty() && selectedDialCode != indexCountryPhone) {
-                                binding.mobileNumberEditText.setText("")
-                            }
-                            countryCodePhoneNum = selectedDialCode
-                            indexCountryCodePhone = selectedDialCode
-                            phoneCodeSelected = true
-                            countrySelectedFromDropDown =
-                                setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
-                            binding.countryEditText.setText(countrySelectedFromDropDown)
-                            phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
-                            minPhoneLength = phoneLength.first
-                            maxPhoneLength = phoneLength.second
-                            if (countryCodePhoneNum.equals("+91", true)) {
-                                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                            } else {
-                                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
-                            }
-                            if (binding.postalCodeEditText.text.isNotEmpty()) {
-                                isPostalValid()
-                            }
-                            binding.spinnerDialCodes.dismissDropDown()
-                            toCheckAllFieldsAreFilled()
-                        } else {
-                            binding.spinnerDialCodes.setText(countryCodePhoneNum)
-                            binding.spinnerDialCodes.dismissDropDown()
+                    val selectedDialCode = binding.spinnerDialCodes.text.toString()
+                    if (inValidPhoneCode(countryCodeJson)) {
+                        if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty() && selectedDialCode != indexCountryPhone) {
+                            binding.mobileNumberEditText.setText("")
                         }
-                    }
-                    if(inValidPhoneCode(countryCodeJson)) {
-                        if (toCheckAllFieldsAreFilled()) {
-                            enableProceedButton()
+                        countryCodePhoneNum = selectedDialCode
+                        indexCountryCodePhone = selectedDialCode
+                        phoneCodeSelected = true
+                        countrySelectedFromDropDown =
+                            setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
+                        binding.countryEditText.setText(countrySelectedFromDropDown)
+                        phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
+                        minPhoneLength = phoneLength.first
+                        maxPhoneLength = phoneLength.second
+                        if (countryCodePhoneNum.equals("+91", true)) {
+                            binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
                         } else {
-                            disableProceedButton()
+                            binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
                         }
+                        if (binding.postalCodeEditText.text.isNotEmpty()) {
+                            isPostalValid()
+                        }
+                        binding.spinnerDialCodes.dismissDropDown()
+                        toCheckAllFieldsAreFilled()
                     } else {
-                        disableProceedButton()
+                        binding.spinnerDialCodes.setText(countryCodePhoneNum)
+                        binding.spinnerDialCodes.dismissDropDown()
                     }
+                    enableProceedButton()
                 }
             }
         }
@@ -154,50 +144,45 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     dismissDropDown()
                     val countryAvailable =
-                        countryCodesArray.find { it.equals(binding.countryEditText.text.toString(), true) }
-                    if (binding.countryEditText.text.toString().isNotEmpty() && !binding.countryEditText.hasFocus()) {
-                        if (countryAvailable != null) {
-                            val selectedItem = binding.countryEditText.text.toString()
-
-                            countrySelectedFromDropDown = selectedItem
-                            countrySelected = true
-                            countryCodePhoneNum = setPhoneCodeUsingCountryName(
-                                countryCodeJson,
-                                countrySelectedFromDropDown.toString()
+                        countryCodesArray.find {
+                            it.equals(
+                                binding.countryEditText.text.toString(),
+                                true
                             )
-                            selectedCountryName =
-                                findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
-                            binding.spinnerDialCodes.setText(countryCodePhoneNum)
-                            phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
-                            minPhoneLength = phoneLength.first
-                            maxPhoneLength = phoneLength.second
-                            if (binding.mobileNumberEditText.text.isNotEmpty()) {
-                                isMobileNumberValid()
-                            }
-                            if (countryCodePhoneNum.equals("+91", true)) {
-                                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                            } else {
-                                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
-                            }
+                        }
+                    if (countryAvailable != null) {
+                        val selectedItem = binding.countryEditText.text.toString()
 
-                            if (binding.postalCodeEditText.text.isNotEmpty()) {
-                                isPostalValid()
-                            }
-                            toCheckAllFieldsAreFilled()
-                        } else {
-                            binding.countryEditText.setText(countrySelectedFromDropDown)
-                            binding.countryEditText.dismissDropDown()
+                        countrySelectedFromDropDown = selectedItem
+                        countrySelected = true
+                        countryCodePhoneNum = setPhoneCodeUsingCountryName(
+                            countryCodeJson,
+                            countrySelectedFromDropDown.toString()
+                        )
+                        selectedCountryName =
+                            findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
+                        binding.spinnerDialCodes.setText(countryCodePhoneNum)
+                        phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
+                        minPhoneLength = phoneLength.first
+                        maxPhoneLength = phoneLength.second
+                        if (binding.mobileNumberEditText.text.isNotEmpty()) {
+                            isMobileNumberValid()
                         }
-                    }
-                    if(isValidCountryName(countryCodeJson)) {
-                        if (toCheckAllFieldsAreFilled()) {
-                            enableProceedButton()
+                        if (countryCodePhoneNum.equals("+91", true)) {
+                            binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
                         } else {
-                            disableProceedButton()
+                            binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
                         }
+
+                        if (binding.postalCodeEditText.text.isNotEmpty()) {
+                            isPostalValid()
+                        }
+                        toCheckAllFieldsAreFilled()
                     } else {
-                        disableProceedButton()
+                        binding.countryEditText.setText(countrySelectedFromDropDown)
+                        binding.countryEditText.dismissDropDown()
                     }
+                    enableProceedButton()
                 }
             }
         }
@@ -216,7 +201,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.countryErrorText.visibility = View.INVISIBLE
                 }
-                if(isValidCountryName(countryCodeJson)) {
+                if (isValidCountryName(countryCodeJson)) {
                     if (toCheckAllFieldsAreFilled()) {
                         enableProceedButton()
                     } else {
@@ -247,7 +232,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.mobileErrorText.visibility = View.INVISIBLE
                 }
-                if(inValidPhoneCode(countryCodeJson)) {
+                if (inValidPhoneCode(countryCodeJson)) {
                     if (toCheckAllFieldsAreFilled()) {
                         enableProceedButton()
                     } else {
@@ -290,15 +275,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             if (binding.postalCodeEditText.text.isNotEmpty()) {
                 isPostalValid()
             }
-            if(isValidCountryName(countryCodeJson)) {
-                if (toCheckAllFieldsAreFilled()) {
-                    enableProceedButton()
-                } else {
-                    disableProceedButton()
-                }
-            } else {
-                disableProceedButton()
-            }
+            enableProceedButton()
         }
 
         binding.spinnerDialCodes.setOnItemClickListener { parent, view, position, id ->
@@ -324,15 +301,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             if (binding.postalCodeEditText.text.isNotEmpty()) {
                 isPostalValid()
             }
-            if(inValidPhoneCode(countryCodeJson)) {
-                if (toCheckAllFieldsAreFilled()) {
-                    enableProceedButton()
-                } else {
-                    disableProceedButton()
-                }
-            } else {
-                disableProceedButton()
-            }
+            enableProceedButton()
         }
 
         val allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890. "
@@ -721,7 +690,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 if (isShippingEnabled) "Edit Address" else "Edit Personal Details"
             enableProceedButton()
         } else {
-            binding.textView.text = if (isShippingEnabled) "Add New Address" else "Add Personal Details"
+            binding.textView.text =
+                if (isShippingEnabled) "Add New Address" else "Add Personal Details"
             disableProceedButton()
         }
 
@@ -1158,7 +1128,8 @@ class CustomArrayAdapter(
                     }.sorted().toTypedArray()
 
                     // Check if the filtered results are empty
-                    results.values = if (filteredResults.isEmpty()) arrayOf("No results found") else filteredResults
+                    results.values =
+                        if (filteredResults.isEmpty()) arrayOf("No results found") else filteredResults
                     results.count = filteredResults.size
                 } else {
                     // If no constraint, return the original array
