@@ -1907,11 +1907,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.textView6.text = "Continue to Add Personal Details"
                 }
 
-                if (showEmail || showShipping || showPhone || showName) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
-                } else {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
-                }
+//                if (showEmail || showShipping || showPhone || showName) {
+//                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+//                } else {
+//                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+//                }
 
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
                 if (currencySymbol == "")
@@ -2098,7 +2098,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )
                 }
                 if (shopperObject.isNull("deliveryAddress") && showShipping) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+//                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
@@ -2123,7 +2123,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )
                     showPriceBreakUp()
                 } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone)) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+//                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
@@ -2424,7 +2424,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             sharedPreferences.getString("phoneCode", null) ?: ""
         )
 
-        binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+//        binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
         binding.textView12.visibility = View.VISIBLE
         binding.upiLinearLayout.visibility = View.VISIBLE
         binding.cardView5.visibility = View.VISIBLE
