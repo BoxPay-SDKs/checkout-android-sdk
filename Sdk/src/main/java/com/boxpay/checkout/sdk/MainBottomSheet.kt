@@ -475,7 +475,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Failed")
                         editor.apply()
                         PaymentFailureScreen(
-                            errorMessage = "Payment failed with Gpay. Please retry payment with a different UPI app"
+                            errorMessage = "Payment failed with GPay. Please retry payment with a different UPI app"
                         ).show(parentFragmentManager, "FailureScreen")
                     }
                     if (status.equals("Pending", ignoreCase = true) && isPhonePe) {
