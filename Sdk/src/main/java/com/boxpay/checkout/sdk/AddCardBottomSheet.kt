@@ -1360,7 +1360,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             Response.Listener{ response ->
                 try {
                     val status = response.getString("status")
-                    val transactionId = response.getString("transactionId")
+                    val transactionId = response.getString("transactionId").toString()
 
                     if (status.contains(
                             "Approved",
@@ -1369,6 +1369,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     ) {
 
                         editor.putString("status","Success")
+                        editor.putString("amount", response.getString("amount").toString())
+                        editor.putString("transactionId", transactionId)
                         editor.apply()
 
                         if (isAdded && isResumed) {

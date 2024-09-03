@@ -22,6 +22,9 @@ class MerchantDetailsScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        val sharedPrefs = getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE).edit()
+        sharedPrefs.clear()
+        sharedPrefs.apply()
 
         ArrayAdapter.createFromResource(
             this,
@@ -86,9 +89,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
     }
 
     fun onPaymentResult(result: PaymentResultObject) {
-        val sharedPrefs = getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE).edit()
-        sharedPrefs.clear()
-        sharedPrefs.apply()
         if (result.status == "Success") {
             binding.button.setText("Payment has been Completed. please use another token")
         } else {
