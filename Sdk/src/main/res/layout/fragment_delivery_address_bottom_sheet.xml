@@ -153,12 +153,15 @@
                                 android:layout_marginTop="5dp"
                                 android:background="@drawable/edittext_bg">
 
-                                <Spinner
+                                <com.boxpay.checkout.sdk.adapters.InstantAutoComplete
                                     android:id="@+id/spinner_dial_codes"
-                                    android:layout_width="70dp"
+                                    android:layout_marginStart="4dp"
+                                    android:layout_width="50dp"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
                                     android:background="#ffffffff"
+                                    android:textSize="14sp"
+                                    android:inputType="number"
                                     tools:ignore="TouchTargetSizeCheck" />
 
                                 <EditText
@@ -256,7 +259,7 @@
                                 android:text="Country*"
                                 android:textColor="@android:color/black"/>
 
-                            <Spinner
+                            <com.boxpay.checkout.sdk.adapters.InstantAutoComplete
                                 android:id="@+id/countryEditText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -266,16 +269,29 @@
                                 android:gravity="center_vertical"
                                 android:hint="Country"
                                 android:inputType="text"
+                                android:padding="8dp"
                                 android:textColor="#000000"
                                 android:textColorHint="#7F7D83"
-                                android:textSize="12sp"
+                                android:textSize="14sp"
                                 tools:ignore="TouchTargetSizeCheck" />
+
+                            <TextView
+                                android:id="@+id/countryErrorText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="Required"
+                                android:visibility="invisible"
+                                android:textColor="#ffff4d4f"/>
 
                             <TextView
                                 android:id="@+id/postalCodeTextView"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="26dp"
+                                android:layout_marginTop="2dp"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"

@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:fontFamily="@font/poppins_bold"
-                android:text="Payment Methods"
+                android:text="Payment Details"
                 android:textColor="#2D2B32"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"

@@ -24,7 +24,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:fontFamily="@font/poppins_bold"
-                android:text="Payment Methods"
+                android:text="Payment Details"
                 android:textColor="#2D2B32"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -142,6 +142,7 @@
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="@+id/loading_relative_layout"
                                 app:layout_constraintTop_toBottomOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_goneMarginBottom="8dp"
                                 tools:itemCount="10"
                                 tools:listitem="@layout/wallet_item" />

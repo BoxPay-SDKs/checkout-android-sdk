@@ -124,23 +124,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 )
                 val textNow = s.toString()
                 if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{2,64}"))) {
-                    binding.proceedButtonRelativeLayout.isEnabled = true
-                    binding.proceedButton.isEnabled = true
-                    binding.proceedButtonRelativeLayout.setBackgroundColor(
-                        Color.parseColor(
-                            sharedPreferences.getString("primaryButtonColor", "#000000")
-                        )
-                    )
-                    binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
-                    binding.textView6.setTextColor(
-                        Color.parseColor(
-                            sharedPreferences.getString(
-                                "buttonTextColor",
-                                "#000000"
-                            )
-                        )
-                    )
+                    enableProceedButton()
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 } else {
                     disableProceedButton()
@@ -196,7 +180,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
 
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
-        println("===request body validation $requestBody")
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://"+baseUrl + "/v0/platform/vpa-validation", requestBody,
@@ -469,7 +452,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Response.Listener { response ->
 
                 val status = response.getJSONObject("status").getString("status")
-                println("===status $status")
                 val reason = response.getJSONObject("status").getString("reason")
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
@@ -485,6 +467,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     }
                     PaymentFailureScreen(errorMessage = cleanedMessage).show(parentFragmentManager,"FailureScreen")
                 }else {
+
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status","RequiresAction")
                         editor.apply()
@@ -515,6 +498,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                if (sharedPreferences.getString("shopperToken", "") != null && sharedPreferences.getString("shopperToken", "") != "") {
+                    headers["Authorization"] = "Session ${sharedPreferences.getString("shopperToken", "")}"
+                }
                 headers["X-Client-Connector-Name"] =  "Android SDK"
                 headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
                 return headers
@@ -551,7 +537,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
 //        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
@@ -569,13 +555,21 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     }
 
     private fun enableProceedButton() {
+        binding.proceedButtonRelativeLayout.isEnabled = true
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            )
+        )
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.ll1InvalidUPI.visibility = View.INVISIBLE
         binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#000000"
+                )
             )
         )
     }

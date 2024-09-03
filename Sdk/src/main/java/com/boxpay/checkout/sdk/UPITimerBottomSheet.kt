@@ -291,7 +291,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     val status = response.getString("status")
                     val statusReason = response.getString("statusReason")
                     val reasonCode = response.getString("reasonCode")
-                    val transactionId = response.getString("transactionId")
+                    val transactionId = response.getString("transactionId").toString()
 
                     // Check if status is success, if yes, dismiss the bottom sheet
                     if (status.contains(
@@ -300,6 +300,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
                         editor.putString("status", "Success")
+                        editor.putString("amount", response.getString("amount").toString())
+                        editor.putString("transactionId", transactionId)
                         editor.apply()
                         if (isAdded && isResumed) {
                             countdownTimer.cancel()

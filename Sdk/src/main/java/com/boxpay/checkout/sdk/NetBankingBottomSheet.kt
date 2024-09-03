@@ -73,8 +73,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private var banksDetailsFiltered: ArrayList<NetbankingDataClass> = ArrayList()
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
-    private lateinit var requestQueue: RequestQueue
-    private var job: Job? = null
     private var checkedPosition: Int? = null
     private var successScreenFullReferencePath: String? = null
     var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> =
@@ -83,6 +81,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
 
     private lateinit var Base_Session_API_URL : String
+    private lateinit var requestQueue: RequestQueue
+    private var job: Job? = null
     var popularBanksSelected: Boolean = false
     private var popularBanksSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
@@ -265,6 +265,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         editor = sharedPreferences.edit()
 
         requestQueue = Volley.newRequestQueue(context)
+
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
         if(userAgentHeader.contains("Mobile",ignoreCase = true)){
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -455,7 +456,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         for (bank in banksDetailsOriginal) {
             if (query.toString().isBlank() || query.toString().isBlank()) {
                 showAllBanks()
-            } else if (bank.bankBrand.startsWith(query.toString(), ignoreCase = true)) {
+            } else if (bank.bankName.startsWith(query.toString(), ignoreCase = true)) {
                 banksDetailsFiltered.add(
                     NetbankingDataClass(
                         bank.bankName,
@@ -819,18 +820,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
                     // Retrieve the "actions" array
-                    val actionsArray = response.getJSONArray("actions")
                     val status = response.getJSONObject("status").getString("status")
                     var url = ""
                     // Loop through the actions array to find the URL
-                    for (i in 0 until actionsArray.length()) {
-                        val actionObject = actionsArray.getJSONObject(i)
-                        url = actionObject.getString("url")
-                        // Do something with the URL
-
-                    }
-
-
                     if (status.equals("Approved")) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                         bottomSheet.show(
@@ -858,6 +850,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             }
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
+                            intent.putExtra("type",type)
                             startFunctionCalls()
                             startActivityForResult(intent, 333)
                         } else {
@@ -909,10 +902,22 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun enableProceedButton() {
+        binding.proceedButtonRelativeLayout.isEnabled = true
         binding.proceedButton.isEnabled = true
-        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
+        binding.proceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            )
+        )
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#000000"
+                )
+            )
+        )
     }
 
     private fun disableProceedButton() {
@@ -933,7 +938,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         )
         binding.textView6.visibility = View.VISIBLE
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
 
@@ -993,7 +998,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             Response.Listener{ response ->
                 try {
                     val status = response.getString("status")
-                    val transactionId = response.getString("transactionId")
+                    val transactionId = response.getString("transactionId").toString()
 
                     if (status.contains(
                             "Approved",
@@ -1002,6 +1007,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     ) {
 
                         editor.putString("status","Success")
+                        editor.putString("amount", response.getString("amount").toString())
+                        editor.putString("transactionId", transactionId)
                         editor.apply()
 
                         if (isAdded && isResumed) {

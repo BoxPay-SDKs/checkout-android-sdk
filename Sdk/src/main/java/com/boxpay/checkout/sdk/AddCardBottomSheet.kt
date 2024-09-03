@@ -1198,7 +1198,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
 
@@ -1223,7 +1223,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     )
                 )
             )
-            binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+            binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
             binding.textView6.setTextColor(
                 ContextCompat.getColor(
                     requireContext(),
@@ -1360,7 +1360,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             Response.Listener{ response ->
                 try {
                     val status = response.getString("status")
-                    val transactionId = response.getString("transactionId")
+                    val transactionId = response.getString("transactionId").toString()
 
                     if (status.contains(
                             "Approved",
@@ -1369,6 +1369,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     ) {
 
                         editor.putString("status","Success")
+                        editor.putString("amount", response.getString("amount").toString())
+                        editor.putString("transactionId", transactionId)
                         editor.apply()
 
                         if (isAdded && isResumed) {

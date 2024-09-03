@@ -13,7 +13,7 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 
 class MerchantDetailsScreen : AppCompatActivity() {
 
-    private val binding : ActivityMerchantDetailsScreenBinding by lazy {
+    private val binding: ActivityMerchantDetailsScreenBinding by lazy {
         ActivityMerchantDetailsScreenBinding.inflate(layoutInflater)
     }
     private var selectedEnvironment: String? = null
@@ -22,6 +22,9 @@ class MerchantDetailsScreen : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        val sharedPrefs = getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE).edit()
+        sharedPrefs.clear()
+        sharedPrefs.apply()
 
         ArrayAdapter.createFromResource(
             this,
@@ -34,54 +37,61 @@ class MerchantDetailsScreen : AppCompatActivity() {
             binding.environmentSpinner.adapter = adapter
         }
 
-        binding.environmentSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                // Handle the selection
-                selectedEnvironment = parent?.getItemAtPosition(position).toString()
-                binding.button.isEnabled = true
-                binding.button.text = "Proceed"
+        binding.environmentSpinner.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: android.view.View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    // Handle the selection
+                    selectedEnvironment = parent?.getItemAtPosition(position).toString()
+                    binding.button.isEnabled = true
+                    binding.button.text = "Proceed"
+                }
+
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    selectedEnvironment = null
+                }
             }
 
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                selectedEnvironment = null
-            }
-        }
-
-        binding.button.setOnClickListener(){
-            val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        binding.button.setOnClickListener() {
+            val inputMethodManager =
+                getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(binding.editTextText.windowToken, 0)
 
-            if(selectedEnvironment == null){
+            if (selectedEnvironment == null) {
                 Toast.makeText(this, "Select the environment", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
 
             val token = binding.editTextText.text.toString()
+            val shopperToken = binding.shopperTokenEditText.text.toString()
             binding.button.isEnabled = false
             binding.button.text = "Please Wait"
-            if(selectedEnvironment == "prod") {
-                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false)
+            if (selectedEnvironment == "prod") {
+                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false, customerShopperToken = shopperToken)
                 checkout.testEnv = false
                 checkout.display()
-            }
-            else if(selectedEnvironment == "sandbox"){
-                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true)
+            } else if (selectedEnvironment == "sandbox") {
+                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true, customerShopperToken = shopperToken)
                 checkout.testEnv = false
                 checkout.display()
-            }else if(selectedEnvironment == "test"){
-                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false)
+            } else if (selectedEnvironment == "test") {
+                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, shopperToken)
                 checkout.testEnv = true
                 checkout.display()
             }
         }
     }
 
-    fun onPaymentResult(result : PaymentResultObject){
-        if(result.status == "Success"){
+    fun onPaymentResult(result: PaymentResultObject) {
+        if (result.status == "Success") {
             binding.button.setText("Payment has been Completed. please use another token")
-        }else{
+        } else {
             binding.button.isEnabled = true
             binding.button.text = "Proceed"
         }

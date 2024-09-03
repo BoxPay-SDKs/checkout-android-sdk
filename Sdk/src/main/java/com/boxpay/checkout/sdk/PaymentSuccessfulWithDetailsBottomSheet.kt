@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.boxpay.checkout.sdk.databinding.FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -45,6 +46,22 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         binding.transactionIDTextView.text = transactionID
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
+        binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )
+        )
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.textView6.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
+            )
+        )
         binding. proceedButton.setOnClickListener(){
             val callback =  SingletonClass.getInstance().getYourObject()
             if(callback != null){

@@ -14,30 +14,47 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import org.json.JSONObject
 import java.util.Locale
 
-class BoxPayCheckout(private val context: Context, private val token: String, val onPaymentResult: ((PaymentResultObject) -> Unit)?, private val sandboxEnabled: Boolean = false){
+class BoxPayCheckout(
+    private val context: Context,
+    private val token: String,
+    val onPaymentResult: ((PaymentResultObject) -> Unit)?,
+    private val sandboxEnabled: Boolean = false,
+    private val customerShopperToken: String = ""
+) {
+    constructor(
+        context: Context,
+        token: String,
+        onPaymentResult: ((PaymentResultObject) -> Unit)?,
+        customerShopperToken: String = "",
+        sandboxEnabled: Boolean = false
+    ) : this(
+        context, token, onPaymentResult, sandboxEnabled, customerShopperToken
+    )
+
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
 
     var testEnv = false
 
-    private var BASE_URL : String ?= null
+    private var BASE_URL: String? = null
 
     fun display() {
-        if(sandboxEnabled){
+        if (sandboxEnabled) {
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
         } else if (testEnv) {
-            editor.putString("baseUrl","test-apis.boxpay.tech")
+            editor.putString("baseUrl", "test-apis.boxpay.tech")
             this.BASE_URL = "test-apis.boxpay.tech"
         } else {
-            editor.putString("baseUrl","apis.boxpay.in")
+            editor.putString("baseUrl", "apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
         }
         editor.apply()
         if (context is Activity) {
-            val activity = context as AppCompatActivity // or FragmentActivity, depending on your activity type
-            callUIAnalytics(context,"CHECKOUT_LOADED")
+            val activity =
+                context as AppCompatActivity // or FragmentActivity, depending on your activity type
+            callUIAnalytics(context, "CHECKOUT_LOADED")
             putTransactionDetailsInSharedPreferences()
             openBottomSheet()
         }
@@ -66,7 +83,7 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "${BASE_URL}/v0/ui-analytics", requestBody,
             Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */}) {}.apply {
+            Response.ErrorListener { /*no response handling */ }) {}.apply {
             // Set retry policy
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
@@ -80,27 +97,28 @@ class BoxPayCheckout(private val context: Context, private val token: String, va
     }
 
 
-    private fun openBottomSheet(){
+    private fun openBottomSheet() {
         initializingCallBackFunctions()
 
         if (context is Activity) {
-            val activity = context as AppCompatActivity // or FragmentActivity, depending on your activity type
+            val activity =
+                context as AppCompatActivity // or FragmentActivity, depending on your activity type
             val fragmentManager = activity.supportFragmentManager
             // Now you can use fragmentManager
             val bottomSheet = MainBottomSheet()
             bottomSheet.show(fragmentManager, "MainBottomSheet")
         }
     }
-    fun initializingCallBackFunctions(){
+
+    fun initializingCallBackFunctions() {
         val callBackFunctions = onPaymentResult?.let { CallBackFunctions(it) }
         SingletonClass.getInstance().callBackFunctions = callBackFunctions
     }
 
 
-
-
     private fun putTransactionDetailsInSharedPreferences() {
         editor.putString("token", token)
+        editor.putString("shopperToken", customerShopperToken)
         editor.apply()
     }
 }

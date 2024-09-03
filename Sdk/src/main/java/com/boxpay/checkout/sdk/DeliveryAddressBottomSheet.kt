@@ -14,9 +14,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Filter
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import com.boxpay.checkout.sdk.databinding.FragmentDeliveryAddressBottomSheetBinding
@@ -38,12 +39,14 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var firstTime: Boolean = false
     private var selectedCountryName = "IN"
     private var countrySelected = false
+    private var phoneCodeSelected = false
     private var isShippingEnabled = false
     private var isNameEnabled = false
     private var isPhoneEnabled = false
     private var isEmailEnabled = false
     private var minPhoneLength = 10
-    val emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
+    val emailRegex =
+        "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
     val numberRegex = "^[0-9]+$".toRegex()
     private var maxPhoneLength = 10
     private var countrySelectedFromDropDown: String? = null
@@ -58,7 +61,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         // Inflate the layout for this fragment
         binding =
             FragmentDeliveryAddressBottomSheetBinding.inflate(layoutInflater, container, false)
-        val spinnerDialCodes = binding.spinnerDialCodes
         val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
         val countryCodeJson = JSONObject(jsonString)
         val countryCodesArray = loadCountryCodes(countryCodeJson)
@@ -68,122 +70,243 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         maxPhoneLength = phoneLength.second
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
+        val indexCountryPhone = sharedPreferences.getString("phoneCode", "+91")
+
         // Create an ArrayAdapter using the string array and a default spinner layout
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            countryCodesArray
-        )
-        val indexCountryPhone = sharedPreferences.getString("indexCountryCodePhone", null)
+        binding.spinnerDialCodes.apply {
+            // Set up the adapter
+            val adapter = CustomArrayAdapter(
+                requireContext(),
+                countryCodesArray,
+                true
+            )
+            adapter.setDropDownViewResource(R.layout.custom_dial_code_item) // Use your custom layout if needed
+            setAdapter(adapter)
 
-        // Set custom dropdown layout
-        adapter.setDropDownViewResource(R.layout.custom_dial_code_item)
+            binding.spinnerDialCodes.threshold = 2
 
-        // Set adapter to spinner
-        spinnerDialCodes.adapter = adapter
-
-
-        val countryNameListAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, countryList)
-        binding.countryEditText.setAdapter(countryNameListAdapter)
-
-        binding.countryEditText.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    // Get the selected item
-                    val selectedItem = parent.getItemAtPosition(position).toString()
-
-                    countrySelectedFromDropDown = selectedItem
-                    countrySelected = true
-                    countryCodePhoneNum = setPhoneCodeUsingCountryName(
-                        countryCodeJson,
-                        countrySelectedFromDropDown.toString()
-                    )
-                    selectedCountryName =
-                        findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
-                    binding.spinnerDialCodes.setSelection(
-                        getPhoneNumberCode(
-                            countryCodesArray,
-                            countryCodePhoneNum
-                        )
-                    )
-                    phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
-                    minPhoneLength = phoneLength.first
-                    maxPhoneLength = phoneLength.second
-                    if (binding.mobileNumberEditText.text.isNotEmpty()) {
-                        isMobileNumberValid()
-                    }
-                    if (countryCodePhoneNum.equals("+91", true)) {
-                        binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                    } else {
-                        binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
-                    }
-
-                    if (binding.postalCodeEditText.text.isNotEmpty()) {
-                        isPostalValid()
-                    }
-                    toCheckAllFieldsAreFilled()
-                }
-
-
-                override fun onNothingSelected(parent: AdapterView<*>) {
-                    // Do nothing, or you can handle this case if needed
-                }
-            }
-
-
-        spinnerDialCodes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                // Get the selected item
-                val selectedDialCode = parent.getItemAtPosition(position).toString()
-                // Display or use the selected item
-                if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty() && selectedDialCode != indexCountryPhone) {
-                    binding.mobileNumberEditText.setText("")
-                }
-                countryCodePhoneNum = selectedDialCode
-                indexCountryCodePhone = selectedDialCode
-                countrySelectedFromDropDown =
-                    setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
-                binding.countryEditText.setSelection(
-                    getCountryName(
-                        countryList,
-                        countrySelectedFromDropDown.toString()
-                    )
-                )
-                phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
-                minPhoneLength = phoneLength.first
-                maxPhoneLength = phoneLength.second
-                if (countryCodePhoneNum.equals("+91", true)) {
-                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+            // Control dropdown behavior on focus changes
+            onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
+                if (hasFocus) {
+                    showDropDown()
                 } else {
-                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+                    dismissDropDown()
+                    val selectedDialCode = binding.spinnerDialCodes.text.toString()
+                    if (inValidPhoneCode(countryCodeJson)) {
+                        if (countryCodePhoneNum != selectedDialCode && binding.mobileNumberEditText.text.isNotEmpty() && selectedDialCode != indexCountryPhone) {
+                            binding.mobileNumberEditText.setText("")
+                        }
+                        countryCodePhoneNum = selectedDialCode
+                        indexCountryCodePhone = selectedDialCode
+                        phoneCodeSelected = true
+                        countrySelectedFromDropDown =
+                            setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
+                        binding.countryEditText.setText(countrySelectedFromDropDown)
+                        phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
+                        minPhoneLength = phoneLength.first
+                        maxPhoneLength = phoneLength.second
+                        if (countryCodePhoneNum.equals("+91", true)) {
+                            binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+                        } else {
+                            binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+                        }
+                        if (binding.postalCodeEditText.text.isNotEmpty()) {
+                            isPostalValid()
+                        }
+                        binding.spinnerDialCodes.dismissDropDown()
+                        toCheckAllFieldsAreFilled()
+                    } else {
+                        binding.spinnerDialCodes.setText(countryCodePhoneNum)
+                        binding.spinnerDialCodes.dismissDropDown()
+                    }
+                    if (isMobileNumberValid()) {
+                        enableProceedButton()
+                    }
                 }
-                if (binding.postalCodeEditText.text.isNotEmpty()) {
-                    isPostalValid()
-                }
-            }
-
-
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Do nothing, or you can handle this case if needed
             }
         }
 
+        binding.countryEditText.apply {
+            // Set up the adapter
+            val countryNameListAdapter =
+                CustomArrayAdapter(requireContext(), countryList, false)
+            countryNameListAdapter.setDropDownViewResource(R.layout.custom_dial_code_item) // Use your custom layout if needed
+            setAdapter(countryNameListAdapter)
+
+            binding.countryEditText.threshold = 1
+
+            // Control dropdown behavior on focus changes
+            onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
+                if (hasFocus) {
+                    showDropDown()
+                } else {
+                    dismissDropDown()
+                    val countryAvailable =
+                        countryCodesArray.find {
+                            it.equals(
+                                binding.countryEditText.text.toString(),
+                                true
+                            )
+                        }
+                    if (countryAvailable != null) {
+                        val selectedItem = binding.countryEditText.text.toString()
+
+                        countrySelectedFromDropDown = selectedItem
+                        countrySelected = true
+                        countryCodePhoneNum = setPhoneCodeUsingCountryName(
+                            countryCodeJson,
+                            countrySelectedFromDropDown.toString()
+                        )
+                        selectedCountryName =
+                            findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
+                        binding.spinnerDialCodes.setText(countryCodePhoneNum)
+                        phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
+                        minPhoneLength = phoneLength.first
+                        maxPhoneLength = phoneLength.second
+                        if (binding.mobileNumberEditText.text.isNotEmpty()) {
+                           if(isMobileNumberValid()) {
+                               enableProceedButton()
+                           }
+                        }
+                        if (countryCodePhoneNum.equals("+91", true)) {
+                            binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+                        } else {
+                            binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+                        }
+
+                        if (binding.postalCodeEditText.text.isNotEmpty()) {
+                            isPostalValid()
+                        }
+                        toCheckAllFieldsAreFilled()
+                    } else {
+                        binding.countryEditText.setText(countrySelectedFromDropDown)
+                        binding.countryEditText.dismissDropDown()
+                    }
+
+                }
+            }
+        }
+
+        binding.countryEditText.addTextChangedListener(object : TextWatcher {
+
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s?.isEmpty() == true) {
+                    binding.countryErrorText.visibility = View.VISIBLE
+                } else {
+                    binding.countryErrorText.visibility = View.INVISIBLE
+                }
+                if (isValidCountryName(countryCodeJson)) {
+                    if (toCheckAllFieldsAreFilled()) {
+                        enableProceedButton()
+                    } else {
+                        disableProceedButton()
+                    }
+                } else {
+                    disableProceedButton()
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+
+            }
+        })
+
+        binding.spinnerDialCodes.addTextChangedListener(object : TextWatcher {
+
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s?.isEmpty() == true) {
+                    binding.mobileErrorText.text = "Required"
+                    binding.mobileErrorText.visibility = View.VISIBLE
+                } else {
+                    binding.mobileErrorText.visibility = View.INVISIBLE
+                }
+                if (inValidPhoneCode(countryCodeJson)) {
+                    if (toCheckAllFieldsAreFilled()) {
+                        enableProceedButton()
+                    } else {
+                        disableProceedButton()
+                    }
+                } else {
+                    disableProceedButton()
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+
+            }
+        })
+
+        binding.countryEditText.setOnItemClickListener { parent, view, position, id ->
+            val selectedItem = parent.getItemAtPosition(position).toString()
+
+            countrySelectedFromDropDown = selectedItem
+            countrySelected = true
+            countryCodePhoneNum = setPhoneCodeUsingCountryName(
+                countryCodeJson,
+                countrySelectedFromDropDown.toString()
+            )
+            selectedCountryName =
+                findCountryCodeByIsdCode(countryCodeJson, selectedItem) ?: "IN"
+            binding.spinnerDialCodes.setText(countryCodePhoneNum)
+            phoneLength = getMinMaxLength(countryCodeJson, countryCodePhoneNum)
+            minPhoneLength = phoneLength.first
+            maxPhoneLength = phoneLength.second
+            if (binding.mobileNumberEditText.text.isNotEmpty()) {
+                if(isMobileNumberValid()) {
+                    enableProceedButton()
+                }
+            }
+            if (countryCodePhoneNum.equals("+91", true)) {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+            } else {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+            }
+
+            if (binding.postalCodeEditText.text.isNotEmpty()) {
+                isPostalValid()
+            }
+        }
+
+        binding.spinnerDialCodes.setOnItemClickListener { parent, view, position, id ->
+            val selectedDialCode = parent.getItemAtPosition(position).toString()
+            // Display or use the selected item
+            countryCodePhoneNum = selectedDialCode
+            indexCountryCodePhone = selectedDialCode
+            phoneCodeSelected = true
+            countrySelectedFromDropDown =
+                setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
+            binding.countryEditText.setText(countrySelectedFromDropDown)
+            phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
+            minPhoneLength = phoneLength.first
+            maxPhoneLength = phoneLength.second
+            if (countryCodePhoneNum.equals("+91", true)) {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+            } else {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+            }
+            if (binding.postalCodeEditText.text.isNotEmpty()) {
+                isPostalValid()
+            }
+            if (isMobileNumberValid()) {
+                enableProceedButton()
+            }
+        }
 
         val allowedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890. "
         val filter = InputFilter { source, _, _, _, _, _ ->
@@ -192,6 +315,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
         binding.fullNameEditText.filters = arrayOf(filter)
 
+        val numberAllowedCharacters = "1234567890"
+        val numberFilter = InputFilter { source, _, _, _, _, _ ->
+            source.filter { numberAllowedCharacters.contains(it) }
+        }
+        binding.mobileNumberEditText.filters = arrayOf(numberFilter)
 
         val address1 = sharedPreferences.getString("address1", "")
         val address2 = sharedPreferences.getString("address2", "")
@@ -208,89 +336,62 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
         val email = sharedPreferences.getString("email", "")
         val phoneNumber = sharedPreferences.getString("phoneNumber", "")
-        val countryName = sharedPreferences.getString("countryName", "")
+        val countryName = sharedPreferences.getString("countryName", "India")
 
         binding.backButton.setOnClickListener() {
             dismiss()
         }
 
-        if (!firstTime) {
-            binding.backButton.visibility = View.VISIBLE
+        binding.backButton.visibility = View.VISIBLE
 
-            binding.spinnerDialCodes.setSelection(
-                getPhoneNumberCode(
-                    countryCodesArray,
-                    indexCountryPhone ?: countryCodePhoneNum
-                )
-            )
-            phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
-            minPhoneLength = phoneLength.first
-            maxPhoneLength = phoneLength.second
+        binding.spinnerDialCodes.setText(indexCountryPhone)
+        phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
+        minPhoneLength = phoneLength.first
+        maxPhoneLength = phoneLength.second
 
-            if (address1 != null) {
-                binding.addressEditText1.setText(address1)
-            }
-            if (address2 != null) {
-                binding.addressEditText2.setText(address2)
-            }
-
-            if (city != null) {
-                binding.cityEditText.setText(city)
-            }
-
-            if (state != null) {
-                binding.stateEditText.setText(state)
-            }
-
-            if (postalCode != null) {
-                binding.postalCodeEditText.setText(postalCode)
-            }
-
-            if (name != null) {
-                binding.fullNameEditText.setText(name)
-            }
-            if (email != null) {
-                binding.emailEditText.setText(email)
-            }
-            if (phoneNumber != null) {
-                binding.mobileNumberEditText.setText(phoneNumber)
-            }
-            binding.countryEditText.setSelection(
-                getCountryName(
-                    countryList,
-                    if (countryName.isNullOrEmpty()) "India" else countryName
-                )
-            )
-            countrySelected = true
-        } else {
-            binding.backButton.visibility = View.GONE
-            disableProceedButton()
-            binding.spinnerDialCodes.setSelection(
-                getPhoneNumberCode(
-                    countryCodesArray,countryCodePhoneNum
-                )
-            )
-            phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
-            minPhoneLength = phoneLength.first
-            maxPhoneLength = phoneLength.second
-
-            binding.countryEditText.setSelection(
-                getCountryName(
-                    countryList, "India"
-                )
-            )
-            countrySelected = true
+        if (address1 != null) {
+            binding.addressEditText1.setText(address1)
+        }
+        if (address2 != null) {
+            binding.addressEditText2.setText(address2)
         }
 
-        if (!isNameEnabled) {
+        if (city != null) {
+            binding.cityEditText.setText(city)
+        }
+
+        if (state != null) {
+            binding.stateEditText.setText(state)
+        }
+
+        if (postalCode != null) {
+            binding.postalCodeEditText.setText(postalCode)
+        }
+
+        if (name != null) {
+            binding.fullNameEditText.setText(name)
+        }
+        if (email != null) {
+            binding.emailEditText.setText(email)
+        }
+        if (phoneNumber != null) {
+            binding.mobileNumberEditText.setText(phoneNumber)
+        }
+        binding.countryEditText.setText(countryName)
+        countrySelectedFromDropDown = countryName
+        countryCodePhoneNum = indexCountryPhone ?: "+91"
+        countrySelected = true
+        disableProceedButton()
+
+        if (!isNameEnabled && !isShippingEnabled) {
             binding.fullNameLayout.visibility = View.GONE
         }
 
-        if (!isPhoneEnabled) {
+        if (!isPhoneEnabled && !isShippingEnabled) {
             binding.mobileNumberLayout.visibility = View.GONE
         }
 
-        if (!isEmailEnabled) {
+        if (!isEmailEnabled && !isShippingEnabled) {
             binding.emailLayout.visibility = View.GONE
         }
 
@@ -564,24 +665,24 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             editor.putString("lastName", lastName)
             editor.putString("email", email.toString())
             editor.putString("phoneNumber", "$countryCodePhoneNum$mobileNumber")
-            editor.putString("countryCodePhoneNum", countryCodePhoneNum)
+            editor.putString("phoneCode", countryCodePhoneNum)
             editor.putString("countryName", country.toString())
             editor.putString("indexCountryCodePhone", indexCountryCodePhone)
 
 
             editor.apply()
 
-
-
             callback?.updateBottomSheet()
             dismiss()
         }
 
         if (toCheckAllFieldsAreFilled()) {
-            binding.textView.text = if (isShippingEnabled) "Edit Address" else "Edit Personal Details"
+            binding.textView.text =
+                if (isShippingEnabled) "Edit Address" else "Edit Personal Details"
             enableProceedButton()
         } else {
-            binding.textView.text = if (isShippingEnabled) "Add Address" else "Add Personal Details"
+            binding.textView.text =
+                if (isShippingEnabled) "Add New Address" else "Add Personal Details"
             disableProceedButton()
         }
 
@@ -599,7 +700,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButton.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
                 requireContext(),
@@ -652,7 +753,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     desiredHeight = (screenHeight * 0.5).toInt()
                 }
-                 // 50% of screen height
+                // 50% of screen height
 
                 val layoutParams = bottomSheet.layoutParams
                 if (layoutParams is CoordinatorLayout.LayoutParams) {
@@ -710,7 +811,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         fun newInstance(
             callback: UpdateMainBottomSheetInterface,
             firstTime: Boolean = false,
-            isNameEnabled : Boolean,
+            isNameEnabled: Boolean,
             isPhoneEnabled: Boolean,
             isEmailEnabled: Boolean,
             isShippingEnabled: Boolean
@@ -727,7 +828,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     }
 
     fun toCheckAllFieldsAreFilled(): Boolean {
-        if ((isPhoneEnabled || isEmailEnabled || isNameEnabled) && isShippingEnabled) {
+        if (isShippingEnabled) {
             return !binding.fullNameEditText.text.isNullOrBlank() &&
                     !binding.mobileNumberEditText.text.isNullOrBlank() &&
                     !binding.emailEditText.text.isNullOrBlank() &&
@@ -736,13 +837,18 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     !binding.postalCodeEditText.text.isNullOrBlank() && !binding.stateEditText.text.isNullOrBlank() &&
                     !binding.cityEditText.text.isNullOrBlank() &&
                     binding.mobileNumberEditText.text.length in minPhoneLength..maxPhoneLength &&
-                    binding.emailEditText.text.matches(emailRegex)
+                    binding.emailEditText.text.matches(emailRegex) &&
+                    binding.countryEditText.text.isNotEmpty() &&
+                    binding.spinnerDialCodes.text.isNotEmpty() &&
+                    !binding.spinnerDialCodes.text.toString().equals("+", true)
         } else {
             return !binding.fullNameEditText.text.isNullOrBlank() &&
                     !binding.mobileNumberEditText.text.isNullOrBlank() &&
                     !binding.emailEditText.text.isNullOrBlank() &&
                     binding.mobileNumberEditText.text.length in minPhoneLength..maxPhoneLength &&
-                    binding.emailEditText.text.matches(emailRegex)
+                    binding.emailEditText.text.matches(emailRegex) &&
+                    binding.spinnerDialCodes.text.isNotEmpty() &&
+                    !binding.spinnerDialCodes.text.toString().equals("+", true)
         }
     }
 
@@ -839,23 +945,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         return Pair(10, 10)
     }
 
-
-    fun getPhoneNumberCode(countryCodeJson: Array<String>, isdCode: String): Int {
-        var index = 0
-        countryCodeJson.forEach { key ->
-            if (key.equals(isdCode)) {
-                return index
-            }
-            index++
-        }
-
-        // Return null if no matching ISD code is found
-        return index
-    }
-
     fun isMobileNumberValid(): Boolean {
         val mobileNumber = binding.mobileNumberEditText.text
-        if (mobileNumber.length !in minPhoneLength..maxPhoneLength || !mobileNumber.matches(numberRegex)) {
+        if (mobileNumber.length !in minPhoneLength..maxPhoneLength || !mobileNumber.matches(
+                numberRegex
+            )
+        ) {
             disableProceedButton()
             binding.mobileErrorText.text = if (mobileNumber.isEmpty()) {
                 "Required"
@@ -947,16 +1042,114 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         return true
     }
 
-    fun getCountryName(countryCodeJson: Array<String>, countryName: String): Int {
-        var index = 0
-        countryCodeJson.forEach { key ->
-            if (key.equals(countryName, true)) {
-                return index
+    fun inValidPhoneCode(countryCodeJson: JSONObject): Boolean {
+        countryCodeJson.keys().forEach { key ->
+            val countryDetails = countryCodeJson.getJSONObject(key)
+            val code = countryDetails.getString("isdCode")
+            if (code.equals(binding.spinnerDialCodes.text)) {
+                return true
             }
-            index++
+        }
+        return false
+    }
+
+    fun isValidCountryName(countryCodeJson: JSONObject): Boolean {
+        countryCodeJson.keys().forEach { key ->
+            val countryDetails = countryCodeJson.getJSONObject(key)
+            val code = countryDetails.getString("isdCode")
+            if (code.equals(binding.countryEditText.text.toString())) {
+                return true
+            }
+        }
+        return false
+    }
+}
+
+class CustomArrayAdapter(
+    context: Context,
+    private val originalArray: Array<String>,
+    private val isPhoneCodeCheck: Boolean
+) : ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line, originalArray) {
+
+    private var filteredArray: Array<String> = originalArray
+
+    override fun getCount(): Int {
+        // Ensure there's at least one item ("No results found") if filteredArray is empty
+        return if (filteredArray.isEmpty()) 1 else filteredArray.size
+    }
+
+    override fun getItem(position: Int): String? {
+        // Return "No results found" if the filtered list is empty
+        return if (filteredArray.isEmpty()) "No results found" else filteredArray[position]
+    }
+
+    override fun isEnabled(position: Int): Boolean {
+        // Disable clicks if showing "No results found"
+        return filteredArray.isNotEmpty()
+    }
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view = super.getView(position, convertView, parent)
+        val textView = view.findViewById<TextView>(android.R.id.text1)
+
+        // Display the "No results found" message and style it if the list is empty
+        if (filteredArray.isEmpty()) {
+            textView.text = "No results found"
+            textView.setTextColor(Color.GRAY)  // Optional: Gray color for the "No results" message
+        } else {
+            textView.setTextColor(Color.BLACK)  // Regular color for normal items
         }
 
-        // Return null if no matching ISD code is found
-        return index
+        return view
     }
+
+    override fun getFilter(): Filter {
+        return object : Filter() {
+            override fun performFiltering(constraint: CharSequence?): FilterResults {
+                val results = FilterResults()
+
+                if (!constraint.isNullOrEmpty()) {
+                    // Filter the list based on the constraint
+                    val filteredResults = originalArray.filter {
+                        if (isPhoneCodeCheck) {
+                            it.contains(constraint, ignoreCase = true)
+                        } else {
+                            it.startsWith(constraint, ignoreCase = true)
+                        }
+                    }.sorted().toTypedArray()
+
+                    // Check if the filtered results are empty
+                    results.values =
+                        if (filteredResults.isEmpty()) arrayOf("No results found") else filteredResults
+                    results.count = filteredResults.size
+                } else {
+                    // If no constraint, return the original array
+                    results.values = originalArray
+                    results.count = originalArray.size
+                }
+
+                return results
+            }
+
+            override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                if (results != null && results.values is Array<*>) {
+                    val filteredValues = results.values as Array<String>
+
+                    // Check if the filtered values contain the "No results found" message
+                    filteredArray = if (filteredValues.contains("No results found")) {
+                        arrayOf("No results found")  // Set filteredArray to show the message
+                    } else {
+                        filteredValues
+                    }
+                } else {
+                    filteredArray = originalArray
+                }
+
+                // Notify that the data set has changed
+                notifyDataSetChanged()
+            }
+        }
+    }
+
+
 }

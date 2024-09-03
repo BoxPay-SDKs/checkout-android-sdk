@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -16,6 +17,7 @@ import org.json.JSONObject
 
 class Check : AppCompatActivity() {
     val tokenLiveData = MutableLiveData<String>()
+    var customerShopperToken: String? = null
     private var successScreenFullReferencePath: String? = null
     private var tokenFetchedAndOpen = false
 
@@ -74,13 +76,20 @@ class Check : AppCompatActivity() {
 
     private fun showBottomSheetWithOverlay() {
         val boxPayCheckout =
-            BoxPayCheckout(this, tokenLiveData.value ?: "", ::onPaymentResultCallback, false)
+            BoxPayCheckout(
+                this,
+                tokenLiveData.value ?: "",
+                ::onPaymentResultCallback,
+                false,
+                customerShopperToken = customerShopperToken ?: ""
+            )
         boxPayCheckout.testEnv = true
         boxPayCheckout.display()
     }
 
 
     fun onPaymentResultCallback(result: PaymentResultObject) {
+        Toast.makeText(this, result.status, Toast.LENGTH_SHORT).show()
     }
 
 
@@ -98,20 +107,20 @@ class Check : AppCompatActivity() {
   "money": {"amount": "100", "currencyCode": "INR"},
   "descriptor": {"line1": "Some descriptor"},
   "shopper": {
-    "firstName": "Ishika baniya",
-    "lastName": "Bansal",
-    "email":"ishika.bansal@boxpay.tech",
-    "uniqueReference": "x123y",
-    "phoneNumber": "919876543210",
-    "deliveryAddress": {
-      "address1": "first line",
-      "address2": "second line",
-      "city": "New Delhi",
-      "state": "Delhi",
-      "countryCode": "IN",
-      "postalCode": "147147"
-    }
-  },
+        "firstName": "Ishika cnsjbc cnbhsbc jbcydsbc bcydbc",
+        "lastName": "Bansal",
+        "email": "ishika.bansal@boxpay.tech",
+        "uniqueReference": "x123y",
+        "phoneNumber": "919876543210",
+        "deliveryAddress": {
+            "address1": "first line",
+            "address2": "second line",
+            "city": "New Delhi",
+            "state": "Delhi",
+            "countryCode": "IN",
+            "postalCode": "147147"
+        }
+    },
   "order": {
     "items": [
       {
@@ -156,7 +165,8 @@ class Check : AppCompatActivity() {
   },
   "statusNotifyUrl": "https://www.boxpay.tech",
   "frontendReturnUrl": "https://www.boxpay.tech",
-  "frontendBackUrl": "https://www.boxpay.tech"
+  "frontendBackUrl": "https://www.boxpay.tech",
+  "createShopperToken":true
 }"""
         )
 
@@ -166,13 +176,16 @@ class Check : AppCompatActivity() {
                     this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
                 val editor: SharedPreferences.Editor = sharedPreferences.edit()
                 val tokenFetched = response.getString("token")
+                val payload = response.optJSONObject("payload")
+                customerShopperToken = payload?.optString("shopper_token", "")
+                println("======customerShopperToken $tokenFetched")
                 tokenLiveData.value = tokenFetched
                 editor.putString("baseUrl", "test-apis.boxpay.tech")
                 editor.putString("token", tokenLiveData.value)
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { /* no response handling */}) {
+            Response.ErrorListener { /* no response handling */ }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"

@@ -71,6 +71,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
 
     fun explicitDismiss() {
+        val resultIntent = Intent()
+        resultIntent.putExtra("closed", "Your Result Data")
+        setResult(Activity.RESULT_OK, resultIntent)
         finish()
     }
 
@@ -287,7 +290,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             Response.Listener{ response ->
                 try {
                     val status = response.getString("status")
-                    val transactionId = response.getString("transactionId")
+                    val transactionId = response.getString("transactionId").toString()
                     delay = 200L
 
                     if (status.contains(
@@ -297,6 +300,8 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                     ) {
 
                         editor.putString("status","Success")
+                        editor.putString("amount", response.getString("amount").toString())
+                        editor.putString("transactionId", transactionId)
                         editor.apply()
 
                         finish()

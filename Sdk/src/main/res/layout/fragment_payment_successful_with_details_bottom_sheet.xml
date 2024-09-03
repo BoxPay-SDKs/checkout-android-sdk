@@ -51,7 +51,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_medium"
-                    android:text="Payment Successfull"
+                    android:text="Payment Successful"
                     android:textColor="#2D2B32"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"

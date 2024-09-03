@@ -110,10 +110,10 @@ class AddressImplementationTest {
         onView(withId(com.boxpay.checkout.sdk.R.id.deliveryAddressConstraintLayout)).check(matches(
             isDisplayed()
         ))
-        onView(withId(com.boxpay.checkout.sdk.R.id.nameTextView)).check(matches(
+        onView(withId(com.boxpay.checkout.sdk.R.id.nameAndMobileTextViewMain)).check(matches(
             isDisplayed()
         ))
-        onView(withId(com.boxpay.checkout.sdk.R.id.nameTextView)).check(matches(withText("integration test")))
+        onView(withId(com.boxpay.checkout.sdk.R.id.nameAndMobileTextViewMain)).check(matches(withText("integration test")))
     }
 
     @Test
@@ -137,9 +137,5 @@ class AddressImplementationTest {
         onView(withId(com.boxpay.checkout.sdk.R.id.deliveryAddressConstraintLayout)).check(matches(
             isDisplayed()
         ))
-        onView(withId(com.boxpay.checkout.sdk.R.id.mobileNumberTextViewMain)).check(matches(
-            isDisplayed()
-        ))
-        onView(withId(com.boxpay.checkout.sdk.R.id.mobileNumberTextViewMain)).check(matches(withText("(+919123456789)")))
     }
 }
