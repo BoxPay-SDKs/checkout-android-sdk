@@ -1838,12 +1838,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             try {
                 val status = response.getString("status")
+                val transactionId = response.getString("lastTransactionId").toString()
                 if (status.equals(
                         "Approved",
                         ignoreCase = true
                     ) || status.equals("paid", true)
                 ) {
                     editor.putString("status", "Success")
+                    editor.putString("transactionId", transactionId)
                     editor.apply()
 
                     if (isAdded && isResumed) {
