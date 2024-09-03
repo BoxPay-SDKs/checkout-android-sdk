@@ -225,12 +225,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
-    private fun fetchUPIIntentURL(context: Context, appName: String) {
-
-        showLoadingState("fetchIntentURL")
-        getUrlForUPIIntent(appName)
-    }
-
     private fun showLoadingState(source: String) {
         binding.boxpayLogoLottie.playAnimation()
         binding.loadingRelativeLayout.visibility = View.VISIBLE
@@ -243,6 +237,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        removeLoadingState()
         if (requestCode == 121) {
             if (resultCode == Activity.RESULT_OK) {
                 val responseUri: Uri? = data?.data
@@ -431,9 +426,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
             startActivityForResult(intent, resultCode)
-
-            removeLoadingState()
         } catch (_: ActivityNotFoundException) {
+            removeLoadingState()
         }
     }
 
@@ -1350,7 +1344,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     overlayViewModel.setShowOverlay(false)
-                    fetchUPIIntentURL(requireContext(), "PhonePe")
+                    showLoadingState("fetchIntentURL")
+                    getUrlForUPIIntent("PhonePe")
                     callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiIntent", "Upi")
                     callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
                     callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
@@ -1370,7 +1365,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     overlayViewModel.setShowOverlay(false)
-                    fetchUPIIntentURL(requireContext(), "GPay")
+                    showLoadingState("fetchIntentURL")
+                    getUrlForUPIIntent("GPay")
                     callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiIntent", "Upi")
                     callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
                     callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
@@ -1390,7 +1386,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     overlayViewModel.setShowOverlay(false)
-                    fetchUPIIntentURL(requireContext(), "PayTm")
+                    showLoadingState("fetchIntentURL")
+                    getUrlForUPIIntent("PayTm")
                     callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiIntent", "Upi")
                     callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
                     callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
@@ -1500,7 +1497,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         startFunctionCalls()
         startActivityForResult(intent, 124)
-        removeLoadingState()
     }
 
     private fun getUrlForDefaultUPIIntent() {
