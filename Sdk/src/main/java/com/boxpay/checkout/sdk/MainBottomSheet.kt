@@ -20,6 +20,8 @@ import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
+import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +32,7 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -70,6 +73,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLDecoder
@@ -1910,6 +1914,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 //                } else {
 //                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
 //                }
+                val productSummaryJson =
+                    "[[{\"type\":\"text\",\"text\":\"Updated Status:\",\"textSize\":14,\"color\":\"#000000\"},{\"type\":\"text\",\"text\":\"50 WAITLIST\",\"textSize\":16,\"fontType\":\"Bold\",\"color\":\"#00B829\"},{\"type\":\"linegap\",\"gap\":0}],[{\"type\":\"linegap\",\"gap\":4},{\"type\":\"text\",\"text\":\"High confirmation chance tickets are likely to get confirmed!\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#F0F7FD\"}],[{\"type\":\"text\",\"text\":\"Review Ticket\",\"textSize\":15,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\"Booking ID: 30313407\",\"textSize\":11,\"fontType\":\"SemiBold\",\"color\":\"#333333\"}],[{\"type\":\"divider\",\"thickness\":2,\"color\":\"#ffffff\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#F0F7FD\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":0},{\"type\":\"text\",\"text\":\"12910 - Garib Rath Express\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":4},{\"type\":\"text\",\"text\":\"2 Travellers| Class- 3A| Quota- GN\",\"textSize\":9,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":4},{\"type\":\"text\",\"text\":\"Saturday, 30 Sep\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"Saturday, 30 Sep\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":0},{\"type\":\"text\",\"text\":\"NZM , 16:30\",\"textSize\":18,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"image\",\"url\":\"https://images.railyatri.in/ry_images_prod/train-icon-1715841210.png\",\"size\":30},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\"09:15, BDTS \",\"textSize\":18,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":0},{\"type\":\"text\",\"text\":\" DELHI HAZRAT NIZAMUDDIN\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\"---- 16:45 h ----\",\"textSize\":10,\"color\":\"#888888\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\" MUMBAI BANDRA TERMINUS\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#F0F7FD\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"accordion\",\"limit\":1,\"content\":[[{\"type\":\"text\",\"text\":\"Passenger Details & Fare Breakup\",\"textSize\":15,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"toggleImage\",\"openIcon\":\"https://assets.juspay.in/hyper/images/internalPP/ic_arrow_down.png\",\"closeIcon\":\"https://assets.juspay.in/hyper/images/internalPP/ic_arrow_up.png\",\"size\":20}],[{\"type\":\"text\",\"text\":\"1. Test (Male)\",\"textSize\":14,\"color\":\"#333333\"},{\"type\":\"text\",\"text\":\"25 \",\"textSize\":12,\"color\":\"#888888\"},{\"type\":\"text\",\"text\":\"| Lower Berth | \",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"text\",\"text\":\"2. Test (Male)\",\"textSize\":14,\"color\":\"#333333\"},{\"type\":\"text\",\"text\":\"30 \",\"textSize\":12,\"color\":\"#888888\"},{\"type\":\"text\",\"text\":\"| Lower Berth | \",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#E5E5E5\"}],[{\"type\":\"text\",\"text\":\"Fare Breakup\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"space\",\"width\":10,\"weight\":1}],[{\"type\":\"text\",\"text\":\"Ticket Base Fare\",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹2180.0\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"text\",\"text\":\"Agent Service Charge\",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹40.0\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"text\",\"text\":\"IRCTC Conv. Fee\",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹35.4\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"text\",\"text\":\"Net Amount payable\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹2304\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"space\",\"width\":1,\"weight\":2}]]}]]"
+
+                // Parse JSON and dynamically add views
+                val orderDetails = "{\"metadata.webhook_url\":\"https://payment-test.railyatri.in/api/juspay/update-payment\",\"udf1\":\"30313407\",\"udf2\":\"4\",\"return_url\":\"https://payment-test.railyatri.in/payment/juspay/process\",\"order_id\":\"1725133659jpp1988719986\",\"merchant_id\":\"railyatri_sandbox\",\"amount\":\"2180.0\",\"timestamp\":\"1725133662\",\"customer_id\":\"cth_udBM2B34PMgSZXjX\",\"currency\":\"INR\",\"customer_email\":\"avinash.singh@railyatri.in\",\"customer_phone\":\"9555681381\",\"metadata.merchant_container_list\":\"[{\\\"payment_method\\\":\\\"RY_CASH\\\",\\\"payment_method_type\\\":\\\"MERCHANT_CONTAINER\\\",\\\"display_name\\\":\\\"RY CASH\\\",\\\"eligible_amount\\\":10,\\\"balance_amount\\\":400,\\\"walletIconURL\\\":\\\"https://cdn-icons-png.flaticon.com/512/216/216490.png\\\"},{\\\"payment_method\\\":\\\"RY_CASH_PLUS\\\",\\\"payment_method_type\\\":\\\"MERCHANT_CONTAINER\\\",\\\"display_name\\\":\\\"RY CASH PLUS\\\",\\\"eligible_amount\\\":400,\\\"balance_amount\\\":400,\\\"walletIconURL\\\":\\\"https://cdn-icons-png.flaticon.com/512/216/216490.png\\\"}]\"}"
+                parseAndRenderProductSummary(productSummaryJson)
+                parseAndReturnOrderDetails(orderDetails)
 
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
                 if (currencySymbol == "")
@@ -2686,5 +2697,269 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.recommendedProceedButton.isEnabled = true
 //        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
+    }
+
+    private fun parseAndReturnOrderDetails(jsonString: String) {
+
+        try {
+            val jsonObject = JSONObject(jsonString)
+            println("=========jsonon]becht $jsonObject")
+            val metaData = jsonObject.getString("metadata.merchant_container_list")
+            val metaDataJson = JSONArray(metaData)
+            println("==========json $metaDataJson")
+        } catch (e:Exception) {
+            Log.e("JSONParsingError", "Error parsing JSON", e)
+        }
+    }
+
+
+    private fun parseAndRenderProductSummary(jsonString: String) {
+        val container = binding.container
+
+        try {
+            val jsonArray = JSONArray(jsonString)
+            println("=====hso array $jsonArray")
+            for (i in 0 until jsonArray.length()) {
+                val groupArray = jsonArray.getJSONArray(i)
+                for (j in 0 until groupArray.length()) {
+                    val item = groupArray.getJSONObject(j)
+                    when (item.getString("type")) {
+                        "text" -> addTextView(container, item)
+                        "image" -> addImageView(container, item)
+                        "divider" -> addDividerView(container, item)
+                        "linegap" -> addLineGap(container, item)
+                        "space" -> addSpace(container, item)
+                        "background" -> setBackground(container, item)
+                        "accordion" -> addAccordionView(container, item)
+                        else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("JSONParsingError", "Error parsing JSON", e)
+        }
+    }
+
+    private fun addTextView(container: LinearLayout, item: JSONObject) {
+        try {
+            val textView = TextView(context)
+            textView.text = item.optString("text", "Default Text")
+            textView.textSize = item.optInt("textSize", 14).toFloat()
+            textView.setTextColor(Color.parseColor(item.optString("color", "#000000")))
+
+            // Handle font type if present
+            if (item.has("fontType")) {
+                when (item.getString("fontType")) {
+                    "Bold" -> textView.setTypeface(
+                        textView.typeface,
+                        android.graphics.Typeface.BOLD
+                    )
+
+                    "SemiBold" -> textView.setTypeface(
+                        textView.typeface,
+                        android.graphics.Typeface.BOLD
+                    )
+                    // Handle other font types...
+                }
+            }
+
+            // Apply background color if specified
+            if (item.has("background")) {
+                textView.setBackgroundColor(Color.parseColor(item.getString("background")))
+            }
+
+            // Apply padding if specified
+            val padding = item.optInt("padding", 0)
+            textView.setPadding(padding, padding, padding, padding)
+
+            container.addView(textView)
+        } catch (e: Exception) {
+            Log.e("AddTextViewError", "Error adding TextView", e)
+        }
+    }
+
+
+    private fun addImageView(container: LinearLayout, item: JSONObject) {
+        try {
+            val imageView = ImageView(context)
+            val size = item.optInt("size", 50) // Default size if not present
+            val params = LinearLayout.LayoutParams(size, size)
+            imageView.layoutParams = params
+
+            // Load image using Glide, with error handling
+            val url = item.optString("url")
+
+            // Apply background color if specified
+            if (item.has("background")) {
+                imageView.setBackgroundColor(Color.parseColor(item.getString("background")))
+            }
+
+            container.addView(imageView)
+        } catch (e: Exception) {
+            Log.e("AddImageViewError", "Error adding ImageView", e)
+        }
+    }
+
+
+    private fun addDividerView(container: LinearLayout, item: JSONObject) {
+        try {
+            val divider = View(context)
+            val thickness = item.optInt("thickness", 1)
+            val params = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, thickness)
+            divider.layoutParams = params
+            divider.setBackgroundColor(Color.parseColor(item.optString("color", "#000000")))
+
+            // Apply background color if specified
+            if (item.has("background")) {
+                divider.setBackgroundColor(Color.parseColor(item.getString("background")))
+            }
+
+            container.addView(divider)
+        } catch (e: Exception) {
+            Log.e("AddDividerViewError", "Error adding Divider", e)
+        }
+    }
+
+    private fun addLineGap(container: LinearLayout, item: JSONObject) {
+        try {
+            val gap = View(context)
+            val params =
+                LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, item.optInt("gap", 10))
+            gap.layoutParams = params
+
+            // Apply background color if specified
+            if (item.has("background")) {
+                gap.setBackgroundColor(Color.parseColor(item.getString("background")))
+            }
+
+            container.addView(gap)
+        } catch (e: Exception) {
+            Log.e("AddLineGapError", "Error adding LineGap", e)
+        }
+    }
+
+    private fun setBackground(container: LinearLayout, item: JSONObject) {
+        val color = item.optString("color", "#FFFFFF") // Default to white
+        container.setBackgroundColor(Color.parseColor(color))
+    }
+
+    private fun addSpace(container: LinearLayout, item: JSONObject) {
+        val space = View(context)
+        val width = item.optInt("width", 10)
+        val weight = item.optInt("weight", 1)
+        val params = LayoutParams(width, LayoutParams.MATCH_PARENT, weight.toFloat())
+        space.layoutParams = params
+
+        container.addView(space)
+    }
+
+    private fun addAccordionView(container: LinearLayout, item: JSONObject) {
+        try {
+            val accordionLayout = LinearLayout(context)
+            accordionLayout.orientation = LinearLayout.VERTICAL
+            accordionLayout.layoutParams =
+                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+
+            // Header of the Accordion
+            val headerLayout = LinearLayout(context)
+            headerLayout.orientation = LinearLayout.HORIZONTAL
+            headerLayout.layoutParams =
+                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+            headerLayout.setPadding(10, 10, 10, 10)
+            headerLayout.setBackgroundColor(Color.parseColor("#F0F7FD")) // Set header background color
+
+            // Adding header content (text and toggle icon)
+            val headerContent = item.optJSONArray("content")?.optJSONArray(0)
+            headerContent?.let {
+                for (i in 0 until it.length()) {
+                    val headerItem = it.getJSONObject(i)
+                    when (headerItem.getString("type")) {
+                        "text" -> addTextView(headerLayout, headerItem)
+                        "toggleImage" -> addToggleImageView(headerLayout, headerItem, accordionLayout)
+                    }
+                }
+            }
+
+            accordionLayout.addView(headerLayout)
+
+            // Content of the Accordion (hidden by default)
+            val contentLayout = LinearLayout(context)
+            contentLayout.orientation = LinearLayout.VERTICAL
+            contentLayout.layoutParams =
+                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            contentLayout.visibility = View.GONE // Initially hidden
+
+            val contentArray = item.optJSONArray("content")?.optJSONArray(1)
+            contentArray?.let {
+                for (i in 0 until it.length()) {
+                    val contentItem = it.getJSONObject(i)
+                    when (contentItem.getString("type")) {
+                        "text" -> addTextView(contentLayout, contentItem)
+                        "divider" -> addDividerView(contentLayout, contentItem)
+                        "linegap" -> addLineGap(contentLayout, contentItem)
+                        "space" -> addSpace(contentLayout, contentItem)
+                        "background" -> setBackground(contentLayout, contentItem)
+                    }
+                }
+            }
+
+            accordionLayout.addView(contentLayout)
+            container.addView(accordionLayout)
+
+            // Toggle content visibility on header click
+            headerLayout.setOnClickListener {
+                if (contentLayout.visibility == View.VISIBLE) {
+                    contentLayout.visibility = View.GONE
+                } else {
+                    contentLayout.visibility = View.VISIBLE
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("AddAccordionViewError", "Error adding Accordion View", e)
+        }
+    }
+    private fun addToggleImageView(
+        headerLayout: LinearLayout,
+        headerItem: JSONObject,
+        accordionLayout: LinearLayout
+    ) {
+        try {
+            val toggleImageView = ImageView(context)
+            val openIconUrl = headerItem.optString("openIcon")
+            val closeIconUrl = headerItem.optString("closeIcon")
+            val size = headerItem.optInt("size", 20) // Default size is 20 if not specified
+
+            // Set the initial icon (close by default)
+            Glide.with(this)
+                .load(closeIconUrl)
+                .into(toggleImageView)
+
+            val params = LayoutParams(size, size)
+            params.gravity = Gravity.END // Align to the right
+            toggleImageView.layoutParams = params
+
+            // Add click listener to handle toggle logic
+            toggleImageView.setOnClickListener {
+                val contentLayout = accordionLayout.getChildAt(1) as LinearLayout // Content is the second child
+                if (contentLayout.visibility == View.VISIBLE) {
+                    // Collapse content
+                    contentLayout.visibility = View.GONE
+                    Glide.with(this)
+                        .load(openIconUrl)
+                        .into(toggleImageView)
+                } else {
+                    // Expand content
+                    contentLayout.visibility = View.VISIBLE
+                    Glide.with(this)
+                        .load(closeIconUrl)
+                        .into(toggleImageView)
+                }
+            }
+
+            headerLayout.addView(toggleImageView)
+
+        } catch (e: Exception) {
+            Log.e("AddToggleImageViewError", "Error adding toggle image view", e)
+        }
     }
 }

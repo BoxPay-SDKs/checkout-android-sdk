@@ -102,6 +102,7 @@
                             android:layout_height="match_parent"
                             android:background="@drawable/cardview_bg"
                             android:paddingTop="8dp"
+                            android:visibility="gone"
                             android:paddingBottom="8dp">
 
                             <TextView
@@ -309,6 +310,22 @@
                         </androidx.constraintlayout.widget.ConstraintLayout>
                     </androidx.cardview.widget.CardView>
 
+                    <ScrollView
+                        android:id="@+id/scrollview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="visible"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/cardView3">
+
+                        <LinearLayout
+                            android:id="@+id/container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+                    </ScrollView>
+
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cardView8"
                         android:layout_width="match_parent"
@@ -442,7 +459,7 @@
                         android:textColor="#0A090B"
                         android:visibility="visible"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardView8" />
+                        app:layout_constraintTop_toBottomOf="@+id/scrollview" />
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/recommendedCardView"

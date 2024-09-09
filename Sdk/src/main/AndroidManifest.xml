@@ -44,6 +44,10 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="false" />
 
+        <activity
+            android:name=".CheckoutActivity"
+            android:exported="false" />
+
         <receiver android:name=".SmsReceiver"
             android:exported="true">
             <intent-filter>
