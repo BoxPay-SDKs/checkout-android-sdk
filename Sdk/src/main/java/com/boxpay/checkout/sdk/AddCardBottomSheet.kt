@@ -765,6 +765,15 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun isValidCardNumberByLuhn(stringInputCardNumber: String): Boolean {
+        // Define the minimum length for a valid card number
+        val minCardLength = 13
+
+        // Check if the card number meets the minimum length requirement
+        if (stringInputCardNumber.length < minCardLength) {
+            proceedButtonIsEnabled.value = false
+            return false
+        }
+
         var sum = 0
         var isSecondDigit = false
 
@@ -772,7 +781,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             var d = stringInputCardNumber[i] - '0'
 
             if (isSecondDigit) {
-                d = d * 2
+                d *= 2
             }
 
             sum += d / 10
@@ -781,12 +790,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             isSecondDigit = !isSecondDigit
         }
 
-        val result: Boolean = ((sum % 10) == 0)
+        val result: Boolean = (sum % 10 == 0)
 
-        if (!result)
+        if (!result) {
             proceedButtonIsEnabled.value = false
-
-
+        }
 
         return result
     }

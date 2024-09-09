@@ -83,6 +83,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.text.NumberFormat
 import java.util.Locale
 import java.util.Objects
 import kotlin.random.Random
@@ -1744,7 +1745,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-        windowManager.addView(overlayViewMainBottomSheet, layoutParams)
+        if (context != null) {
+            requireActivity().runOnUiThread {
+                windowManager.addView(overlayViewMainBottomSheet, layoutParams)
+            }
+        }
     }
 
     private fun removeOverlayFromActivity() {
@@ -2020,6 +2025,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     response.getJSONObject("configs").getJSONArray("additionalFieldSets")
 
                 var orderSummaryEnable = false
+                val moneyObject = paymentDetailsObject.getJSONObject("money")
 
                 for (i in 0 until additionalDetails.length()) {
                     if (additionalDetails.get(i) == "ORDER_ITEM_DETAILS") {
@@ -2062,11 +2068,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 productSummary?.let { parseAndRenderProductSummary(it) }
 
-                var currencySymbol = sharedPreferences.getString("currencySymbol", "")
+                var currencySymbol = moneyObject.getString("currencySymbol")
                 if (currencySymbol == "")
                     currencySymbol = "₹"
 
                 var totalQuantity = 0
+                editor.putString("currencySymbol",currencySymbol)
+                editor.apply()
 
                 transactionAmount = totalAmount
 
@@ -2107,21 +2115,23 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.apply()
 
                 transactionAmount = totalAmount.toString()
+                val formattedAmount = NumberFormat.getNumberInstance(Locale.US).format(transactionAmount)
 
-                binding.unopenedTotalValue.text = "${currencySymbol}${totalAmount}"
+                binding.unopenedTotalValue.text = "${currencySymbol}${formattedAmount}"
                 if (totalQuantity == 0) {
                     binding.numberOfItems.text = "Total"
                 } else if (totalQuantity == 1)
                     binding.numberOfItems.text = "${totalQuantity} item"
                 else
                     binding.numberOfItems.text = "${totalQuantity} items"
-                binding.ItemsPrice.text = "${currencySymbol}${totalAmount}"
+                binding.ItemsPrice.text = "${currencySymbol}${formattedAmount}"
 
                 if (originalAmount != totalAmount) {
                     if (originalAmount == null || originalAmount == "0" || originalAmount == "null") {
                         binding.subTotalRelativeLayout.visibility = View.GONE
                     } else {
-                        binding.subtotalTextView.text = "${currencySymbol}${originalAmount}"
+                        val formattedAmount = NumberFormat.getNumberInstance(Locale.US).format(originalAmount.toString())
+                        binding.subtotalTextView.text = "${currencySymbol}${formattedAmount}"
                         binding.subTotalRelativeLayout.visibility = View.VISIBLE
                     }
                 }
@@ -2156,8 +2166,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
                 val countryCodeJson = JSONObject(jsonString)
-                val countryCodesArray = loadCountryCodes(countryCodeJson)
-                val moneyObject = paymentDetailsObject.getJSONObject("money")
+                countryCode = getCountryName(
+                    countryCodeJson,
+                    paymentDetailsObject.getJSONObject("context").getString("countryCode")
+                )
                 editor.putString("amount", moneyObject.getString("amount"))
                 editor.putString("merchantId", response.getString("merchantId"))
                 editor.putString(
@@ -2195,10 +2207,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString(
                         "city",
                         shopperObject.getJSONObject("deliveryAddress").getString("city")
-                    )
-                    countryCode = getCountryName(
-                        countryCodeJson,
-                        shopperObject.getJSONObject("deliveryAddress").getString("countryCode")
                     )
                     editor.putString("countryName", countryCode?.first)
                     editor.putString("indexCountryCodePhone", countryCode?.second)
@@ -2241,10 +2249,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "+" + shopperObject.getString("phoneNumber")
                         )
                     }
-                    countryCode = getCountryCode(
-                        countryCodesArray,
-                        sharedPreferences.getString("phoneNumber", null) ?: "+91"
-                    )
                 }
                 if (shopperObject.isNull("deliveryAddress") && showShipping && orderDetails == null) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
@@ -2332,10 +2336,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             editor.putString("address2", deliveryAddress.getString("address2"))
                         }
                         if (!deliveryAddress.isNull("countryCode")) {
-                            countryCode = getCountryName(
-                                countryCodeJson,
-                                deliveryAddress.getString("countryCode")
-                            )
                             editor.putString("countryName", countryCode?.first)
                             editor.putString("indexCountryCodePhone", countryCode?.second)
                             editor.putString("phoneCode", countryCode?.second)
@@ -2633,19 +2633,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
         return null
     }
-
-    private fun getCountryCode(
-        countryCodeJson: Array<String>,
-        phoneNumber: String
-    ): Pair<String, String>? {
-        countryCodeJson.forEach { key ->
-            if (phoneNumber.startsWith(key)) {
-                return Pair("", key)
-            }
-        }
-        return null
-    }
-
 
     fun generateRandomAlphanumericString(length: Int): String {
         val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')

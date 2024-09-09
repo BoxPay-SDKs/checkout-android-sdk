@@ -155,13 +155,13 @@
 
                                 <com.boxpay.checkout.sdk.adapters.InstantAutoComplete
                                     android:id="@+id/spinner_dial_codes"
-                                    android:layout_marginStart="4dp"
-                                    android:layout_width="50dp"
+                                    android:layout_width="44dp"
                                     android:layout_height="wrap_content"
                                     android:layout_gravity="center"
+                                    android:layout_marginStart="4dp"
                                     android:background="#ffffffff"
-                                    android:textSize="14sp"
                                     android:inputType="number"
+                                    android:textSize="14sp"
                                     tools:ignore="TouchTargetSizeCheck" />
 
                                 <EditText
