@@ -286,25 +286,27 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.spinnerDialCodes.setOnItemClickListener { parent, view, position, id ->
             val selectedDialCode = parent.getItemAtPosition(position).toString()
             // Display or use the selected item
-            countryCodePhoneNum = selectedDialCode
-            indexCountryCodePhone = selectedDialCode
-            phoneCodeSelected = true
-            countrySelectedFromDropDown =
-                setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
-            binding.countryEditText.setText(countrySelectedFromDropDown)
-            phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
-            minPhoneLength = phoneLength.first
-            maxPhoneLength = phoneLength.second
-            if (countryCodePhoneNum.equals("+91", true)) {
-                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
-            } else {
-                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
-            }
-            if (binding.postalCodeEditText.text.isNotEmpty()) {
-                isPostalValid()
-            }
-            if (isMobileNumberValid()) {
-                enableProceedButton()
+            if (!selectedDialCode.contains("no",true)) {
+                countryCodePhoneNum = selectedDialCode
+                indexCountryCodePhone = selectedDialCode
+                phoneCodeSelected = true
+                countrySelectedFromDropDown =
+                    setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
+                binding.countryEditText.setText(countrySelectedFromDropDown)
+                phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
+                minPhoneLength = phoneLength.first
+                maxPhoneLength = phoneLength.second
+                if (countryCodePhoneNum.equals("+91", true)) {
+                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+                } else {
+                    binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+                }
+                if (binding.postalCodeEditText.text.isNotEmpty()) {
+                    isPostalValid()
+                }
+                if (isMobileNumberValid()) {
+                    enableProceedButton()
+                }
             }
         }
 
@@ -1058,6 +1060,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val countryDetails = countryCodeJson.getJSONObject(key)
             val code = countryDetails.getString("isdCode")
             if (code.equals(binding.countryEditText.text.toString())) {
+                binding.stateEditText.isEnabled = sharedPreferences.getString("postalCode", "")?.equals(
+                    binding.countryEditText.text.toString(), true
+                ) == false
                 return true
             }
         }
@@ -1069,7 +1074,7 @@ class CustomArrayAdapter(
     context: Context,
     private val originalArray: Array<String>,
     private val isPhoneCodeCheck: Boolean
-) : ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line, originalArray) {
+) : ArrayAdapter<String>(context, R.layout.spinner_dial_codes, originalArray) {
 
     private var filteredArray: Array<String> = originalArray
 
@@ -1085,7 +1090,7 @@ class CustomArrayAdapter(
 
     override fun isEnabled(position: Int): Boolean {
         // Disable clicks if showing "No results found"
-        return filteredArray.isNotEmpty()
+        return getItem(position) != "No results found"
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
