@@ -83,7 +83,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import java.text.NumberFormat
 import java.util.Locale
 import java.util.Objects
 import kotlin.random.Random
@@ -2115,23 +2114,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.apply()
 
                 transactionAmount = totalAmount.toString()
-                val formattedAmount = NumberFormat.getNumberInstance(Locale.US).format(transactionAmount)
 
-                binding.unopenedTotalValue.text = "${currencySymbol}${formattedAmount}"
+                binding.unopenedTotalValue.text = "${currencySymbol}${totalAmount}"
                 if (totalQuantity == 0) {
                     binding.numberOfItems.text = "Total"
                 } else if (totalQuantity == 1)
                     binding.numberOfItems.text = "${totalQuantity} item"
                 else
                     binding.numberOfItems.text = "${totalQuantity} items"
-                binding.ItemsPrice.text = "${currencySymbol}${formattedAmount}"
+                binding.ItemsPrice.text = "${currencySymbol}${totalAmount}"
 
                 if (originalAmount != totalAmount) {
                     if (originalAmount == null || originalAmount == "0" || originalAmount == "null") {
                         binding.subTotalRelativeLayout.visibility = View.GONE
                     } else {
-                        val formattedAmount = NumberFormat.getNumberInstance(Locale.US).format(originalAmount.toString())
-                        binding.subtotalTextView.text = "${currencySymbol}${formattedAmount}"
+                        binding.subtotalTextView.text = "${currencySymbol}${originalAmount}"
                         binding.subTotalRelativeLayout.visibility = View.VISIBLE
                     }
                 }
