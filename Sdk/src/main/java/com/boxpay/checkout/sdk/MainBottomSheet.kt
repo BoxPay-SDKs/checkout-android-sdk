@@ -137,6 +137,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var dismissThroughAnotherBottomSheet: Boolean = false
     private lateinit var bottomSheet: DeliveryAddressBottomSheet
     private var firstLoad: Boolean = true
+    private var productSummary: String? = null
+    private var orderDetails: String?= null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -1754,7 +1758,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
             val screenHeight = requireContext().resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.8 // 70%
+            val percentageOfScreenHeight = 0.95 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
             bottomSheetBehavior?.maxHeight = desiredHeight
@@ -1914,13 +1918,16 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 //                } else {
 //                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
 //                }
-                val productSummaryJson =
-                    "[[{\"type\":\"text\",\"text\":\"Updated Status:\",\"textSize\":14,\"color\":\"#000000\"},{\"type\":\"text\",\"text\":\"50 WAITLIST\",\"textSize\":16,\"fontType\":\"Bold\",\"color\":\"#00B829\"},{\"type\":\"linegap\",\"gap\":0}],[{\"type\":\"linegap\",\"gap\":4},{\"type\":\"text\",\"text\":\"High confirmation chance tickets are likely to get confirmed!\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#F0F7FD\"}],[{\"type\":\"text\",\"text\":\"Review Ticket\",\"textSize\":15,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\"Booking ID: 30313407\",\"textSize\":11,\"fontType\":\"SemiBold\",\"color\":\"#333333\"}],[{\"type\":\"divider\",\"thickness\":2,\"color\":\"#ffffff\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#F0F7FD\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":0},{\"type\":\"text\",\"text\":\"12910 - Garib Rath Express\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":4},{\"type\":\"text\",\"text\":\"2 Travellers| Class- 3A| Quota- GN\",\"textSize\":9,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":4},{\"type\":\"text\",\"text\":\"Saturday, 30 Sep\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"Saturday, 30 Sep\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":0},{\"type\":\"text\",\"text\":\"NZM , 16:30\",\"textSize\":18,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"image\",\"url\":\"https://images.railyatri.in/ry_images_prod/train-icon-1715841210.png\",\"size\":30},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\"09:15, BDTS \",\"textSize\":18,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":0},{\"type\":\"text\",\"text\":\" DELHI HAZRAT NIZAMUDDIN\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\"---- 16:45 h ----\",\"textSize\":10,\"color\":\"#888888\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\" MUMBAI BANDRA TERMINUS\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#F0F7FD\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"accordion\",\"limit\":1,\"content\":[[{\"type\":\"text\",\"text\":\"Passenger Details & Fare Breakup\",\"textSize\":15,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"toggleImage\",\"openIcon\":\"https://assets.juspay.in/hyper/images/internalPP/ic_arrow_down.png\",\"closeIcon\":\"https://assets.juspay.in/hyper/images/internalPP/ic_arrow_up.png\",\"size\":20}],[{\"type\":\"text\",\"text\":\"1. Test (Male)\",\"textSize\":14,\"color\":\"#333333\"},{\"type\":\"text\",\"text\":\"25 \",\"textSize\":12,\"color\":\"#888888\"},{\"type\":\"text\",\"text\":\"| Lower Berth | \",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"text\",\"text\":\"2. Test (Male)\",\"textSize\":14,\"color\":\"#333333\"},{\"type\":\"text\",\"text\":\"30 \",\"textSize\":12,\"color\":\"#888888\"},{\"type\":\"text\",\"text\":\"| Lower Berth | \",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#E5E5E5\"}],[{\"type\":\"text\",\"text\":\"Fare Breakup\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"space\",\"width\":10,\"weight\":1}],[{\"type\":\"text\",\"text\":\"Ticket Base Fare\",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹2180.0\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"text\",\"text\":\"Agent Service Charge\",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹40.0\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"text\",\"text\":\"IRCTC Conv. Fee\",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹35.4\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"text\",\"text\":\"Net Amount payable\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹2304\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"space\",\"width\":1,\"weight\":2}]]}]]"
 
-                // Parse JSON and dynamically add views
-                val orderDetails = "{\"metadata.webhook_url\":\"https://payment-test.railyatri.in/api/juspay/update-payment\",\"udf1\":\"30313407\",\"udf2\":\"4\",\"return_url\":\"https://payment-test.railyatri.in/payment/juspay/process\",\"order_id\":\"1725133659jpp1988719986\",\"merchant_id\":\"railyatri_sandbox\",\"amount\":\"2180.0\",\"timestamp\":\"1725133662\",\"customer_id\":\"cth_udBM2B34PMgSZXjX\",\"currency\":\"INR\",\"customer_email\":\"avinash.singh@railyatri.in\",\"customer_phone\":\"9555681381\",\"metadata.merchant_container_list\":\"[{\\\"payment_method\\\":\\\"RY_CASH\\\",\\\"payment_method_type\\\":\\\"MERCHANT_CONTAINER\\\",\\\"display_name\\\":\\\"RY CASH\\\",\\\"eligible_amount\\\":10,\\\"balance_amount\\\":400,\\\"walletIconURL\\\":\\\"https://cdn-icons-png.flaticon.com/512/216/216490.png\\\"},{\\\"payment_method\\\":\\\"RY_CASH_PLUS\\\",\\\"payment_method_type\\\":\\\"MERCHANT_CONTAINER\\\",\\\"display_name\\\":\\\"RY CASH PLUS\\\",\\\"eligible_amount\\\":400,\\\"balance_amount\\\":400,\\\"walletIconURL\\\":\\\"https://cdn-icons-png.flaticon.com/512/216/216490.png\\\"}]\"}"
-                parseAndRenderProductSummary(productSummaryJson)
-                parseAndReturnOrderDetails(orderDetails)
+                if (orderDetails != null && productSummary != null) {
+                    binding.orderSummaryConstraintLayout.visibility = View.GONE
+                    binding.scrollCard.visibility = View.VISIBLE
+                } else{
+                    binding.orderSummaryConstraintLayout.visibility = View.VISIBLE
+                    binding.scrollCard.visibility = View.GONE
+                }
+                orderDetails?.let { parseAndReturnOrderDetails(it) }
+                productSummary?.let { parseAndRenderProductSummary(it)}
 
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
                 if (currencySymbol == "")
@@ -2718,31 +2725,71 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         try {
             val jsonArray = JSONArray(jsonString)
-            println("=====hso array $jsonArray")
             for (i in 0 until jsonArray.length()) {
                 val groupArray = jsonArray.getJSONArray(i)
+                val horizontalLayout = LinearLayout(container.context).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    gravity = Gravity.CENTER
+                }
+
+                // Variable to track if the first element was "linegap"
+                var skipInitialLineGap = false
+
                 for (j in 0 until groupArray.length()) {
                     val item = groupArray.getJSONObject(j)
+
+                    // Check for "linegap" at position 0
+                    if (j == 0 && item.getString("type") == "linegap") {
+                        skipInitialLineGap = true
+                    }
+
+                    // If "linegap" was found at position 0, reset j to 0 for the next item
+                    val currentIndex = if (skipInitialLineGap && j != 0) {
+                        skipInitialLineGap = false
+                        0
+                    } else {
+                        j
+                    }
+
                     when (item.getString("type")) {
-                        "text" -> addTextView(container, item)
-                        "image" -> addImageView(container, item)
-                        "divider" -> addDividerView(container, item)
+                        "text" -> addTextView(horizontalLayout, item, currentIndex)
+                        "image" -> addImageView(horizontalLayout, item)
+                        "divider" -> addDividerView(horizontalLayout, item)
                         "linegap" -> addLineGap(container, item)
-                        "space" -> addSpace(container, item)
-                        "background" -> setBackground(container, item)
+                        "background" -> setBackground(horizontalLayout, item)
                         "accordion" -> addAccordionView(container, item)
                         else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
                     }
+
+                    // After processing the first non-"linegap" element, no need to reset `j` again
+
                 }
+                // Add the horizontal layout to the container after processing the group
+                container.addView(horizontalLayout)
             }
+
         } catch (e: Exception) {
             Log.e("JSONParsingError", "Error parsing JSON", e)
         }
     }
 
-    private fun addTextView(container: LinearLayout, item: JSONObject) {
+    private fun addTextView(container: LinearLayout, item: JSONObject, i: Int, toAddWeight: Boolean = true) {
         try {
-            val textView = TextView(context)
+            val textView = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    if (toAddWeight) 0 else LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    if (toAddWeight) {
+                        weight = 1.0f // All views have equal weight
+                    }
+                }
+                gravity = if (i==0) Gravity.START else Gravity.END
+            }
             textView.text = item.optString("text", "Default Text")
             textView.textSize = item.optInt("textSize", 14).toFloat()
             textView.setTextColor(Color.parseColor(item.optString("color", "#000000")))
@@ -2781,13 +2828,23 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun addImageView(container: LinearLayout, item: JSONObject) {
         try {
-            val imageView = ImageView(context)
-            val size = item.optInt("size", 50) // Default size if not present
+            val imageView = ImageView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    0, // Width is 0, controlled by weight
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    weight = 1.0f // All views have equal weight
+                }
+            }
+            val size = 60 // Default size if not present
             val params = LinearLayout.LayoutParams(size, size)
             imageView.layoutParams = params
 
             // Load image using Glide, with error handling
             val url = item.optString("url")
+            Glide.with(this)
+                .load(url)
+                .into(imageView)
 
             // Apply background color if specified
             if (item.has("background")) {
@@ -2824,13 +2881,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         try {
             val gap = View(context)
             val params =
-                LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, item.optInt("gap", 10))
+                LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 20)
             gap.layoutParams = params
 
             // Apply background color if specified
-            if (item.has("background")) {
-                gap.setBackgroundColor(Color.parseColor(item.getString("background")))
-            }
+            gap.setBackgroundColor(Color.parseColor(item.getString("background")))
 
             container.addView(gap)
         } catch (e: Exception) {
@@ -2865,8 +2920,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             headerLayout.orientation = LinearLayout.HORIZONTAL
             headerLayout.layoutParams =
                 LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-            headerLayout.setPadding(10, 10, 10, 10)
-            headerLayout.setBackgroundColor(Color.parseColor("#F0F7FD")) // Set header background color
+            headerLayout.setPadding(0,16, 16, 16)
 
             // Adding header content (text and toggle icon)
             val headerContent = item.optJSONArray("content")?.optJSONArray(0)
@@ -2874,7 +2928,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 for (i in 0 until it.length()) {
                     val headerItem = it.getJSONObject(i)
                     when (headerItem.getString("type")) {
-                        "text" -> addTextView(headerLayout, headerItem)
+                        "text" -> addTextView(headerLayout, headerItem,i)
                         "toggleImage" -> addToggleImageView(headerLayout, headerItem, accordionLayout)
                     }
                 }
@@ -2883,37 +2937,89 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             accordionLayout.addView(headerLayout)
 
             // Content of the Accordion (hidden by default)
-            val contentLayout = LinearLayout(context)
-            contentLayout.orientation = LinearLayout.VERTICAL
-            contentLayout.layoutParams =
-                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-            contentLayout.visibility = View.GONE // Initially hidden
+            val contentLayout = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+                visibility = View.VISIBLE // Initially visible
+            }
 
-            val contentArray = item.optJSONArray("content")?.optJSONArray(1)
+            val contentArray = item.optJSONArray("content")
             contentArray?.let {
-                for (i in 0 until it.length()) {
-                    val contentItem = it.getJSONObject(i)
-                    when (contentItem.getString("type")) {
-                        "text" -> addTextView(contentLayout, contentItem)
-                        "divider" -> addDividerView(contentLayout, contentItem)
-                        "linegap" -> addLineGap(contentLayout, contentItem)
-                        "space" -> addSpace(contentLayout, contentItem)
-                        "background" -> setBackground(contentLayout, contentItem)
+                for (i in 1 until contentArray.length()) {
+                    val groupArray = contentArray.getJSONArray(i)
+
+                    val horizontalLayout = LinearLayout(container.context).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        layoutParams = LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                        )
+                        setPadding(0, 2, 0, 2)
+                    }
+
+                    if (i == 1) {
+                        // Add only first two items in the first row
+                        val firstRowLayout = LinearLayout(container.context).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            layoutParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                            )
+                            setPadding(0, 2, 0, 2)
+                        }
+
+                        for (j in 0 until minOf(3, groupArray.length())) {
+                            val item = groupArray.getJSONObject(j)
+                            when (item.getString("type")) {
+                                "text" -> addTextView(firstRowLayout, item, 0,false)
+                                "image" -> addImageView(firstRowLayout, item)
+                                "divider" -> addDividerView(firstRowLayout, item)
+                                "background" -> setBackground(firstRowLayout, item)
+                                else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                            }
+                        }
+                        contentLayout.addView(firstRowLayout)
+                        val secondRowLayout = LinearLayout(container.context).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            layoutParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                            )
+                            setPadding(0, 2, 0, 2)
+                        }
+                        for (j in 3 until groupArray.length()) {
+                            val item = groupArray.getJSONObject(j)
+                            when (item.getString("type")) {
+                                "text" -> addTextView(secondRowLayout, item, 0,false)
+                                "image" -> addImageView(secondRowLayout, item)
+                                "divider" -> addDividerView(secondRowLayout, item)
+                                "background" -> setBackground(secondRowLayout, item)
+                                else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                            }
+                        }
+                        contentLayout.addView(secondRowLayout)
+                    } else {
+                        // Add the remaining items in subsequent rows
+                        for (j in 0 until groupArray.length()) {
+                            val item = groupArray.getJSONObject(j)
+                            when (item.getString("type")) {
+                                "text" -> addTextView(horizontalLayout, item, j)
+                                "image" -> addImageView(horizontalLayout, item)
+                                "divider" -> addDividerView(horizontalLayout, item)
+                                "background" -> setBackground(horizontalLayout, item)
+                                else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                            }
+                        }
+                    }
+                    if (i != 1) {
+                        contentLayout.addView(horizontalLayout)
                     }
                 }
             }
 
+
             accordionLayout.addView(contentLayout)
             container.addView(accordionLayout)
-
-            // Toggle content visibility on header click
-            headerLayout.setOnClickListener {
-                if (contentLayout.visibility == View.VISIBLE) {
-                    contentLayout.visibility = View.GONE
-                } else {
-                    contentLayout.visibility = View.VISIBLE
-                }
-            }
         } catch (e: Exception) {
             Log.e("AddAccordionViewError", "Error adding Accordion View", e)
         }
@@ -2927,7 +3033,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val toggleImageView = ImageView(context)
             val openIconUrl = headerItem.optString("openIcon")
             val closeIconUrl = headerItem.optString("closeIcon")
-            val size = headerItem.optInt("size", 20) // Default size is 20 if not specified
+            val size = 40 // Default size is 20 if not specified
 
             // Set the initial icon (close by default)
             Glide.with(this)
@@ -2935,7 +3041,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 .into(toggleImageView)
 
             val params = LayoutParams(size, size)
-            params.gravity = Gravity.END // Align to the right
+//            params.gravity = Gravity.END // Align to the right
             toggleImageView.layoutParams = params
 
             // Add click listener to handle toggle logic
@@ -2961,5 +3067,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (e: Exception) {
             Log.e("AddToggleImageViewError", "Error adding toggle image view", e)
         }
+    }
+
+    fun setOrderDetails(orderDetails: String) {
+        this.orderDetails = orderDetails
+    }
+
+    fun setProductSummary(productSummary: String) {
+        this.productSummary = productSummary
     }
 }

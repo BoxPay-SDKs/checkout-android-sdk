@@ -9,7 +9,7 @@ class HyperServiceHolder(private val context: Context) {
     private var callback: HyperPaymentsCallbackAdapter? = null
     private var token: String? = null
     private var customerToken: String? = null
-    private lateinit var checkout: BoxPayCheckout
+    private lateinit var checkout: BoxPayOrderCheckout
     private var sandbox: Boolean = false
     private var testEnv : Boolean = false
 
@@ -18,20 +18,16 @@ class HyperServiceHolder(private val context: Context) {
         this.callback = callback
     }
 
-    fun process(jsonObject: JSONObject) {
-        try {
-            this.token = jsonObject.getString("requestId")
-            this.customerToken = jsonObject.getJSONObject("payload").getString("clientAuthToken")
-            checkout = BoxPayCheckout(
-                context, token ?: "", ::handlePaymentResult, customerToken ?: "", sandbox
-            )
-            if (this.testEnv) {
-                checkout.testEnv = true
-            }
-            checkout.display()
-        } catch (e: Exception) {
-
+    fun process(jsonObject: JSONObject,token: String, customerToken: String) {
+        this.token = token
+        this.customerToken = customerToken
+        checkout = BoxPayOrderCheckout(
+            context, token, ::handlePaymentResult, sandbox,customerToken, jsonObject
+        )
+        if (this.testEnv) {
+            checkout.testEnv = true
         }
+        checkout.display()
     }
 
     fun setBoxPayTextEnv(test: Boolean, sandbox: Boolean) {
