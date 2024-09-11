@@ -2733,7 +2733,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         LinearLayout.LayoutParams.WRAP_CONTENT
                     )
                     gravity = Gravity.CENTER
-                    setPadding(0,8,0,8)
+                    setPadding(32,8,32,8)
                 }
 
                 // Variable to track if the first element was "linegap"
@@ -2836,7 +2836,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     weight = 1.0f // All views have equal weight
                 }
             }
-            val size = 60 // Default size if not present
+            val size = 100 // Default size if not present
             val params = LinearLayout.LayoutParams(size, size)
             imageView.layoutParams = params
 
@@ -2920,7 +2920,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             headerLayout.orientation = LinearLayout.HORIZONTAL
             headerLayout.layoutParams =
                 LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-            headerLayout.setPadding(0,16, 16, 16)
+            headerLayout.setPadding(32,32, 32, 16)
 
             // Adding header content (text and toggle icon)
             val headerContent = item.optJSONArray("content")?.optJSONArray(0)
@@ -2954,7 +2954,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT
                         )
-                        setPadding(0, 8, 0, 8)
+                        setPadding(32, 16, 32, 16)
                     }
 
                     if (i == 1) {
@@ -2965,7 +2965,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 LinearLayout.LayoutParams.MATCH_PARENT,
                                 LinearLayout.LayoutParams.WRAP_CONTENT
                             )
-                            setPadding(0, 8, 0, 8)
+                            setPadding(32, 8, 32, 8)
                         }
 
                         for (j in 0 until minOf(3, groupArray.length())) {
@@ -2985,7 +2985,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 LinearLayout.LayoutParams.MATCH_PARENT,
                                 LinearLayout.LayoutParams.WRAP_CONTENT
                             )
-                            setPadding(0, 8, 0, 8)
+                            setPadding(32, 16, 32, 16)
                         }
                         for (j in 3 until groupArray.length()) {
                             val item = groupArray.getJSONObject(j)
