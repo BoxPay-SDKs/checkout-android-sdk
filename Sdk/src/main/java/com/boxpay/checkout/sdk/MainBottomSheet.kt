@@ -2703,7 +2703,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         )
         binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.recommendedProceedButton.isEnabled = true
-//        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
     private fun parseAndReturnOrderDetails(jsonString: String) {
@@ -2734,6 +2733,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         LinearLayout.LayoutParams.WRAP_CONTENT
                     )
                     gravity = Gravity.CENTER
+                    setPadding(0,8,0,8)
                 }
 
                 // Variable to track if the first element was "linegap"
@@ -2954,7 +2954,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT
                         )
-                        setPadding(0, 2, 0, 2)
+                        setPadding(0, 8, 0, 8)
                     }
 
                     if (i == 1) {
@@ -2965,7 +2965,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 LinearLayout.LayoutParams.MATCH_PARENT,
                                 LinearLayout.LayoutParams.WRAP_CONTENT
                             )
-                            setPadding(0, 2, 0, 2)
+                            setPadding(0, 8, 0, 8)
                         }
 
                         for (j in 0 until minOf(3, groupArray.length())) {
@@ -2985,7 +2985,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 LinearLayout.LayoutParams.MATCH_PARENT,
                                 LinearLayout.LayoutParams.WRAP_CONTENT
                             )
-                            setPadding(0, 2, 0, 2)
+                            setPadding(0, 8, 0, 8)
                         }
                         for (j in 3 until groupArray.length()) {
                             val item = groupArray.getJSONObject(j)
