@@ -1060,9 +1060,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val countryDetails = countryCodeJson.getJSONObject(key)
             val code = countryDetails.getString("isdCode")
             if (code.equals(binding.countryEditText.text.toString())) {
-                binding.stateEditText.isEnabled = sharedPreferences.getString("postalCode", "")?.equals(
-                    binding.countryEditText.text.toString(), true
-                ) == false
                 return true
             }
         }
