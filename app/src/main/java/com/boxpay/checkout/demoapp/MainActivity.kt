@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.demoapp.databinding.ActivityMainBinding
+import com.boxpay.checkout.sdk.Check
 
 
 class MainActivity : AppCompatActivity() {
@@ -25,10 +26,9 @@ class MainActivity : AppCompatActivity() {
             try {
                 intent = Intent(
                     this,
-                    Class.forName("com.boxpay.checkout.sdk.Check")
+                    Check::class.java
                 )
                 startActivity(intent)
-                finish()
             } catch (e: ClassNotFoundException) {
 
             }
@@ -38,6 +38,5 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, MerchantDetailsScreen::class.java)
             startActivity(intent)
         }
-
     }
 }

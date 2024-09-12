@@ -104,6 +104,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var showName = false
     private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
+    private var railyatriAmount : String? = null
     private var showShipping = false
     private var showPhone = false
     var upiOptionsShown = false
@@ -1310,12 +1311,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showRecommendedOptions()
                     }
                 } catch (e: JSONException) {
-                    println("========exception $e")
                     removeLoadingState()
                 }
             },
             Response.ErrorListener {
-                println("======message ${it.message.toString()}")
                 removeLoadingState()
                 // no op
             }) {
@@ -1874,6 +1873,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     orderObject = paymentDetailsObject.getJSONObject("order")
                 }
 
+                val subscriptionDetails = paymentDetailsObject.optJSONObject("subscriptionDetails")
+                val toShowSubscription = subscriptionDetails != null && subscriptionDetails.optJSONObject("billingCycle")
+                    ?.optString("billingTimeUnit")
+                    .equals("AsPresented")
+
+                if (toShowSubscription && railyatriAmount != null && railyatriAmount!!.isNotEmpty()) {
+                    val amountValue = railyatriAmount!!.toDoubleOrNull() // Convert the string to Double (or Int) safely
+                    if (amountValue != null && amountValue > 15000) {
+                        binding.belowTextImage.visibility = View.VISIBLE
+                    } else {
+                        binding.belowTextImage.visibility = View.GONE
+                    }
+                } else {
+                    binding.belowTextImage.visibility = View.GONE
+                }
 
                 val originalAmount = orderObject?.getString("originalAmount")
 
@@ -1926,7 +1940,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.orderSummaryConstraintLayout.visibility = View.VISIBLE
                     binding.scrollCard.visibility = View.GONE
                 }
-                orderDetails?.let { parseAndReturnOrderDetails(it) }
                 productSummary?.let { parseAndRenderProductSummary(it)}
 
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
@@ -2113,7 +2126,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         sharedPreferences.getString("phoneNumber", null) ?: "+91"
                     )
                 }
-                if (shopperObject.isNull("deliveryAddress") && showShipping) {
+                if (shopperObject.isNull("deliveryAddress") && showShipping && orderDetails == null) {
 //                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2138,7 +2151,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showShipping
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone)) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone) && orderDetails == null) {
 //                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2705,20 +2718,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.recommendedProceedButton.isEnabled = true
     }
 
-    private fun parseAndReturnOrderDetails(jsonString: String) {
-
-        try {
-            val jsonObject = JSONObject(jsonString)
-            println("=========jsonon]becht $jsonObject")
-            val metaData = jsonObject.getString("metadata.merchant_container_list")
-            val metaDataJson = JSONArray(metaData)
-            println("==========json $metaDataJson")
-        } catch (e:Exception) {
-            Log.e("JSONParsingError", "Error parsing JSON", e)
-        }
-    }
-
-
     private fun parseAndRenderProductSummary(jsonString: String) {
         val container = binding.container
 
@@ -2885,7 +2884,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             gap.layoutParams = params
 
             // Apply background color if specified
-            gap.setBackgroundColor(Color.parseColor(item.getString("background")))
+            gap.setBackgroundColor(Color.parseColor(item.optString("background")))
 
             container.addView(gap)
         } catch (e: Exception) {
@@ -2954,7 +2953,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT
                         )
-                        setPadding(32, 16, 32, 16)
+                        setPadding(32, 8, 32, 8)
                     }
 
                     if (i == 1) {
@@ -2981,9 +2980,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         contentLayout.addView(firstRowLayout)
                         val secondRowLayout = LinearLayout(container.context).apply {
                             orientation = LinearLayout.HORIZONTAL
-                            layoutParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                LinearLayout.LayoutParams.WRAP_CONTENT
+                            layoutParams = LayoutParams(
+                                LayoutParams.MATCH_PARENT,
+                                LayoutParams.WRAP_CONTENT
                             )
                             setPadding(32, 16, 32, 16)
                         }
@@ -3033,18 +3032,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val toggleImageView = ImageView(context)
             val openIconUrl = headerItem.optString("openIcon")
             val closeIconUrl = headerItem.optString("closeIcon")
-            val size = 40 // Default size is 20 if not specified
-
-            // Set the initial icon (close by default)
+            val size = 40
             Glide.with(this)
                 .load(closeIconUrl)
                 .into(toggleImageView)
 
             val params = LayoutParams(size, size)
-//            params.gravity = Gravity.END // Align to the right
             toggleImageView.layoutParams = params
 
-            // Add click listener to handle toggle logic
             toggleImageView.setOnClickListener {
                 val contentLayout = accordionLayout.getChildAt(1) as LinearLayout // Content is the second child
                 if (contentLayout.visibility == View.VISIBLE) {
@@ -3075,5 +3070,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     fun setProductSummary(productSummary: String) {
         this.productSummary = productSummary
+    }
+
+    fun setAmount(amount: String) {
+        this.railyatriAmount = amount
     }
 }

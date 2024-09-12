@@ -3,10 +3,9 @@ package com.boxpay.checkout.sdk
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -29,43 +28,15 @@ class Check : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        makePaymentRequest(this)
+//        makePaymentRequest(this)
 
         binding.textView6.text = "Generating Token Please wait..."
         hyperServiceHolder = HyperServiceHolder(this)
         hyperServiceHolder.setCallback(createHyperPaymentsCallbackAdapter())
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
-        tokenLiveData.observe(this, Observer { tokenInObserve ->
-            // Handle the response after the token has been updated
-            if (tokenInObserve != null) {
-                handleResponseWithToken()
-                binding.textView6.text = "Opening"
-                binding.openButton.isEnabled = false
-            }
-        })
-
-        var actionInProgress = false
-        binding.openButton.setOnClickListener() {
-
-            // Disable the button
-            if (actionInProgress) {
-                return@setOnClickListener
-            }
 
 
-            actionInProgress = true
-
-            // Disable the button
-            binding.openButton.isEnabled = false
-            binding.openButton.visibility = View.GONE
-            binding.pleaseWaitTextView.visibility = View.VISIBLE
-
-            if (!(tokenLiveData.value.isNullOrEmpty())) {
-                showBottomSheetWithOverlay()
-                actionInProgress = false
-                binding.openButton.isEnabled = true
-            }
-        }
+        showBottomSheetWithOverlay()
     }
 
     private fun handleResponseWithToken() {
@@ -80,7 +51,7 @@ class Check : AppCompatActivity() {
             """
                 {
     "action": "paymentPage",
-    "merchantId": "railyatri_sandbox",
+    "merchantId": "lGfqzNSKKA_phonepe",
     "clientId": "railyatripp",
     "orderId": "1725133659jpp1988719986",
     "amount": "2180",
@@ -88,7 +59,7 @@ class Check : AppCompatActivity() {
     "customerId": "cth_udBM2B34PMgSZXjX",
     "customerEmail": "avinash.singh@railyatri.in",
     "customerMobile": "9555681381",
-    "orderDetails": "{\"metadata.webhook_url\":\"https://payment-test.railyatri.in/api/juspay/update-payment\",\"udf1\":\"30313407\",\"udf2\":\"4\",\"return_url\":\"https://payment-test.railyatri.in/payment/juspay/process\",\"order_id\":\"1725133659jpp1988719986\",\"merchant_id\":\"railyatri_sandbox\",\"amount\":\"2180.0\",\"timestamp\":\"1725133662\",\"customer_id\":\"cth_udBM2B34PMgSZXjX\",\"currency\":\"INR\",\"customer_email\":\"avinash.singh@railyatri.in\",\"customer_phone\":\"9555681381\",\"metadata.merchant_container_list\":\"[{\\\"payment_method\\\":\\\"RY_CASH\\\",\\\"payment_method_type\\\":\\\"MERCHANT_CONTAINER\\\",\\\"display_name\\\":\\\"RY CASH\\\",\\\"eligible_amount\\\":10,\\\"balance_amount\\\":400,\\\"walletIconURL\\\":\\\"https://cdn-icons-png.flaticon.com/512/216/216490.png\\\"},{\\\"payment_method\\\":\\\"RY_CASH_PLUS\\\",\\\"payment_method_type\\\":\\\"MERCHANT_CONTAINER\\\",\\\"display_name\\\":\\\"RY CASH PLUS\\\",\\\"eligible_amount\\\":400,\\\"balance_amount\\\":400,\\\"walletIconURL\\\":\\\"https://cdn-icons-png.flaticon.com/512/216/216490.png\\\"}]\"}",
+    "orderDetails": "{\"metadata.webhook_url\":\"https:\\/\\/payment-test.railyatri.in\\/api\\/juspay\\/update-payment\",\"udf1\":\"30313407\",\"udf2\":\"4\",\"return_url\":\"https:\\/\\/payment-test.railyatri.in\\/payment\\/juspay\\/process\",\"order_id\":\"1725133659jpp1988719986\",\"merchant_id\":\"lGfqzNSKKA_phonepe\",\"amount\":\"2180.0\",\"timestamp\":\"1725133662\",\"customer_id\":\"cth_udBM2B34PMgSZXjX\",\"currency\":\"INR\",\"customer_email\":\"avinash.singh@railyatri.in\",\"customer_phone\":\"9555681381\",\"metadata.merchant_container_list\":\"[{\\\"payment_method\\\":\\\"RY_CASH\\\",\\\"payment_method_type\\\":\\\"MERCHANT_CONTAINER\\\",\\\"display_name\\\":\\\"RYCASH\\\",\\\"eligible_amount\\\":10,\\\"balance_amount\\\":400,\\\"walletIconURL\\\":\\\"https:\\/\\/cdn-icons-png.flaticon.com\\/512\\/216\\/216490.png\\\"},{\\\"payment_method\\\":\\\"RY_CASH_PLUS\\\",\\\"payment_method_type\\\":\\\"MERCHANT_CONTAINER\\\",\\\"display_name\\\":\\\"RYCASHPLUS\\\",\\\"eligible_amount\\\":400,\\\"balance_amount\\\":400,\\\"walletIconURL\\\":\\\"https:\\/\\/cdn-icons-png.flaticon.com\\/512\\/216\\/216490.png\\\"}]\",\"mandate.max_amount\":\"2180.0\",\"options.create_mandate\":\"REQUIRED\",\"mandate.frequency\":\"ASPRESENTED\"}",
     "product_summary": "[[{\"type\":\"text\",\"text\":\"Updated Status:\",\"textSize\":14,\"color\":\"#000000\"},{\"type\":\"text\",\"text\":\"50 WAITLIST\",\"textSize\":16,\"fontType\":\"Bold\",\"color\":\"#00B829\"},{\"type\":\"linegap\",\"gap\":0}],[{\"type\":\"linegap\",\"gap\":4},{\"type\":\"text\",\"text\":\"High confirmation chance tickets are likely to get confirmed!\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#F0F7FD\"}],[{\"type\":\"text\",\"text\":\"Review Ticket\",\"textSize\":15,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\"Booking ID: 30313407\",\"textSize\":11,\"fontType\":\"SemiBold\",\"color\":\"#333333\"}],[{\"type\":\"divider\",\"thickness\":2,\"color\":\"#ffffff\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#F0F7FD\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":0},{\"type\":\"text\",\"text\":\"12910 - Garib Rath Express\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":4},{\"type\":\"text\",\"text\":\"2 Travellers| Class- 3A| Quota- GN\",\"textSize\":9,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":4},{\"type\":\"text\",\"text\":\"Saturday, 30 Sep\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"Saturday, 30 Sep\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":0},{\"type\":\"text\",\"text\":\"NZM , 16:30\",\"textSize\":18,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"image\",\"url\":\"https://images.railyatri.in/ry_images_prod/train-icon-1715841210.png\",\"size\":30},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\"09:15, BDTS \",\"textSize\":18,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"linegap\",\"gap\":0},{\"type\":\"text\",\"text\":\"DELHI HAZRAT NIZAMUDDIN\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\"---- 16:45 h ----\",\"textSize\":10,\"color\":\"#888888\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"text\",\"text\":\" MUMBAI BANDRA TERMINUS\",\"textSize\":10,\"color\":\"#333333\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#F0F7FD\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"accordion\",\"limit\":1,\"content\":[[{\"type\":\"text\",\"text\":\"Passenger Details & Fare Breakup\",\"textSize\":15,\"fontType\":\"Bold\",\"color\":\"#333333\"},{\"type\":\"space\",\"width\":10,\"weight\":1},{\"type\":\"toggleImage\",\"openIcon\":\"https://assets.juspay.in/hyper/images/internalPP/ic_arrow_down.png\",\"closeIcon\":\"https://assets.juspay.in/hyper/images/internalPP/ic_arrow_up.png\",\"size\":20}],[{\"type\":\"text\",\"text\":\"1. Test (Male)\",\"textSize\":14,\"color\":\"#333333\"},{\"type\":\"text\",\"text\":\"25 \",\"textSize\":12,\"color\":\"#888888\"},{\"type\":\"text\",\"text\":\"| Lower Berth | \",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"text\",\"text\":\"2. Test (Male)\",\"textSize\":14,\"color\":\"#333333\"},{\"type\":\"text\",\"text\":\"30 \",\"textSize\":12,\"color\":\"#888888\"},{\"type\":\"text\",\"text\":\"| Lower Berth | \",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"divider\",\"thickness\":1,\"color\":\"#E5E5E5\"}],[{\"type\":\"text\",\"text\":\"Fare Breakup\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"space\",\"width\":10,\"weight\":1}],[{\"type\":\"text\",\"text\":\"Ticket Base Fare\",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹2180.0\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"text\",\"text\":\"Agent Service Charge\",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹40.0\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"text\",\"text\":\"IRCTC Conv. Fee\",\"textSize\":12,\"color\":\"#333333\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹35.4\",\"textSize\":12,\"color\":\"#333333\"}],[{\"type\":\"text\",\"text\":\"Net Amount payable\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"space\",\"width\":50,\"weight\":1},{\"type\":\"text\",\"text\":\"₹2304\",\"textSize\":14,\"fontType\":\"Bold\",\"color\":\"#000000\"},{\"type\":\"background\",\"color\":\"#F0F7FD\"}],[{\"type\":\"space\",\"width\":1,\"weight\":2}]]}]]",
     "signature": "aSUaLK6cvlPgMptvU7QqF+Asdg4p5+ZuYekFCriW98ijgsXNrYwWG19aQEwOJ3lhZFGmGdcUR9jV27fVdGktzH2N0eAO88yxMp/tmopbEbObJOypXdvPtlRUW6FNS0YAfz6RYWZJ7DB0ZNciuQ83Zei8s7d4UzPB41kKy4lwi9DqtQHAQOQUl9eSEqhY80VAcAd40X0/Tuf2p8X4/vhi6r0oaie1w2acJWCnxOrErLk3Z2W1vuw2B28aurBEQPS9qDOhn9Q49DSwIwg7nAP1XkE2szh1ybvcrUpRzDgdNU7ozLxSAyVpEyH15C9rNYsIuxEyiZbHFk9dr0gLbPqlPw==",
     "merchantKeyId": "13031",
@@ -96,15 +67,14 @@ class Check : AppCompatActivity() {
 }
                """
         )
-        hyperServiceHolder.setBoxPayTextEnv(true, false)
-        hyperServiceHolder.process(orderJson, tokenLiveData.value ?: "", customerShopperToken ?: "")
+        hyperServiceHolder.setBoxPayTextEnv(true)
+        hyperServiceHolder.process(orderJson, false)
     }
 
 
     private fun createHyperPaymentsCallbackAdapter(): HyperPaymentsCallbackAdapter {
         return object : HyperPaymentsCallbackAdapter {
             override fun onEvent(jsonObject: JSONObject) {
-                println("jsonObject>>> $jsonObject")
                 try {
                     val event = jsonObject.getString("event")
                     if (event == "hide_loader") {
@@ -114,6 +84,11 @@ class Check : AppCompatActivity() {
                         val innerPayload = jsonObject.optJSONObject("payload")
                         val status = innerPayload.optString("status")
 //                        val redirect = Intent(context, ResponsePage::class.java)
+                        Toast.makeText(
+                            this@Check,
+                            "Status : $status , Error : $error",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
                         if (!error) {
                             when (status) {
@@ -122,9 +97,8 @@ class Check : AppCompatActivity() {
 //                                    context.startActivity(redirect)
                                 }
 
-                                "cod_initiated" -> {
-//                                    redirect.putExtra("status", "CODInitiated")
-//                                    context.startActivity(redirect)
+                                else -> {
+
                                 }
                             }
                         } else {
@@ -263,7 +237,6 @@ class Check : AppCompatActivity() {
                 val tokenFetched = response.getString("token")
                 val payload = response.optJSONObject("payload")
                 customerShopperToken = payload?.optString("shopper_token", "")
-                println("======customerShopperToken $tokenFetched")
                 tokenLiveData.value = tokenFetched
                 editor.putString("baseUrl", "test-apis.boxpay.tech")
                 editor.putString("token", tokenLiveData.value)

@@ -19,7 +19,6 @@ class BoxPayOrderCheckout(
     val token:String,
     val onPaymentResult: ((PaymentResultObject) -> Unit)?,
     val sandboxEnabled: Boolean = false,
-    val customerShopperToken: String = "",
     val orderJson: JSONObject
 ) {
     private var sharedPreferences: SharedPreferences =
@@ -98,6 +97,7 @@ class BoxPayOrderCheckout(
             // Now you can use fragmentManager
             val bottomSheet = MainBottomSheet()
             bottomSheet.setOrderDetails(orderDetails = orderJson.getString("orderDetails"))
+            bottomSheet.setAmount(amount = orderJson.getString("amount"))
             bottomSheet.setProductSummary(productSummary = orderJson.getString("product_summary"))
             bottomSheet.show(fragmentManager, "MainBottomSheet")
         }
@@ -111,7 +111,6 @@ class BoxPayOrderCheckout(
 
     private fun putTransactionDetailsInSharedPreferences() {
         editor.putString("token", token)
-        editor.putString("shopperToken", customerShopperToken)
         editor.apply()
     }
 }
