@@ -73,6 +73,8 @@ dependencies {
     testImplementation("androidx.fragment:fragment-testing:1.5.7")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
     testImplementation("org.mockito:mockito-core:5.7.0") // Replace with the latest version
 }
 

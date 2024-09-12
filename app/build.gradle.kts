@@ -93,6 +93,8 @@ dependencies {
     implementation ("com.android.volley:volley:1.2.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     androidTestImplementation("androidx.test:rules:1.4.0")
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 
 }
 

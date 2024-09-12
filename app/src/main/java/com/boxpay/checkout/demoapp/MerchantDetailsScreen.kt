@@ -87,7 +87,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
             }
         }
     }
-
     fun onPaymentResult(result: PaymentResultObject) {
         if (result.status == "Success") {
             binding.button.setText("Payment has been Completed. please use another token")

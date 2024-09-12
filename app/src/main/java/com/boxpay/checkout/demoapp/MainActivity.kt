@@ -25,10 +25,9 @@ class MainActivity : AppCompatActivity() {
             try {
                 intent = Intent(
                     this,
-                    Class.forName("com.boxpay.checkout.sdk.Check")
+                    Check::class.java
                 )
                 startActivity(intent)
-                finish()
             } catch (e: ClassNotFoundException) {
 
             }
@@ -38,6 +37,5 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, MerchantDetailsScreen::class.java)
             startActivity(intent)
         }
-
     }
 }

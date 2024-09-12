@@ -20,6 +20,8 @@ import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
+import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +32,7 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -70,6 +73,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLDecoder
@@ -100,6 +104,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var showName = false
     private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
+    private var railyatriAmount : String? = null
     private var showShipping = false
     private var showPhone = false
     var upiOptionsShown = false
@@ -133,6 +138,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var dismissThroughAnotherBottomSheet: Boolean = false
     private lateinit var bottomSheet: DeliveryAddressBottomSheet
     private var firstLoad: Boolean = true
+    private var productSummary: String? = null
+    private var orderDetails: String?= null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -1302,12 +1311,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showRecommendedOptions()
                     }
                 } catch (e: JSONException) {
-                    println("========exception $e")
                     removeLoadingState()
                 }
             },
             Response.ErrorListener {
-                println("======message ${it.message.toString()}")
                 removeLoadingState()
                 // no op
             }) {
@@ -1750,7 +1757,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
             val screenHeight = requireContext().resources.displayMetrics.heightPixels
-            val percentageOfScreenHeight = 0.8 // 70%
+            val percentageOfScreenHeight = 0.95 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
             bottomSheetBehavior?.maxHeight = desiredHeight
@@ -1866,6 +1873,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     orderObject = paymentDetailsObject.getJSONObject("order")
                 }
 
+                val subscriptionDetails = paymentDetailsObject.optJSONObject("subscriptionDetails")
+                val toShowSubscription = subscriptionDetails != null && subscriptionDetails.optJSONObject("billingCycle")
+                    ?.optString("billingTimeUnit")
+                    .equals("AsPresented")
+
+                if (toShowSubscription && railyatriAmount != null && railyatriAmount!!.isNotEmpty()) {
+                    val amountValue = railyatriAmount!!.toDoubleOrNull() // Convert the string to Double (or Int) safely
+                    if (amountValue != null && amountValue > 15000) {
+                        binding.belowTextImage.visibility = View.VISIBLE
+                    } else {
+                        binding.belowTextImage.visibility = View.GONE
+                    }
+                } else {
+                    binding.belowTextImage.visibility = View.GONE
+                }
 
                 val originalAmount = orderObject?.getString("originalAmount")
 
@@ -1910,6 +1932,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 //                } else {
 //                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
 //                }
+
+                if (orderDetails != null && productSummary != null) {
+                    binding.orderSummaryConstraintLayout.visibility = View.GONE
+                    binding.scrollCard.visibility = View.VISIBLE
+                } else{
+                    binding.orderSummaryConstraintLayout.visibility = View.VISIBLE
+                    binding.scrollCard.visibility = View.GONE
+                }
+                productSummary?.let { parseAndRenderProductSummary(it)}
 
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
                 if (currencySymbol == "")
@@ -2095,7 +2126,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         sharedPreferences.getString("phoneNumber", null) ?: "+91"
                     )
                 }
-                if (shopperObject.isNull("deliveryAddress") && showShipping) {
+                if (shopperObject.isNull("deliveryAddress") && showShipping && orderDetails == null) {
 //                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2120,7 +2151,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showShipping
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone)) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone) && orderDetails == null) {
 //                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2685,6 +2716,363 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         )
         binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.recommendedProceedButton.isEnabled = true
-//        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
+    }
+
+    private fun parseAndRenderProductSummary(jsonString: String) {
+        val container = binding.container
+
+        try {
+            val jsonArray = JSONArray(jsonString)
+            for (i in 0 until jsonArray.length()) {
+                val groupArray = jsonArray.getJSONArray(i)
+                val horizontalLayout = LinearLayout(container.context).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    gravity = Gravity.CENTER
+                    setPadding(32,8,32,8)
+                }
+
+                // Variable to track if the first element was "linegap"
+                var skipInitialLineGap = false
+
+                for (j in 0 until groupArray.length()) {
+                    val item = groupArray.getJSONObject(j)
+
+                    // Check for "linegap" at position 0
+                    if (j == 0 && item.getString("type") == "linegap") {
+                        skipInitialLineGap = true
+                    }
+
+                    // If "linegap" was found at position 0, reset j to 0 for the next item
+                    val currentIndex = if (skipInitialLineGap && j != 0) {
+                        skipInitialLineGap = false
+                        0
+                    } else {
+                        j
+                    }
+
+                    when (item.getString("type")) {
+                        "text" -> addTextView(horizontalLayout, item, currentIndex)
+                        "image" -> addImageView(horizontalLayout, item)
+                        "divider" -> addDividerView(horizontalLayout, item)
+                        "linegap" -> addLineGap(container, item)
+                        "background" -> setBackground(horizontalLayout, item)
+                        "accordion" -> addAccordionView(container, item)
+                        else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                    }
+
+                    // After processing the first non-"linegap" element, no need to reset `j` again
+
+                }
+                // Add the horizontal layout to the container after processing the group
+                container.addView(horizontalLayout)
+            }
+
+        } catch (e: Exception) {
+            Log.e("JSONParsingError", "Error parsing JSON", e)
+        }
+    }
+
+    private fun addTextView(container: LinearLayout, item: JSONObject, i: Int, toAddWeight: Boolean = true) {
+        try {
+            val textView = TextView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    if (toAddWeight) 0 else LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    if (toAddWeight) {
+                        weight = 1.0f // All views have equal weight
+                    }
+                }
+                gravity = if (i==0) Gravity.START else Gravity.END
+            }
+            textView.text = item.optString("text", "Default Text")
+            textView.textSize = item.optInt("textSize", 14).toFloat()
+            textView.setTextColor(Color.parseColor(item.optString("color", "#000000")))
+
+            // Handle font type if present
+            if (item.has("fontType")) {
+                when (item.getString("fontType")) {
+                    "Bold" -> textView.setTypeface(
+                        textView.typeface,
+                        android.graphics.Typeface.BOLD
+                    )
+
+                    "SemiBold" -> textView.setTypeface(
+                        textView.typeface,
+                        android.graphics.Typeface.BOLD
+                    )
+                    // Handle other font types...
+                }
+            }
+
+            // Apply background color if specified
+            if (item.has("background")) {
+                textView.setBackgroundColor(Color.parseColor(item.getString("background")))
+            }
+
+            // Apply padding if specified
+            val padding = item.optInt("padding", 0)
+            textView.setPadding(padding, padding, padding, padding)
+
+            container.addView(textView)
+        } catch (e: Exception) {
+            Log.e("AddTextViewError", "Error adding TextView", e)
+        }
+    }
+
+
+    private fun addImageView(container: LinearLayout, item: JSONObject) {
+        try {
+            val imageView = ImageView(context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    0, // Width is 0, controlled by weight
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    weight = 1.0f // All views have equal weight
+                }
+            }
+            val size = 100 // Default size if not present
+            val params = LinearLayout.LayoutParams(size, size)
+            imageView.layoutParams = params
+
+            // Load image using Glide, with error handling
+            val url = item.optString("url")
+            Glide.with(this)
+                .load(url)
+                .into(imageView)
+
+            // Apply background color if specified
+            if (item.has("background")) {
+                imageView.setBackgroundColor(Color.parseColor(item.getString("background")))
+            }
+
+            container.addView(imageView)
+        } catch (e: Exception) {
+            Log.e("AddImageViewError", "Error adding ImageView", e)
+        }
+    }
+
+
+    private fun addDividerView(container: LinearLayout, item: JSONObject) {
+        try {
+            val divider = View(context)
+            val thickness = item.optInt("thickness", 1)
+            val params = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, thickness)
+            divider.layoutParams = params
+            divider.setBackgroundColor(Color.parseColor(item.optString("color", "#000000")))
+
+            // Apply background color if specified
+            if (item.has("background")) {
+                divider.setBackgroundColor(Color.parseColor(item.getString("background")))
+            }
+
+            container.addView(divider)
+        } catch (e: Exception) {
+            Log.e("AddDividerViewError", "Error adding Divider", e)
+        }
+    }
+
+    private fun addLineGap(container: LinearLayout, item: JSONObject) {
+        try {
+            val gap = View(context)
+            val params =
+                LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 20)
+            gap.layoutParams = params
+
+            // Apply background color if specified
+            gap.setBackgroundColor(Color.parseColor(item.optString("background")))
+
+            container.addView(gap)
+        } catch (e: Exception) {
+            Log.e("AddLineGapError", "Error adding LineGap", e)
+        }
+    }
+
+    private fun setBackground(container: LinearLayout, item: JSONObject) {
+        val color = item.optString("color", "#FFFFFF") // Default to white
+        container.setBackgroundColor(Color.parseColor(color))
+    }
+
+    private fun addSpace(container: LinearLayout, item: JSONObject) {
+        val space = View(context)
+        val width = item.optInt("width", 10)
+        val weight = item.optInt("weight", 1)
+        val params = LayoutParams(width, LayoutParams.MATCH_PARENT, weight.toFloat())
+        space.layoutParams = params
+
+        container.addView(space)
+    }
+
+    private fun addAccordionView(container: LinearLayout, item: JSONObject) {
+        try {
+            val accordionLayout = LinearLayout(context)
+            accordionLayout.orientation = LinearLayout.VERTICAL
+            accordionLayout.layoutParams =
+                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+
+            // Header of the Accordion
+            val headerLayout = LinearLayout(context)
+            headerLayout.orientation = LinearLayout.HORIZONTAL
+            headerLayout.layoutParams =
+                LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+            headerLayout.setPadding(32,32, 32, 16)
+
+            // Adding header content (text and toggle icon)
+            val headerContent = item.optJSONArray("content")?.optJSONArray(0)
+            headerContent?.let {
+                for (i in 0 until it.length()) {
+                    val headerItem = it.getJSONObject(i)
+                    when (headerItem.getString("type")) {
+                        "text" -> addTextView(headerLayout, headerItem,i)
+                        "toggleImage" -> addToggleImageView(headerLayout, headerItem, accordionLayout)
+                    }
+                }
+            }
+
+            accordionLayout.addView(headerLayout)
+
+            // Content of the Accordion (hidden by default)
+            val contentLayout = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+                visibility = View.VISIBLE // Initially visible
+            }
+
+            val contentArray = item.optJSONArray("content")
+            contentArray?.let {
+                for (i in 1 until contentArray.length()) {
+                    val groupArray = contentArray.getJSONArray(i)
+
+                    val horizontalLayout = LinearLayout(container.context).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        layoutParams = LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                        )
+                        setPadding(32, 8, 32, 8)
+                    }
+
+                    if (i == 1) {
+                        // Add only first two items in the first row
+                        val firstRowLayout = LinearLayout(container.context).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            layoutParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                            )
+                            setPadding(32, 8, 32, 8)
+                        }
+
+                        for (j in 0 until minOf(3, groupArray.length())) {
+                            val item = groupArray.getJSONObject(j)
+                            when (item.getString("type")) {
+                                "text" -> addTextView(firstRowLayout, item, 0,false)
+                                "image" -> addImageView(firstRowLayout, item)
+                                "divider" -> addDividerView(firstRowLayout, item)
+                                "background" -> setBackground(firstRowLayout, item)
+                                else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                            }
+                        }
+                        contentLayout.addView(firstRowLayout)
+                        val secondRowLayout = LinearLayout(container.context).apply {
+                            orientation = LinearLayout.HORIZONTAL
+                            layoutParams = LayoutParams(
+                                LayoutParams.MATCH_PARENT,
+                                LayoutParams.WRAP_CONTENT
+                            )
+                            setPadding(32, 16, 32, 16)
+                        }
+                        for (j in 3 until groupArray.length()) {
+                            val item = groupArray.getJSONObject(j)
+                            when (item.getString("type")) {
+                                "text" -> addTextView(secondRowLayout, item, 0,false)
+                                "image" -> addImageView(secondRowLayout, item)
+                                "divider" -> addDividerView(secondRowLayout, item)
+                                "background" -> setBackground(secondRowLayout, item)
+                                else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                            }
+                        }
+                        contentLayout.addView(secondRowLayout)
+                    } else {
+                        // Add the remaining items in subsequent rows
+                        for (j in 0 until groupArray.length()) {
+                            val item = groupArray.getJSONObject(j)
+                            when (item.getString("type")) {
+                                "text" -> addTextView(horizontalLayout, item, j)
+                                "image" -> addImageView(horizontalLayout, item)
+                                "divider" -> addDividerView(horizontalLayout, item)
+                                "background" -> setBackground(horizontalLayout, item)
+                                else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                            }
+                        }
+                    }
+                    if (i != 1) {
+                        contentLayout.addView(horizontalLayout)
+                    }
+                }
+            }
+
+
+            accordionLayout.addView(contentLayout)
+            container.addView(accordionLayout)
+        } catch (e: Exception) {
+            Log.e("AddAccordionViewError", "Error adding Accordion View", e)
+        }
+    }
+    private fun addToggleImageView(
+        headerLayout: LinearLayout,
+        headerItem: JSONObject,
+        accordionLayout: LinearLayout
+    ) {
+        try {
+            val toggleImageView = ImageView(context)
+            val openIconUrl = headerItem.optString("openIcon")
+            val closeIconUrl = headerItem.optString("closeIcon")
+            val size = 40
+            Glide.with(this)
+                .load(closeIconUrl)
+                .into(toggleImageView)
+
+            val params = LayoutParams(size, size)
+            toggleImageView.layoutParams = params
+
+            toggleImageView.setOnClickListener {
+                val contentLayout = accordionLayout.getChildAt(1) as LinearLayout // Content is the second child
+                if (contentLayout.visibility == View.VISIBLE) {
+                    // Collapse content
+                    contentLayout.visibility = View.GONE
+                    Glide.with(this)
+                        .load(openIconUrl)
+                        .into(toggleImageView)
+                } else {
+                    // Expand content
+                    contentLayout.visibility = View.VISIBLE
+                    Glide.with(this)
+                        .load(closeIconUrl)
+                        .into(toggleImageView)
+                }
+            }
+
+            headerLayout.addView(toggleImageView)
+
+        } catch (e: Exception) {
+            Log.e("AddToggleImageViewError", "Error adding toggle image view", e)
+        }
+    }
+
+    fun setOrderDetails(orderDetails: String) {
+        this.orderDetails = orderDetails
+    }
+
+    fun setProductSummary(productSummary: String) {
+        this.productSummary = productSummary
+    }
+
+    fun setAmount(amount: String) {
+        this.railyatriAmount = amount
     }
 }

@@ -102,6 +102,7 @@
                             android:layout_height="match_parent"
                             android:background="@drawable/cardview_bg"
                             android:paddingTop="8dp"
+                            android:visibility="visible"
                             android:paddingBottom="8dp">
 
                             <TextView
@@ -310,6 +311,29 @@
                     </androidx.cardview.widget.CardView>
 
                     <androidx.cardview.widget.CardView
+                        android:id="@+id/scrollCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:visibility="gone"
+                        android:background="@android:color/white"
+                        app:cardCornerRadius="10dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/cardView3">
+
+                        <LinearLayout
+                            android:id="@+id/container"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:paddingTop="8dp"/>
+
+
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
                         android:id="@+id/cardView8"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -442,7 +466,7 @@
                         android:textColor="#0A090B"
                         android:visibility="visible"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardView8" />
+                        app:layout_constraintTop_toBottomOf="@+id/scrollCard" />
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/recommendedCardView"
@@ -752,34 +776,29 @@
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                                <View
-                                    android:id="@+id/dashedLine1"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="2dp"
-                                    android:layout_marginTop="8dp"
-                                    android:background="@drawable/dashed_line"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    app:layout_constraintEnd_toEndOf="parent"
-                                    app:layout_constraintStart_toStartOf="parent" />
-
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:id="@+id/addNewUPIIDConstraint"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
-                                    android:paddingTop="12dp"
-                                    android:paddingEnd="12dp"
                                     android:paddingBottom="12dp"
                                     android:visibility="gone">
+
+                                    <View
+                                        android:id="@+id/dashedLine1"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="2dp"
+                                        android:layout_marginTop="12dp"
+                                        android:background="@drawable/dashed_line"/>
 
                                     <ImageView
                                         android:id="@+id/imageView15"
                                         android:layout_width="16dp"
                                         android:layout_height="wrap_content"
                                         android:layout_marginStart="12dp"
-                                        android:layout_marginTop="2dp"
+                                        android:layout_marginTop="8dp"
                                         app:layout_constraintStart_toStartOf="parent"
-                                        app:layout_constraintTop_toTopOf="parent"
+                                        app:layout_constraintTop_toTopOf="@+id/dashedLine1"
                                         app:srcCompat="@drawable/plus_sign_inside_circle" />
 
                                     <TextView
@@ -799,7 +818,7 @@
                                         android:id="@+id/imageView13"
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-
+                                        android:paddingEnd="12dp"
                                         app:layout_constraintBottom_toBottomOf="@+id/textView26"
                                         app:layout_constraintEnd_toEndOf="parent"
                                         app:layout_constraintTop_toTopOf="@+id/textView26"
@@ -914,6 +933,23 @@
                                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                                 </androidx.constraintlayout.widget.ConstraintLayout>
+
+                                <TextView
+                                    android:id="@+id/belowTextImage"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/poppins"
+                                    android:textColor="#B87F28"
+                                    android:layout_marginStart="16dp"
+                                    android:layout_marginEnd="16dp"
+                                    android:layout_marginBottom="16dp"
+                                    android:layout_marginTop="12dp"
+                                    android:visibility="gone"
+                                    android:lineHeight="15sp"
+                                    android:text="This amount will be debited in multiple transactions of up to 15,000 each, to comply with RBI Guidelines for UPI"
+                                    android:textSize="10sp"
+                                    android:textFontWeight="600"
+                                    android:background="@drawable/subscription_background"/>
 
 
                             </LinearLayout>
