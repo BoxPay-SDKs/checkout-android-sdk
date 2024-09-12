@@ -1,4 +1,4 @@
-package com.boxpay.checkout.sdk
+package com.boxpay.checkout.demoapp
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -9,6 +9,9 @@ import androidx.lifecycle.MutableLiveData
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.boxpay.checkout.sdk.BuildConfig
+import com.boxpay.checkout.sdk.HyperPaymentsCallbackAdapter
+import com.boxpay.checkout.sdk.HyperServiceHolder
 import com.boxpay.checkout.sdk.databinding.ActivityCheckBinding
 import org.json.JSONObject
 

@@ -31,7 +31,7 @@ class HyperServiceHolder(private val context: Context) {
             "failed" -> "api_failure"
             "processing"-> "pending_vbv"
             else -> {
-                "New"
+                "new"
             }
         }
         callback?.onEvent(JSONObject().apply {

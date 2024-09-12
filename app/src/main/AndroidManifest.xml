@@ -21,6 +21,8 @@
         <activity
             android:name=".SuccessScreen"
             android:exported="false" />
+        <activity android:name=".Check"
+            android:exported="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">

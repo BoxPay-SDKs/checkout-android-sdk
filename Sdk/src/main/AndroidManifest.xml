@@ -39,10 +39,6 @@
         <activity
             android:name=".OTPScreenWebView"
             android:exported="false" />
-        <activity
-            android:name=".Check"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:exported="false" />
 
         <receiver android:name=".SmsReceiver"
             android:exported="true">

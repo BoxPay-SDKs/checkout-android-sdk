@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.demoapp.databinding.ActivityMainBinding
-import com.boxpay.checkout.sdk.Check
 
 
 class MainActivity : AppCompatActivity() {
