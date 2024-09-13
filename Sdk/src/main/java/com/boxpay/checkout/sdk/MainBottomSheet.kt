@@ -257,7 +257,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Success")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
                                 parentFragmentManager,
@@ -273,7 +273,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = ""
@@ -299,7 +299,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Success")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
                                 parentFragmentManager,
@@ -315,7 +315,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = ""
@@ -341,7 +341,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Success")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
                                 parentFragmentManager,
@@ -357,7 +357,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = ""
@@ -383,7 +383,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Success")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
                                 parentFragmentManager,
@@ -399,7 +399,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = ""
@@ -519,7 +519,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     ) {
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             var cleanedMessage = reason.substringAfter(":")
                             if (!reasonCode.startsWith("uf", true)) {
@@ -548,7 +548,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             editor.putString("status", "Success")
                             editor.apply()
 
-                            if (isAdded && isResumed) {
+                            if (isAdded && isResumed && !isStateSaved) {
                                 val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                                 bottomSheet.show(
                                     parentFragmentManager,
@@ -1900,7 +1900,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("transactionId", transactionId)
                     editor.apply()
 
-                    if (isAdded && isResumed) {
+                    if (isAdded && isResumed && !isStateSaved) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                         bottomSheet.show(
                             parentFragmentManager,

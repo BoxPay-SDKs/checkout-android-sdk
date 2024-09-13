@@ -1088,7 +1088,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         editor.putString("transactionId", transactionId)
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val callback = SingletonClass.getInstance().getYourObject()
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -1123,7 +1123,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         editor.putString("status", "Failed")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"

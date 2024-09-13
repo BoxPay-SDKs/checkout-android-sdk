@@ -726,7 +726,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         editor.putString("status","Success")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val callback = SingletonClass.getInstance().getYourObject()
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -761,7 +761,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         editor.putString("status","Failed")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
