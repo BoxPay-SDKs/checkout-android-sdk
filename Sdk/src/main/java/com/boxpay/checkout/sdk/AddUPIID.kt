@@ -123,12 +123,18 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     "Upi"
                 )
                 val textNow = s.toString()
-                if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{2,64}"))) {
+                if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}"))) {
                     enableProceedButton()
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 } else {
                     disableProceedButton()
-                    binding.ll1InvalidUPI.visibility = View.VISIBLE
+                    if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
+                            ?: 0) >= 2
+                    ) {
+                        binding.ll1InvalidUPI.visibility = View.VISIBLE // Show specific error
+                    } else {
+                        binding.ll1InvalidUPI.visibility = View.INVISIBLE // Hide error if not matching condition
+                    }
                 }
             }
 
