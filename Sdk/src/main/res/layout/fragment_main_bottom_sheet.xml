@@ -940,14 +940,12 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/poppins"
                                     android:textColor="#B87F28"
-                                    android:layout_marginStart="16dp"
-                                    android:layout_marginEnd="16dp"
                                     android:layout_marginBottom="16dp"
-                                    android:layout_marginTop="12dp"
+                                    android:layout_marginTop="16dp"
                                     android:visibility="gone"
                                     android:lineHeight="15sp"
                                     android:text="This amount will be debited in multiple transactions of up to 15,000 each, to comply with RBI Guidelines for UPI"
-                                    android:textSize="10sp"
+                                    android:textSize="12sp"
                                     android:textFontWeight="600"
                                     android:background="@drawable/subscription_background"/>
 
