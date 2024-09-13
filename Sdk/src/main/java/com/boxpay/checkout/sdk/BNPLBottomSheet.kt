@@ -568,11 +568,18 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             Response.ErrorListener { error ->
                 // Handle error
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    hideLoadingInButton()
-                    PaymentFailureScreen(
-                        errorMessage = "Not configured for this merchant id"
-                    ).show(parentFragmentManager, "FailureScreen")
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                    if (errorMessage?.contains("expired",true) == true) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Not configured for this merchant Id"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
                 }
+                hideLoadingInButton()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -783,5 +790,18 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 ).show(parentFragmentManager, "FailureScreen")
             }
         }
+    }
+
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+
+        }
+        return null
     }
 }

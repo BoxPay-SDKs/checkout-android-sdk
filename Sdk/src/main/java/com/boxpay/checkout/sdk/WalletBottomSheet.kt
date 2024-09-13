@@ -961,9 +961,18 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
                 // Handle error
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                    if (errorMessage?.contains("expired",true) == true) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
+                }
                 hideLoadingInButton()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
