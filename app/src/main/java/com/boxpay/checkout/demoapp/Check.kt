@@ -100,28 +100,27 @@ class Check : AppCompatActivity() {
         val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
         val jsonData = JSONObject(
             """ {
-  "context": {
-    "countryCode": "IN",
-    "legalEntity": {"code": "billdesk"},
-    "legalEntity": {"code": "razorpay"},
-    "orderId": "test12"
-  },
-  "paymentType": "S",
-  "money": {"amount": "100", "currencyCode": "INR"},
-  "descriptor": {"line1": "Some descriptor"},
-  "shopper": {
-    "firstName": null,
-    "lastName": null,
-    "email":null,
-    "uniqueReference": "x123y",
-    "phoneNumber": null,
-    "deliveryAddress": null
-  },
+    "context": {
+        "countryCode": "IN",
+        "legalEntity": {
+            "code": "razorpay"
+        },
+        "orderId": "test12"
+    },
+    "paymentType": "S",
+    "money": {
+        "amount": "1000",
+        "currencyCode": "INR"
+    },
+    "descriptor": {
+        "line1": "Some descriptor"
+    },
+    "shopper": {
         "firstName": "Ishika cnsjbc cnbhsbc jbcydsbc bcydbc",
         "lastName": "Bansal",
         "email": "ishika.bansal@boxpay.tech",
         "uniqueReference": "x123y",
-        "phoneNumber": "919876543210",
+        "phoneNumber": "919876543211",
         "deliveryAddress": {
             "address1": "first line",
             "address2": "second line",
@@ -131,52 +130,128 @@ class Check : AppCompatActivity() {
             "postalCode": "147147"
         }
     },
-  "order": {
-    "items": [
-      {
-        "id": "test",
-        "itemName": "Sample Item",
-        "description": "testProduct",
-        "quantity": 1,
-        "manufacturer": null,
-        "brand": null,
-        "color": null,
-        "productUrl": null,
-        "imageUrl":
-            "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-        "categories": null,
-        "amountWithoutTax": 423.73,
+    "order": {
+        "originalAmount": 423.73,
+        "shippingAmount": 50,
+        "voucherCode": "VOUCHER",
         "taxAmount": 76.27,
-        "taxPercentage": null,
-        "discountedAmount": null,
-        "amountWithoutTaxLocale": "10",
-        "amountWithoutTaxLocaleFull": "10"
-      },
-      {
-        "id": "test",
-        "itemName": "item no 2",
-        "description": "testProduct",
-        "quantity": 3,
-        "manufacturer": null,
-        "brand": null,
-        "color": null,
-        "productUrl": null,
-        "imageUrl":
-            "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-        "categories": null,
-        "amountWithoutTax": 423.73,
-        "taxAmount": 76.27,
-        "taxPercentage": null,
-        "discountedAmount": null,
-        "amountWithoutTaxLocale": "10",
-        "amountWithoutTaxLocaleFull": "10"
-      }
-    ]
-  },
-  "statusNotifyUrl": "https://www.boxpay.tech",
-  "frontendReturnUrl": "https://www.boxpay.tech",
-  "frontendBackUrl": "https://www.boxpay.tech",
-  "createShopperToken":true
+        "totalAmountWithoutTax": 423.73,
+        "items": [
+            {
+                "id": "test",
+                "itemName": "Sample Item",
+                "description": "testProduct",
+                "quantity": 1,
+                "manufacturer": null,
+                "brand": null,
+                "color": null,
+                "productUrl": null,
+                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+                "categories": null,
+                "amountWithoutTax": 423.73,
+                "taxAmount": 76.27,
+                "taxPercentage": null,
+                "discountedAmount": null,
+                "amountWithoutTaxLocale": "10",
+                "amountWithoutTaxLocaleFull": "10"
+            },
+            {
+                "id": "test",
+                "itemName": "Sample Item",
+                "description": "testProduct",
+                "quantity": 1,
+                "manufacturer": null,
+                "brand": null,
+                "color": null,
+                "productUrl": null,
+                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+                "categories": null,
+                "amountWithoutTax": 423.73,
+                "taxAmount": 76.27,
+                "taxPercentage": null,
+                "discountedAmount": null,
+                "amountWithoutTaxLocale": "10",
+                "amountWithoutTaxLocaleFull": "10"
+            },
+            {
+                "id": "test",
+                "itemName": "Sample Item",
+                "description": "testProduct",
+                "quantity": 1,
+                "manufacturer": null,
+                "brand": null,
+                "color": null,
+                "productUrl": null,
+                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+                "categories": null,
+                "amountWithoutTax": 423.73,
+                "taxAmount": 76.27,
+                "taxPercentage": null,
+                "discountedAmount": null,
+                "amountWithoutTaxLocale": "10",
+                "amountWithoutTaxLocaleFull": "10"
+            },
+            {
+                "id": "test",
+                "itemName": "Sample Item",
+                "description": "testProduct",
+                "quantity": 1,
+                "manufacturer": null,
+                "brand": null,
+                "color": null,
+                "productUrl": null,
+                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+                "categories": null,
+                "amountWithoutTax": 423.73,
+                "taxAmount": 76.27,
+                "taxPercentage": null,
+                "discountedAmount": null,
+                "amountWithoutTaxLocale": "10",
+                "amountWithoutTaxLocaleFull": "10"
+            },
+            {
+                "id": "test",
+                "itemName": "Sample Item",
+                "description": "testProduct",
+                "quantity": 1,
+                "manufacturer": null,
+                "brand": null,
+                "color": null,
+                "productUrl": null,
+                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+                "categories": null,
+                "amountWithoutTax": 423.73,
+                "taxAmount": 76.27,
+                "taxPercentage": null,
+                "discountedAmount": null,
+                "amountWithoutTaxLocale": "10",
+                "amountWithoutTaxLocaleFull": "10"
+            },
+            {
+                "id": "test",
+                "itemName": "Sample Item",
+                "description": "testProduct",
+                "quantity": 1,
+                "manufacturer": null,
+                "brand": null,
+                "color": null,
+                "productUrl": null,
+                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+                "categories": null,
+                "amountWithoutTax": 423.73,
+                "taxAmount": 76.27,
+                "taxPercentage": null,
+                "discountedAmount": null,
+                "amountWithoutTaxLocale": "10",
+                "amountWithoutTaxLocaleFull": "10"
+            }
+        ]
+    },
+    "statusNotifyUrl": "https://www.boxpay.tech",
+    "frontendReturnUrl": "https://www.boxpay.tech",
+    "frontendBackUrl": "https://www.boxpay.tech",
+    "createShopperToken":false,
+    "expiryDurationSec":900
 }"""
         )
 
@@ -195,7 +270,10 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { /* no response handling */ }) {
+            Response.ErrorListener { error ->
+                println("====error $error")
+            /* no response handling */
+            }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
