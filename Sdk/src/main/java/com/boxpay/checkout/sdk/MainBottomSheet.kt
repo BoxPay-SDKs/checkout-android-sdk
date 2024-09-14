@@ -1880,7 +1880,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (toShowSubscription && railyatriAmount != null && railyatriAmount!!.isNotEmpty()) {
                     val amountValue = railyatriAmount!!.toDoubleOrNull() // Convert the string to Double (or Int) safely
-                    if (amountValue != null && amountValue > 15000) {
+                    if (amountValue != null && amountValue >= 15000) {
                         binding.belowTextImage.visibility = View.VISIBLE
                     } else {
                         binding.belowTextImage.visibility = View.GONE
@@ -2731,7 +2731,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
                     )
-                    gravity = Gravity.CENTER
                     setPadding(32,8,32,8)
                 }
 
@@ -2755,7 +2754,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
 
                     when (item.getString("type")) {
-                        "text" -> addTextView(horizontalLayout, item, currentIndex)
+                        "text" -> addTextView(horizontalLayout, item, currentIndex, i!=0)
                         "image" -> addImageView(horizontalLayout, item)
                         "divider" -> addDividerView(horizontalLayout, item)
                         "linegap" -> addLineGap(container, item)
@@ -2815,7 +2814,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
             // Apply padding if specified
-            val padding = item.optInt("padding", 0)
+            val padding = item.optInt("padding", 4)
             textView.setPadding(padding, padding, padding, padding)
 
             container.addView(textView)
