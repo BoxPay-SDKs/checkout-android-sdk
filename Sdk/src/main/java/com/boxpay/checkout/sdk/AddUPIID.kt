@@ -22,6 +22,7 @@ import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import com.android.volley.DefaultRetryPolicy
@@ -49,7 +50,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private var transactionId: String? = null
-    private var shippingEnabled : Boolean = false
+    private var shippingEnabled: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -81,12 +82,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         binding.progressBar.visibility = View.INVISIBLE
         binding.imageView3.setOnClickListener() {
-            if (!checked) {
-                binding.imageView3.setImageResource(R.drawable.checkbox)
-                checked = true
-            } else {
-                binding.imageView3.setImageResource(0)
-                checked = false
+            if (!binding.progressBar.isVisible) {
+                if (!checked) {
+                    binding.imageView3.setImageResource(R.drawable.checkbox)
+                    checked = true
+                } else {
+                    binding.imageView3.setImageResource(0)
+                    checked = false
+                }
             }
         }
 
@@ -105,7 +108,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
 
         binding.backButton.setOnClickListener() {
-            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+            if (!binding.progressBar.isVisible) {
+                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+            }
         }
         binding.proceedButton.isEnabled = false
 
@@ -115,25 +120,27 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
-                callUIAnalytics(
-                    requireContext(),
-                    "PAYMENT_INSTRUMENT_PROVIDED",
-                    "UpiCollect",
-                    "Upi"
-                )
-                val textNow = s.toString()
-                if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}"))) {
-                    enableProceedButton()
-                    bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-                } else {
-                    disableProceedButton()
-                    if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
-                            ?: 0) >= 2
-                    ) {
-                        binding.ll1InvalidUPI.visibility = View.VISIBLE // Show specific error
+                if (!binding.progressBar.isVisible) {
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        "UpiCollect",
+                        "Upi"
+                    )
+                    val textNow = s.toString()
+                    if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}"))) {
+                        enableProceedButton()
+                        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
                     } else {
-                        binding.ll1InvalidUPI.visibility = View.INVISIBLE // Hide error if not matching condition
+                        disableProceedButton()
+                        if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
+                                ?: 0) >= 2
+                        ) {
+                            binding.ll1InvalidUPI.visibility = View.VISIBLE // Show specific error
+                        } else {
+                            binding.ll1InvalidUPI.visibility =
+                                View.INVISIBLE // Hide error if not matching condition
+                        }
                     }
                 }
             }
@@ -156,11 +163,11 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiCollect", "Upi")
 
-            if(checkString(userVPA!!)){
+            if (checkString(userVPA!!)) {
                 binding.ll1InvalidUPI.visibility = View.INVISIBLE
                 validateAPICall(requireContext(), userVPA!!)
                 showLoadingInButton()
-            }else{
+            } else {
                 binding.ll1InvalidUPI.visibility = View.VISIBLE
             }
         }
@@ -169,11 +176,13 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
         return binding.root
     }
+
     fun checkString(input: String): Boolean {
         val regex = Regex(".+@.+")
         return regex.matches(input)
     }
-    private fun validateAPICall(context : Context,userVPA: String) {
+
+    private fun validateAPICall(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
 
@@ -188,26 +197,26 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://"+baseUrl + "/v0/platform/vpa-validation", requestBody,
+            Method.POST, "https://" + baseUrl + "/v0/platform/vpa-validation", requestBody,
             Response.Listener { response ->
-                try{
+                try {
                     val statusUserVPA = response.getBoolean("vpaValid")
 
-                    if(statusUserVPA){
+                    if (statusUserVPA) {
                         binding.ll1InvalidUPI.visibility = View.INVISIBLE
-                        postRequest(requireContext(),userVPA)
-                    }else{
+                        postRequest(requireContext(), userVPA)
+                    } else {
                         binding.ll1InvalidUPI.visibility = View.VISIBLE
                         hideLoadingInButton()
                     }
-                }catch (e : Exception){
-                    postRequest(requireContext(),userVPA)
+                } catch (e: Exception) {
+                    postRequest(requireContext(), userVPA)
                 }
             },
             Response.ErrorListener { error ->
 
                 binding.ll1InvalidUPI.visibility = View.INVISIBLE
-                postRequest(requireContext(),userVPA)
+                postRequest(requireContext(), userVPA)
 
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -231,7 +240,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
         editor.putString("transactionId", transactionIdArg)
-        editor.putString("operationId",transactionIdArg)
+        editor.putString("operationId", transactionIdArg)
         editor.apply()
     }
 
@@ -290,8 +299,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isHideable = false
 
 
-
-
+            dialog.setCancelable(false)
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -417,20 +425,18 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             put("instrumentDetails", instrumentDetailsObject)
 
 
-
-
             val shopperObject = JSONObject().apply {
-                put("email", sharedPreferences.getString("email",null))
-                put("firstName", sharedPreferences.getString("firstName",null))
-                if(sharedPreferences.getString("gender",null) == null)
+                put("email", sharedPreferences.getString("email", null))
+                put("firstName", sharedPreferences.getString("firstName", null))
+                if (sharedPreferences.getString("gender", null) == null)
                     put("gender", JSONObject.NULL)
                 else
-                    put("gender",sharedPreferences.getString("gender",null))
-                put("lastName", sharedPreferences.getString("lastName",null))
-                put("phoneNumber", sharedPreferences.getString("phoneNumber",null))
-                put("uniqueReference", sharedPreferences.getString("uniqueReference",null))
+                    put("gender", sharedPreferences.getString("gender", null))
+                put("lastName", sharedPreferences.getString("lastName", null))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
 
-                if(shippingEnabled){
+                if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
 
                         put("address1", sharedPreferences.getString("address1", null))
@@ -440,9 +446,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         put("postalCode", sharedPreferences.getString("postalCode", null))
                         put("state", sharedPreferences.getString("state", null))
                         put("city", sharedPreferences.getString("city", null))
-                        put("email",sharedPreferences.getString("email",null))
-                        put("phoneNumber",sharedPreferences.getString("phoneNumber",null))
-                        put("countryName",sharedPreferences.getString("countryName",null))
+                        put("email", sharedPreferences.getString("email", null))
+                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+                        put("countryName", sharedPreferences.getString("countryName", null))
 
                     }
                     put("deliveryAddress", deliveryAddressObject)
@@ -467,20 +473,22 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     var cleanedMessage = reason.substringAfter(":")
                     if (cleanedMessage.contains("virtual address", true)) {
                         cleanedMessage = "Invalid UPI Id"
+                    } else if (!reasonCode.startsWith("uf", true)) {
+                        cleanedMessage =
+                            "Please retry using other payment method or try again in sometime"
                     }
-                    else if (!reasonCode.startsWith("uf", true)) {
-                        cleanedMessage = "Please retry using other payment method or try again in sometime"
-                    }
-                    PaymentFailureScreen(errorMessage = cleanedMessage).show(parentFragmentManager,"FailureScreen")
-                }else {
+                    PaymentFailureScreen(errorMessage = cleanedMessage).show(
+                        parentFragmentManager,
+                        "FailureScreen"
+                    )
+                } else {
 
                     if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status","RequiresAction")
+                        editor.putString("status", "RequiresAction")
                         editor.apply()
                         openUPITimerBottomSheet()
-                    }
-                    else if (status.contains("Approved", ignoreCase = true)) {
-                        editor.putString("status","Success")
+                    } else if (status.contains("Approved", ignoreCase = true)) {
+                        editor.putString("status", "Success")
                         editor.apply()
 
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
@@ -504,11 +512,16 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                if (sharedPreferences.getString("shopperToken", "") != null && sharedPreferences.getString("shopperToken", "") != "") {
-                    headers["Authorization"] = "Session ${sharedPreferences.getString("shopperToken", "")}"
+                if (sharedPreferences.getString(
+                        "shopperToken",
+                        ""
+                    ) != null && sharedPreferences.getString("shopperToken", "") != ""
+                ) {
+                    headers["Authorization"] =
+                        "Session ${sharedPreferences.getString("shopperToken", "")}"
                 }
-                headers["X-Client-Connector-Name"] =  "Android SDK"
-                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -522,7 +535,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
     }
-    fun dismissCurrentBottomSheet(){
+
+    fun dismissCurrentBottomSheet() {
         dismiss()
     }
 
@@ -650,7 +664,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
             Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */}) {}.apply {
+            Response.ErrorListener { /*no response handling */ }) {}.apply {
             // Set retry policy
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
@@ -674,7 +688,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     }
 
     fun generateRandomAlphanumericString(length: Int): String {
-        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length)
             .map { Random.nextInt(0, charPool.size) }
             .map(charPool::get)

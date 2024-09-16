@@ -27,6 +27,7 @@ import android.widget.SearchView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -83,12 +84,13 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             value = false
         }
     private var popularWalletsSelected: Boolean = false
+    val progressBarVisible = MutableLiveData<Boolean>()
     private var job: Job? = null
     private var popularWalletsSelectedIndex: Int = -1
     private lateinit var colorAnimation: ValueAnimator
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
-    private lateinit var Base_Session_API_URL : String
+    private lateinit var Base_Session_API_URL: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -130,6 +132,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+
+            dialog.setCancelable(false)
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -224,29 +228,31 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         walletDetailsOriginal[index].walletName
 
                     constraintLayout.setOnClickListener {
-                        val inputMethodManager =
-                            requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                        inputMethodManager.hideSoftInputFromWindow(
-                            binding.searchView.windowToken,
-                            0
-                        )
-                        liveDataPopularWalletSelectedOrNot.value = true
-                        if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
-                            // If the same constraint layout is clicked again
-                            relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-                            popularWalletsSelected = false
-                            proceedButtonIsEnabled.value = false
-                        } else {
-                            // Remove background from the previously selected constraint layout
-                            if (popularWalletsSelectedIndex != -1)
-                                fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(
-                                    R.drawable.popular_item_unselected_bg
-                                )
-                            // Set background for the clicked constraint layout
-                            relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
-                            popularWalletsSelected = true
-                            proceedButtonIsEnabled.value = true
-                            popularWalletsSelectedIndex = index
+                        if (!binding.progressBar.isVisible) {
+                            val inputMethodManager =
+                                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            inputMethodManager.hideSoftInputFromWindow(
+                                binding.searchView.windowToken,
+                                0
+                            )
+                            liveDataPopularWalletSelectedOrNot.value = true
+                            if (popularWalletsSelected && popularWalletsSelectedIndex == index) {
+                                // If the same constraint layout is clicked again
+                                relativeLayout.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+                                popularWalletsSelected = false
+                                proceedButtonIsEnabled.value = false
+                            } else {
+                                // Remove background from the previously selected constraint layout
+                                if (popularWalletsSelectedIndex != -1)
+                                    fetchRelativeLayout(popularWalletsSelectedIndex).setBackgroundResource(
+                                        R.drawable.popular_item_unselected_bg
+                                    )
+                                // Set background for the clicked constraint layout
+                                relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                                popularWalletsSelected = true
+                                proceedButtonIsEnabled.value = true
+                                popularWalletsSelectedIndex = index
+                            }
                         }
                     }
 
@@ -394,7 +400,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             liveDataPopularWalletSelectedOrNot,
             requireContext(),
             binding.searchView,
-            token.toString()
+            token.toString(),
+            progressBarVisible
         )
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.walletsRecyclerView.adapter = allWalletAdapter
@@ -439,18 +446,22 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.backButton.setOnClickListener() {
-            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+            if (!binding.progressBar.isVisible) {
+                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+            }
         }
         binding.proceedButton.isEnabled = false
 
         binding.checkingTextView.setOnClickListener() {
-            var enabled = false
-            if (!enabled)
-                enableProceedButton()
-            else
-                disableProceedButton()
+            if (!binding.progressBar.isVisible) {
+                var enabled = false
+                if (!enabled)
+                    enableProceedButton()
+                else
+                    disableProceedButton()
 
-            enabled = !enabled
+                enabled = !enabled
+            }
         }
         proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
             if (enableProceedButton) {
@@ -505,9 +516,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             }
         })
         binding.textView19.setOnClickListener() {
-            val imm =
-                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
+            if (!binding.progressBar.isVisible) {
+                val imm =
+                    requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
+            }
         }
 
 
@@ -909,11 +922,13 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-                        if (!response.isNull("actions") && response.getJSONArray("actions").length() != 0) {
+                        if (!response.isNull("actions") && response.getJSONArray("actions")
+                                .length() != 0
+                        ) {
                             val type =
                                 response.getJSONArray("actions").getJSONObject(0).getString("type")
                             if (status.contains("RequiresAction", ignoreCase = true)) {
-                                editor.putString("status","RequiresAction")
+                                editor.putString("status", "RequiresAction")
                             }
                             if (type.contains("html", true)) {
                                 url = response
@@ -928,7 +943,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                             }
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
-                            intent.putExtra("type",type)
+                            intent.putExtra("type", type)
                             startFunctionCalls()
                             startActivityForResult(intent, 333)
                         } else {
@@ -1006,6 +1021,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
+        progressBarVisible.value = false
         binding.textView6.setTextColor(
             ContextCompat.getColor(
                 requireContext(),
@@ -1028,6 +1044,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     fun showLoadingInButton() {
         binding.textView6.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.VISIBLE
+        progressBarVisible.value = true
         val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
         rotateAnimation.duration = 3000
         rotateAnimation.repeatCount = ObjectAnimator.INFINITE
@@ -1086,10 +1103,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             }
         }
     }
+
     private fun fetchStatusAndReason(url: String) {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
-            Response.Listener{ response ->
+            Response.Listener { response ->
                 try {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId").toString()
@@ -1100,7 +1118,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
 
-                        editor.putString("status","Success")
+                        editor.putString("status", "Success")
                         editor.putString("amount", response.getString("amount").toString())
                         editor.putString("transactionId", transactionId)
                         editor.apply()
@@ -1130,14 +1148,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status","RequiresAction")
+                        editor.putString("status", "RequiresAction")
                         editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status","Posted")
+                        editor.putString("status", "Posted")
                         editor.apply()
                     } else if (status.contains("FAILED", ignoreCase = true)) {
 
-                        editor.putString("status","Failed")
+                        editor.putString("status", "Failed")
                         editor.apply()
 
                         if (isAdded && isResumed) {

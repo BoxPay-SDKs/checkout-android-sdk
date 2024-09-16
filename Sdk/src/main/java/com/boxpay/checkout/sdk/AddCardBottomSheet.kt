@@ -27,6 +27,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -271,18 +272,22 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.invalidCardValidity.visibility = View.INVISIBLE
         binding.invalidCVV.visibility = View.INVISIBLE
         binding.saveCardLinearLayout.setOnClickListener() {
-            if (!checked) {
-                binding.imageView3.setImageResource(R.drawable.checkbox)
-                checked = true
-            } else {
-                binding.imageView3.setImageResource(0)
-                checked = false
+            if (!binding.progressBar.isVisible) {
+                if (!checked) {
+                    binding.imageView3.setImageResource(R.drawable.checkbox)
+                    checked = true
+                } else {
+                    binding.imageView3.setImageResource(0)
+                    checked = false
+                }
             }
         }
 
 
         binding.backButton.setOnClickListener() {
-            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+            if (!binding.progressBar.isVisible) {
+                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+            }
         }
 
         binding.editTextCardNumber.filters = arrayOf(InputFilter.LengthFilter(19))
@@ -521,7 +526,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     proceedButtonIsEnabled.value = false
                 }
 
-                if(isAmericanExpressCard.value == true) {
+                if (isAmericanExpressCard.value == true) {
                     if (textNow.length == 4) {
                         binding.editTextNameOnCard.requestFocus()
                         binding.editTextNameOnCard.requestFocus()
@@ -573,7 +578,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     isNameOnCardValid = false
                     binding.nameOnCardErrorLayout.visibility = View.VISIBLE
                     proceedButtonIsEnabled.value = false
-                }else{
+                } else {
                     isNameOnCardValid = true
                     binding.nameOnCardErrorLayout.visibility = View.INVISIBLE
                 }
@@ -828,7 +833,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 ) // Semi-transparent black background
             }
 
-
+            dialog.setCancelable(false)
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -1090,9 +1095,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     if (status.contains("Rejected", ignoreCase = true)) {
                         var cleanedMessage = reason.substringAfter(":")
                         if (!reasonCode.startsWith("uf", true)) {
-                            cleanedMessage = "Please retry using other payment method or try again in sometime"
+                            cleanedMessage =
+                                "Please retry using other payment method or try again in sometime"
                         }
-                        PaymentFailureScreen(errorMessage = cleanedMessage).show(parentFragmentManager, "FailureScreen")
+                        PaymentFailureScreen(errorMessage = cleanedMessage).show(
+                            parentFragmentManager,
+                            "FailureScreen"
+                        )
                     } else {
                         val type =
                             response.getJSONArray("actions").getJSONObject(0).getString("type")
@@ -1143,8 +1152,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                headers["X-Client-Connector-Name"] =  "Android SDK"
-                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -1346,10 +1355,15 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 binding.editTextCardValidity.text.isNotEmpty() &&
                 binding.editTextNameOnCard.text.isNotEmpty() &&
                 binding.editTextCardNumber.text.isNotEmpty() &&
-                isValidCardNumberByLuhn(binding.editTextCardNumber.text.toString().replace("\\s".toRegex(), "")) &&
+                isValidCardNumberByLuhn(
+                    binding.editTextCardNumber.text.toString().replace("\\s".toRegex(), "")
+                ) &&
                 isValidCVC(binding.editTextCardCVV.text.toString().toInt()) &&
                 binding.editTextCardValidity.text.length == 5 &&
-                isValidExpirationDate(binding.editTextCardValidity.text.toString().substring(0,2),binding.editTextCardValidity.text.toString().substring(3,5)) &&
+                isValidExpirationDate(
+                    binding.editTextCardValidity.text.toString().substring(0, 2),
+                    binding.editTextCardValidity.text.toString().substring(3, 5)
+                ) &&
                 isNameOnCardValid
     }
 
@@ -1357,7 +1371,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
-            Response.Listener{ response ->
+            Response.Listener { response ->
                 try {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId").toString()
@@ -1368,7 +1382,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
 
-                        editor.putString("status","Success")
+                        editor.putString("status", "Success")
                         editor.putString("amount", response.getString("amount").toString())
                         editor.putString("transactionId", transactionId)
                         editor.apply()
@@ -1398,14 +1412,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status","RequiresAction")
+                        editor.putString("status", "RequiresAction")
                         editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status","Posted")
+                        editor.putString("status", "Posted")
                         editor.apply()
                     } else if (status.contains("FAILED", ignoreCase = true)) {
 
-                        editor.putString("status","Failed")
+                        editor.putString("status", "Failed")
                         editor.apply()
 
                         if (isAdded && isResumed) {
