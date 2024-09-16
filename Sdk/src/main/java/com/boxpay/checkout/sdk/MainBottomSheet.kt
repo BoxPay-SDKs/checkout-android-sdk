@@ -3015,6 +3015,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             }
 
+            headerLayout.setOnClickListener {
+                if (contentLayout.visibility == View.VISIBLE) {
+                    contentLayout.visibility = View.GONE
+                } else {
+                    contentLayout.visibility = View.VISIBLE
+                }
+            }
+
 
             accordionLayout.addView(contentLayout)
             container.addView(accordionLayout)
