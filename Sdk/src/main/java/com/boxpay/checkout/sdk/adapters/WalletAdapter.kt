@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.widget.ImageView
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import coil.decode.SvgDecoder
@@ -32,12 +33,26 @@ class WalletAdapter(
     private var liveDataPopularItemSelectedOrNot: MutableLiveData<Boolean>,
     private val context: Context,
     private val searchView : android.widget.SearchView,
-    private val token : String
+    private val token : String,
+    private val progressBarVisible: LiveData<Boolean>
 ) : RecyclerView.Adapter<WalletAdapter.WalletAdapterViewHolder>() {
     private var checkedPosition = RecyclerView.NO_POSITION
+    var visible = false
     var checkPositionLiveData = MutableLiveData<Int>()
     val sharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+
+    init {
+        progressBarVisible.observeForever { isVisible ->
+            if (isVisible) {
+                // If progress bar is visible, disable clicks
+                visible = true
+            } else {
+                // Enable clicks when progress bar is not visible
+                visible = false
+            }
+        }
+    }
 
     inner class WalletAdapterViewHolder(val binding: WalletItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -100,12 +115,14 @@ class WalletAdapter(
 
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
-                    val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
-                    handleRadioButtonClick(adapterPosition,binding.radioButton)
-                    liveDataPopularItemSelectedOrNot.value = false
-                    callUIAnalytics(context,"PAYMENT_INSTRUMENT_PROVIDED",walletDetails[position].walletBrand,"Wallet")
-                    callUIAnalytics(context,"PAYMENT_METHOD_SELECTED",walletDetails[position].walletBrand,"Wallet")
+                   if (!visible) {
+                       val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                       inputMethodManager.hideSoftInputFromWindow(searchView.windowToken, 0)
+                       handleRadioButtonClick(adapterPosition,binding.radioButton)
+                       liveDataPopularItemSelectedOrNot.value = false
+                       callUIAnalytics(context,"PAYMENT_INSTRUMENT_PROVIDED",walletDetails[position].walletBrand,"Wallet")
+                       callUIAnalytics(context,"PAYMENT_METHOD_SELECTED",walletDetails[position].walletBrand,"Wallet")
+                   }
                 }
 
                 val balloon = createBalloon(context) {
