@@ -1216,11 +1216,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
         binding.textView6.setTextColor(
-            Color.parseColor(
-                sharedPreferences.getString(
-                    "buttonTextColor",
-                    "#000000"
-                )
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
             )
         )
         binding.textView6.visibility = View.VISIBLE

@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
@@ -195,11 +196,9 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
         )
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
-            Color.parseColor(
-                sharedPreferences.getString(
-                    "buttonTextColor",
-                    "#000000"
-                )
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
             )
         )
     }

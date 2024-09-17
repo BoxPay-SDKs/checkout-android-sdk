@@ -984,11 +984,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         )
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
-            Color.parseColor(
-                sharedPreferences.getString(
-                    "buttonTextColor",
-                    "#000000"
-                )
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
             )
         )
     }
