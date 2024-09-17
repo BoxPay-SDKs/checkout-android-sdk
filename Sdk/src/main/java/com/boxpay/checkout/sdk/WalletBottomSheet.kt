@@ -966,6 +966,21 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
                     if (errorMessage?.contains("expired",true) == true) {
+                        val callback = SingletonClass.getInstance().getYourObject()
+                        val callbackForDismissing =
+                            SingletonForDismissMainSheet.getInstance().getYourObject()
+                        if (callback != null) {
+                            callback.onPaymentResult(
+                                PaymentResultObject(
+                                    "Expired",
+                                    transactionId ?: "",
+                                    transactionId ?: ""
+                                )
+                            )
+                        }
+                        if (callbackForDismissing != null) {
+                            callbackForDismissing.dismissFunction()
+                        }
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
                         PaymentFailureScreen(

@@ -1908,6 +1908,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         )
                     }
                 }
+                if (status.equals(
+                        "expired",
+                        ignoreCase = true
+                    )
+                ) {
+                    editor.putString("status", "Expired")
+                    editor.putString("transactionId", transactionId)
+                    editor.apply()
+
+                    if (isAdded && isResumed) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    }
+                }
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
 
                 val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")

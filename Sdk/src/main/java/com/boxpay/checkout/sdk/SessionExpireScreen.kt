@@ -38,7 +38,7 @@ internal class SessionExpireScreen(val function: () -> Unit = {}) :
             if(callback != null){
                 val transactionId = sharedPreferences.getString("transactionId","").toString()
                 val operationId = sharedPreferences.getString("operationId","").toString()
-                callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
+                callback.onPaymentResult(PaymentResultObject("Expired",transactionId,operationId))
 
                 val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
                 mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
