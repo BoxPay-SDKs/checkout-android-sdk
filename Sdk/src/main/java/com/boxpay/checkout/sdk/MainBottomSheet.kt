@@ -44,9 +44,9 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -562,10 +562,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 }
             },
-            Response.ErrorListener {
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
+            Response.ErrorListener {error ->
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                    if (errorMessage?.contains("expired",true) == true) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
+                }
                 job?.cancel()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -679,11 +688,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     PaymentFailureScreen().show(parentFragmentManager, "FailureScreenFromUPIIntent")
                 }
             },
-            Response.ErrorListener { _ ->
-                // Handle error
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
+            Response.ErrorListener { error ->
+
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                    if (errorMessage?.contains("expired",true) == true) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
+                }
                 removeLoadingState()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -1143,12 +1161,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardView7.visibility = View.GONE
                 }
             },
-            Response.ErrorListener { /* no response handling */
+            Response.ErrorListener { /* no response handling */error ->
                 removeLoadingState()
                 removeLoadingState()
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                    if (errorMessage?.contains("expired",true) == true) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
+                }
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -1252,11 +1279,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 startTimer()
                 startFunctionCalls()
             },
-            Response.ErrorListener { /* no response handling */
+            Response.ErrorListener { /* no response handling */error ->
                 removeLoadingState()
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                    if (errorMessage?.contains("expired",true) == true) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
+                }
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -1615,11 +1651,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )
                 }
             },
-            Response.ErrorListener { /* no response handling */
+            Response.ErrorListener { /* no response handling */error ->
                 removeLoadingState()
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                    if (errorMessage?.contains("expired",true) == true) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
+                }
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -1841,7 +1886,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val url = "${Base_Session_API_URL}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
-        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
+        val jsonObjectAll = object  : JsonObjectRequest(Method.GET, url, null, { response ->
 
             try {
                 val status = response.getString("status")
@@ -1861,6 +1906,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             parentFragmentManager,
                             "PaymentStatusBottomSheetWithDetails"
                         )
+                    }
+                }
+                if (status.equals(
+                        "expired",
+                        ignoreCase = true
+                    )
+                ) {
+                    editor.putString("status", "Expired")
+                    editor.putString("transactionId", transactionId)
+                    editor.apply()
+
+                    if (isAdded && isResumed) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     }
                 }
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
@@ -2388,14 +2446,25 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 ).show()
             }
 
-        }, { _ ->
-            Toast.makeText(
-                requireContext(),
-                "Invalid token/selected environment.\nPlease press back button and try again",
-                Toast.LENGTH_LONG
-            ).show()
-            dismiss()
-        })
+        }, Response.ErrorListener { error  ->
+            if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                val errorResponse = String(error.networkResponse.data)
+                val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                if (errorMessage?.contains("expired",true) == true) {
+                    SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Invalid token/selected environment.\nPlease press back button and try again",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    dismiss()
+                }
+            }
+        }) {
+            // no op
+        }
         queue.add(jsonObjectAll)
     }
 
@@ -2661,9 +2730,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             Response.ErrorListener { error ->
                 // Handle error
                 hideLoadingInButton()
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                    if (errorMessage?.contains("expired",true) == true) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
+                }
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -3081,5 +3159,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     fun setAmount(amount: String) {
         this.railyatriAmount = amount
+    }
+
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+
+        }
+        return null
     }
 }

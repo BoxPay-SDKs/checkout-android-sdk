@@ -39,6 +39,7 @@ import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -916,9 +917,33 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
                 // Handle error
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+
+                    if (errorMessage?.contains("expired",true) == true) {
+                        val callback = SingletonClass.getInstance().getYourObject()
+                        val callbackForDismissing =
+                            SingletonForDismissMainSheet.getInstance().getYourObject()
+                        if (callback != null) {
+                            callback.onPaymentResult(
+                                PaymentResultObject(
+                                    "Expired",
+                                    transactionId ?: "",
+                                    transactionId ?: ""
+                                )
+                            )
+                        }
+                        if (callbackForDismissing != null) {
+                            callbackForDismissing.dismissFunction()
+                        }
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
+                }
                 hideLoadingInButton()
             }) {
             override fun getHeaders(): MutableMap<String, String> {
@@ -959,11 +984,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         )
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
-            Color.parseColor(
-                sharedPreferences.getString(
-                    "buttonTextColor",
-                    "#000000"
-                )
+            ContextCompat.getColor(
+                requireContext(),
+                android.R.color.white
             )
         )
     }

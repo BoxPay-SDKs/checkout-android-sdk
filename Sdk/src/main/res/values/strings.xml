@@ -262,6 +262,8 @@
         <item name="android:background">@drawable/bottom_sheet_bg</item>
     </style>
 
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"/>
+
     <color name="custom_progress_color">#FF4081</color>
     <dimen name="heightOfRecyclerViewIndp">160dp</dimen>
     <color name="colorStart">#F1F1F1</color>
