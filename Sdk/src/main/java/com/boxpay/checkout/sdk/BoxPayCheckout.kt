@@ -11,6 +11,8 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.CallBackFunctions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.microsoft.clarity.Clarity
+import com.microsoft.clarity.ClarityConfig
 import org.json.JSONObject
 import java.util.Locale
 
@@ -40,6 +42,8 @@ class BoxPayCheckout(
     private var BASE_URL: String? = null
 
     fun display() {
+        val config = ClarityConfig("o4josf35jv")
+        Clarity.initialize(context, config)
         if (sandboxEnabled) {
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
