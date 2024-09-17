@@ -586,7 +586,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         )
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
-//        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
     fun showLoadingInButton() {
