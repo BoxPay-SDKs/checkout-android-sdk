@@ -787,7 +787,11 @@
                                         android:layout_width="match_parent"
                                         android:layout_height="2dp"
                                         android:layout_marginTop="12dp"
-                                        android:background="@drawable/dashed_line"/>
+                                        android:background="@drawable/dashed_line"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toBottomOf="@+id/upiOptionsLinearLayout"
+                                        tools:ignore="NotSibling" />
 
                                     <ImageView
                                         android:id="@+id/imageView15"
