@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -302,7 +303,17 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isHideable = false
 
 
-            dialog.setCancelable(false)
+            dialog.setCancelable(!binding.progressBar.isVisible)
+
+            dialog.setOnKeyListener { _, keyCode, _ ->
+                if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
+                    // Prevent dialog from being dismissed if loader is active
+                    true
+                } else {
+                    // Allow dialog to be dismissed if loader is not active
+                    false
+                }
+            }
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
