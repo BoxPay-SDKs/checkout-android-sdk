@@ -1,6 +1,7 @@
 package com.boxpay.checkout.sdk
 
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
@@ -22,6 +23,7 @@ import android.os.Looper
 import android.util.Base64
 import android.util.Log
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -257,7 +259,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Success")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
                                 parentFragmentManager,
@@ -273,7 +275,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = ""
@@ -299,7 +301,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Success")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
                                 parentFragmentManager,
@@ -315,7 +317,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = ""
@@ -341,7 +343,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Success")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
                                 parentFragmentManager,
@@ -357,7 +359,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = ""
@@ -383,7 +385,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Success")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
                                 parentFragmentManager,
@@ -399,7 +401,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         // Payment was declined or failed
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = ""
@@ -519,7 +521,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     ) {
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             var cleanedMessage = reason.substringAfter(":")
                             if (!reasonCode.startsWith("uf", true)) {
@@ -548,7 +550,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             editor.putString("status", "Success")
                             editor.apply()
 
-                            if (isAdded && isResumed) {
+                            if (isAdded && isResumed && !isStateSaved) {
                                 val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                                 bottomSheet.show(
                                     parentFragmentManager,
@@ -1538,8 +1540,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun openDefaultUPIIntentBottomSheetFromAndroid(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        startFunctionCalls()
-        startActivityForResult(intent, 124)
+        try {
+            startFunctionCalls()
+            startActivityForResult(intent, 124)
+        } catch (_: Exception) {
+            removeLoadingState()
+            Toast.makeText(context, "No other UPI options", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun getUrlForDefaultUPIIntent() {
@@ -1812,7 +1819,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             bottomSheetBehavior?.isHideable = false
 
 
-            dialog.setCancelable(false)
+            dialog.setCancelable(!binding.progressBar.isVisible)
+
+            dialog.setOnKeyListener { _, keyCode, _ ->
+                if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
+                    // Prevent dialog from being dismissed if loader is active
+                    true
+                } else {
+                    // Allow dialog to be dismissed if loader is not active
+                    false
+                }
+            }
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -1900,7 +1917,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("transactionId", transactionId)
                     editor.apply()
 
-                    if (isAdded && isResumed) {
+                    if (isAdded && isResumed && !isStateSaved) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                         bottomSheet.show(
                             parentFragmentManager,
@@ -2766,14 +2783,24 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     fun showLoadingInButton() {
         binding.proceedtext.visibility = View.INVISIBLE
         binding.progress.visibility = View.VISIBLE
-        val rotateAnimation =
-            ObjectAnimator.ofFloat(binding.progress, "rotation", 0f, 360f)
-        rotateAnimation.duration = 3000 // Set the duration of the rotation in milliseconds
-        rotateAnimation.repeatCount = ObjectAnimator.INFINITE // Set to repeat indefinitely
+
+        // Create the rotation animation
+        val rotateAnimation = ObjectAnimator.ofFloat(binding.progress, "rotation", 0f, 360f)
+
+        // Set the duration of one full rotation in milliseconds (e.g., 1000ms for 1 second)
+        rotateAnimation.duration = 1000L // Set finite duration for each rotation
+
+        // Set it to repeat indefinitely
+        rotateAnimation.repeatCount = ValueAnimator.INFINITE
+        rotateAnimation.repeatMode = ValueAnimator.RESTART // Restart rotation after each cycle
+
+        // Disable the button during the loading state
         binding.recommendedProceedButton.isEnabled = false
 
+        // Start the animation
         rotateAnimation.start()
     }
+
 
     fun hideLoadingInButton() {
         binding.progress.visibility = View.INVISIBLE

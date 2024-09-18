@@ -303,7 +303,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                         editor.putString("amount", response.getString("amount").toString())
                         editor.putString("transactionId", transactionId)
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             countdownTimer.cancel()
                             countdownTimerForAPI.cancel()
                             val callback = SingletonClass.getInstance().getYourObject()
@@ -337,7 +337,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                     ) {
                         editor.putString("status", "Failed")
                         editor.apply()
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             var cleanedMessage = statusReason.substringAfter(":")
                             if (!reasonCode.startsWith("uf", true)) {
                                 cleanedMessage = "Please retry using other payment method or try again in sometime"

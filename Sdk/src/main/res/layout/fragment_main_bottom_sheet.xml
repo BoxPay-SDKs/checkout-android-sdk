@@ -798,7 +798,7 @@
                                         android:layout_width="16dp"
                                         android:layout_height="wrap_content"
                                         android:layout_marginStart="12dp"
-                                        android:layout_marginTop="8dp"
+                                        android:layout_marginTop="12dp"
                                         app:layout_constraintStart_toStartOf="parent"
                                         app:layout_constraintTop_toTopOf="@+id/dashedLine1"
                                         app:srcCompat="@drawable/plus_sign_inside_circle" />

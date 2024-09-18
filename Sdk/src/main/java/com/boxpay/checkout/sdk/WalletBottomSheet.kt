@@ -14,6 +14,7 @@ import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -133,7 +134,17 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
-            dialog.setCancelable(false)
+            dialog.setCancelable(!binding.progressBar.isVisible)
+
+            dialog.setOnKeyListener { _, keyCode, _ ->
+                if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
+                    // Prevent dialog from being dismissed if loader is active
+                    true
+                } else {
+                    // Allow dialog to be dismissed if loader is not active
+                    false
+                }
+            }
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -1145,7 +1156,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         editor.putString("transactionId", transactionId)
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             val callback = SingletonClass.getInstance().getYourObject()
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -1180,7 +1191,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         editor.putString("status", "Failed")
                         editor.apply()
 
-                        if (isAdded && isResumed) {
+                        if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
