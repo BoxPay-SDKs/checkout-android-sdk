@@ -67,6 +67,8 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.microsoft.clarity.Clarity
+import com.microsoft.clarity.ClarityConfig
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -1799,6 +1801,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
+        val config = ClarityConfig("o4josf35jv")
+        Clarity.initialize(context, config)
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
             val d = dialog as BottomSheetDialog
             val bottomSheet =
