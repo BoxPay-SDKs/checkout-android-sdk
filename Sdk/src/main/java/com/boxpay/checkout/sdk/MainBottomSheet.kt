@@ -1,6 +1,7 @@
 package com.boxpay.checkout.sdk
 
 import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
@@ -1539,8 +1540,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun openDefaultUPIIntentBottomSheetFromAndroid(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        startFunctionCalls()
-        startActivityForResult(intent, 124)
+        try {
+            startFunctionCalls()
+            startActivityForResult(intent, 124)
+        } catch (_: Exception) {
+            removeLoadingState()
+            Toast.makeText(context, "No other UPI options", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun getUrlForDefaultUPIIntent() {
@@ -2777,14 +2783,24 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     fun showLoadingInButton() {
         binding.proceedtext.visibility = View.INVISIBLE
         binding.progress.visibility = View.VISIBLE
-        val rotateAnimation =
-            ObjectAnimator.ofFloat(binding.progress, "rotation", 0f, 360f)
-        rotateAnimation.duration = 3000 // Set the duration of the rotation in milliseconds
-        rotateAnimation.repeatCount = ObjectAnimator.INFINITE // Set to repeat indefinitely
+
+        // Create the rotation animation
+        val rotateAnimation = ObjectAnimator.ofFloat(binding.progress, "rotation", 0f, 360f)
+
+        // Set the duration of one full rotation in milliseconds (e.g., 1000ms for 1 second)
+        rotateAnimation.duration = 1000L // Set finite duration for each rotation
+
+        // Set it to repeat indefinitely
+        rotateAnimation.repeatCount = ValueAnimator.INFINITE
+        rotateAnimation.repeatMode = ValueAnimator.RESTART // Restart rotation after each cycle
+
+        // Disable the button during the loading state
         binding.recommendedProceedButton.isEnabled = false
 
+        // Start the animation
         rotateAnimation.start()
     }
+
 
     fun hideLoadingInButton() {
         binding.progress.visibility = View.INVISIBLE
