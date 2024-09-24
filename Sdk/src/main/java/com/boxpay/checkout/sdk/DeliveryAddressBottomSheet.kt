@@ -20,6 +20,10 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import com.android.volley.RequestQueue
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentDeliveryAddressBottomSheetBinding
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -37,9 +41,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var callback: UpdateMainBottomSheetInterface? = null
     private var indexCountryCodePhone: String = ""
     private var firstTime: Boolean = false
+    private var token: String? = null
     private var selectedCountryName = "IN"
     private var countrySelected = false
     private var phoneCodeSelected = false
+    private lateinit var Base_Session_API_URL: String
     private var isShippingEnabled = false
     private var isNameEnabled = false
     private var isPhoneEnabled = false
@@ -73,6 +79,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
+        val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
+        token = sharedPreferences.getString("token", "empty")
+        Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
 
         val indexCountryPhone = sharedPreferences.getString("phoneCode", "+91")
 
@@ -106,6 +115,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                         countrySelectedFromDropDown =
                             setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
                         binding.countryEditText.setText(countrySelectedFromDropDown)
+                        binding.stateEditText.isEnabled = true
                         phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
                         minPhoneLength = phoneLength.first
                         maxPhoneLength = phoneLength.second
@@ -184,6 +194,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                         toCheckAllFieldsAreFilled()
                     } else {
                         binding.countryEditText.setText(countrySelectedFromDropDown)
+                        binding.stateEditText.isEnabled = true
                         binding.countryEditText.dismissDropDown()
                     }
 
@@ -293,6 +304,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 countrySelectedFromDropDown =
                     setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
                 binding.countryEditText.setText(countrySelectedFromDropDown)
+                binding.stateEditText.isEnabled = true
                 phoneLength = getMinMaxLength(countryCodeJson, selectedDialCode)
                 minPhoneLength = phoneLength.first
                 maxPhoneLength = phoneLength.second
@@ -1004,10 +1016,10 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             disableProceedButton()
             return false
         }
+        if (countryCodePhoneNum.equals("+91",true) && postalCode.length == 6) {
+            getPostalCodeDetails()
+        }
         binding.postalCodeErrorText.visibility = View.INVISIBLE
-        binding.stateEditText.isEnabled = sharedPreferences.getString("postalCode", "")?.equals(
-            binding.postalCodeEditText.text.toString(), true
-        ) == false
         return true
     }
 
@@ -1064,6 +1076,30 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
         }
         return false
+    }
+
+    private fun getPostalCodeDetails() {
+        val url = "${Base_Session_API_URL}${token}/postal-codes"
+        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        val jsonObjectAll = object  : JsonObjectRequest(Method.GET, url, null, { response ->
+
+            try{
+                binding.stateEditText.setText(response.getString("state"))
+                binding.cityEditText.setText(response.getString("city"))
+                binding.stateEditText.isEnabled = false
+            } catch (e: Exception) {
+                // no op
+            }
+
+        }, Response.ErrorListener { /*no response handling */ }) {
+            override fun getParams(): MutableMap<String, String> {
+                val params = HashMap<String, String>()
+                params["postalCode"] = binding.postalCodeEditText.text.toString()
+                params["countryCode"] = "IN"
+                return params
+            }
+        }
+        queue.add(jsonObjectAll)
     }
 }
 
@@ -1152,6 +1188,5 @@ class CustomArrayAdapter(
             }
         }
     }
-
 
 }

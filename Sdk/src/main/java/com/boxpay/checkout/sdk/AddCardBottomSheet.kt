@@ -389,7 +389,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
         // Set InputFilter to limit the length and add a slash after every 2 digits
-        binding.editTextCardValidity.filters = arrayOf(InputFilter.LengthFilter(7))
+        binding.editTextCardValidity.filters = arrayOf(InputFilter.LengthFilter(5))
 
         // Set TextWatcher to add slashes dynamically as the user types
         binding.editTextCardValidity.addTextChangedListener(object : TextWatcher {
@@ -682,7 +682,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         binding.textView7.text = "Invalid card Validity"
                     }
                 }
-//                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
             }
         })
         binding.editTextCardCVV.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->

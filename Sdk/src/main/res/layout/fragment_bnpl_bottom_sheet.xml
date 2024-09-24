@@ -95,7 +95,7 @@
                     <androidx.core.widget.NestedScrollView
                         android:id="@+id/nestedScrollView"
                         android:layout_width="match_parent"
-                        android:layout_height="400dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="@+id/imageView"
@@ -108,7 +108,7 @@
                             <RelativeLayout
                                 android:id="@+id/loading_relative_layout"
                                 android:layout_width="match_parent"
-                                android:layout_height="400dp"
+                                android:layout_height="match_parent"
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintHorizontal_bias="0.0"
@@ -136,7 +136,7 @@
                             <androidx.recyclerview.widget.RecyclerView
                                 android:id="@+id/walletsRecyclerView"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="500dp"
                                 android:layout_marginTop="8dp"
                                 android:visibility="gone"
                                 app:layout_constraintEnd_toEndOf="parent"
@@ -146,11 +146,6 @@
                                 app:layout_goneMarginBottom="8dp"
                                 tools:itemCount="10"
                                 tools:listitem="@layout/wallet_item" />
-
-                            <RelativeLayout
-                                android:id="@+id/relativeLayout"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent" />
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
