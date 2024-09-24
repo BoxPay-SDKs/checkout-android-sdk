@@ -390,8 +390,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             })
 
 
-            // Set InputFilter to limit the length and add a slash after every 2 digits
-            binding.editTextCardValidity.filters = arrayOf(InputFilter.LengthFilter(7))
+        // Set InputFilter to limit the length and add a slash after every 2 digits
+        binding.editTextCardValidity.filters = arrayOf(InputFilter.LengthFilter(5))
 
             // Set TextWatcher to add slashes dynamically as the user types
             binding.editTextCardValidity.addTextChangedListener(object : TextWatcher {
@@ -677,36 +677,35 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             binding.editTextCardValidity.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
                 if (hasFocus) {
 
-                } else {
-                    val cardValidity = binding.editTextCardValidity.text.toString()
-                    try {
-                        if (!(isValidExpirationDate(
-                                cardValidity.substring(0, 2),
-                                cardValidity.substring(3, 5)
-                            ))
-                        ) {
-                            binding.invalidCardValidity.visibility = View.VISIBLE
-                            if (binding.editTextCardValidity.text.isNullOrEmpty()) {
-                                binding.textView7.text = "Enter Card Validity"
-                            } else {
-                                binding.textView7.text = "Invalid card Validity"
-                            }
-                        } else {
-                            binding.invalidCardValidity.visibility = View.INVISIBLE
-                        }
-                    } catch (e: Exception) {
+            } else {
+                val cardValidity = binding.editTextCardValidity.text.toString()
+                try {
+                    if (!(isValidExpirationDate(
+                            cardValidity.substring(0, 2),
+                            cardValidity.substring(3, 5)
+                        ))
+                    ) {
                         binding.invalidCardValidity.visibility = View.VISIBLE
                         if (binding.editTextCardValidity.text.isNullOrEmpty()) {
                             binding.textView7.text = "Enter Card Validity"
                         } else {
                             binding.textView7.text = "Invalid card Validity"
                         }
+                    } else {
+                        binding.invalidCardValidity.visibility = View.INVISIBLE
                     }
-//                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    binding.invalidCardValidity.visibility = View.VISIBLE
+                    if (binding.editTextCardValidity.text.isNullOrEmpty()) {
+                        binding.textView7.text = "Enter Card Validity"
+                    } else {
+                        binding.textView7.text = "Invalid card Validity"
+                    }
                 }
-            })
-            binding.editTextCardCVV.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
+            }
+        })
+        binding.editTextCardCVV.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
 
                 } else {
                     try {

@@ -158,6 +158,7 @@
                                 android:layout_marginEnd="14dp"
                                 android:visibility="visible"
                                 android:scrollbars="vertical"
+                                android:fadeScrollbars="false"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toBottomOf="@+id/numberOfItems"
@@ -324,7 +325,7 @@
                         app:cardCornerRadius="10dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardView3">
+                        app:layout_constraintTop_toBottomOf="@+id/cardView8">
 
                         <LinearLayout
                             android:id="@+id/container"

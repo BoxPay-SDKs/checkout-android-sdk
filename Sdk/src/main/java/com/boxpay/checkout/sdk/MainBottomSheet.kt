@@ -85,6 +85,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.text.NumberFormat
 import java.util.Locale
 import java.util.Objects
 import kotlin.random.Random
@@ -993,39 +994,41 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             }
 
-            binding.deliveryAddressConstraintLayout.setOnClickListener() {
-                if (!binding.loadingRelativeLayout.isVisible) {
-                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                            ?.removePrefix(countryCode?.second ?: "")
-                        editor.putString("phoneNumber", confirmPhoneNumber)
-                        editor.putString("phoneCode", countryCode?.second)
-                        editor.apply()
-                    }
-                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                        this,
-                        false,
-                        showName,
-                        showPhone,
-                        showEmail,
-                        showShipping
-                    )
-                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+        binding.deliveryAddressConstraintLayout.setOnClickListener() {
+            if (!binding.loadingRelativeLayout.isVisible) {
+                if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                    val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                        ?.removePrefix(countryCode?.second ?: "")
+                    editor.putString("phoneNumber", confirmPhoneNumber)
+                    editor.putString("phoneCode", countryCode?.second)
+                    editor.putString("countryName", countryCode?.first)
+                    editor.apply()
                 }
+                bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                    this,
+                    false,
+                    showName,
+                    showPhone,
+                    showEmail,
+                    showShipping
+                )
+                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
             }
+        }
 
-            binding.proceedButton.setOnClickListener() {
-                if (!binding.loadingRelativeLayout.isVisible) {
-                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                            ?.removePrefix(countryCode?.second ?: "")
-                        editor.putString("phoneNumber", confirmPhoneNumber)
-                        editor.putString("phoneCode", countryCode?.second)
-                        editor.apply()
-                    }
-                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+        binding.proceedButton.setOnClickListener() {
+            if (!binding.loadingRelativeLayout.isVisible) {
+                if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                    val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                        ?.removePrefix(countryCode?.second ?: "")
+                    editor.putString("phoneNumber", confirmPhoneNumber)
+                    editor.putString("countryName", countryCode?.first)
+                    editor.putString("phoneCode", countryCode?.second)
+                    editor.apply()
                 }
+                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
             }
+        }
 
             binding.root
         } catch (e: Exception) {
@@ -2020,6 +2023,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
 
                 val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")
+                val amount = totalAmount.toDouble()
+
+// Format the amount using the NumberFormat class for locale-specific formatting
+                val formattedAmount = NumberFormat.getNumberInstance(Locale.US).format(amount)
 
 
                 var orderObject: JSONObject? = null
@@ -2045,12 +2052,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.belowTextImage.visibility = View.GONE
                 }
 
-                val originalAmount = orderObject?.getString("originalAmount")
+                val originalAmount = orderObject?.getString("originalAmount") ?: "0"
 
                 val shippingCharges = orderObject?.getString("shippingAmount") ?: "0"
 
 
                 val taxes = orderObject?.getString("taxAmount") ?: "0"
+                val doubleTypeTax =
+                    NumberFormat.getNumberInstance(Locale.US).format(taxes.toDouble())
+                val doubleTypeOriginal =
+                    NumberFormat.getNumberInstance(Locale.US).format(originalAmount.toDouble())
+                val doubleTypeshipping =
+                    NumberFormat.getNumberInstance(Locale.US).format(shippingCharges.toDouble())
 
                 val additionalDetails =
                     response.getJSONObject("configs").getJSONArray("additionalFieldSets")
@@ -2092,9 +2105,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (orderDetails != null && productSummary != null) {
                     binding.orderSummaryConstraintLayout.visibility = View.GONE
+                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.scrollCard.visibility = View.VISIBLE
                 } else {
                     binding.orderSummaryConstraintLayout.visibility = View.VISIBLE
+                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
                     binding.scrollCard.visibility = View.GONE
                 }
                 productSummary?.let { parseAndRenderProductSummary(it) }
@@ -2104,7 +2119,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     currencySymbol = "₹"
 
                 var totalQuantity = 0
-                editor.putString("currencySymbol",currencySymbol)
+                editor.putString("currencySymbol", currencySymbol)
                 editor.apply()
 
                 transactionAmount = totalAmount
@@ -2147,20 +2162,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 transactionAmount = totalAmount.toString()
 
-                binding.unopenedTotalValue.text = "${currencySymbol}${totalAmount}"
+                binding.unopenedTotalValue.text = "${currencySymbol}${formattedAmount}"
                 if (totalQuantity == 0) {
                     binding.numberOfItems.text = "Total"
                 } else if (totalQuantity == 1)
                     binding.numberOfItems.text = "${totalQuantity} item"
                 else
                     binding.numberOfItems.text = "${totalQuantity} items"
-                binding.ItemsPrice.text = "${currencySymbol}${totalAmount}"
+                binding.ItemsPrice.text = "${currencySymbol}${formattedAmount}"
 
                 if (originalAmount != totalAmount) {
                     if (originalAmount == null || originalAmount == "0" || originalAmount == "null") {
                         binding.subTotalRelativeLayout.visibility = View.GONE
                     } else {
-                        binding.subtotalTextView.text = "${currencySymbol}${originalAmount}"
+                        binding.subtotalTextView.text = "${currencySymbol}${doubleTypeOriginal}"
                         binding.subTotalRelativeLayout.visibility = View.VISIBLE
                     }
                 }
@@ -2169,7 +2184,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (taxes == "0") {
                         binding.taxesRelativeLayout.visibility = View.GONE
                     } else {
-                        binding.taxTextView.text = "${currencySymbol}${taxes}"
+                        binding.taxTextView.text = "${currencySymbol}${doubleTypeTax}"
                         binding.taxesRelativeLayout.visibility = View.VISIBLE
                     }
 
@@ -2179,7 +2194,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (shippingCharges == "0") {
                         binding.shippingChargesRelativeLayout.visibility = View.GONE
                     } else {
-                        binding.shippingChargesTextView.text = "${currencySymbol}${shippingCharges}"
+                        binding.shippingChargesTextView.text =
+                            "${currencySymbol}$doubleTypeshipping"
                         binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
                     }
                 }
@@ -2195,10 +2211,16 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
                 val countryCodeJson = JSONObject(jsonString)
+                val shopperObject = paymentDetailsObject.getJSONObject("shopper")
                 countryCode = getCountryName(
                     countryCodeJson,
-                    paymentDetailsObject.getJSONObject("context").getString("countryCode")
+                    if (shopperObject.getString("phoneNumber").contains('+')) {
+                        shopperObject.getString("phoneNumber")
+                    } else {
+                        "+" + shopperObject.getString("phoneNumber")
+                    }
                 )
+                editor.putString("countryName", countryCode?.first)
                 editor.putString("amount", moneyObject.getString("amount"))
                 editor.putString("merchantId", response.getString("merchantId"))
                 editor.putString(
@@ -2211,7 +2233,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         .getString("code")
                 )
 
-                val shopperObject = paymentDetailsObject.getJSONObject("shopper")
                 if (!shopperObject.isNull("uniqueReference")) {
                     editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
                 }
@@ -2237,7 +2258,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "city",
                         shopperObject.getJSONObject("deliveryAddress").getString("city")
                     )
-                    editor.putString("countryName", countryCode?.first)
                     editor.putString("indexCountryCodePhone", countryCode?.second)
                     editor.putString("phoneCode", countryCode?.second)
                     editor.putString(
@@ -2293,6 +2313,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.recommendedLinearLayout.visibility = View.GONE
                     binding.walletConstraint.visibility = View.GONE
                     binding.linearLayout.visibility = View.GONE
+                    binding.textView111.text = "Order Details"
                     binding.proceedButton.visibility = View.VISIBLE
                     priceBreakUpVisible = true
                     bottomSheet = DeliveryAddressBottomSheet.newInstance(
@@ -2304,7 +2325,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showShipping
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone) && orderDetails == null) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull(
+                        "email"
+                    )) && (showName || showEmail || showPhone) && orderDetails == null
+                ) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2316,6 +2340,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardConstraint.visibility = View.GONE
                     binding.walletConstraint.visibility = View.GONE
                     binding.linearLayout.visibility = View.GONE
+                    binding.textView111.text = "Order Details"
                     binding.proceedButton.visibility = View.VISIBLE
                     binding.recommendedCardView.visibility = View.GONE
                     binding.recommendedLinearLayout.visibility = View.GONE
@@ -2330,6 +2355,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )
                     showPriceBreakUp()
                 } else {
+                    binding.textView111.text = "Payment Details"
                     binding.proceedButton.visibility = View.GONE
                     if (!shopperObject.isNull("firstName")) {
                         editor.putString("firstName", shopperObject.getString("firstName"))
@@ -2625,8 +2651,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.bnplConstraint.visibility = View.VISIBLE
         binding.walletConstraint.visibility = View.VISIBLE
         binding.linearLayout.visibility = View.VISIBLE
+        binding.textView111.text = "Payment Details"
         binding.proceedButton.visibility = View.GONE
-        priceBreakUpVisible = true
+        priceBreakUpVisible = false
         hidePriceBreakUp()
         if (recommendedInstrumentationList.isNotEmpty() && binding.upiLinearLayout.isVisible) {
             binding.recommendedCardView.visibility = View.VISIBLE
@@ -2650,17 +2677,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun getCountryName(
         countryCodeJson: JSONObject,
-        countryCode: String
-    ): Pair<String, String>? {
+        phoneNumber: String
+    ): Pair<String, String> {
+        var fullName = ""
+        var code = ""
         countryCodeJson.keys().forEach { key ->
-            if (key.equals(countryCode)) {
-                val countryDetails = countryCodeJson.getJSONObject(key)
-                val code = countryDetails.getString("fullName")
-                val isd = countryDetails.getString("isdCode")
-                return Pair(code, isd)
+            val countryDetails = countryCodeJson.getJSONObject(key)
+            if (phoneNumber.startsWith(countryDetails.getString("isdCode"))) {
+                code = countryDetails.getString("isdCode")
+                fullName = countryDetails.getString("fullName")
             }
         }
-        return null
+        return Pair(fullName, code)
     }
 
     fun generateRandomAlphanumericString(length: Int): String {

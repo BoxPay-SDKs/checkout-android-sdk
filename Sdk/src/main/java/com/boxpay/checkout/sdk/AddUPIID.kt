@@ -169,14 +169,15 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
                 callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiCollect", "Upi")
 
-                if (checkString(userVPA!!)) {
-                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
-                    validateAPICall(requireContext(), userVPA!!)
-                    showLoadingInButton()
-                } else {
-                    binding.ll1InvalidUPI.visibility = View.VISIBLE
-                }
+            if (checkString(userVPA!!)) {
+                binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                binding.editText.isEnabled = false
+                validateAPICall(requireContext(), userVPA!!)
+                showLoadingInButton()
+            } else {
+                binding.ll1InvalidUPI.visibility = View.VISIBLE
             }
+        }
 
             binding.root
         } catch (e: Exception) {
@@ -488,6 +489,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Response.Listener { response ->
 
                 val status = response.getJSONObject("status").getString("status")
+                binding.editText.isEnabled = true
                 val reason = response.getJSONObject("status").getString("reason")
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()

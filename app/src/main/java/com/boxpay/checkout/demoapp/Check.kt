@@ -121,7 +121,7 @@ class Check : AppCompatActivity() {
         "lastName": "Bansal",
         "email": "ishika.bansal@boxpay.tech",
         "uniqueReference": "x123y",
-        "phoneNumber": "919876543211",
+        "phoneNumber": "19876543211",
         "deliveryAddress": {
             "address1": "first line",
             "address2": "second line",
@@ -132,11 +132,11 @@ class Check : AppCompatActivity() {
         }
     },
     "order": {
-        "originalAmount": 423.73,
-        "shippingAmount": 50,
+        "originalAmount": 42113.73,
+        "shippingAmount": 5110,
         "voucherCode": "VOUCHER",
-        "taxAmount": 76.27,
-        "totalAmountWithoutTax": 423.73,
+        "taxAmount": 7611.27,
+        "totalAmountWithoutTax": 42311.73,
         "items": [
             {
                 "id": "test",
@@ -167,7 +167,7 @@ class Check : AppCompatActivity() {
                 "productUrl": null,
                 "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
                 "categories": null,
-                "amountWithoutTax": 423.73,
+                "amountWithoutTax": 1423.73,
                 "taxAmount": 76.27,
                 "taxPercentage": null,
                 "discountedAmount": null,
