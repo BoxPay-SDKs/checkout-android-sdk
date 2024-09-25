@@ -1,6 +1,5 @@
 package com.boxpay.checkout.sdk
 
-import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.webkit.WebSettings
@@ -15,8 +14,9 @@ import org.json.JSONObject
 import java.util.Locale
 
 class BoxPayOrderCheckout(
+    private val activity: AppCompatActivity,
     val context: Context,
-    val token:String,
+    val token: String,
     val onPaymentResult: ((PaymentResultObject) -> Unit)?,
     val sandboxEnabled: Boolean = false,
     val orderJson: JSONObject
@@ -41,13 +41,10 @@ class BoxPayOrderCheckout(
             this.BASE_URL = "apis.boxpay.in"
         }
         editor.apply()
-        if (context is Activity) {
-            val activity =
-                context as AppCompatActivity // or FragmentActivity, depending on your activity type
-            callUIAnalytics(context, "CHECKOUT_LOADED")
-            putTransactionDetailsInSharedPreferences()
-            openBottomSheet()
-        }
+        editor.apply()
+        callUIAnalytics(context, "CHECKOUT_LOADED")
+        putTransactionDetailsInSharedPreferences()
+        openBottomSheet()
     }
 
     private fun callUIAnalytics(context: Context, event: String) {
@@ -89,18 +86,17 @@ class BoxPayOrderCheckout(
 
     private fun openBottomSheet() {
         initializingCallBackFunctions()
+        val fragmentManager = activity.supportFragmentManager
+        // Now you can use fragmentManager
+        val bottomSheet = MainBottomSheet()
+        initializingCallBackFunctions()
 
-        if (context is Activity) {
-            val activity =
-                context as AppCompatActivity // or FragmentActivity, depending on your activity type
-            val fragmentManager = activity.supportFragmentManager
-            // Now you can use fragmentManager
-            val bottomSheet = MainBottomSheet()
-            bottomSheet.setOrderDetails(orderDetails = orderJson.getString("orderDetails"))
-            bottomSheet.setAmount(amount = orderJson.getString("amount"))
-            bottomSheet.setProductSummary(productSummary = orderJson.getString("product_summary"))
-            bottomSheet.show(fragmentManager, "MainBottomSheet")
-        }
+        bottomSheet.setContext(context)
+        bottomSheet.show(fragmentManager, "MainBottomSheet")
+        bottomSheet.setOrderDetails(orderDetails = orderJson.getString("orderDetails"))
+        bottomSheet.setAmount(amount = orderJson.getString("amount"))
+        bottomSheet.setProductSummary(productSummary = orderJson.getString("product_summary"))
+        bottomSheet.show(fragmentManager, "MainBottomSheet"
     }
 
     fun initializingCallBackFunctions() {
