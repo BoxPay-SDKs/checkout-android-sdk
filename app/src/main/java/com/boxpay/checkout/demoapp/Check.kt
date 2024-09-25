@@ -15,8 +15,6 @@ import com.boxpay.checkout.sdk.BoxPayCheckout
 import com.boxpay.checkout.sdk.BuildConfig
 import com.boxpay.checkout.sdk.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.microsoft.clarity.Clarity
-import com.microsoft.clarity.ClarityConfig
 import org.json.JSONObject
 
 class Check : AppCompatActivity() {
@@ -33,8 +31,7 @@ class Check : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        val config = ClarityConfig("o4josf35jv")
-        Clarity.initialize(applicationContext, config)
+
 
         makePaymentRequest(this)
 
@@ -84,6 +81,7 @@ class Check : AppCompatActivity() {
         val boxPayCheckout =
             BoxPayCheckout(
                 this,
+                applicationContext,
                 tokenLiveData.value ?: "",
                 ::onPaymentResultCallback,
                 false,
@@ -276,7 +274,7 @@ class Check : AppCompatActivity() {
             },
             Response.ErrorListener { error ->
                 println("====error $error")
-            /* no response handling */
+                /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
