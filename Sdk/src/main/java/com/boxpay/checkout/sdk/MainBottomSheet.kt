@@ -2043,7 +2043,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (additionalDetails.get(i) == "ORDER_ITEM_DETAILS") {
                         orderSummaryEnable = true
                     }
-                    if (additionalDetails.get(i).equals("BILLING_ADDRESS") || additionalDetails.get(
+                    if (additionalDetails.get(
                             i
                         ).equals("SHIPPING_ADDRESS")
                     ) {
@@ -2293,10 +2293,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showShipping
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull(
-                        "email"
-                    )) && (showName || showEmail || showPhone) && orderDetails == null
-                ) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone) && orderDetails == null) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2601,7 +2598,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.textView2.text = "Personal details"
             binding.addressTextViewMain.visibility = View.GONE
         }
-//        binding.cardView8.visibility = View.VISIBLE
+        binding.cardView8.visibility = View.VISIBLE
         countryCode = Pair(
             sharedPreferences.getString("countryName", "") ?: "",
             sharedPreferences.getString("phoneCode", null) ?: ""
