@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk
 
+import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.webkit.WebSettings
@@ -14,7 +15,6 @@ import org.json.JSONObject
 import java.util.Locale
 
 class BoxPayCheckout(
-    private val activity: AppCompatActivity,
     private val context: Context,
     private val token: String,
     val onPaymentResult: ((PaymentResultObject) -> Unit)?,
@@ -22,14 +22,13 @@ class BoxPayCheckout(
     private val customerShopperToken: String = ""
 ) {
     constructor(
-        activity: AppCompatActivity,
         context: Context,
         token: String,
         onPaymentResult: ((PaymentResultObject) -> Unit)?,
         customerShopperToken: String = "",
         sandboxEnabled: Boolean = false
     ) : this(
-        activity, context, token, onPaymentResult, sandboxEnabled, customerShopperToken
+        context, token, onPaymentResult, sandboxEnabled, customerShopperToken
     )
 
     private var sharedPreferences: SharedPreferences =
@@ -98,11 +97,15 @@ class BoxPayCheckout(
     private fun openBottomSheet() {
         initializingCallBackFunctions()
 
-        val fragmentManager = activity.supportFragmentManager
-        // Now you can use fragmentManager
-        val bottomSheet = MainBottomSheet()
-        bottomSheet.setContext(context)
-        bottomSheet.show(fragmentManager, "MainBottomSheet")
+        if (context is Activity) {
+            val activity =
+                context as AppCompatActivity // or FragmentActivity, depending on your activity type
+            val fragmentManager = activity.supportFragmentManager
+            // Now you can use fragmentManager
+            val bottomSheet = MainBottomSheet()
+            bottomSheet.setContext(activity.applicationContext)
+            bottomSheet.show(fragmentManager, "MainBottomSheet")
+        }
     }
 
     fun initializingCallBackFunctions() {

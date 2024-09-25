@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk
 
+import android.app.Activity
 import android.content.Context
 import android.content.SharedPreferences
 import android.webkit.WebSettings
@@ -14,7 +15,6 @@ import org.json.JSONObject
 import java.util.Locale
 
 class BoxPayOrderCheckout(
-    private val activity: AppCompatActivity,
     val context: Context,
     val token: String,
     val onPaymentResult: ((PaymentResultObject) -> Unit)?,
@@ -86,17 +86,18 @@ class BoxPayOrderCheckout(
 
     private fun openBottomSheet() {
         initializingCallBackFunctions()
-        val fragmentManager = activity.supportFragmentManager
-        // Now you can use fragmentManager
-        val bottomSheet = MainBottomSheet()
-        initializingCallBackFunctions()
-
-        bottomSheet.setContext(context)
-        bottomSheet.show(fragmentManager, "MainBottomSheet")
-        bottomSheet.setOrderDetails(orderDetails = orderJson.getString("orderDetails"))
-        bottomSheet.setAmount(amount = orderJson.getString("amount"))
-        bottomSheet.setProductSummary(productSummary = orderJson.getString("product_summary"))
-        bottomSheet.show(fragmentManager, "MainBottomSheet")
+        if (context is Activity) {
+            val activity =
+                context as AppCompatActivity // or FragmentActivity, depending on your activity type
+            val fragmentManager = activity.supportFragmentManager
+            // Now you can use fragmentManager
+            val bottomSheet = MainBottomSheet()
+            bottomSheet.setContext(activity.applicationContext)
+            bottomSheet.setOrderDetails(orderDetails = orderJson.getString("orderDetails"))
+            bottomSheet.setAmount(amount = orderJson.getString("amount"))
+            bottomSheet.setProductSummary(productSummary = orderJson.getString("product_summary"))
+            bottomSheet.show(fragmentManager, "MainBottomSheet")
+        }
     }
 
     fun initializingCallBackFunctions() {

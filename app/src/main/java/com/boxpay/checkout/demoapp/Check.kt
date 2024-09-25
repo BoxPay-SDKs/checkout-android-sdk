@@ -81,7 +81,6 @@ class Check : AppCompatActivity() {
         val boxPayCheckout =
             BoxPayCheckout(
                 this,
-                applicationContext,
                 tokenLiveData.value ?: "",
                 ::onPaymentResultCallback,
                 false,
