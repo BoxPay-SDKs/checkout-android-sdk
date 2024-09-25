@@ -96,7 +96,7 @@ class BoxPayOrderCheckout(
         bottomSheet.setOrderDetails(orderDetails = orderJson.getString("orderDetails"))
         bottomSheet.setAmount(amount = orderJson.getString("amount"))
         bottomSheet.setProductSummary(productSummary = orderJson.getString("product_summary"))
-        bottomSheet.show(fragmentManager, "MainBottomSheet"
+        bottomSheet.show(fragmentManager, "MainBottomSheet")
     }
 
     fun initializingCallBackFunctions() {
