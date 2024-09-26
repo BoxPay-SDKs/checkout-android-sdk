@@ -109,7 +109,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var showName = false
     private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
-    private var railyatriAmount : String? = null
+    private var railyatriAmount: String? = null
     private var showShipping = false
     private var showPhone = false
     var upiOptionsShown = false
@@ -144,7 +144,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private lateinit var bottomSheet: DeliveryAddressBottomSheet
     private var firstLoad: Boolean = true
     private var productSummary: String? = null
-    private var orderDetails: String?= null
+    private var orderDetails: String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -526,6 +526,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.apply()
                         if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
+                            job?.cancel()
+                            job?.cancel()
                             var cleanedMessage = reason.substringAfter(":")
                             if (!reasonCode.startsWith("uf", true)) {
                                 cleanedMessage =
@@ -567,12 +569,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 }
             },
-            Response.ErrorListener {error ->
+            Response.ErrorListener { error ->
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
                         PaymentFailureScreen(
@@ -699,7 +701,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
                         PaymentFailureScreen(
@@ -824,7 +826,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 upiOptionsShown = false
                 hideUPIOptions()
                 if (binding.recomendedOptionsLinearLayout.isVisible) {
-                    recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
+                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
+                        RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                 } else {
                     showRecommendedOptions()
@@ -879,7 +882,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.addNewUPIIDConstraint.setOnClickListener() {
             if (!binding.loadingRelativeLayout.isVisible) {
                 binding.addNewUPIIDConstraint.isEnabled = false
-                callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiCollect", "Upi")
+                callUIAnalytics(
+                    requireContext(),
+                    "PAYMENT_INSTRUMENT_PROVIDED",
+                    "UpiCollect",
+                    "Upi"
+                )
                 callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Upi")
                 callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiCollect", "Upi")
                 job?.cancel()
@@ -1173,7 +1181,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
                         PaymentFailureScreen(
@@ -1290,7 +1298,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
                         PaymentFailureScreen(
@@ -1394,7 +1402,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     overlayViewModel.setShowOverlay(false)
                     showLoadingState("fetchIntentURL")
                     getUrlForUPIIntent("PhonePe")
-                    callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiIntent", "Upi")
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        "UpiIntent",
+                        "Upi"
+                    )
                     callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
                     callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
                 }
@@ -1415,7 +1428,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     overlayViewModel.setShowOverlay(false)
                     showLoadingState("fetchIntentURL")
                     getUrlForUPIIntent("GPay")
-                    callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiIntent", "Upi")
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        "UpiIntent",
+                        "Upi"
+                    )
                     callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
                     callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
                 }
@@ -1436,7 +1454,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     overlayViewModel.setShowOverlay(false)
                     showLoadingState("fetchIntentURL")
                     getUrlForUPIIntent("PayTm")
-                    callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiIntent", "Upi")
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        "UpiIntent",
+                        "Upi"
+                    )
                     callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
                     callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
                 }
@@ -1667,7 +1690,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
                         PaymentFailureScreen(
@@ -1802,8 +1825,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        val config = ClarityConfig("o4josf35jv")
-        Clarity.initialize(context, config)
+        if (::context.isInitialized) {
+            val config = ClarityConfig("o4josf35jv")
+            Clarity.initialize(context, config)
+        }
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
             val d = dialog as BottomSheetDialog
             val bottomSheet =
@@ -1908,7 +1933,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val url = "${Base_Session_API_URL}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
-        val jsonObjectAll = object  : JsonObjectRequest(Method.GET, url, null, { response ->
+        val jsonObjectAll = object : JsonObjectRequest(Method.GET, url, null, { response ->
 
             try {
                 val status = response.getString("status")
@@ -1954,12 +1979,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 val subscriptionDetails = paymentDetailsObject.optJSONObject("subscriptionDetails")
-                val toShowSubscription = subscriptionDetails != null && subscriptionDetails.optJSONObject("billingCycle")
-                    ?.optString("billingTimeUnit")
-                    .equals("AsPresented")
+                val toShowSubscription =
+                    subscriptionDetails != null && subscriptionDetails.optJSONObject("billingCycle")
+                        ?.optString("billingTimeUnit")
+                        .equals("AsPresented")
 
                 if (toShowSubscription && railyatriAmount != null && railyatriAmount!!.isNotEmpty()) {
-                    val amountValue = railyatriAmount!!.toDoubleOrNull() // Convert the string to Double (or Int) safely
+                    val amountValue =
+                        railyatriAmount!!.toDoubleOrNull() // Convert the string to Double (or Int) safely
                     if (amountValue != null && amountValue >= 15000) {
                         binding.belowTextImage.visibility = View.VISIBLE
                     } else {
@@ -2016,11 +2043,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (orderDetails != null && productSummary != null) {
                     binding.orderSummaryConstraintLayout.visibility = View.GONE
                     binding.scrollCard.visibility = View.VISIBLE
-                } else{
+                } else {
                     binding.orderSummaryConstraintLayout.visibility = View.VISIBLE
                     binding.scrollCard.visibility = View.GONE
                 }
-                productSummary?.let { parseAndRenderProductSummary(it)}
+                productSummary?.let { parseAndRenderProductSummary(it) }
 
                 var currencySymbol = sharedPreferences.getString("currencySymbol", "")
                 if (currencySymbol == "")
@@ -2231,7 +2258,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showShipping
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone) && orderDetails == null) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull(
+                        "email"
+                    )) && (showName || showEmail || showPhone) && orderDetails == null
+                ) {
 //                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2468,12 +2498,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 ).show()
             }
 
-        }, Response.ErrorListener { error  ->
+        }, Response.ErrorListener { error ->
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
                 val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                if (errorMessage?.contains("expired",true) == true) {
+                if (errorMessage?.contains("expired", true) == true) {
                     SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                 } else {
                     Toast.makeText(
@@ -2756,7 +2786,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
                         PaymentFailureScreen(
@@ -2841,7 +2871,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         LinearLayout.LayoutParams.MATCH_PARENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
                     )
-                    setPadding(32,8,32,8)
+                    setPadding(32, 8, 32, 8)
                 }
 
                 // Variable to track if the first element was "linegap"
@@ -2864,7 +2894,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
 
                     when (item.getString("type")) {
-                        "text" -> addTextView(horizontalLayout, item, currentIndex, i!=0)
+                        "text" -> addTextView(horizontalLayout, item, currentIndex, i != 0)
                         "image" -> addImageView(horizontalLayout, item)
                         "divider" -> addDividerView(horizontalLayout, item)
                         "linegap" -> addLineGap(container, item)
@@ -2885,7 +2915,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
     }
 
-    private fun addTextView(container: LinearLayout, item: JSONObject, i: Int, toAddWeight: Boolean = true) {
+    private fun addTextView(
+        container: LinearLayout,
+        item: JSONObject,
+        i: Int,
+        toAddWeight: Boolean = true
+    ) {
         try {
             val textView = TextView(context).apply {
                 layoutParams = LinearLayout.LayoutParams(
@@ -2896,7 +2931,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         weight = 1.0f // All views have equal weight
                     }
                 }
-                gravity = if (i==0) Gravity.START else Gravity.END
+                gravity = if (i == 0) Gravity.START else Gravity.END
             }
             textView.text = item.optString("text", "Default Text")
             textView.textSize = item.optInt("textSize", 14).toFloat()
@@ -3028,7 +3063,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             headerLayout.orientation = LinearLayout.HORIZONTAL
             headerLayout.layoutParams =
                 LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-            headerLayout.setPadding(32,32, 32, 16)
+            headerLayout.setPadding(32, 32, 32, 16)
 
             // Adding header content (text and toggle icon)
             val headerContent = item.optJSONArray("content")?.optJSONArray(0)
@@ -3036,8 +3071,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 for (i in 0 until it.length()) {
                     val headerItem = it.getJSONObject(i)
                     when (headerItem.getString("type")) {
-                        "text" -> addTextView(headerLayout, headerItem,i)
-                        "toggleImage" -> addToggleImageView(headerLayout, headerItem, accordionLayout)
+                        "text" -> addTextView(headerLayout, headerItem, i)
+                        "toggleImage" -> addToggleImageView(
+                            headerLayout,
+                            headerItem,
+                            accordionLayout
+                        )
                     }
                 }
             }
@@ -3079,11 +3118,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         for (j in 0 until minOf(3, groupArray.length())) {
                             val item = groupArray.getJSONObject(j)
                             when (item.getString("type")) {
-                                "text" -> addTextView(firstRowLayout, item, 0,false)
+                                "text" -> addTextView(firstRowLayout, item, 0, false)
                                 "image" -> addImageView(firstRowLayout, item)
                                 "divider" -> addDividerView(firstRowLayout, item)
                                 "background" -> setBackground(firstRowLayout, item)
-                                else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                                else -> Log.w(
+                                    "JSONParsing",
+                                    "Unknown type: ${item.getString("type")}"
+                                )
                             }
                         }
                         contentLayout.addView(firstRowLayout)
@@ -3098,11 +3140,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         for (j in 3 until groupArray.length()) {
                             val item = groupArray.getJSONObject(j)
                             when (item.getString("type")) {
-                                "text" -> addTextView(secondRowLayout, item, 0,false)
+                                "text" -> addTextView(secondRowLayout, item, 0, false)
                                 "image" -> addImageView(secondRowLayout, item)
                                 "divider" -> addDividerView(secondRowLayout, item)
                                 "background" -> setBackground(secondRowLayout, item)
-                                else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                                else -> Log.w(
+                                    "JSONParsing",
+                                    "Unknown type: ${item.getString("type")}"
+                                )
                             }
                         }
                         contentLayout.addView(secondRowLayout)
@@ -3115,7 +3160,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 "image" -> addImageView(horizontalLayout, item)
                                 "divider" -> addDividerView(horizontalLayout, item)
                                 "background" -> setBackground(horizontalLayout, item)
-                                else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                                else -> Log.w(
+                                    "JSONParsing",
+                                    "Unknown type: ${item.getString("type")}"
+                                )
                             }
                         }
                     }
@@ -3140,6 +3188,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             Log.e("AddAccordionViewError", "Error adding Accordion View", e)
         }
     }
+
     private fun addToggleImageView(
         headerLayout: LinearLayout,
         headerItem: JSONObject,
@@ -3158,7 +3207,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             toggleImageView.layoutParams = params
 
             toggleImageView.setOnClickListener {
-                val contentLayout = accordionLayout.getChildAt(1) as LinearLayout // Content is the second child
+                val contentLayout =
+                    accordionLayout.getChildAt(1) as LinearLayout // Content is the second child
                 if (contentLayout.visibility == View.VISIBLE) {
                     // Collapse content
                     contentLayout.visibility = View.GONE
