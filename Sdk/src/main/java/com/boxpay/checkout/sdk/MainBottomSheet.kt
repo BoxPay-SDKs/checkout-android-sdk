@@ -69,7 +69,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.microsoft.clarity.Clarity
 import com.microsoft.clarity.ClarityConfig
-import com.microsoft.clarity.models.LogLevel
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -1803,7 +1802,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
+        val config = ClarityConfig("o4josf35jv")
         Clarity.initialize(context, config)
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
             val d = dialog as BottomSheetDialog
@@ -2539,7 +2538,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.textView2.text = "Personal details"
             binding.addressTextViewMain.visibility = View.GONE
         }
-        binding.cardView8.visibility = View.VISIBLE
+//        binding.cardView8.visibility = View.VISIBLE
         countryCode = Pair(
             sharedPreferences.getString("countryName", "") ?: "",
             sharedPreferences.getString("phoneCode", null) ?: ""
