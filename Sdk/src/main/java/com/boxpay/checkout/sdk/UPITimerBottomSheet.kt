@@ -343,6 +343,10 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                                 cleanedMessage = "Please retry using other payment method or try again in sometime"
                             }
                             countdownTimer.cancel()
+                            countdownTimer.cancel()
+                            countdownTimer.cancel()
+                            countdownTimerForAPI.cancel()
+                            countdownTimerForAPI.cancel()
                             countdownTimerForAPI.cancel()
                             PaymentFailureScreen(
                                 function = {

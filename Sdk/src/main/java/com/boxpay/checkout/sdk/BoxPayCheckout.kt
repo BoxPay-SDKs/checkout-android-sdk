@@ -40,6 +40,7 @@ class BoxPayCheckout(
     private var BASE_URL: String? = null
 
     fun display() {
+
         if (sandboxEnabled) {
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
@@ -51,13 +52,9 @@ class BoxPayCheckout(
             this.BASE_URL = "apis.boxpay.in"
         }
         editor.apply()
-        if (context is Activity) {
-            val activity =
-                context as AppCompatActivity // or FragmentActivity, depending on your activity type
-            callUIAnalytics(context, "CHECKOUT_LOADED")
-            putTransactionDetailsInSharedPreferences()
-            openBottomSheet()
-        }
+        callUIAnalytics(context, "CHECKOUT_LOADED")
+        putTransactionDetailsInSharedPreferences()
+        openBottomSheet()
     }
 
     private fun callUIAnalytics(context: Context, event: String) {
@@ -106,6 +103,7 @@ class BoxPayCheckout(
             val fragmentManager = activity.supportFragmentManager
             // Now you can use fragmentManager
             val bottomSheet = MainBottomSheet()
+            bottomSheet.setContext(activity.applicationContext)
             bottomSheet.show(fragmentManager, "MainBottomSheet")
         }
     }

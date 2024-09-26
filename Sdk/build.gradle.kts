@@ -16,7 +16,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
-        buildConfigField("String", "SDK_VERSION", "\"1.1.13\"")
+        buildConfigField("String", "SDK_VERSION", "\"1.1.18\"")
 
         android.buildFeatures.buildConfig = true
     }
@@ -75,6 +75,7 @@ dependencies {
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+    implementation("com.microsoft.clarity:clarity:2.5.1")
     testImplementation("org.mockito:mockito-core:5.7.0") // Replace with the latest version
 }
 

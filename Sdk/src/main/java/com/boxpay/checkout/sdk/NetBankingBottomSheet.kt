@@ -1136,6 +1136,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
                         if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
+                            job?.cancel()
+                            job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
                             ).show(parentFragmentManager, "FailureScreen")
