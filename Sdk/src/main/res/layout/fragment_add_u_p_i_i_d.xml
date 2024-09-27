@@ -113,6 +113,8 @@
                     android:background="@drawable/edittext_bg"
                     android:fontFamily="@font/poppins"
                     android:gravity="center_vertical"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
                     android:hint="Enter UPI Id"
                     android:inputType="text"
                     android:padding="8dp"
