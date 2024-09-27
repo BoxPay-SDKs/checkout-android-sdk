@@ -125,6 +125,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var upiIntentMethod = false
     private var upiQRMethod = false
     private var cardsMethod = false
+    private var isNameEditable = true
+    private var isPhoneEditable = true
+    private var isEmailEditable = true
     private var walletMethods = false
     private var bnplMethod = false
     private var netBankingMethods = false
@@ -772,15 +775,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             editor = sharedPreferences.edit()
 
 
-            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-            bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                this,
-                false,
-                showName,
-                showPhone,
-                showEmail,
-                showShipping
-            )
+        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+        bottomSheet = DeliveryAddressBottomSheet.newInstance(
+            this,
+            false,
+            showName,
+            showPhone,
+            showEmail,
+            showShipping,
+            isNameEditable,
+            isPhoneEditable,
+            isEmailEditable
+        )
 
             if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
                 isTablet = false
@@ -995,7 +1001,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
         binding.deliveryAddressConstraintLayout.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
+            if ((!binding.loadingRelativeLayout.isVisible) && (isEmailEditable || isPhoneEditable || isNameEditable || showShipping)) {
                 if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
                     val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
                         ?.removePrefix(countryCode?.second ?: "")
@@ -1010,7 +1016,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     showName,
                     showPhone,
                     showEmail,
-                    showShipping
+                    showShipping,
+                    isNameEditable,
+                    isPhoneEditable,
+                    isEmailEditable
                 )
                 bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
             }
@@ -2081,15 +2090,27 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     ) {
                         showShipping = true
                     }
-                    if (additionalDetails.get(i).equals("SHOPPER_EMAIL")) {
-                        showEmail = true
+                }
+                val enabledFields = response.getJSONObject("configs").getJSONArray("enabledFields")
+
+                if (enabledFields.length() > 0) {
+                    for (i in 0 until enabledFields.length()) {
+                        val fieldObject = enabledFields.getJSONObject(i)
+                        if (fieldObject.optString("field", "UNKNOWN").contains("phone", true)) {
+                            showPhone = true
+                            isPhoneEditable = fieldObject.optBoolean("editable", false)
+                        }
+                        if (fieldObject.optString("field", "UNKNOWN").contains("name", true)) {
+                            showName = true
+                            isNameEditable = fieldObject.optBoolean("editable", false)
+                        }
+                        if (fieldObject.optString("field", "UNKNOWN").contains("email", true)) {
+                            showEmail = true
+                            isEmailEditable = fieldObject.optBoolean("editable", false)
+                        }
                     }
-                    if (additionalDetails.get(i).equals("SHOPPER_NAME")) {
-                        showName = true
-                    }
-                    if (additionalDetails.get(i).equals("SHOPPER_PHONE")) {
-                        showPhone = true
-                    }
+                } else {
+                    println("No enabled fields found")
                 }
                 if (showShipping) {
                     binding.textView6.text = "Continue to Add New Address"
@@ -2102,6 +2123,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 } else {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                 }
+                binding.emailTextView.visibility =
+                    if (showEmail || showShipping) View.VISIBLE else View.GONE
+                binding.nameAndMobileTextViewMain.visibility =
+                    if (showName || showPhone || showShipping) View.VISIBLE else View.GONE
+
+                binding.rightArrow.visibility =
+                    if (isEmailEditable || isPhoneEditable || isNameEditable || showShipping) {
+                        View.VISIBLE
+                    } else View.INVISIBLE
 
                 if (orderDetails != null && productSummary != null) {
                     binding.orderSummaryConstraintLayout.visibility = View.GONE
@@ -2318,14 +2348,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     priceBreakUpVisible = true
                     bottomSheet = DeliveryAddressBottomSheet.newInstance(
                         this,
-                        true,
+                        false,
                         showName,
                         showPhone,
                         showEmail,
-                        showShipping
+                        showShipping,
+                        isNameEditable,
+                        isPhoneEditable,
+                        isEmailEditable
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone) && orderDetails == null) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull(
+                        "email"
+                    )) && (showName || showEmail || showPhone) && orderDetails == null
+                ) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2344,11 +2380,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     priceBreakUpVisible = true
                     bottomSheet = DeliveryAddressBottomSheet.newInstance(
                         this,
-                        true,
+                        false,
                         showName,
                         showPhone,
                         showEmail,
-                        showShipping
+                        showShipping,
+                        isNameEditable,
+                        isPhoneEditable,
+                        isEmailEditable
                     )
                     showPriceBreakUp()
                 } else {
@@ -2510,13 +2549,26 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 editor.apply()
 
-                binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
-                    "firstName",
-                    ""
-                ) + " " + sharedPreferences.getString(
-                    "lastName",
-                    ""
-                ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
+                binding.nameAndMobileTextViewMain.text =
+                    if ((showPhone && showName) || showShipping) {
+                        sharedPreferences.getString(
+                            "firstName",
+                            ""
+                        ) + " " + sharedPreferences.getString(
+                            "lastName",
+                            ""
+                        ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
+                    } else if (showName) {
+                        sharedPreferences.getString(
+                            "firstName",
+                            ""
+                        ) + " " + sharedPreferences.getString(
+                            "lastName",
+                            ""
+                        )
+                    } else {
+                        "(${sharedPreferences.getString("phoneNumber", "")})"
+                    }
                 binding.emailTextView.text = sharedPreferences.getString("email", "")
                 if (showShipping) {
                     binding.textView2.text = "Delivery Address"
@@ -2603,13 +2655,25 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     override fun updateBottomSheet() {
-        binding.nameAndMobileTextViewMain.text = sharedPreferences.getString(
-            "firstName",
-            ""
-        ) + " " + sharedPreferences.getString(
-            "lastName",
-            ""
-        ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
+        binding.nameAndMobileTextViewMain.text = if ((showPhone && showName) || showShipping) {
+            sharedPreferences.getString(
+                "firstName",
+                ""
+            ) + " " + sharedPreferences.getString(
+                "lastName",
+                ""
+            ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
+        } else if (showName) {
+            sharedPreferences.getString(
+                "firstName",
+                ""
+            ) + " " + sharedPreferences.getString(
+                "lastName",
+                ""
+            )
+        } else {
+            "(${sharedPreferences.getString("phoneNumber", "")})"
+        }
         binding.emailTextView.text = sharedPreferences.getString("email", "")
         if (showShipping) {
             binding.textView2.text = "Delivery Address"

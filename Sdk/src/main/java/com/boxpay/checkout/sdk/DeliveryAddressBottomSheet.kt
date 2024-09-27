@@ -50,6 +50,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isNameEnabled = false
     private var isPhoneEnabled = false
     private var isEmailEnabled = false
+    private var isNameEditable = true
+    private var isPhoneEditable = true
+    private var isEmailEditable = true
     private var minPhoneLength = 10
     val emailRegex =
         "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
@@ -279,6 +282,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         if (phoneNumber != null) {
             binding.mobileNumberEditText.setText(phoneNumber)
         }
+        binding.fullNameEditText.isEnabled = isNameEditable
+        binding.mobileNumberEditText.isEnabled = isPhoneEditable
+        binding.emailEditText.isEnabled = isEmailEditable
         binding.countryEditText.setText(countryName)
         countrySelectedFromDropDown = countryName
         countryCodePhoneNum = indexCountryPhone ?: "+91"
@@ -830,7 +836,10 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             isNameEnabled: Boolean,
             isPhoneEnabled: Boolean,
             isEmailEnabled: Boolean,
-            isShippingEnabled: Boolean
+            isShippingEnabled: Boolean,
+            isNameEditable: Boolean,
+            isPhoneEditable: Boolean,
+            isEmailEditable: Boolean
         ): DeliveryAddressBottomSheet {
             val fragment = DeliveryAddressBottomSheet()
             fragment.callback = callback
@@ -839,6 +848,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             fragment.isPhoneEnabled = isPhoneEnabled
             fragment.isEmailEnabled = isEmailEnabled
             fragment.isShippingEnabled = isShippingEnabled
+            fragment.isNameEditable = isNameEditable
+            fragment.isPhoneEditable = isPhoneEditable
+            fragment.isEmailEditable = isEmailEditable
             return fragment
         }
     }
