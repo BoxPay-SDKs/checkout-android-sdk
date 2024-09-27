@@ -32,6 +32,7 @@ class Check : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+
         makePaymentRequest(this)
 
         binding.textView6.text = "Generating Token Please wait..."
@@ -272,7 +273,7 @@ class Check : AppCompatActivity() {
             },
             Response.ErrorListener { error ->
                 println("====error $error")
-            /* no response handling */
+                /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
