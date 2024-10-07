@@ -36,6 +36,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
 import coil.transform.CircleCropTransformation
+import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -265,11 +266,23 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private fun removeLoadingScreenState() {
         binding.banksRecyclerView.visibility = View.VISIBLE
         binding.loadingRelativeLayout.visibility = View.GONE
-        binding.popularBanksRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        binding.popularBanksRelativeLayout2.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        binding.popularBanksRelativeLayout3.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        binding.popularBanksRelativeLayout4.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        colorAnimation.cancel()
+        binding.popularBanksRelativeLayout1.setBackgroundResource(if (popularBanksSelectedIndex == 0) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
+        binding.popularBanksRelativeLayout2.setBackgroundResource(if (popularBanksSelectedIndex == 1) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
+        binding.popularBanksRelativeLayout3.setBackgroundResource(if (popularBanksSelectedIndex == 2) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
+        binding.popularBanksRelativeLayout4.setBackgroundResource(if (popularBanksSelectedIndex == 3) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
+        binding.popularBanksImageView1.visibility = View.VISIBLE
+        binding.popularBanksImageView2.visibility = View.VISIBLE
+        binding.popularBanksImageView3.visibility = View.VISIBLE
+        binding.popularBanksImageView4.visibility = View.VISIBLE
+        binding.popularBanksNameTextView4.visibility = View.VISIBLE
+        binding.popularBanksNameTextView3.visibility = View.VISIBLE
+        binding.popularBanksNameTextView2.visibility = View.VISIBLE
+        binding.popularBanksNameTextView1.visibility = View.VISIBLE
+        if (checkedPosition != null || popularBanksSelectedIndex != -1) {
+            enableProceedButton()
+        } else {
+            disableProceedButton()
+        }
     }
 
     private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
@@ -327,10 +340,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         )
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
-        binding.boxPayLogoLottieAnimation.playAnimation()
-        startBackgroundAnimation()
-
-
+        showLoadingState()
 
         if (!shippingEnabled)
             fetchBanksDetails()
@@ -339,16 +349,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
 
         var enabled = false
-        binding.checkingTextView.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
-                if (!enabled)
-                    enableProceedButton()
-                else
-                    disableProceedButton()
-
-                enabled = !enabled
-            }
-        }
 
         val failureScreenSharedViewModelCallback =
             FailureScreenSharedViewModel(::failurePaymentFunction)
@@ -361,8 +361,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 disableProceedButton()
             }
         })
-
-
 
         liveDataPopularBankSelectedOrNot.observe(this, Observer {
             if (it) {
@@ -425,6 +423,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     banksDetailsOriginal[popularBanksSelectedIndex].bankBrand,
                     "NetBanking"
                 )
+                checkedPosition = null
             } else {
                 bankInstrumentTypeValue =
                     banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
@@ -434,6 +433,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     banksDetailsFiltered[checkedPosition!!].bankBrand,
                     "NetBanking"
                 )
+                popularBanksSelectedIndex = -1
             }
 
             binding.errorField.visibility = View.GONE
@@ -597,7 +597,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
         (parentFragment as? MainBottomSheet)?.removeOverlayFromCurrentBottomSheet()
-        colorAnimation.cancel()
         super.onDismiss(dialog)
     }
 
@@ -649,7 +648,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         banksDetailsOriginal[index].bankName
 
                     constraintLayout.setOnClickListener {
-                        if (!binding.progressBar.isVisible) {
+                        if (!binding.progressBar.isVisible && !binding.loadingRelativeLayout.isVisible) {
                             val inputMethodManager =
                                 requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                             inputMethodManager.hideSoftInputFromWindow(
@@ -743,15 +742,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             else -> throw IllegalArgumentException("Invalid number: $num  TextView1234")
         }
     }
-
-    private fun startBackgroundAnimation() {
-        val colorStart = resources.getColor(R.color.colorStart)
-        val colorEnd = resources.getColor(R.color.colorEnd)
-
-        colorAnimation = createColorAnimation(colorStart, colorEnd)
-        colorAnimation.start()
-    }
-
     private fun createColorAnimation(startColor: Int, endColor: Int): ValueAnimator {
 
         val layouts = Array<RelativeLayout?>(4) { null }
@@ -887,6 +877,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
+                        showLoadingState()
                         if (!response.isNull("actions") && response.getJSONArray("actions")
                                 .length() != 0
                         ) {
@@ -913,6 +904,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             startFunctionCalls()
                             startActivityForResult(intent, 333)
                         } else {
+                            job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
                             ).show(parentFragmentManager, "FailureScreen")
@@ -948,8 +940,10 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         if (callbackForDismissing != null) {
                             callbackForDismissing.dismissFunction()
                         }
+                        job?.cancel()
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
+                        job?.cancel()
                         PaymentFailureScreen(
                             errorMessage = "Please retry using other payment method or try again in sometime"
                         ).show(parentFragmentManager, "FailureScreen")
@@ -1093,7 +1087,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
-
+                        removeLoadingScreenState()
                         editor.putString("status", "Success")
                         editor.putString("amount", response.getString("amount").toString())
                         editor.putString("transactionId", transactionId)
@@ -1135,6 +1129,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingScreenState()
                             job?.cancel()
                             job?.cancel()
                             job?.cancel()
@@ -1175,10 +1170,32 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         if (requestCode == 333) {
             if (resultCode == Activity.RESULT_OK) {
                 job?.cancel()
+                removeLoadingScreenState()
                 PaymentFailureScreen(
                     errorMessage = "Please retry using other payment method or try again in sometime"
                 ).show(parentFragmentManager, "FailureScreen")
             }
         }
+    }
+    private fun showLoadingState() {
+        binding.boxPayLogoLottieAnimation.apply {
+            playAnimation()
+            repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+        }
+        binding.loadingRelativeLayout.visibility = View.VISIBLE
+        binding.banksRecyclerView.visibility = View.GONE
+        binding.popularBanksRelativeLayout1.setBackgroundResource(R.drawable.loading_state)
+        binding.popularBanksRelativeLayout2.setBackgroundResource(R.drawable.loading_state)
+        binding.popularBanksRelativeLayout3.setBackgroundResource(R.drawable.loading_state)
+        binding.popularBanksRelativeLayout4.setBackgroundResource(R.drawable.loading_state)
+        binding.popularBanksImageView1.visibility = View.INVISIBLE
+        binding.popularBanksImageView2.visibility = View.INVISIBLE
+        binding.popularBanksImageView3.visibility = View.INVISIBLE
+        binding.popularBanksImageView4.visibility = View.INVISIBLE
+        binding.popularBanksNameTextView4.visibility = View.INVISIBLE
+        binding.popularBanksNameTextView3.visibility = View.INVISIBLE
+        binding.popularBanksNameTextView2.visibility = View.INVISIBLE
+        binding.popularBanksNameTextView1.visibility = View.INVISIBLE
+        disableProceedButton()
     }
 }

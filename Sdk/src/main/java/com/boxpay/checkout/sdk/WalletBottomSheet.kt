@@ -35,6 +35,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import coil.decode.SvgDecoder
 import coil.load
 import coil.transform.CircleCropTransformation
+import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -239,7 +240,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         walletDetailsOriginal[index].walletName
 
                     constraintLayout.setOnClickListener {
-                        if (!binding.progressBar.isVisible) {
+                        if (!binding.progressBar.isVisible && !binding.loadingRelativeLayout.isVisible) {
                             val inputMethodManager =
                                 requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                             inputMethodManager.hideSoftInputFromWindow(
@@ -304,11 +305,23 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private fun removeLoadingScreenState() {
         binding.loadingRelativeLayout.visibility = View.GONE
         binding.walletsRecyclerView.visibility = View.VISIBLE
-        binding.popularItemRelativeLayout1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        binding.popularItemRelativeLayout2.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        binding.popularItemRelativeLayout3.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        binding.popularItemRelativeLayout4.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        colorAnimation.cancel()
+        binding.popularItemRelativeLayout1.setBackgroundResource(if (popularWalletsSelectedIndex == 0) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
+        binding.popularItemRelativeLayout2.setBackgroundResource(if (popularWalletsSelectedIndex == 1) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
+        binding.popularItemRelativeLayout3.setBackgroundResource(if (popularWalletsSelectedIndex == 2) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
+        binding.popularItemRelativeLayout4.setBackgroundResource(if (popularWalletsSelectedIndex == 3) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
+        binding.popularWalletImageView1.visibility = View.VISIBLE
+        binding.popularWalletImageView2.visibility = View.VISIBLE
+        binding.popularWalletImageView3.visibility = View.VISIBLE
+        binding.popularWalletImageView4.visibility = View.VISIBLE
+        binding.popularWalletsNameTextView4.visibility = View.VISIBLE
+        binding.popularWalletsNameTextView3.visibility = View.VISIBLE
+        binding.popularWalletsNameTextView2.visibility = View.VISIBLE
+        binding.popularWalletsNameTextView1.visibility = View.VISIBLE
+        if (checkedPosition != null || popularWalletsSelectedIndex != -1) {
+            enableProceedButton()
+        } else {
+            disableProceedButton()
+        }
     }
 
     private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
@@ -417,8 +430,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.walletsRecyclerView.adapter = allWalletAdapter
 
-        binding.boxPayLogoLottieAnimation.playAnimation()
-        startBackgroundAnimation()
+        showLoadingState()
         disableProceedButton()
 
 
@@ -426,9 +438,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             fetchWalletDetails()
         else
             callPaymentMethodRules(requireContext())
-
-
-
 
         binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
             SearchView.OnQueryTextListener {
@@ -461,19 +470,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 dismissAndMakeButtonsOfMainBottomSheetEnabled()
             }
         }
+
         binding.proceedButton.isEnabled = false
 
-        binding.checkingTextView.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
-                var enabled = false
-                if (!enabled)
-                    enableProceedButton()
-                else
-                    disableProceedButton()
-
-                enabled = !enabled
-            }
-        }
         proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
             if (enableProceedButton) {
                 enableProceedButton()
@@ -503,6 +502,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     walletDetailsOriginal[popularWalletsSelectedIndex].walletBrand,
                     "Wallet"
                 )
+                checkedPosition = null
             } else {
                 walletInstrumentTypeValue =
                     walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
@@ -512,6 +512,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     walletDetailsOriginal[checkedPosition!!].walletBrand,
                     "Wallet"
                 )
+                popularWalletsSelectedIndex = -1
             }
 
             binding.errorField.visibility = View.GONE
@@ -542,14 +543,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
         return binding.root
-    }
-
-    private fun startBackgroundAnimation() {
-        val colorStart = resources.getColor(R.color.colorStart)
-        val colorEnd = resources.getColor(R.color.colorEnd)
-
-        colorAnimation = createColorAnimation(colorStart, colorEnd)
-        colorAnimation.start()
     }
 
     private fun callUIAnalytics(
@@ -705,7 +698,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         // Remove the overlay from the first BottomSheet when the second BottomSheet is dismissed
         (parentFragment as? MainBottomSheet)?.removeOverlayFromCurrentBottomSheet()
-        colorAnimation.cancel()
         super.onDismiss(dialog)
     }
 
@@ -933,6 +925,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
+                        showLoadingState()
                         if (!response.isNull("actions") && response.getJSONArray("actions")
                                 .length() != 0
                         ) {
@@ -958,6 +951,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                             startFunctionCalls()
                             startActivityForResult(intent, 333)
                         } else {
+                            job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
                             ).show(parentFragmentManager, "FailureScreen")
@@ -994,6 +988,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         }
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
+                        job?.cancel()
                         PaymentFailureScreen(
                             errorMessage = "Please retry using other payment method or try again in sometime"
                         ).show(parentFragmentManager, "FailureScreen")
@@ -1129,6 +1124,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 333) {
             if (resultCode == Activity.RESULT_OK) {
+                removeLoadingScreenState()
                 job?.cancel()
                 PaymentFailureScreen(
                     errorMessage = "Please retry using other payment method or try again in sometime"
@@ -1150,6 +1146,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
+                        removeLoadingScreenState()
 
                         editor.putString("status", "Success")
                         editor.putString("amount", response.getString("amount").toString())
@@ -1195,6 +1192,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                             job?.cancel()
                             job?.cancel()
                             job?.cancel()
+                            removeLoadingScreenState()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
                             ).show(parentFragmentManager, "FailureScreen")
@@ -1225,5 +1223,26 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 // Delay for 5 seconds
             }
         }
+    }
+    private fun showLoadingState() {
+        binding.boxPayLogoLottieAnimation.apply {
+            playAnimation()
+            repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+        }
+        binding.loadingRelativeLayout.visibility = View.VISIBLE
+        binding.walletsRecyclerView.visibility = View.GONE
+        binding.popularItemRelativeLayout1.setBackgroundResource(R.drawable.loading_state)
+        binding.popularItemRelativeLayout2.setBackgroundResource(R.drawable.loading_state)
+        binding.popularItemRelativeLayout3.setBackgroundResource(R.drawable.loading_state)
+        binding.popularItemRelativeLayout4.setBackgroundResource(R.drawable.loading_state)
+        binding.popularWalletImageView1.visibility = View.INVISIBLE
+        binding.popularWalletImageView2.visibility = View.INVISIBLE
+        binding.popularWalletImageView3.visibility = View.INVISIBLE
+        binding.popularWalletImageView4.visibility = View.INVISIBLE
+        binding.popularWalletsNameTextView4.visibility = View.INVISIBLE
+        binding.popularWalletsNameTextView3.visibility = View.INVISIBLE
+        binding.popularWalletsNameTextView2.visibility = View.INVISIBLE
+        binding.popularWalletsNameTextView1.visibility = View.INVISIBLE
+        disableProceedButton()
     }
 }
