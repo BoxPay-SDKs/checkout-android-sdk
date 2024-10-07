@@ -3,6 +3,7 @@ package com.boxpay.checkout.sdk
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -20,8 +21,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -32,6 +31,8 @@ import com.boxpay.checkout.sdk.databinding.ActivityOtpscreenWebViewBinding
 import com.boxpay.checkout.sdk.interfaces.OnWebViewCloseListener
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.common.api.Status
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -51,7 +52,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private var callbackForDismissingMainSheet: UpdateMainBottomSheetInterface? = null
     val permissionReceive = Manifest.permission.RECEIVE_SMS
     val permissionRead = Manifest.permission.READ_SMS
-    val smsVerificationReceiver = SmsReceiver()
     private var webViewCloseListener: OnWebViewCloseListener? = null
     private var job: Job? = null
     private var jobForFetchingSMS: Job? = null
@@ -119,55 +119,8 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         fetchTransactionDetailsFromSharedPreferences()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    permissionReceive
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(this, arrayOf(permissionReceive), 101)
-            }
-
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    permissionRead
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(this, arrayOf(permissionRead), 101)
-            }
-
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    permissionRead
-                ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-                    this,
-                    permissionReceive
-                ) == PackageManager.PERMISSION_GRANTED
-            ) {
-                val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
-                registerReceiver(
-                    smsVerificationReceiver,
-                    intentFilter,
-                    RECEIVER_VISIBLE_TO_INSTANT_APPS
-                )
-
-                readSms()
-            } else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(permissionRead, permissionReceive),
-                    101
-                )
-            }
-
-
-            jobForFetchingSMS = CoroutineScope(Dispatchers.IO).launch {
-                while (isActive) {
-                    readSms()
-                    // Delay for 5 seconds
-                    delay(1000)
-                }
-            }
-
+            registerReceiver(smsBroadcastReceiver, IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION))
+            startSmsRetriever()
 
         }, 5000) // 5000 milliseconds = 5 seconds
 
@@ -197,15 +150,20 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private fun readSms() {
         try {
             val contentResolver: ContentResolver = this.contentResolver
+            // Define the projection (columns you want to retrieve)
+            val projection = arrayOf(Telephony.Sms.BODY)
+
+            // Query the content provider without using LIMIT directly
             val cursor: Cursor? = contentResolver.query(
                 Telephony.Sms.CONTENT_URI,
-                null,
-                null,
-                null,
-                Telephony.Sms.DEFAULT_SORT_ORDER + " LIMIT 1"
+                projection,   // Only fetch the BODY column
+                null,         // No selection clause (fetch all)
+                null,         // No selection arguments
+                Telephony.Sms.DATE + " DESC" // Sort by DATE descending to get the latest message
             )
+            println("=====cursor $cursor")
 
-            cursor?.use { // Ensures the cursor is closed after use
+            cursor?.use {
                 if (it.moveToFirst()) {
                     val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
                     val extractedOTP = extractOTPFromMessage(body)
@@ -218,12 +176,10 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             }
         } catch (e: SecurityException) {
             // Handle permission denial
-
-            val permission = Manifest.permission.RECEIVE_SMS
-
-            ActivityCompat.requestPermissions(this, arrayOf(permission), 101)
+            e.printStackTrace() // Debugging purpose
         }
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -354,6 +310,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(smsBroadcastReceiver)
         job?.cancel()
     }
 
@@ -363,5 +320,42 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             .map { Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
+    }
+
+    private val smsBroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (SmsRetriever.SMS_RETRIEVED_ACTION == intent?.action) {
+                val extras = intent.extras
+                val status = extras?.get(SmsRetriever.EXTRA_STATUS) as? Status
+
+                when (status?.statusCode) {
+                    CommonStatusCodes.SUCCESS -> {
+                        // Get the SMS message
+                        val message = extras.get(SmsRetriever.EXTRA_SMS_MESSAGE) as? String
+                        val otp = extractOTPFromMessage(message ?: "")
+                        if (otp != null) {
+                            otpFetched = otp
+                            jobForFetchingSMS?.cancel()
+                        }
+                    }
+                    CommonStatusCodes.TIMEOUT -> {
+                        // Timeout occurred
+                    }
+                }
+            }
+        }
+    }
+
+    private fun startSmsRetriever() {
+        val client = SmsRetriever.getClient(this)
+        val task = client.startSmsRetriever()
+
+        task.addOnSuccessListener {
+            // Successfully started SMS Retriever
+        }
+
+        task.addOnFailureListener {
+            // Failed to start SMS Retriever
+        }
     }
 }
