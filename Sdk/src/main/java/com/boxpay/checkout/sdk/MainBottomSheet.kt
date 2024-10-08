@@ -1363,12 +1363,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             binding.recommendedLinearLayout.visibility = View.VISIBLE
                             binding.recommendedProceedButton.visibility = View.VISIBLE
                             recommendedCheckedPosition = 0
+                            showRecommendedOptions()
                         } else {
                             upiOptionsShown = true
                             showUPIOptions()
                         }
                         removeLoadingState()
-                        showRecommendedOptions()
                     }
                 } catch (e: JSONException) {
                     removeLoadingState()
