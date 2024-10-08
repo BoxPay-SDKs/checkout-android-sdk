@@ -20,7 +20,8 @@ class RecommendedItemsAdapter(
     private val recyclerView: RecyclerView,
     private val context: Context
 ) : RecyclerView.Adapter<RecommendedItemsAdapter.RecommendedItemsViewHolder>() {
-    var checkPositionLiveData = MutableLiveData(RecyclerView.NO_POSITION)
+    var checkPositionLiveData =
+        MutableLiveData(0)
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
 
@@ -60,18 +61,25 @@ class RecommendedItemsAdapter(
             if (position != 0) {
                 binding.belowTextImage.visibility = View.GONE
             }
-            if(position == checkPositionLiveData.value){
+            if (position == checkPositionLiveData.value) {
                 if (radioButtonDrawable is LayerDrawable) {
                     val layerDrawable = radioButtonDrawable as LayerDrawable
 
                     // Modify the solid color of the first item (assuming it's a GradientDrawable)
                     val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
-                    shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
+                    shapeDrawable?.setColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "primaryButtonColor",
+                                "#0D8EFF"
+                            )
+                        )
+                    ) // Change color to red dynamically
 
                     // Apply the modified drawable back to the radioButton ImageView
                     binding.radioButton.background = layerDrawable
                 }
-            }else{
+            } else {
                 binding.radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
             }
             binding.apply {
@@ -105,7 +113,9 @@ class RecommendedItemsAdapter(
         if (checkPositionLiveData.value != position) {
             // Change the background of the previously checked RadioButton
             val previousCheckedViewHolder =
-                recyclerView.findViewHolderForAdapterPosition(checkPositionLiveData.value ?: 0) as? RecommendedItemsViewHolder
+                recyclerView.findViewHolderForAdapterPosition(
+                    checkPositionLiveData.value ?: 0
+                ) as? RecommendedItemsViewHolder
             previousCheckedViewHolder?.binding?.radioButton?.setBackgroundResource(
                 R.drawable.custom_radio_unchecked
             )

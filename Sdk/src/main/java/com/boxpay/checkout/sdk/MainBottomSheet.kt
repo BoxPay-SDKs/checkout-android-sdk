@@ -1361,6 +1361,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (recommendedInstrumentationList.isNotEmpty() && binding.upiLinearLayout.isVisible) {
                             binding.recommendedCardView.visibility = View.VISIBLE
                             binding.recommendedLinearLayout.visibility = View.VISIBLE
+                            binding.recommendedProceedButton.visibility = View.VISIBLE
+                            recommendedCheckedPosition = 0
                         } else {
                             upiOptionsShown = true
                             showUPIOptions()
