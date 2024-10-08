@@ -1146,7 +1146,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
-                        removeLoadingScreenState()
 
                         editor.putString("status", "Success")
                         editor.putString("amount", response.getString("amount").toString())
@@ -1154,6 +1153,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingScreenState()
                             val callback = SingletonClass.getInstance().getYourObject()
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()

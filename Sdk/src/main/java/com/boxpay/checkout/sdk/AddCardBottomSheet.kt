@@ -32,6 +32,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -1141,6 +1142,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             )
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
+                            showLoadingState()
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
                             intent.putExtra("type", type)
@@ -1422,6 +1424,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
                             val callback = SingletonClass.getInstance().getYourObject()
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -1457,6 +1460,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
                             job?.cancel()
                             job?.cancel()
                             job?.cancel()
@@ -1490,5 +1494,22 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 // Delay for 5 seconds
             }
         }
+    }
+
+    private fun showLoadingState() {
+        binding.boxpayLogoLottie.apply {
+            playAnimation()
+            repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+        }
+        binding.loadingLayout.visibility = View.VISIBLE
+        binding.cardDetails.visibility = View.INVISIBLE
+        disableProceedButton()
+    }
+
+    private fun removeLoadingState() {
+        binding.loadingLayout.visibility = View.GONE
+        binding.boxpayLogoLottie.cancelAnimation()
+        binding.cardDetails.visibility = View.VISIBLE
+        enableProceedButton()
     }
 }
