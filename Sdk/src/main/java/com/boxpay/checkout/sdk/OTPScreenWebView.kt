@@ -3,18 +3,15 @@ package com.boxpay.checkout.sdk
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.PackageManager
-import android.database.Cursor
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Telephony
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -31,8 +28,6 @@ import com.boxpay.checkout.sdk.databinding.ActivityOtpscreenWebViewBinding
 import com.boxpay.checkout.sdk.interfaces.OnWebViewCloseListener
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.gms.auth.api.phone.SmsRetriever
-import com.google.android.gms.common.api.CommonStatusCodes
-import com.google.android.gms.common.api.Status
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -61,6 +56,8 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private var successScreenFullReferencePath: String? = null
     private var previousBottomSheet: Context? = null
     private lateinit var Base_Session_API_URL: String
+    private var captureOnly: Boolean = false
+    private var captureAndSubmitOnly: Boolean = false
     private lateinit var sharedViewModel: SharedViewModel
     private var delay = 4000L
     private val handler = Handler()
@@ -116,13 +113,16 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         binding.webViewForOtpValidation.settings.javaScriptEnabled = true
 
         startFunctionCalls()
+        fetchOtpStatus()
         fetchTransactionDetailsFromSharedPreferences()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            registerReceiver(smsBroadcastReceiver, IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION))
+            registerReceiver(smsConsentReceiver, IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION),
+                RECEIVER_EXPORTED)
+
             startSmsRetriever()
 
-        }, 5000) // 5000 milliseconds = 5 seconds
+        }, 1000) // 5000 milliseconds = 5 seconds
 
 
         binding.webViewForOtpValidation.webViewClient = object : WebViewClient() {
@@ -147,78 +147,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         }
     }
 
-    private fun readSms() {
-        try {
-            val contentResolver: ContentResolver = this.contentResolver
-            // Define the projection (columns you want to retrieve)
-            val projection = arrayOf(Telephony.Sms.BODY)
-
-            // Query the content provider without using LIMIT directly
-            val cursor: Cursor? = contentResolver.query(
-                Telephony.Sms.CONTENT_URI,
-                projection,   // Only fetch the BODY column
-                null,         // No selection clause (fetch all)
-                null,         // No selection arguments
-                Telephony.Sms.DATE + " DESC" // Sort by DATE descending to get the latest message
-            )
-            println("=====cursor $cursor")
-
-            cursor?.use {
-                if (it.moveToFirst()) {
-                    val body = it.getString(it.getColumnIndexOrThrow(Telephony.Sms.BODY))
-                    val extractedOTP = extractOTPFromMessage(body)
-                    if (extractedOTP != null) {
-                        otpFetched = extractedOTP
-                        jobForFetchingSMS?.cancel()
-                    }
-                    // Process SMS message here
-                }
-            }
-        } catch (e: SecurityException) {
-            // Handle permission denial
-            e.printStackTrace() // Debugging purpose
-        }
-    }
-
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 101) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                readSms()
-            }
-        }
-    }
-
     private val runnable = object : Runnable {
         override fun run() {
             handler.postDelayed(this, delayMillis) // Schedule next execution after delay
-        }
-    }
-
-    fun extractOTPFromMessage(message: String): String? {
-        val regex = "\\b\\d{4}\\b|\\b\\d{6}\\b" // Double backslashes to escape within Kotlin string
-        val pattern = Pattern.compile(regex)
-        val matcher = pattern.matcher(message)
-
-        if (matcher.find()) {
-            return matcher.group() // Return the matched OTP
-        }
-
-        return null // Return null if no OTP is found
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 1010) {
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
-                otpFetched = extractOTPFromMessage(message.toString())
-            }
         }
     }
 
@@ -310,7 +241,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(smsBroadcastReceiver)
+        unregisterReceiver(smsConsentReceiver)
         job?.cancel()
     }
 
@@ -322,40 +253,119 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             .joinToString("")
     }
 
-    private val smsBroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (SmsRetriever.SMS_RETRIEVED_ACTION == intent?.action) {
-                val extras = intent.extras
-                val status = extras?.get(SmsRetriever.EXTRA_STATUS) as? Status
+    private fun startSmsRetriever() {
+        val client = SmsRetriever.getClient(this)
+        client.startSmsUserConsent(null)
+    }
 
-                when (status?.statusCode) {
-                    CommonStatusCodes.SUCCESS -> {
-                        // Get the SMS message
-                        val message = extras.get(SmsRetriever.EXTRA_SMS_MESSAGE) as? String
-                        val otp = extractOTPFromMessage(message ?: "")
-                        if (otp != null) {
-                            otpFetched = otp
-                            jobForFetchingSMS?.cancel()
-                        }
+    private val smsConsentReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (SmsRetriever.SMS_RETRIEVED_ACTION == intent.action) {
+                val extras = intent.extras
+                val consentIntent = extras?.getParcelable<Intent>(SmsRetriever.EXTRA_CONSENT_INTENT)
+
+                try {
+                    // Start the consent dialog to prompt the user for SMS reading permission
+                    if (consentIntent != null) {
+                        startActivityForResult(consentIntent, SMS_CONSENT_REQUEST)
                     }
-                    CommonStatusCodes.TIMEOUT -> {
-                        // Timeout occurred
-                    }
+                } catch (e: ActivityNotFoundException) {
+                    // Handle error
                 }
             }
         }
     }
 
-    private fun startSmsRetriever() {
-        val client = SmsRetriever.getClient(this)
-        val task = client.startSmsRetriever()
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == SMS_CONSENT_REQUEST) {
+            if (resultCode == RESULT_OK && data != null) {
+                val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
+                println("======message $message")
 
-        task.addOnSuccessListener {
-            // Successfully started SMS Retriever
-        }
+                if (message != null) {
+                    otpFetched = extractOtpFromMessage(message) // Extract the OTP from the message
+                    jobForFetchingSMS?.cancel()
 
-        task.addOnFailureListener {
-            // Failed to start SMS Retriever
+                    // Inject OTP into the WebView or any web page
+                    if (otpFetched != null && captureOnly) {
+                        captureOnly()
+                    } else if (otpFetched != null && captureAndSubmitOnly) {
+                        captureAndSubmitOnly()
+                    }
+                }
+            } else {
+                // The user denied consent or the dialog was cancelled
+            }
         }
+        super.onActivityResult(requestCode, resultCode, data)
     }
+
+    private fun extractOtpFromMessage(message: String): String? {
+        val otpPattern = Pattern.compile("\\d{4,6}") // Adjust based on OTP length
+        val matcher = otpPattern.matcher(message)
+        return if (matcher.find()) {
+            matcher.group(0) // Return the first match (OTP)
+        } else null
+    }
+
+    private fun fetchOtpStatus() {
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.GET, "${Base_Session_API_URL}${token}/setup-configs", null,
+            Response.Listener{ response ->
+                try {
+                    val otpAutoCaptureMode = response.optString("otpAutoCaptureMode")
+                    if (!otpAutoCaptureMode.isNullOrEmpty() && otpAutoCaptureMode.equals("Disabled",true)) {
+                        captureOnly = false
+                        captureAndSubmitOnly = false
+                    } else if (!otpAutoCaptureMode.isNullOrEmpty() && otpAutoCaptureMode.equals("Capture_Only",true)) {
+                        captureOnly = true
+                        captureAndSubmitOnly = false
+                    } else {
+                        captureOnly = false
+                        captureAndSubmitOnly = true
+                    }
+                } catch (e: JSONException) {
+
+                }
+            },
+            Response.ErrorListener {error ->
+                println("=====error listener ${error.message}")
+                // no op
+            }) {}
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    private fun captureOnly() {
+        val jsCode = """
+    (function() {
+        var otpInput = document.querySelector('input[type="text"], input[type="number"],input[type="tel"]'); // Find the OTP input field
+        if (otpInput) {
+            otpInput.value = '$otpFetched'; // Set the OTP value
+        }
+       
+    })();
+"""
+        binding.webViewForOtpValidation.evaluateJavascript(jsCode, null)
+    }
+
+    private fun captureAndSubmitOnly() {
+        val jsCode = """
+    (function() {
+        // Try to find an input field where the class name includes 'otp'
+        var otpInput = document.querySelector('input[type="text"].otp, input[type="number"].otp, input[class*="otp"]');
+        
+        if (otpInput) {
+            otpInput.value = '$otpFetched'; // Set the OTP value
+        }
+        
+        var submitButton = document.querySelector('button[type="submit"], input[type="submit"]'); // Find the submit button
+        if (submitButton) {
+            submitButton.click(); // Click the submit button to proceed
+        }
+    })();
+"""
+        binding.webViewForOtpValidation.evaluateJavascript(jsCode, null) // Inject JavaScript into the WebView
+
+    }
+
 }
