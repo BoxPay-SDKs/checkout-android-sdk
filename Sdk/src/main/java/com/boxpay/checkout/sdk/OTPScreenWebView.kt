@@ -358,7 +358,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         val jsCode = """
     (function() {
         // Try to find an input field where the class name includes 'otp'
-        var otpInput = document.querySelector('input[type="text"].otp, input[type="number"].otp, input[class*="otp"]');
+        var otpInput = document.querySelector('input:placeholder-shown');
         
         if (otpInput) {
             otpInput.value = '$otpFetched'; // Set the OTP value
@@ -366,6 +366,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         
         var submitButton = document.querySelector('button[type="submit"], input[type="submit"]'); // Find the submit button
         if (submitButton) {
+        if(submitButton.disabled) {
+         submitButton.disabled = false
+         }
             submitButton.click(); // Click the submit button to proceed
         }
     })();
