@@ -113,7 +113,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         binding.webViewForOtpValidation.settings.javaScriptEnabled = true
 
         startFunctionCalls()
-        fetchOtpStatus()
         fetchTransactionDetailsFromSharedPreferences()
 
         Handler(Looper.getMainLooper()).postDelayed({
@@ -123,7 +122,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
             startSmsRetriever()
 
         }, 1000) // 5000 milliseconds = 5 seconds
-
+        fetchOtpStatus()
 
         binding.webViewForOtpValidation.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -309,11 +308,14 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     }
 
     private fun fetchOtpStatus() {
+        val url = "${Base_Session_API_URL}${token}/setup-configs"
+        println("=====url $url")
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.GET, "${Base_Session_API_URL}${token}/setup-configs", null,
+            Method.GET, url, null,
             Response.Listener{ response ->
                 try {
                     val otpAutoCaptureMode = response.optString("otpAutoCaptureMode")
+                    print("=======otpAuto$otpAutoCaptureMode")
                     if (!otpAutoCaptureMode.isNullOrEmpty() && otpAutoCaptureMode.equals("Disabled",true)) {
                         captureOnly = false
                         captureAndSubmitOnly = false
@@ -329,6 +331,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 }
             },
             Response.ErrorListener {error ->
+                println("=====errror ${String(error.networkResponse.data)}")
                 println("=====error listener ${error.message}")
                 // no op
             }) {}
@@ -338,11 +341,14 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     private fun captureOnly() {
         val jsCode = """
     (function() {
-        var otpInput = document.querySelector('input[type="text"], input[type="number"],input[type="tel"]'); // Find the OTP input field
+       var otpInput = document.querySelector('input'); // Find the OTP input field
         if (otpInput) {
             otpInput.value = '$otpFetched'; // Set the OTP value
         }
-       
+         var submitButton = document.querySelector('button[type="submit"], input[type="submit"]');
+         if(submitButton.disabled) {
+         submitButton.disabled = false
+         }
     })();
 """
         binding.webViewForOtpValidation.evaluateJavascript(jsCode, null)
