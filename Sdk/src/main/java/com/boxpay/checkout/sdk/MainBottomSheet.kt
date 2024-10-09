@@ -491,6 +491,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     updateTransactionIDInSharedPreferences(transactionId!!)
                     if (status.equals("Pending", ignoreCase = true) && isGpayReturned) {
                         removeLoadingState()
+                        job?.cancel()
                         isGpayReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -500,6 +501,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                     if (status.equals("Pending", ignoreCase = true) && isPhonePe) {
                         removeLoadingState()
+                        job?.cancel()
                         isPhonePe = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -509,6 +511,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                     if (status.equals("Pending", ignoreCase = true) && isOthersReturned) {
                         removeLoadingState()
+                        job?.cancel()
                         isOthersReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -518,6 +521,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                     if (status.equals("Pending", ignoreCase = true) && isPaytmReturned) {
                         removeLoadingState()
+                        job?.cancel()
                         isPaytmReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -534,8 +538,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Failed")
                         editor.apply()
                         if (isAdded && isResumed && !isStateSaved) {
-                            job?.cancel()
-                            job?.cancel()
                             job?.cancel()
                             var cleanedMessage = reason.substringAfter(":")
                             if (!reasonCode.startsWith("uf", true)) {

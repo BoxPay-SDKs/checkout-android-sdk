@@ -135,7 +135,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
-            dialog.setCancelable(!binding.progressBar.isVisible)
+            dialog.setCancelable(!binding.progressBar.isVisible && !binding.loaderCardView.isVisible)
 
             dialog.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
@@ -240,7 +240,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         walletDetailsOriginal[index].walletName
 
                     constraintLayout.setOnClickListener {
-                        if (!binding.progressBar.isVisible && !binding.loadingRelativeLayout.isVisible) {
+                        if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
                             val inputMethodManager =
                                 requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                             inputMethodManager.hideSoftInputFromWindow(
@@ -303,7 +303,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun removeLoadingScreenState() {
-        binding.loadingRelativeLayout.visibility = View.GONE
+        binding.cardView.visibility = View.VISIBLE
+        binding.loaderCardView.visibility = View.INVISIBLE
+        binding.recyclerViewShimmer.visibility = View.GONE
         binding.walletsRecyclerView.visibility = View.VISIBLE
         binding.popularItemRelativeLayout1.setBackgroundResource(if (popularWalletsSelectedIndex == 0) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
         binding.popularItemRelativeLayout2.setBackgroundResource(if (popularWalletsSelectedIndex == 1) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
@@ -399,12 +401,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         layoutParams.height = desiredHeight
         binding.nestedScrollView.layoutParams = layoutParams
 
-
-        val layoutParamsLoading =
-            binding.loadingRelativeLayout.layoutParams as ConstraintLayout.LayoutParams
-        layoutParamsLoading.height = desiredHeight
-        binding.loadingRelativeLayout.layoutParams = layoutParamsLoading
-
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
@@ -430,9 +426,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.walletsRecyclerView.adapter = allWalletAdapter
 
-        showLoadingState()
         disableProceedButton()
-
 
         if (!shippingEnabled)
             fetchWalletDetails()
@@ -466,7 +460,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.backButton.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
+            if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
                 dismissAndMakeButtonsOfMainBottomSheetEnabled()
             }
         }
@@ -1229,20 +1223,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             playAnimation()
             repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
         }
-        binding.loadingRelativeLayout.visibility = View.VISIBLE
-        binding.walletsRecyclerView.visibility = View.GONE
-        binding.popularItemRelativeLayout1.setBackgroundResource(R.drawable.loading_state)
-        binding.popularItemRelativeLayout2.setBackgroundResource(R.drawable.loading_state)
-        binding.popularItemRelativeLayout3.setBackgroundResource(R.drawable.loading_state)
-        binding.popularItemRelativeLayout4.setBackgroundResource(R.drawable.loading_state)
-        binding.popularWalletImageView1.visibility = View.INVISIBLE
-        binding.popularWalletImageView2.visibility = View.INVISIBLE
-        binding.popularWalletImageView3.visibility = View.INVISIBLE
-        binding.popularWalletImageView4.visibility = View.INVISIBLE
-        binding.popularWalletsNameTextView4.visibility = View.INVISIBLE
-        binding.popularWalletsNameTextView3.visibility = View.INVISIBLE
-        binding.popularWalletsNameTextView2.visibility = View.INVISIBLE
-        binding.popularWalletsNameTextView1.visibility = View.INVISIBLE
+        binding.loaderCardView.visibility = View.VISIBLE
+        binding.cardView.visibility = View.GONE
         disableProceedButton()
     }
 }

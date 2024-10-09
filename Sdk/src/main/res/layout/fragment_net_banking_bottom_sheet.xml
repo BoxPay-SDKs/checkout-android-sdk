@@ -16,7 +16,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bottom_sheet_bg"
-            android:isScrollContainer="true"
             app:layout_anchorGravity="center">
 
             <TextView
@@ -44,7 +43,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:src="@drawable/chevron_left" />
             </LinearLayout>
@@ -52,7 +51,7 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="560dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
@@ -125,7 +124,7 @@
                     <androidx.core.widget.NestedScrollView
                         android:id="@+id/nestedScrollView"
                         android:layout_width="match_parent"
-                        android:layout_height="400dp"
+                        android:layout_height="420dp"
                         android:layout_marginTop="16dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="@+id/searchView"
@@ -133,7 +132,7 @@
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                            android:layout_height="match_parent">
 
                             <TextView
                                 android:id="@+id/textView19"
@@ -337,43 +336,57 @@
                                 app:layout_constraintStart_toStartOf="@+id/linearLayout2"
                                 app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
 
-                            <RelativeLayout
-                                android:id="@+id/loading_relative_layout"
+                            <LinearLayout
+                                android:id="@+id/recycler_view_shimmer"
                                 android:layout_width="match_parent"
-                                android:layout_height="400dp"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                app:layout_constraintTop_toBottomOf="@id/textView24"
                                 app:layout_constraintBottom_toBottomOf="parent"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintHorizontal_bias="0.0"
-                                app:layout_constraintStart_toStartOf="parent">
+                                android:visibility="visible">
 
-                                <com.airbnb.lottie.LottieAnimationView
-                                    android:id="@+id/boxPayLogoLottieAnimation"
-                                    android:layout_width="50dp"
-                                    android:layout_height="50dp"
-                                    android:layout_centerInParent="true"
-                                    app:lottie_autoPlay="true"
-                                    app:lottie_fileName="boxpayLogo.json"
-                                    app:lottie_loop="true" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
+                                <LinearLayout
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_below="@+id/boxPayLogoLottieAnimation"
-                                    android:layout_centerInParent="true"
-                                    android:layout_marginTop="8dp"
-                                    android:fontFamily="@font/poppins"
-                                    android:text="Loading..."
-                                    android:textColor="#4F4D55" />
-                            </RelativeLayout>
+                                    android:orientation="vertical">
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="30dp"
+                                        android:layout_marginTop="20dp"
+                                        android:background="@drawable/loading_state" />
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="30dp"
+                                        android:layout_marginTop="20dp"
+                                        android:background="@drawable/loading_state" />
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="30dp"
+                                        android:layout_marginTop="20dp"
+                                        android:background="@drawable/loading_state" />
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="30dp"
+                                        android:layout_marginTop="20dp"
+                                        android:background="@drawable/loading_state" />
+                                </LinearLayout>
+                            </LinearLayout>
+
 
                             <androidx.recyclerview.widget.RecyclerView
                                 android:id="@+id/banksRecyclerView"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
                                 android:visibility="gone"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="@+id/linearLayout2"
                                 app:layout_constraintTop_toBottomOf="@+id/textView24"
+                                app:layout_goneMarginBottom="8dp"
                                 tools:itemCount="10"
                                 tools:listitem="@layout/netbanking_banks_item" />
 
@@ -422,6 +435,51 @@
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/loaderCardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:cardCornerRadius="10dp"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView">
+
+                <RelativeLayout
+                    android:id="@+id/loading_relative_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="560dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <com.airbnb.lottie.LottieAnimationView
+                        android:id="@+id/boxPayLogoLottieAnimation"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:layout_centerInParent="true"
+                        app:lottie_autoPlay="true"
+                        app:lottie_fileName="boxpayLogo.json"
+                        app:lottie_loop="true" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/boxPayLogoLottieAnimation"
+                        android:layout_centerInParent="true"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/poppins"
+                        android:text="Loading..."
+                        android:textColor="#4F4D55" />
+                </RelativeLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
                 android:id="@+id/proceedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -434,7 +492,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardView">
+                app:layout_constraintTop_toBottomOf="@+id/loaderCardView">
 
                 <RelativeLayout
                     android:id="@+id/proceedButtonRelativeLayout"

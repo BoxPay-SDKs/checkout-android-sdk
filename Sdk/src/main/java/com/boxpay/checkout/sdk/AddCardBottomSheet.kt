@@ -288,7 +288,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.backButton.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
+            if (!binding.progressBar.isVisible && !binding.loadingLayout.isVisible) {
                 dismissAndMakeButtonsOfMainBottomSheetEnabled()
             }
         }
@@ -836,7 +836,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 ) // Semi-transparent black background
             }
 
-            dialog.setCancelable(!binding.progressBar.isVisible)
+            dialog.setCancelable(!binding.progressBar.isVisible && !binding.loadingLayout.isVisible)
 
             dialog.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
@@ -1111,6 +1111,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             cleanedMessage =
                                 "Please retry using other payment method or try again in sometime"
                         }
+                        job?.cancel()
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
                             "FailureScreen"
@@ -1181,6 +1182,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         }
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
+                        job?.cancel()
                         PaymentFailureScreen(
                             errorMessage = "Please retry using other payment method or try again in sometime"
                         ).show(parentFragmentManager, "FailureScreen")
@@ -1462,8 +1464,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         if (isAdded && isResumed && !isStateSaved) {
                             removeLoadingState()
                             job?.cancel()
-                            job?.cancel()
-                            job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
                             ).show(parentFragmentManager, "FailureScreen")
@@ -1491,7 +1491,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             while (isActive) {
                 delay(3000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
-                // Delay for 5 seconds
             }
         }
     }

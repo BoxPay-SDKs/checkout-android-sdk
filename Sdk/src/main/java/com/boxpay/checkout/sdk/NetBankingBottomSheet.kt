@@ -116,12 +116,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             val percentageOfScreenHeight = 0.9 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
-//        // Adjust the height of the bottom sheet content view
-//        val layoutParams = bottomSheetContent.layoutParams
-//        layoutParams.height = desiredHeight
-//        bottomSheetContent.layoutParams = layoutParams
-
-
             bottomSheetBehavior?.maxHeight = desiredHeight
 
             val window = d.window
@@ -146,7 +140,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
-            dialog.setCancelable(!binding.progressBar.isVisible)
+            dialog.setCancelable(!binding.progressBar.isVisible && !binding.loaderCardView.isVisible)
 
             dialog.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
@@ -259,13 +253,11 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         popularBanksSelected = false
     }
 
-    private fun applyLoadingScreenState() {
-
-    }
-
     private fun removeLoadingScreenState() {
         binding.banksRecyclerView.visibility = View.VISIBLE
-        binding.loadingRelativeLayout.visibility = View.GONE
+        binding.cardView.visibility = View.VISIBLE
+        binding.loaderCardView.visibility = View.INVISIBLE
+        binding.recyclerViewShimmer.visibility = View.GONE
         binding.popularBanksRelativeLayout1.setBackgroundResource(if (popularBanksSelectedIndex == 0) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
         binding.popularBanksRelativeLayout2.setBackgroundResource(if (popularBanksSelectedIndex == 1) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
         binding.popularBanksRelativeLayout3.setBackgroundResource(if (popularBanksSelectedIndex == 2) R.drawable.selected_popular_item_bg else R.drawable.popular_item_unselected_bg)
@@ -317,12 +309,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         layoutParams.height = desiredHeight
         binding.nestedScrollView.layoutParams = layoutParams
 
-        val layoutParamsLoading =
-            binding.loadingRelativeLayout.layoutParams as ConstraintLayout.LayoutParams
-        layoutParamsLoading.height = desiredHeight
-        binding.loadingRelativeLayout.layoutParams = layoutParamsLoading
-
-
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
 
@@ -340,7 +326,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         )
         binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.banksRecyclerView.adapter = allBanksAdapter
-        showLoadingState()
 
         if (!shippingEnabled)
             fetchBanksDetails()
@@ -406,7 +391,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         })
 
         binding.backButton.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
+            if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
                 dismissAndMakeButtonsOfMainBottomSheetEnabled()
             }
         }
@@ -648,7 +633,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         banksDetailsOriginal[index].bankName
 
                     constraintLayout.setOnClickListener {
-                        if (!binding.progressBar.isVisible && !binding.loadingRelativeLayout.isVisible) {
+                        if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
                             val inputMethodManager =
                                 requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                             inputMethodManager.hideSoftInputFromWindow(
@@ -1182,20 +1167,8 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             playAnimation()
             repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
         }
-        binding.loadingRelativeLayout.visibility = View.VISIBLE
-        binding.banksRecyclerView.visibility = View.GONE
-        binding.popularBanksRelativeLayout1.setBackgroundResource(R.drawable.loading_state)
-        binding.popularBanksRelativeLayout2.setBackgroundResource(R.drawable.loading_state)
-        binding.popularBanksRelativeLayout3.setBackgroundResource(R.drawable.loading_state)
-        binding.popularBanksRelativeLayout4.setBackgroundResource(R.drawable.loading_state)
-        binding.popularBanksImageView1.visibility = View.INVISIBLE
-        binding.popularBanksImageView2.visibility = View.INVISIBLE
-        binding.popularBanksImageView3.visibility = View.INVISIBLE
-        binding.popularBanksImageView4.visibility = View.INVISIBLE
-        binding.popularBanksNameTextView4.visibility = View.INVISIBLE
-        binding.popularBanksNameTextView3.visibility = View.INVISIBLE
-        binding.popularBanksNameTextView2.visibility = View.INVISIBLE
-        binding.popularBanksNameTextView1.visibility = View.INVISIBLE
+        binding.loaderCardView.visibility = View.VISIBLE
+        binding.cardView.visibility = View.GONE
         disableProceedButton()
     }
 }
