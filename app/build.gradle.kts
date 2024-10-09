@@ -95,6 +95,7 @@ dependencies {
     androidTestImplementation("androidx.test:rules:1.4.0")
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+    implementation("com.microsoft.clarity:clarity:2.5.1")
 
 }
 
