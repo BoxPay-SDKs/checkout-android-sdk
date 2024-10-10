@@ -890,6 +890,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             startActivityForResult(intent, 333)
                         } else {
                             job?.cancel()
+                            removeLoadingScreenState()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
                             ).show(parentFragmentManager, "FailureScreen")
