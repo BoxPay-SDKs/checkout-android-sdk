@@ -1,6 +1,5 @@
 package com.boxpay.checkout.sdk
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
@@ -25,15 +24,8 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
 import com.boxpay.checkout.sdk.databinding.ActivityOtpscreenWebViewBinding
-import com.boxpay.checkout.sdk.interfaces.OnWebViewCloseListener
-import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.gms.auth.api.phone.SmsRetriever
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import org.json.JSONException
 import java.util.regex.Pattern
 import kotlin.random.Random
@@ -44,30 +36,19 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         ActivityOtpscreenWebViewBinding.inflate(layoutInflater)
     }
 
-    private var callbackForDismissingMainSheet: UpdateMainBottomSheetInterface? = null
-    val permissionReceive = Manifest.permission.RECEIVE_SMS
-    val permissionRead = Manifest.permission.READ_SMS
-    private var webViewCloseListener: OnWebViewCloseListener? = null
-    private var job: Job? = null
     private var jobForFetchingSMS: Job? = null
     var isBottomSheetShown = false
     private var token: String? = null
     private lateinit var requestQueue: RequestQueue
     private var successScreenFullReferencePath: String? = null
-    private var previousBottomSheet: Context? = null
     private lateinit var Base_Session_API_URL: String
     private var captureOnly: Boolean = false
     private var captureAndSubmitOnly: Boolean = false
     private lateinit var sharedViewModel: SharedViewModel
-    private var delay = 4000L
-    private val handler = Handler()
-    private val delayMillis = 4000L
     private val SMS_CONSENT_REQUEST = 1010
     private var otpFetched: String? = null
-    private var startedCallsForOTPInject = false
 
-
-    fun explicitDismiss() {
+    private fun explicitDismiss() {
         val resultIntent = Intent()
         resultIntent.putExtra("closed", "Your Result Data")
         setResult(Activity.RESULT_OK, resultIntent)
@@ -104,7 +85,13 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 ?.replace("\\n", "\n")
                 ?.replace("\\/", "/") ?: ""
 
-            binding.webViewForOtpValidation.loadDataWithBaseURL(null,htmlUrl, "text/html", "UTF-8", null)
+            binding.webViewForOtpValidation.loadDataWithBaseURL(
+                null,
+                htmlUrl,
+                "text/html",
+                "UTF-8",
+                null
+            )
         } else {
             binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
         }
@@ -112,25 +99,20 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         binding.webViewForOtpValidation.settings.domStorageEnabled = true
         binding.webViewForOtpValidation.settings.javaScriptEnabled = true
 
-        startFunctionCalls()
         fetchTransactionDetailsFromSharedPreferences()
 
         Handler(Looper.getMainLooper()).postDelayed({
-            registerReceiver(smsConsentReceiver, IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION),
-                RECEIVER_EXPORTED)
-
+            registerReceiver(
+                smsConsentReceiver, IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION),
+                RECEIVER_EXPORTED
+            )
             startSmsRetriever()
-
-        }, 1000) // 5000 milliseconds = 5 seconds
+        }, 1000)
         fetchOtpStatus()
 
         binding.webViewForOtpValidation.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                if (!startedCallsForOTPInject) {
-                    startedCallsForOTPInject = true
-                    startFetchingOtpAtIntervals()
-                }
                 if (url?.contains("boxpay") == true) {
                     finish()
                 }
@@ -146,87 +128,12 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         }
     }
 
-    private val runnable = object : Runnable {
-        override fun run() {
-            handler.postDelayed(this, delayMillis) // Schedule next execution after delay
-        }
-    }
-
-    private fun startFetchingOtpAtIntervals() {
-        handler.postDelayed(runnable, delayMillis)
-    }
-
     override fun onBackPressed() {
         if (!isBottomSheetShown) {
             val bottomSheet = CancelConfirmationBottomSheet()
             bottomSheet.show(supportFragmentManager, "CancelConfirmationBottomSheet")
         } else {
             super.onBackPressed()
-        }
-    }
-
-    private fun fetchStatusAndReason(url: String) {
-
-        val sharedPreferences =
-            this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.GET, url, null,
-            Response.Listener{ response ->
-                try {
-                    val status = response.getString("status")
-                    val transactionId = response.getString("transactionId").toString()
-                    delay = 200L
-
-                    if (status.contains(
-                            "Approved",
-                            ignoreCase = true
-                        ) || status.contains("PAID", ignoreCase = true)
-                    ) {
-
-                        editor.putString("status","Success")
-                        editor.putString("amount", response.getString("amount").toString())
-                        editor.putString("transactionId", transactionId)
-                        editor.apply()
-
-                        finish()
-                    } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status","RequiresAction")
-                        editor.apply()
-                    } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status","Posted")
-                        editor.apply()
-                    } else if (status.contains("FAILED", ignoreCase = true)) {
-
-                        editor.putString("status","Failed")
-                        editor.apply()
-                        finish()
-                    }
-
-                } catch (e: JSONException) {
-
-                }
-            },
-            Response.ErrorListener {
-                // no op
-            }) {
-            override fun getHeaders(): MutableMap<String, String> {
-                val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                return headers
-            }
-        }
-        requestQueue.add(jsonObjectRequest)
-    }
-
-    private fun startFunctionCalls() {
-        job = CoroutineScope(Dispatchers.IO).launch {
-            while (isActive) {
-                delay(delay)
-                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
-                // Delay for 5 seconds
-            }
         }
     }
 
@@ -241,7 +148,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(smsConsentReceiver)
-        job?.cancel()
     }
 
     fun generateRandomAlphanumericString(length: Int): String {
@@ -264,11 +170,10 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 val consentIntent = extras?.getParcelable<Intent>(SmsRetriever.EXTRA_CONSENT_INTENT)
 
                 try {
-                    // Start the consent dialog to prompt the user for SMS reading permission
                     if (consentIntent != null) {
                         startActivityForResult(consentIntent, SMS_CONSENT_REQUEST)
                     }
-                } catch (e: ActivityNotFoundException) {
+                } catch (_: ActivityNotFoundException) {
                     // Handle error
                 }
             }
@@ -279,13 +184,10 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         if (requestCode == SMS_CONSENT_REQUEST) {
             if (resultCode == RESULT_OK && data != null) {
                 val message = data.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
-                println("======message $message")
-
                 if (message != null) {
                     otpFetched = extractOtpFromMessage(message) // Extract the OTP from the message
                     jobForFetchingSMS?.cancel()
 
-                    // Inject OTP into the WebView or any web page
                     if (otpFetched != null && captureOnly) {
                         captureOnly()
                     } else if (otpFetched != null && captureAndSubmitOnly) {
@@ -309,32 +211,34 @@ internal class OTPScreenWebView() : AppCompatActivity() {
 
     private fun fetchOtpStatus() {
         val url = "${Base_Session_API_URL}${token}/setup-configs"
-        println("=====url $url")
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
-            Response.Listener{ response ->
+            Response.Listener { response ->
                 try {
                     val otpAutoCaptureMode = response.optString("otpAutoCaptureMode")
-                    print("=======otpAuto$otpAutoCaptureMode")
-                    if (!otpAutoCaptureMode.isNullOrEmpty() && otpAutoCaptureMode.equals("Disabled",true)) {
+                    if (!otpAutoCaptureMode.isNullOrEmpty() && otpAutoCaptureMode.equals(
+                            "Disabled",
+                            true
+                        )
+                    ) {
                         captureOnly = false
                         captureAndSubmitOnly = false
-                    } else if (!otpAutoCaptureMode.isNullOrEmpty() && otpAutoCaptureMode.equals("Capture_Only",true)) {
+                    } else if (!otpAutoCaptureMode.isNullOrEmpty() && otpAutoCaptureMode.equals(
+                            "Capture_Only",
+                            true
+                        )
+                    ) {
                         captureOnly = true
                         captureAndSubmitOnly = false
                     } else {
                         captureOnly = false
                         captureAndSubmitOnly = true
                     }
-                } catch (e: JSONException) {
+                } catch (_: JSONException) {
 
                 }
             },
-            Response.ErrorListener {error ->
-                println("=====errror ${String(error.networkResponse.data)}")
-                println("=====error listener ${error.message}")
-                // no op
-            }) {}
+            Response.ErrorListener { }) {}
         requestQueue.add(jsonObjectRequest)
     }
 
@@ -373,8 +277,9 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         }
     })();
 """
-        binding.webViewForOtpValidation.evaluateJavascript(jsCode, null) // Inject JavaScript into the WebView
-
+        binding.webViewForOtpValidation.evaluateJavascript(
+            jsCode,
+            null
+        )
     }
-
 }
