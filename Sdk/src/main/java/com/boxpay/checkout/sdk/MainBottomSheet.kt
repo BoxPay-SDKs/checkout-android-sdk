@@ -2103,11 +2103,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (orderDetails != null && productSummary != null) {
                     binding.orderSummaryConstraintLayout.visibility = View.GONE
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.scrollCard.visibility = View.VISIBLE
                 } else {
                     binding.orderSummaryConstraintLayout.visibility = View.VISIBLE
-                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
                     binding.scrollCard.visibility = View.GONE
                 }
                 productSummary?.let { parseAndRenderProductSummary(it) }
