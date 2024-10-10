@@ -45,6 +45,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -160,7 +161,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     override fun onStart() {
         super.onStart()
 
-        showLoadingState("onStart") // Show loading state before initiating tasks
+        showLoadingState("") // Show loading state before initiating tasks
 
 
         // Show loading state while executing time-consuming tasks
@@ -240,9 +241,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
     private fun showLoadingState(source: String) {
-        binding.boxpayLogoLottie.playAnimation()
+        binding.boxpayLogoLottie.apply {
+            playAnimation()
+            repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+        }
         binding.loadingRelativeLayout.visibility = View.VISIBLE
     }
+
 
     private fun removeLoadingState() {
         binding.loadingRelativeLayout.visibility = View.GONE
@@ -251,7 +256,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        removeLoadingState()
+        showLoadingState("")
         if (requestCode == 121) {
             if (resultCode == Activity.RESULT_OK) {
                 val responseUri: Uri? = data?.data
@@ -485,6 +490,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
                     if (status.equals("Pending", ignoreCase = true) && isGpayReturned) {
+                        removeLoadingState()
+                        job?.cancel()
                         isGpayReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -493,6 +500,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         ).show(parentFragmentManager, "FailureScreen")
                     }
                     if (status.equals("Pending", ignoreCase = true) && isPhonePe) {
+                        removeLoadingState()
+                        job?.cancel()
                         isPhonePe = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -501,6 +510,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         ).show(parentFragmentManager, "FailureScreen")
                     }
                     if (status.equals("Pending", ignoreCase = true) && isOthersReturned) {
+                        removeLoadingState()
+                        job?.cancel()
                         isOthersReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -509,6 +520,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         ).show(parentFragmentManager, "FailureScreen")
                     }
                     if (status.equals("Pending", ignoreCase = true) && isPaytmReturned) {
+                        removeLoadingState()
+                        job?.cancel()
                         isPaytmReturned = false
                         editor.putString("status", "Failed")
                         editor.apply()
@@ -525,8 +538,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "Failed")
                         editor.apply()
                         if (isAdded && isResumed && !isStateSaved) {
-                            job?.cancel()
-                            job?.cancel()
                             job?.cancel()
                             var cleanedMessage = reason.substringAfter(":")
                             if (!reasonCode.startsWith("uf", true)) {
@@ -1352,12 +1363,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (recommendedInstrumentationList.isNotEmpty() && binding.upiLinearLayout.isVisible) {
                             binding.recommendedCardView.visibility = View.VISIBLE
                             binding.recommendedLinearLayout.visibility = View.VISIBLE
+                            binding.recommendedProceedButton.visibility = View.VISIBLE
+                            recommendedCheckedPosition = 0
+                            showRecommendedOptions()
                         } else {
                             upiOptionsShown = true
                             showUPIOptions()
                         }
                         removeLoadingState()
-                        showRecommendedOptions()
                     }
                 } catch (e: JSONException) {
                     removeLoadingState()

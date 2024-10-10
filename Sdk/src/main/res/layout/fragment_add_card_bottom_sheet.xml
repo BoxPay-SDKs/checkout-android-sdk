@@ -69,6 +69,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/textView">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/card_details"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:animateLayoutChanges="true"
@@ -485,6 +486,47 @@
 
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/loadingLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:animateLayoutChanges="true"
+                        android:paddingStart="14dp"
+                        android:paddingTop="15dp"
+                        android:paddingEnd="14dp"
+                        android:visibility="gone"
+                        android:paddingBottom="20dp">
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/boxpayLogoLottie"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:layout_marginTop="32dp"
+                            app:lottie_fileName="boxpayLogo.json"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintBottom_toTopOf="@id/loader_text"/>
+
+                        <TextView
+                            android:id="@+id/loader_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/boxpayLogoLottie"
+                            android:layout_centerInParent="true"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="Loading..."
+                            android:textColor="#4F4D55"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/boxpayLogoLottie"
+                            app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
                 </androidx.cardview.widget.CardView>
 
 

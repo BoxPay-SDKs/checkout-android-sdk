@@ -32,6 +32,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -287,7 +288,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.backButton.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
+            if (!binding.progressBar.isVisible && !binding.loadingLayout.isVisible) {
                 dismissAndMakeButtonsOfMainBottomSheetEnabled()
             }
         }
@@ -835,7 +836,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 ) // Semi-transparent black background
             }
 
-            dialog.setCancelable(!binding.progressBar.isVisible)
+            dialog.setCancelable(!binding.progressBar.isVisible && !binding.loadingLayout.isVisible)
 
             dialog.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
@@ -1110,6 +1111,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             cleanedMessage =
                                 "Please retry using other payment method or try again in sometime"
                         }
+                        job?.cancel()
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
                             "FailureScreen"
@@ -1141,6 +1143,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             )
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
+                            showLoadingState()
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
                             intent.putExtra("type", type)
@@ -1179,6 +1182,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         }
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
+                        job?.cancel()
                         PaymentFailureScreen(
                             errorMessage = "Please retry using other payment method or try again in sometime"
                         ).show(parentFragmentManager, "FailureScreen")
@@ -1422,6 +1426,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
                             val callback = SingletonClass.getInstance().getYourObject()
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -1457,8 +1462,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
-                            job?.cancel()
-                            job?.cancel()
+                            removeLoadingState()
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
@@ -1487,8 +1491,24 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             while (isActive) {
                 delay(3000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
-                // Delay for 5 seconds
             }
         }
+    }
+
+    private fun showLoadingState() {
+        binding.boxpayLogoLottie.apply {
+            playAnimation()
+            repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+        }
+        binding.loadingLayout.visibility = View.VISIBLE
+        binding.cardDetails.visibility = View.INVISIBLE
+        disableProceedButton()
+    }
+
+    private fun removeLoadingState() {
+        binding.loadingLayout.visibility = View.GONE
+        binding.boxpayLogoLottie.cancelAnimation()
+        binding.cardDetails.visibility = View.VISIBLE
+        enableProceedButton()
     }
 }

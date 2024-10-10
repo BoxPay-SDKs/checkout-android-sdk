@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.demoapp.databinding.ActivityMainBinding
+import com.microsoft.clarity.Clarity
+import com.microsoft.clarity.ClarityConfig
 
 
 class MainActivity : AppCompatActivity() {
@@ -18,6 +20,8 @@ class MainActivity : AppCompatActivity() {
         val sharedPrefs = getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE).edit()
         sharedPrefs.clear()
         sharedPrefs.apply()
+        val config = ClarityConfig("o4josf35jv")
+        Clarity.initialize(applicationContext, config)
 
 
         binding.openByDefault.setOnClickListener {
