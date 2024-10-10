@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
@@ -231,6 +232,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         }
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
                             //Hidden
                         }
                     }
@@ -242,6 +244,11 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             })
         }
         return dialog
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        dismissAndMakeButtonsOfMainBottomSheetEnabled()
     }
 
     companion object {
