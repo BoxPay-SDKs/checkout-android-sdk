@@ -121,7 +121,7 @@ class Check : AppCompatActivity() {
         "lastName": "Bansal",
         "email": "ishika.bansal@boxpay.tech",
         "uniqueReference": "x123y",
-        "phoneNumber": "19876543211",
+        "phoneNumber": "+919876543211",
         "deliveryAddress": {
             "address1": "first line",
             "address2": "second line",

@@ -237,6 +237,10 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val countryName = sharedPreferences.getString("countryName", "India")
 
         binding.backButton.setOnClickListener() {
+            if (binding.proceedButton.isEnabled) {
+                editor.putString("phoneNumber", "$countryCodePhoneNum${binding.mobileNumberEditText.text}")
+                editor.apply()
+            }
             dismiss()
         }
 
