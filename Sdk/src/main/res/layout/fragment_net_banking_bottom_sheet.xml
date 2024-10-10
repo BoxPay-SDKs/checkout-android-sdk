@@ -73,7 +73,7 @@
                         android:id="@+id/imageView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/netbanking_logo"
+                        android:src="@drawable/netbanking"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -102,6 +102,8 @@
                         android:iconifiedByDefault="false"
                         android:queryBackground="@null"
                         android:queryHint="Search Banks"
+                        android:layout_marginStart="2dp"
+                        android:layout_marginEnd="2dp"
                         android:searchIcon="@drawable/searchicon"
                         android:textColor="#000000"
                         app:layout_constraintEnd_toEndOf="parent"
