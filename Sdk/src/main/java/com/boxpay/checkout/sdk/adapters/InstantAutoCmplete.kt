@@ -42,12 +42,13 @@ class InstantAutoComplete : AppCompatAutoCompleteTextView {
         if (itemCount > 0) {
             // Calculate the dropdown height based on the visible items
             val maxDropdownHeight = resources.getDimensionPixelSize(android.R.dimen.app_icon_size) * 5 // Limit to 5 items
-            dropDownHeight = if (itemCount <= 5) {
+            dropDownHeight = if (itemCount >= 5) {
                 // Adjust height if the whole list is visible
                LinearLayout.LayoutParams.WRAP_CONTENT
             } else {
                 maxDropdownHeight
             }
+            println("====dropdoen $dropDownHeight")
         }
     }
 }
