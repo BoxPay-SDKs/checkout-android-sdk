@@ -98,37 +98,37 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context) {
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/oh3mnorsME/sessions"
         val jsonData = JSONObject(
             """ {
     "context": {
-        "countryCode": "IN",
+        "countryCode": "US",
         "legalEntity": {
-            "code": "razorpay"
+            "code": "dcc_usd"
         },
         "orderId": "test12"
     },
     "paymentType": "S",
     "money": {
         "amount": "1000",
-        "currencyCode": "INR"
+        "currencyCode": "USD"
     },
     "descriptor": {
         "line1": "Some descriptor"
     },
     "shopper": {
-        "firstName": "Ishika cnsjbc cnbhsbc jbcydsbc bcydbc",
-        "lastName": "Bansal",
-        "email": "ishika.bansal@boxpay.tech",
+        "firstName": "Ankush",
+        "lastName": "Kashyap",
+        "email": "ankush.kashyap@boxpay.tech",
         "uniqueReference": "x123y",
-        "phoneNumber": "919876543211",
+        "phoneNumber": "917986361129",
         "deliveryAddress": {
             "address1": "first line",
             "address2": "second line",
-            "city": "New Delhi",
-            "state": "Delhi",
+            "city": "Chandigarh",
+            "state": "Chandigarh",
             "countryCode": "IN",
-            "postalCode": "147147"
+            "postalCode": "160002"
         }
     },
     "order": {
@@ -279,7 +279,7 @@ class Check : AppCompatActivity() {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =
-                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
+                    "Bearer i8zuZD3mR9SYvT29z3p4DHRigXBcL5Cu5H2Lpl5M9w1LP7BVqj79YE09vhrskbXTbJjtZ5HsLFfivNjtdCZZZk"
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers

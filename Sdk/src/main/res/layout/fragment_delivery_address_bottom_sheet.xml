@@ -242,13 +242,110 @@
                         </LinearLayout>
 
                         <LinearLayout
+                            android:id="@+id/panLayout"
+                            android:layout_width="match_parent"
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/emailLayout" >
+
+                            <TextView
+                                android:id="@+id/panTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="PAN*"
+                                android:textColor="@android:color/black" />
+
+                            <EditText
+                                android:id="@+id/panEditText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="5dp"
+                                android:background="@drawable/edittext_bg"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:hint="PAN"
+                                android:inputType="text"
+                                android:padding="8dp"
+                                android:textColor="#000000"
+                                android:textColorHint="#7F7D83"
+                                android:textSize="14sp"
+                                tools:ignore="TouchTargetSizeCheck" />
+
+                            <TextView
+                                android:id="@+id/panErrorText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="Invalid PAN"
+                                android:visibility="invisible"
+                                android:textColor="#ffff4d4f" />
+                        </LinearLayout>
+
+
+                        <LinearLayout
+                            android:id="@+id/dobLayout"
+                            android:layout_width="match_parent"
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            android:layout_height="match_parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/panLayout" >
+
+                            <TextView
+                                android:id="@+id/dobTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="Date of Birth/Incorporation*"
+                                android:textColor="@android:color/black" />
+
+                            <EditText
+                                android:id="@+id/dobEditText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="5dp"
+                                android:background="@drawable/edittext_bg"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:hint="mm-dd-yyyy"
+                                android:inputType="text"
+                                android:padding="8dp"
+                                android:textColor="#000000"
+                                android:textColorHint="#7F7D83"
+                                android:textSize="14sp"
+                                tools:ignore="TouchTargetSizeCheck" />
+
+                            <TextView
+                                android:id="@+id/dobErrorText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="Invalid DOB/Incorporation"
+                                android:visibility="invisible"
+                                android:textColor="#ffff4d4f" />
+                        </LinearLayout>
+
+                        <LinearLayout
                             android:id="@+id/addressLayout"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:orientation="vertical"
                             android:textColor="@android:color/black"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/emailLayout" >
+                            app:layout_constraintTop_toBottomOf="@+id/dobLayout" >
                             <TextView
                                 android:id="@+id/countryTextView"
                                 android:layout_width="wrap_content"
