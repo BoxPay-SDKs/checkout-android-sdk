@@ -2029,18 +2029,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.belowTextImage.visibility = View.GONE
                 }
 
-                val originalAmount = orderObject?.getString("originalAmount") ?: "0"
+                val originalAmount = orderObject?.getString("originalAmount")
 
-                val shippingCharges = orderObject?.getString("shippingAmount") ?: "0"
+                val shippingCharges = orderObject?.getString("shippingAmount")
 
 
-                val taxes = orderObject?.getString("taxAmount") ?: "0"
-                val doubleTypeTax =
-                    NumberFormat.getNumberInstance(Locale.US).format(taxes.toDouble())
-                val doubleTypeOriginal =
-                    NumberFormat.getNumberInstance(Locale.US).format(originalAmount.toDouble())
-                val doubleTypeshipping =
-                    NumberFormat.getNumberInstance(Locale.US).format(shippingCharges.toDouble())
+                val taxes = orderObject?.getString("taxAmount")
 
                 val additionalDetails =
                     response.getJSONObject("configs").getJSONArray("additionalFieldSets")
@@ -2167,36 +2161,29 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.numberOfItems.text = "${totalQuantity} items"
                 binding.ItemsPrice.text = "${currencySymbol}${formattedAmount}"
 
-                if (originalAmount != totalAmount) {
-                    if (originalAmount == null || originalAmount == "0" || originalAmount == "null") {
-                        binding.subTotalRelativeLayout.visibility = View.GONE
-                    } else {
-                        binding.subtotalTextView.text = "${currencySymbol}${doubleTypeOriginal}"
-                        binding.subTotalRelativeLayout.visibility = View.VISIBLE
-                    }
+                if (originalAmount != null && originalAmount != "0" && originalAmount != "null") {
+                    val doubleTypeOriginal =
+                        NumberFormat.getNumberInstance(Locale.US).format(originalAmount.toDouble())
+                    binding.subtotalTextView.text = "${currencySymbol}${doubleTypeOriginal}"
+                    binding.subTotalRelativeLayout.visibility = View.VISIBLE
                 }
 
-                if (taxes != "null") {
-                    if (taxes == "0") {
-                        binding.taxesRelativeLayout.visibility = View.GONE
-                    } else {
-                        binding.taxTextView.text = "${currencySymbol}${doubleTypeTax}"
-                        binding.taxesRelativeLayout.visibility = View.VISIBLE
-                    }
-
+                if (taxes != null && taxes != "null" && taxes != "0") {
+                    val doubleTypeTax =
+                        NumberFormat.getNumberInstance(Locale.US).format(taxes.toDouble())
+                    binding.taxTextView.text = "${currencySymbol}${doubleTypeTax}"
+                    binding.taxesRelativeLayout.visibility = View.VISIBLE
                 }
 
-                if (shippingCharges != "null") {
-                    if (shippingCharges == "0") {
-                        binding.shippingChargesRelativeLayout.visibility = View.GONE
-                    } else {
-                        binding.shippingChargesTextView.text =
-                            "${currencySymbol}$doubleTypeshipping"
-                        binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
-                    }
+                if (shippingCharges != null && shippingCharges != "null" && shippingCharges != "0") {
+                    val doubleTypeshipping =
+                        NumberFormat.getNumberInstance(Locale.US).format(shippingCharges.toDouble())
+                    binding.shippingChargesTextView.text =
+                        "${currencySymbol}$doubleTypeshipping"
+                    binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
                 }
 
-                if (originalAmount == "0" && shippingCharges == "0" && taxes == "0") {
+                if ((originalAmount == null || originalAmount == "0" && originalAmount == "null") && (shippingCharges == null || shippingCharges == "null" || shippingCharges == "0") && (taxes == null || taxes == "null" && taxes == "0")) {
                     binding.arrowIcon.visibility = View.GONE
                     binding.orderSummaryConstraintLayout.setOnClickListener(null)
                 }
