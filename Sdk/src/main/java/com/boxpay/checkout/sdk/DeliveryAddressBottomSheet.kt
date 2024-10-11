@@ -50,9 +50,13 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isNameEnabled = false
     private var isPhoneEnabled = false
     private var isEmailEnabled = false
+    private var isDOBEnabled = false
+    private var isPANEnabled = false
     private var isNameEditable = true
     private var isPhoneEditable = true
     private var isEmailEditable = true
+    private var isPANEditable = true
+    private var isDOBEditable = true
     private var minPhoneLength = 10
     val emailRegex =
         "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
@@ -301,6 +305,14 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         if (!isEmailEnabled && !isShippingEnabled) {
             binding.emailLayout.visibility = View.GONE
+        }
+
+        if (!isPANEnabled && !isShippingEnabled) {
+            binding.panLayout.visibility = View.GONE
+        }
+
+        if (!isDOBEnabled && !isShippingEnabled) {
+            binding.dobLayout.visibility = View.GONE
         }
 
 
@@ -836,10 +848,14 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             isNameEnabled: Boolean,
             isPhoneEnabled: Boolean,
             isEmailEnabled: Boolean,
+            isPANEnabled: Boolean,
+            isDOBEnabled: Boolean,
             isShippingEnabled: Boolean,
             isNameEditable: Boolean,
             isPhoneEditable: Boolean,
-            isEmailEditable: Boolean
+            isEmailEditable: Boolean,
+            isPANEditable: Boolean,
+            isDOBEditable: Boolean,
         ): DeliveryAddressBottomSheet {
             val fragment = DeliveryAddressBottomSheet()
             fragment.callback = callback
@@ -847,10 +863,14 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             fragment.isNameEnabled = isNameEnabled
             fragment.isPhoneEnabled = isPhoneEnabled
             fragment.isEmailEnabled = isEmailEnabled
+            fragment.isDOBEnabled = isDOBEnabled
+            fragment.isPANEnabled = isPANEnabled
             fragment.isShippingEnabled = isShippingEnabled
             fragment.isNameEditable = isNameEditable
             fragment.isPhoneEditable = isPhoneEditable
             fragment.isEmailEditable = isEmailEditable
+            fragment.isPANEditable = isPANEditable
+            fragment.isDOBEditable = isDOBEditable
             return fragment
         }
     }

@@ -111,6 +111,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var showName = false
     private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
+    private var isPANEditable = false
+    private var isDOBEditable = false
+    private var showPAN = false
+    private var showDOB = false
     private var railyatriAmount: String? = null
     private var showShipping = false
     private var showPhone = false
@@ -771,10 +775,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             showName,
             showPhone,
             showEmail,
+            showPAN,
+            showDOB,
             showShipping,
             isNameEditable,
             isPhoneEditable,
-            isEmailEditable
+            isEmailEditable,
+            isPANEditable,
+            isDOBEditable
         )
 
         if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
@@ -995,10 +1003,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     showName,
                     showPhone,
                     showEmail,
+                    showPAN,
+                    showDOB,
                     showShipping,
                     isNameEditable,
                     isPhoneEditable,
-                    isEmailEditable
+                    isEmailEditable,
+                    isPANEditable,
+                    isDOBEditable
                 )
                 bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
             }
@@ -2076,6 +2088,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             showEmail = true
                             isEmailEditable = fieldObject.optBoolean("editable", false)
                         }
+                        if (fieldObject.optString("field", "UNKNOWN").contains("SHOPPER_PAN", true)) {
+                            showPAN = true
+                            isPANEditable = fieldObject.optBoolean("editable", false)
+                        }
+
+                        if (fieldObject.optString("field", "UNKNOWN").contains("SHOPPER_DOB", true)) {
+                            showDOB = true
+                            isDOBEditable = fieldObject.optBoolean("editable", false)
+                        }
                     }
                 } else {
                     println("No enabled fields found")
@@ -2318,10 +2339,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showName,
                         showPhone,
                         showEmail,
+                        showPAN,
+                        showDOB,
                         showShipping,
                         isNameEditable,
                         isPhoneEditable,
-                        isEmailEditable
+                        isEmailEditable,
+                        isPANEditable,
+                        isDOBEditable
                     )
                     showPriceBreakUp()
                 } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull(
@@ -2350,10 +2375,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showName,
                         showPhone,
                         showEmail,
+                        showPAN,
+                        showDOB,
                         showShipping,
                         isNameEditable,
                         isPhoneEditable,
-                        isEmailEditable
+                        isEmailEditable,
+                        isPANEditable,
+                        isDOBEditable
                     )
                     showPriceBreakUp()
                 } else {

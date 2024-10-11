@@ -122,14 +122,7 @@ class Check : AppCompatActivity() {
         "email": "ishika.bansal@boxpay.tech",
         "uniqueReference": "x123y",
         "phoneNumber": "+919876543211",
-        "deliveryAddress": {
-            "address1": "first line",
-            "address2": "second line",
-            "city": "New Delhi",
-            "state": "Delhi",
-            "countryCode": "IN",
-            "postalCode": "147147"
-        }
+        "deliveryAddress": null
     },
     "order": {
         "originalAmount": 42113.73,
