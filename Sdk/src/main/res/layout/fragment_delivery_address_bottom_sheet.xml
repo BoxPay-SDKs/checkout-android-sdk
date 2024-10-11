@@ -253,7 +253,7 @@
                             android:id="@+id/panLayout"
                             android:layout_width="match_parent"
                             android:orientation="vertical"
-                            android:visibility="visible"
+                            android:visibility="gone"
                             android:layout_height="match_parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/emailLayout" >
@@ -277,8 +277,7 @@
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:hint="PAN"
-                                android:textAllCaps="true"
-                                android:inputType="text|textCapCharacters"
+                                android:inputType="text"
                                 android:padding="8dp"
                                 android:textColor="#000000"
                                 android:textColorHint="#7F7D83"
@@ -303,7 +302,7 @@
                             android:id="@+id/dobLayout"
                             android:layout_width="match_parent"
                             android:orientation="vertical"
-                            android:visibility="visible"
+                            android:visibility="gone"
                             android:layout_height="match_parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/panLayout" >
@@ -329,10 +328,7 @@
                                 android:hint="mm-dd-yyyy"
                                 android:inputType="text"
                                 android:padding="8dp"
-                                android:focusable="false"
-                                android:clickable="true"
                                 android:textColor="#000000"
-                                android:drawableEnd="@drawable/baseline_calendar_month_24"
                                 android:textColorHint="#7F7D83"
                                 android:textSize="14sp"
                                 tools:ignore="TouchTargetSizeCheck" />
@@ -349,7 +345,6 @@
                                 android:visibility="invisible"
                                 android:textColor="#ffff4d4f" />
                         </LinearLayout>
-
 
                         <LinearLayout
                             android:id="@+id/addressLayout"
