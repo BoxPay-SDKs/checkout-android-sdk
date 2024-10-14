@@ -110,7 +110,7 @@ class Check : AppCompatActivity() {
     },
     "paymentType": "S",
     "money": {
-        "amount": "1000",
+        "amount": "1234",
         "currencyCode": "USD"
     },
     "descriptor": {
