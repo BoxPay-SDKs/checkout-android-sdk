@@ -79,6 +79,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
 import kotlin.random.Random
@@ -118,8 +119,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var isCurrencySelected = false
     private var dccRequest: DCCRequest? = null
     private var isDCCFetched = false
+    private var isDCCEnabled = false
     private var quotationID: String? = ""
     private var isQuotationRequired = false
+    private var dccResponseUniversal : DCCResponse? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -174,7 +177,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             if (dccResponse != null) {
                                 //successful
                                 callAndSetDCCData(dccResponse)
+                                dccResponseUniversal = dccResponse
                             }else{
+                                binding.flLoaderAndDcc.visibility = View.GONE
                                 PaymentFailureScreen(
                                     errorMessage = "Please retry using other payment method or try again in sometime"
                                 ).show(parentFragmentManager, "FailureScreen")
@@ -184,6 +189,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             } catch (e: Exception) {
                 Log.e("TAG", "makeCardNetworkIdentificationCall: ", e)
+                binding.flLoaderAndDcc.visibility = View.GONE
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
             }
         }, Response.ErrorListener { _ ->
 
@@ -285,6 +294,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
+        clearAllDCCData(requireActivity())
 
 
         val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
@@ -325,7 +335,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         brand = "", accountNumber = ""
                     )
                 )
-            }
+            }else{
+            binding.flLoaderAndDcc.visibility = View.GONE
+        }
         })
 
 
@@ -490,21 +502,19 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         }
 
                         if (text.length >= 10) {
-                            if (!isDCCFetched) {
-                                showViewWithAnimation(binding.llLoaderDccAndInfo)
-                                showViewWithAnimation(binding.llLoader)
-                            }
                             makeCardNetworkIdentificationCall(
                                 requireContext(), text.substring(0, 9), text
                             )
                         } else {
-                            hideViewWithAnimation(binding.ll1InvalidCardNumber,View.INVISIBLE)
-                            hideViewWithAnimation(binding.llLoaderDccAndInfo,View.GONE)
-                            hideViewWithAnimation(binding.llDccOptions,View.GONE)
-                            hideViewWithAnimation(binding.tvInfoDcc,View.INVISIBLE)
-                            binding.tvInfoDcc.text = ""
-                            isDCCFetched = false
-                            isCardNumberValid = false
+                            if (isDCCFetched){
+                                hideViewWithAnimation(binding.ll1InvalidCardNumber,View.INVISIBLE)
+                                hideViewWithAnimation(binding.llLoaderDccAndInfo,View.GONE)
+                                hideViewWithAnimation(binding.llDccOptions,View.GONE)
+                                hideViewWithAnimation(binding.tvInfoDcc,View.INVISIBLE)
+                                binding.tvInfoDcc.text = ""
+                                isDCCFetched = false
+                                isCardNumberValid = false
+                            }
                         }
                     }
                 }
@@ -900,54 +910,68 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }.start()
     }
 
+    fun formatToINR(amount: Double): String {
+        val format = NumberFormat.getNumberInstance(Locale("en", "IN"))
+        return format.format(amount)
+    }
+
     @SuppressLint("SetTextI18n")
     private fun callAndSetDCCData(dccResponse: DCCResponse) {
         //check if the user typed some other card before if YES we don't update anything
-        if (quotationID != dccResponse.dccQuotationId) {
+        if (dccResponse.baseMoney!!.amount != null){
+            if (quotationID != dccResponse.dccQuotationId) {
+                if (!isDCCFetched) {
+                    showViewWithAnimation(binding.llLoaderDccAndInfo)
+                    showViewWithAnimation(binding.llLoader)
+                }
 
-            Log.e(
-                "DCCRESPONSE",
-                "" + GsonBuilder().setPrettyPrinting().create().toJson(dccResponse)
-            )
-            binding.countryCode1.text = dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode
-            binding.countryCode2.text = dccResponse.baseMoney!!.currencyCode
-            binding.detailsText2.text =
-                "Exchange rate will be determined\n" + "by the card issuer.\n" + dccResponse.baseMoney!!.currencyCode + " " + dccResponse.baseMoney!!.amount
-            quotationID = dccResponse.dccQuotationId
+                Log.e(
+                    "DCCRESPONSE",
+                    "" + GsonBuilder().setPrettyPrinting().create().toJson(dccResponse)
+                )
+                binding.countryCode1.text = dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode
+                binding.countryCode2.text = dccResponse.baseMoney!!.currencyCode
+                binding.detailsText2.text =
+                    "Exchange rate will be determined by the card issuer.\n" + dccResponse.baseMoney!!.currencyCode + " " + formatToINR((dccResponse.baseMoney!!.amount)!!.toDouble())
+                quotationID = dccResponse.dccQuotationId
 
 
-            //two types of card VISA and MASTERCARD
-            if (dccResponse.brand.equals("visa", true)) {
-                binding.tvInfoDcc.text = ""
+                //two types of card VISA and MASTERCARD
+                if (dccResponse.brand.equals("visa", true)) {
+                    binding.tvInfoDcc.text = ""
 
-                showViewWithAnimation(binding.llDccOptions)
+                    showViewWithAnimation(binding.llDccOptions)
 
-                hideViewWithAnimation(binding.tvInfoDcc,View.GONE)
-                hideViewWithAnimation(binding.llLoader,View.INVISIBLE)
-                binding.detailsText1.text =
-                    "1 " + dccResponse.baseMoney!!.currencyCode + " = " + dccResponse.dccQuotationDetails!!.fxRate + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + "\n" + "Includes Margin: " + dccResponse.dccQuotationDetails!!.marginPercent + "%\n" + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.amount
-            } else {
-                binding.tvInfoDcc.text =
-                    "Make sure you understand the costs of currency conversion as they may be different depending on whether you select your home currency or the transaction currency."
-                showViewWithAnimation(binding.llDccOptions)
-                showViewWithAnimation(binding.tvInfoDcc)
-                hideViewWithAnimation(binding.llLoader,View.INVISIBLE)
-                binding.detailsText1.text =
-                    "1 " + dccResponse.baseMoney!!.currencyCode + " = " + dccResponse.dccQuotationDetails!!.fxRate + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + "\n" + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.amount
+                    hideViewWithAnimation(binding.tvInfoDcc,View.GONE)
+                    hideViewWithAnimation(binding.llLoader,View.INVISIBLE)
+                    binding.detailsText1.text =
+                        "1 " + dccResponse.baseMoney!!.currencyCode + " = " + dccResponse.dccQuotationDetails!!.fxRate + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + "\n" + "Includes Margin: " + dccResponse.dccQuotationDetails!!.marginPercent + "%\n" + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
+                } else {
+                    binding.tvInfoDcc.text =
+                        "Make sure you understand the costs of currency conversion as they may be different depending on whether you select your home currency or the transaction currency."
+                    showViewWithAnimation(binding.llDccOptions)
+                    showViewWithAnimation(binding.tvInfoDcc)
+                    hideViewWithAnimation(binding.llLoader,View.INVISIBLE)
+                    binding.detailsText1.text =
+                        "1 " + dccResponse.baseMoney!!.currencyCode + " = " + dccResponse.dccQuotationDetails!!.fxRate + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + "\n" + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
+                }
+
+                binding.countryFlag1.load(getFlagForCurrencyCode(requireActivity(),dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode!!)) {
+                    decoderFactory { result, options, _ -> SvgDecoder(result.source, options) }
+                    scale(Scale.FIT)
+                }
+
+                binding.countryFlag2.load(getFlagForCurrencyCode(requireActivity(), dccResponse.baseMoney!!.currencyCode!!)) {
+                    decoderFactory { result, options, _ -> SvgDecoder(result.source, options) }
+                    scale(Scale.FIT) // Ensures the image fits within the ImageView
+                }
+                isDCCFetched = true
             }
 
-            binding.countryFlag1.load(getFlagForCurrencyCode(requireActivity(),dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode!!)) {
-                decoderFactory { result, options, _ -> SvgDecoder(result.source, options) }
-                scale(Scale.FIT)
-                transformations(RoundedCornersTransformation(0.1f))
-            }
-
-            binding.countryFlag2.load(getFlagForCurrencyCode(requireActivity(), dccResponse.baseMoney!!.currencyCode!!)) {
-                decoderFactory { result, options, _ -> SvgDecoder(result.source, options) }
-                scale(Scale.FIT) // Ensures the image fits within the ImageView
-                transformations(RoundedCornersTransformation(0.1f))
-            }
-            isDCCFetched = true
+        }else{
+            binding.tvInfoDcc.text = ""
+            isDCCFetched = false
+            isDCCEnabled = true
         }
     }
 
@@ -1374,6 +1398,40 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         }
 
                         if (status.contains("Approved", ignoreCase = true)) {
+                            if (isDCCFetched && isQuotationRequired){
+
+                                val sharedPreferences: SharedPreferences =
+                                    requireActivity().getSharedPreferences("DCC_PREF", Context.MODE_PRIVATE)
+                                val editor = sharedPreferences.edit()
+
+                                // Convert DCCResponse object to JSON string
+                                val gson = Gson()
+                                val json = gson.toJson(dccResponseUniversal!!)
+
+                                // Save JSON string in SharedPreferences
+                                editor.putString("DCC_RESPONSE_KEY", json)
+                                editor.putString("CARD_HOLDER_NAME", binding.editTextNameOnCard.text.toString())
+                                editor.putString("MERCHANT_NAME", sessionData!!.merchantDetails!!.merchantName)
+                                editor.apply()  // Apply changes asynchronously
+                            }else if (isDCCFetched && !isQuotationRequired){
+                                val sharedPreferences: SharedPreferences =
+                                    requireActivity().getSharedPreferences("NON_DCC_PREF", Context.MODE_PRIVATE)
+                                val editor = sharedPreferences.edit()
+                                editor.putString("CURRENCY_TYPE",dccResponseUniversal!!.baseMoney!!.currencyCode)
+                                editor.putString("AMOUNT",
+                                    dccResponseUniversal!!.baseMoney!!.amount.toString()
+                                )
+                                editor.apply()
+                            }else{
+                                val sharedPreferences: SharedPreferences =
+                                    requireActivity().getSharedPreferences("NON_DCC_PREF", Context.MODE_PRIVATE)
+                                val editor = sharedPreferences.edit()
+                                editor.putString("CURRENCY_TYPE",sessionData!!.paymentDetails!!.money!!.currencyCode)
+                                editor.putString("AMOUNT",
+                                    sessionData!!.paymentDetails!!.money!!.amount.toString()
+                                )
+                                editor.apply()
+                            }
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
                                 parentFragmentManager,
@@ -1444,6 +1502,20 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
+    }
+
+    fun clearAllDCCData(context: Context) {
+        val sharedPreferences = context.getSharedPreferences("DCC_PREF", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
+        // Clear all data from the SharedPreferences
+        editor.clear()
+        editor.apply() // Apply changes asynchronously
+    }
+
+
+    fun saveDCCResponse(context: Context, dccResponse: DCCResponse) {
+
     }
 
     private fun removeSpaces(stringWithSpaces: String): String {
@@ -1630,7 +1702,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         ) && binding.editTextCardValidity.text.length == 5 && isValidExpirationDate(
             binding.editTextCardValidity.text.toString().substring(0, 2),
             binding.editTextCardValidity.text.toString().substring(3, 5)
-        ) && isNameOnCardValid && isCurrencySelected
+        ) && isNameOnCardValid && (isCurrencySelected || isDCCEnabled)
     }
 
     private fun fetchStatusAndReason(url: String) {
