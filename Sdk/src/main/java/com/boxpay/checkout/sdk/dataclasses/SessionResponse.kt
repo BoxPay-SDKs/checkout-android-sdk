@@ -51,6 +51,12 @@ data class MoneySession(
 
 )
 
+data class CustomFields (
+
+    @SerializedName("fieldName" ) var fieldName : String? = null
+
+)
+
 data class DeliveryAddress(
 
     @SerializedName("address1") var address1: String? = null,
@@ -163,7 +169,7 @@ data class MerchantDetails(
     @SerializedName("timeZone") var timeZone: String? = null,
     @SerializedName("locale") var locale: String? = null,
     @SerializedName("template") var template: String? = null,
-    @SerializedName("customFields") var customFields: String? = null
+    @SerializedName("customFields"  ) var customFields  : ArrayList<CustomFields> = arrayListOf()
 
 )
 

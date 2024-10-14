@@ -28,8 +28,8 @@
 
                 <com.airbnb.lottie.LottieAnimationView
                     android:id="@+id/lottieAnimationView"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
                     android:layout_centerInParent="true"
                     app:lottie_autoPlay="true"
                     app:lottie_fileName="complete_json.json"
@@ -38,105 +38,435 @@
             </RelativeLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clMainContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="25dp"
                 android:layout_marginBottom="150dp"
                 app:layout_constraintBottom_toTopOf="@+id/proceedButton"
                 app:layout_constraintTop_toBottomOf="@+id/lottieAnimationViewConstraint"
                 app:layout_constraintVertical_bias="0.5">
 
                 <TextView
-                    android:id="@+id/textView"
+                    android:id="@+id/tvPaymentSuccess"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_medium"
                     android:text="Payment Successful"
-                    android:textColor="#2D2B32"
-                    android:textSize="16sp"
+                    android:textColor="#000000"
+                    android:gravity="center"
+                    android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <TextView
-                    android:id="@+id/textView24"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="24dp"
-                    android:fontFamily="@font/poppins"
-                    android:text="Transaction ID : "
-                    android:textColor="#4F4D55"
-                    android:textSize="12sp"
+
+
+                <LinearLayout
+                    android:id="@+id/llMainContainer"
+                    android:layout_width="0dp"
+                    android:orientation="vertical"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-                <TextView
-                    android:id="@+id/transactionIDTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:layout_marginEnd="32dp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:text="#AAA1234"
-                    android:textColor="#4F4D55"
-                    android:textSize="12sp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-                <TextView
-                    android:id="@+id/textView25"
-                    android:layout_width="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    app:layout_constraintTop_toBottomOf="@+id/tvPaymentSuccess"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="12dp"
-                    android:fontFamily="@font/poppins"
-                    android:text="Transaction Amount :"
-                    android:textColor="#4F4D55"
-                    android:textSize="12sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView24" />
+                    android:layout_marginTop="25dp">
 
-                <TextView
-                    android:id="@+id/transactionAmountTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginEnd="32dp"
-                    android:fontFamily="@font/inter_medium"
-                    android:text="₹599.00"
-                    android:textColor="#4F4D55"
-                    android:textSize="12sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/transactionIDTextView" />
+                    <LinearLayout
+                        android:id="@+id/llMerchantName"
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintEnd_toEndOf="@+id/transactionIDTextView"
+                        app:layout_constraintStart_toStartOf="@+id/textView24"
+                        app:layout_constraintTop_toBottomOf="@+id/textView"
+                        android:weightSum="2">
 
-                <TextView
-                    android:id="@+id/textView26"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="12dp"
-                    android:fontFamily="@font/poppins"
-                    android:text="Transaction date : "
-                    android:textColor="#4F4D55"
-                    android:textSize="12sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView25" />
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"
+                            android:text="Merchant Name"
+                            android:textColor="#000000"
+                            android:textSize="16sp"
+                            />
 
-                <TextView
-                    android:id="@+id/transactionDateAndTimeTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginEnd="32dp"
-                    android:fontFamily="@font/poppins_medium"
-                    android:text="09/02/2023  12:10:00"
-                    android:textColor="#4F4D55"
-                    android:textSize="12sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/transactionAmountTextView" />
+                        <TextView
+                            android:id="@+id/tvMerchantName"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"
+                            android:text="Merchant Name"
+                            android:textColor="#000000"
+                            android:textSize="16sp"
+                            android:gravity="end"
+                            />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:id="@+id/textView24"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins"
+                            android:text="Transaction ID"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/transactionIDTextView"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"
+                            android:text="#AAA1234"
+                            android:textColor="#000000"
+                            android:gravity="end"
+                            android:textSize="12sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/llCardType"
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"
+                            android:text="Card Type"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp"
+                            />
+
+                        <TextView
+                            android:id="@+id/tvCardType"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"                            android:layout_weight="1"
+                            android:text=""
+                            android:gravity="end"
+                            android:textColor="#000000"
+                            android:textSize="12sp" />
+
+
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:id="@+id/llCardHolderName"
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"                            android:layout_weight="1"
+                            android:text="Cardholder Name"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvCardHolderName"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"
+                            android:layout_weight="1"
+                            android:text=""
+                            android:gravity="end"
+                            android:textColor="#000000"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:id="@+id/llTransTotal"
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:id="@+id/transTotalDCC"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"                            android:layout_weight="1"
+                            android:text="Transactional Total"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvTransTotal"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"
+                            android:layout_weight="1"
+                            android:text=""
+                            android:gravity="end"
+                            android:textColor="#000000"
+                            android:textSize="12sp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/llExchangeRate"
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"                            android:layout_weight="1"
+                            android:text="Exchange Rate"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvExchangeRate"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"
+                            android:layout_weight="1"
+                            android:text=""
+                            android:gravity="end"
+                            android:textColor="#000000"
+                            android:textSize="12sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/llMargin"
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:visibility="gone"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"                            android:layout_weight="1"
+                            android:text="Margin"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvMargin"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"
+                            android:layout_weight="1"
+                            android:text=""
+                            android:gravity="end"
+                            android:textColor="#000000"
+                            android:textSize="12sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:id="@+id/textView26"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"
+                            android:text="Transaction date"
+                            android:layout_weight="1"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/transactionDateAndTimeTextView"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:gravity="end"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"
+                            android:text="09/02/2023  12:10:00"
+                            android:textColor="#000000"
+                            android:textSize="12sp"
+                            app:layout_constraintEnd_toEndOf="parent" />
+
+
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:id="@+id/llTransCurrency"
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"                            android:layout_weight="1"
+                            android:text="Transaction Currency"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvTransCurrency"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_medium"
+                            android:layout_weight="1"
+                            android:text=""
+                            android:gravity="end"
+                            android:textColor="#000000"
+                            android:textSize="12sp" />
+
+
+                    </LinearLayout>
+
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="5dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/dotted_line" />
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:id="@+id/textView25"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"
+                            android:text="Total Transaction Amount"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/transactionAmountTextView"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/inter_medium"
+                            android:text="₹599.00"
+                            android:layout_weight="1"
+                            android:gravity="end"
+                            android:textColor="#000000"
+                            android:textSize="12sp" />
+
+
+                    </LinearLayout>
+
+
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="5dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/dotted_line" />
+
+
+                    <TextView
+                        android:layout_marginTop="10dp"
+                        android:id="@+id/tv_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/poppins_medium"
+                        android:text="Please print and retain for your records."
+                        android:textColor="#000000"
+                        android:textSize="12sp" />
+
+
+                </LinearLayout>
+
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <View
+                android:id="@+id/dottedLast"
+                android:layout_width="match_parent"
+                android:layout_height="5dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/dotted_line"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginBottom="10dp"
+                app:layout_constraintTop_toBottomOf="@+id/clMainContainer"/>
+
+
+            <LinearLayout
+                android:id="@+id/llRedirectLink"
+                android:layout_width="wrap_content"
+                android:orientation="horizontal"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginBottom="10dp"
+                app:layout_constraintTop_toBottomOf="@+id/dottedLast"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins"
+                    android:text="Redirect back to the "
+                    android:textColor="#4F4D55"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvMerchantSite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_medium"
+                    android:text="merchant’s site"
+                    android:textColor="#FF0023"
+                    android:textSize="12sp" />
+
+
+            </LinearLayout>
+
+
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/proceedButton"
@@ -148,6 +478,7 @@
                 android:clickable="true"
                 android:elevation="0dp"
                 app:cardCornerRadius="7dp"
+                android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent">
