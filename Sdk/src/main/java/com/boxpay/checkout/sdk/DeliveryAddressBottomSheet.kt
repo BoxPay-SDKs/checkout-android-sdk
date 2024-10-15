@@ -1,10 +1,12 @@
 package com.boxpay.checkout.sdk
 
+import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
@@ -15,9 +17,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.Filter
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import com.android.volley.RequestQueue
@@ -30,6 +34,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.util.Calendar
+import java.util.Locale
 
 
 class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
@@ -57,7 +67,10 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isEmailEditable = true
     private var isPANEditable = true
     private var isDOBEditable = true
+    private var isDobSelected = false
+    private var isPANFilled = false
     private var minPhoneLength = 10
+    private var convertedDate : String? = null
     val emailRegex =
         "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
     val numberRegex = "^[0-9]+$".toRegex()
@@ -67,6 +80,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         super.onCreate(savedInstanceState)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -154,6 +168,51 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
         })
 
+        binding.panEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // No need to implement
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                s?.let {
+                    if (it.isNotEmpty()){
+                        if (it.length == 10) {
+                            if (isValidPAN(it.toString())) {
+                                binding.panErrorText.text = ""
+                                binding.panErrorText.visibility = View.INVISIBLE
+                                isPANFilled = true
+                                if (toCheckAllFieldsAreFilled()) {
+                                    enableProceedButton()
+                                } else {
+                                    disableProceedButton()
+                                }
+                            } else {
+                                binding.panErrorText.text = "Invalid PAN Number"
+                                binding.panErrorText.visibility = View.VISIBLE
+                                disableProceedButton()
+                            }
+                        } else {
+                            binding.panErrorText.text = "PAN must be 10 characters"
+                            binding.panErrorText.visibility = View.VISIBLE
+                            disableProceedButton()
+                        }
+                    }else{
+                        binding.panErrorText.text = "Required"
+                        binding.panErrorText.visibility = View.VISIBLE
+                        disableProceedButton()
+                    }
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                // No need to implement
+            }
+        })
+
+        binding.dobEditText.setOnClickListener(){
+            showDatePickerDialog(binding.dobEditText)
+        }
+
         binding.countryEditText.setOnItemClickListener { parent, view, position, id ->
             val selectedItem = parent.getItemAtPosition(position).toString()
 
@@ -231,6 +290,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val city = sharedPreferences.getString("city", "")
         val state = sharedPreferences.getString("state", "")
         val postalCode = sharedPreferences.getString("postalCode", "")
+        val panNumber = sharedPreferences.getString("panNumber", "")
+        val dateOfBirth = sharedPreferences.getString("dateOfBirth", "")
         val name = if (sharedPreferences.getString("firstName", "").isNullOrEmpty()) {
             ""
         } else {
@@ -280,6 +341,22 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         if (name != null) {
             binding.fullNameEditText.setText(name)
         }
+        if (panNumber!!.isNotEmpty()) {
+            binding.panEditText.setText(panNumber)
+            isPANFilled = true
+        }else{
+            binding.panErrorText.text = "Required"
+            binding.panErrorText.visibility = View.VISIBLE
+            disableProceedButton()
+        }
+        if (isDOBEnabled && dateOfBirth!!.isNotEmpty()) {
+            binding.dobEditText.setText(convertToMMDDYYYY(extractDateFromTimestamp(dateOfBirth)))
+            isDobSelected = true
+        }else{
+            binding.dobErrorText.text = "Required"
+            binding.dobErrorText.visibility = View.VISIBLE
+            disableProceedButton()
+        }
         if (email != null) {
             binding.emailEditText.setText(email)
         }
@@ -307,12 +384,23 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             binding.emailLayout.visibility = View.GONE
         }
 
-        if (!isPANEnabled && !isShippingEnabled) {
+
+        if (!isPANEnabled) {
             binding.panLayout.visibility = View.GONE
+            isPANFilled = true
         }
 
-        if (!isDOBEnabled && !isShippingEnabled) {
+        if (!isDOBEnabled) {
             binding.dobLayout.visibility = View.GONE
+            isDobSelected = true
+        }
+
+        if (!isPANEditable) {
+            binding.panEditText.isEnabled = false
+        }
+
+        if (!isDOBEditable) {
+            binding.dobEditText.isEnabled = false
         }
 
 
@@ -673,6 +761,18 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val country = countrySelectedFromDropDown
             val postalCode = binding.postalCodeEditText.text
             val state = binding.stateEditText.text
+            var PAN = ""
+            var DOB = ""
+            if (binding.panEditText.text.toString().isNotEmpty()){
+               PAN = binding.panEditText.text.toString()
+            }
+            if (binding.dobEditText.text.toString().isNotEmpty()){
+                if(convertedDate != null){
+                    DOB = convertedDate!!
+                }else{
+                    DOB = convertDateFormat(extractDateFromTimestamp(binding.dobEditText.text.toString()))!!
+                }
+            }
             val city = binding.cityEditText.text
             val nameParts = fullName.split(" ")
 
@@ -687,8 +787,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             } else {
                 ""
             }
-
-
             editor.putString("address1", address1.toString())
             editor.putString("address2", address2.toString())
             editor.putString("city", city.toString())
@@ -702,6 +800,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             editor.putString("phoneCode", countryCodePhoneNum)
             editor.putString("countryName", country.toString())
             editor.putString("indexCountryCodePhone", indexCountryCodePhone)
+            editor.putString("panNumber", PAN)
+            editor.putString("dateOfBirth", DOB)
 
 
             editor.apply()
@@ -741,6 +841,87 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 android.R.color.white
             )
         )
+    }
+
+    fun isValidPAN(pan: String): Boolean {
+        val panRegex = "^[A-Z]{5}[0-9]{4}[A-Z]$".toRegex()
+        return panRegex.matches(pan)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun extractDateFromTimestamp(timestamp: String): String {
+        return try {
+            // Parse the timestamp into a LocalDateTime object
+            val dateTime = LocalDateTime.parse(timestamp, DateTimeFormatter.ISO_DATE_TIME)
+
+            // Extract and format only the date part (yyyy-MM-dd)
+            dateTime.toLocalDate().toString()
+        } catch (e: DateTimeParseException) {
+            // If parsing fails, return the original string
+            timestamp
+        }
+    }
+
+    private fun showDatePickerDialog(editText: EditText) {
+        // Get the current date to initialize the DatePickerDialog
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        // Show the DatePickerDialog
+        val datePickerDialog = DatePickerDialog(requireActivity(),
+            { _, selectedYear, selectedMonth, selectedDay ->
+                // Format the selected date as mm-dd-yyyy
+                val formattedDate = formatDate(selectedYear, selectedMonth, selectedDay)
+                editText.setText(formattedDate)
+                isDobSelected = true
+                if (toCheckAllFieldsAreFilled()) {
+                    enableProceedButton()
+                } else {
+                    disableProceedButton()
+                }
+                binding.dobErrorText.visibility = View.INVISIBLE
+                convertedDate = convertDateFormat(formattedDate)
+            }, year, month, day)
+        datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
+        datePickerDialog.show()
+    }
+
+    private fun formatDate(year: Int, month: Int, day: Int): String {
+        // Calendar months are 0-based, so add 1 to the month
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month, day)
+
+        val formatter = SimpleDateFormat("MM-dd-yyyy", Locale.US)
+        return formatter.format(calendar.time)
+    }
+
+    fun convertDateFormat(dateString: String): String? {
+        return try {
+            val inputFormat = SimpleDateFormat("MM-dd-yyyy", Locale.US)
+            val date = inputFormat.parse(dateString)
+            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            outputFormat.format(date!!)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null // Return null in case of a parsing error
+        }
+    }
+
+    fun convertToMMDDYYYY(dateString: String): String? {
+        return try {
+            // Parse the input date string (yyyy-MM-dd)
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val date = inputFormat.parse(dateString)
+
+            // Convert to the desired output format (MM-dd-yyyy)
+            val outputFormat = SimpleDateFormat("MM-dd-yyyy", Locale.US)
+            outputFormat.format(date!!)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null // Return null if parsing fails
+        }
     }
 
 
@@ -888,7 +1069,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     binding.emailEditText.text.matches(emailRegex) &&
                     binding.countryEditText.text.isNotEmpty() &&
                     binding.spinnerDialCodes.text.isNotEmpty() &&
-                    !binding.spinnerDialCodes.text.toString().equals("+", true)
+                    !binding.spinnerDialCodes.text.toString().equals("+", true) && isPANFilled && isDobSelected
         } else {
             return !binding.fullNameEditText.text.isNullOrBlank() &&
                     !binding.mobileNumberEditText.text.isNullOrBlank() &&
@@ -896,7 +1077,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     binding.mobileNumberEditText.text.length in minPhoneLength..maxPhoneLength &&
                     binding.emailEditText.text.matches(emailRegex) &&
                     binding.spinnerDialCodes.text.isNotEmpty() &&
-                    !binding.spinnerDialCodes.text.toString().equals("+", true)
+                    !binding.spinnerDialCodes.text.toString().equals("+", true)  && isPANFilled && isDobSelected
         }
     }
 
