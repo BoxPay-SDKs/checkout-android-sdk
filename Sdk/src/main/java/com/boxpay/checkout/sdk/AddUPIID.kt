@@ -169,6 +169,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             if (checkString(userVPA!!)) {
                 binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                binding.editText.isEnabled = false
                 validateAPICall(requireContext(), userVPA!!)
                 showLoadingInButton()
             } else {
@@ -449,6 +450,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                put("panNumber", sharedPreferences.getString("panNumber", null))
+                put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -478,6 +481,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Response.Listener { response ->
 
                 val status = response.getJSONObject("status").getString("status")
+                binding.editText.isEnabled = true
                 val reason = response.getJSONObject("status").getString("reason")
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()

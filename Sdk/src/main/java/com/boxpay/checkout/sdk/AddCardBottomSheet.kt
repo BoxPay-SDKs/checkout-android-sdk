@@ -42,6 +42,7 @@ import coil.load
 import coil.size.Scale
 import coil.transform.CircleCropTransformation
 import coil.transform.RoundedCornersTransformation
+import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -403,7 +404,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.backButton.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
+            if (!binding.progressBar.isVisible && !binding.loadingLayout.isVisible) {
                 dismissAndMakeButtonsOfMainBottomSheetEnabled()
             }
         }
@@ -522,7 +523,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
         // Set InputFilter to limit the length and add a slash after every 2 digits
-        binding.editTextCardValidity.filters = arrayOf(InputFilter.LengthFilter(7))
+        binding.editTextCardValidity.filters = arrayOf(InputFilter.LengthFilter(5))
 
         // Set TextWatcher to add slashes dynamically as the user types
         binding.editTextCardValidity.addTextChangedListener(object : TextWatcher {
@@ -814,7 +815,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         binding.textView7.text = "Invalid card Validity"
                     }
                 }
-//                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
             }
         })
         binding.editTextCardCVV.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
@@ -1014,6 +1014,15 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun isValidCardNumberByLuhn(stringInputCardNumber: String): Boolean {
+        // Define the minimum length for a valid card number
+        val minCardLength = 13
+
+        // Check if the card number meets the minimum length requirement
+        if (stringInputCardNumber.length < minCardLength) {
+            proceedButtonIsEnabled.value = false
+            return false
+        }
+
         var sum = 0
         var isSecondDigit = false
 
@@ -1021,7 +1030,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             var d = stringInputCardNumber[i] - '0'
 
             if (isSecondDigit) {
-                d = d * 2
+                d *= 2
             }
 
             sum += d / 10
@@ -1030,12 +1039,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             isSecondDigit = !isSecondDigit
         }
 
-        val result: Boolean = ((sum % 10) == 0)
+        val result: Boolean = (sum % 10 == 0)
 
-        if (!result)
+        if (!result) {
             proceedButtonIsEnabled.value = false
-
-
+        }
 
         return result
     }
@@ -1085,7 +1093,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 ) // Semi-transparent black background
             }
 
-            dialog.setCancelable(!binding.progressBar.isVisible)
+            dialog.setCancelable(!binding.progressBar.isVisible && !binding.loadingLayout.isVisible)
 
             dialog.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
@@ -1314,6 +1322,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                put("panNumber", sharedPreferences.getString("panNumber", null))
+                put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -1360,6 +1370,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             cleanedMessage =
                                 "Please retry using other payment method or try again in sometime"
                         }
+                        job?.cancel()
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
                             "FailureScreen"
@@ -1425,6 +1436,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             )
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
+                            showLoadingState()
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
                             intent.putExtra("type", type)
@@ -1463,6 +1475,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         }
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
+                        job?.cancel()
                         PaymentFailureScreen(
                             errorMessage = "Please retry using other payment method or try again in sometime"
                         ).show(parentFragmentManager, "FailureScreen")
@@ -1710,6 +1723,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
                             val callback = SingletonClass.getInstance().getYourObject()
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -1745,8 +1759,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
-                            job?.cancel()
-                            job?.cancel()
+                            removeLoadingState()
                             job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
@@ -1775,8 +1788,24 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             while (isActive) {
                 delay(3000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
-                // Delay for 5 seconds
             }
         }
+    }
+
+    private fun showLoadingState() {
+        binding.boxpayLogoLottie.apply {
+            playAnimation()
+            repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+        }
+        binding.loadingLayout.visibility = View.VISIBLE
+        binding.cardDetails.visibility = View.INVISIBLE
+        disableProceedButton()
+    }
+
+    private fun removeLoadingState() {
+        binding.loadingLayout.visibility = View.GONE
+        binding.boxpayLogoLottie.cancelAnimation()
+        binding.cardDetails.visibility = View.VISIBLE
+        enableProceedButton()
     }
 }
