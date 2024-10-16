@@ -653,15 +653,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null){
+                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else{
+                } else {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
                 }
 
-                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                if (sharedPreferences.getString("panNumberChosen", null) != null) {
                     put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                }else{
+                } else {
                     put("panNumber", sharedPreferences.getString("panNumber", null))
                 }
 
@@ -1304,15 +1304,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null){
+                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else{
+                } else {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
                 }
 
-                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                if (sharedPreferences.getString("panNumberChosen", null) != null) {
                     put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                }else{
+                } else {
                     put("panNumber", sharedPreferences.getString("panNumber", null))
                 }
                 if (shippingEnabled) {
@@ -1684,15 +1684,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null){
+                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else{
+                } else {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
                 }
 
-                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                if (sharedPreferences.getString("panNumberChosen", null) != null) {
                     put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                }else{
+                } else {
                     put("panNumber", sharedPreferences.getString("panNumber", null))
                 }
 
@@ -2188,7 +2188,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
                 val checkoutThemeObject = merchantDetailsObject.getJSONObject("checkoutTheme")
-                val customFields = response.getJSONObject("merchantDetails").getJSONArray("customFields")
+                val customFields =
+                    response.getJSONObject("merchantDetails").getJSONArray("customFields")
 
                 if (customFields.length() > 0) {
                     for (i in 0 until customFields.length()) {
@@ -2398,7 +2399,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         isDOBEditable
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone) && orderDetails == null) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull(
+                        "email"
+                    )) && (showName || showEmail || showPhone) && orderDetails == null
+                ) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2431,7 +2435,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         isDOBEditable
                     )
                     showPriceBreakUp()
-                }else if(showPAN && shopperObject.isNull("panNumber")){
+                } else if (showPAN && shopperObject.isNull("panNumber")) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2464,7 +2468,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         isDOBEditable
                     )
                     showPriceBreakUp()
-                }else if(showDOB && shopperObject.isNull("dateOfBirth")){
+                } else if (showDOB && shopperObject.isNull("dateOfBirth")) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2933,15 +2937,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null){
+                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else{
+                } else {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
                 }
 
-                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                if (sharedPreferences.getString("panNumberChosen", null) != null) {
                     put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                }else{
+                } else {
                     put("panNumber", sharedPreferences.getString("panNumber", null))
                 }
 

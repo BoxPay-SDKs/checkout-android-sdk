@@ -130,8 +130,14 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 llExchangeRate.visibility = View.GONE
                 llTransCurrency.visibility = View.GONE
                 tvInfo.visibility = View.GONE
-                dottedLast.visibility = View.GONE
-                transactionAmountTextView.text = getNonDCCResponse(requireActivity(),"CURRENCY_TYPE") +  " " +getNonDCCResponse(requireActivity(),"AMOUNT")
+                dottedLast.visibility = View.INVISIBLE
+                binding.proceedButton.visibility = View.VISIBLE
+                binding.llRedirectLink.visibility = View.INVISIBLE
+                val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
+                val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
+                if (amount.isNotEmpty() && currencyType.isNotEmpty()){
+                    transactionAmountTextView.text = "$currencyType $amount"
+                }
             }
         }
         return binding.root
@@ -183,7 +189,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private fun getNonDCCResponse(context: Context, code:String): String {
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("NON_DCC_PREF", Context.MODE_PRIVATE)
-        val value = sharedPreferences.getString(code, null)
+        val value = sharedPreferences.getString(code, "")
         return value!!
     }
 
