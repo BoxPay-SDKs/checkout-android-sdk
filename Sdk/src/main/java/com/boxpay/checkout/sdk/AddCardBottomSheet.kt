@@ -9,6 +9,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -31,6 +32,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
@@ -341,6 +343,16 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         })
 
 
+        binding.radioButton1.buttonTintList = ColorStateList.valueOf(
+            Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            )
+        )
+        binding.radioButton2.buttonTintList = ColorStateList.valueOf(
+            Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            )
+        )
         binding.radioButton1.setOnClickListener() {
             if (binding.radioButton1.isChecked) {
                 binding.radioButton2.isChecked = false
@@ -1322,8 +1334,17 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                put("panNumber", sharedPreferences.getString("panNumber", null))
-                put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                if (sharedPreferences.getString("dateOfBirthChosen", null) != null){
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
+                }else{
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }
+
+                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
+                }else{
+                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -1408,7 +1429,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                                 // Save JSON string in SharedPreferences
                                 editor.putString("DCC_RESPONSE_KEY", json)
                                 editor.putString("CARD_HOLDER_NAME", binding.editTextNameOnCard.text.toString())
-                                editor.putString("MERCHANT_NAME", sessionData!!.merchantDetails!!.merchantName)
+                                editor.putString("MERCHANT_NAME_SESSION", sessionData!!.merchantDetails!!.merchantName)
+                                editor.putString("MERCHANT_NAME", dccResponseUniversal!!.dccQuotationDetails!!.dspCode)
                                 editor.apply()  // Apply changes asynchronously
                             }else if (isDCCFetched && !isQuotationRequired){
                                 val sharedPreferences: SharedPreferences =
@@ -1510,11 +1532,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         editor.apply() // Apply changes asynchronously
     }
 
-
-    fun saveDCCResponse(context: Context, dccResponse: DCCResponse) {
-
-    }
-
     private fun removeSpaces(stringWithSpaces: String): String {
         return stringWithSpaces.replace(" ", "")
     }
@@ -1569,6 +1586,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private fun enableProceedButton() {
         if (allFieldsAreValid()) {
             binding.proceedButton.isEnabled = true
+            binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
             binding.proceedButtonRelativeLayout.setBackgroundColor(
                 Color.parseColor(
                     sharedPreferences.getString(
@@ -1577,7 +1595,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     )
                 )
             )
-            binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
             binding.textView6.setTextColor(
                 ContextCompat.getColor(
                     requireContext(),

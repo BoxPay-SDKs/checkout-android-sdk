@@ -129,7 +129,10 @@ class Check : AppCompatActivity() {
             "state": "Chandigarh",
             "countryCode": "IN",
             "postalCode": "160002"
-        }
+        },
+         "dateOfBirth": "2023-07-17T12:34:56Z",
+         "panNumber": "CTGPA2222D"
+    
     },
     "order": {
         "originalAmount": 423.73,
