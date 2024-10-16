@@ -210,7 +210,7 @@
                                         android:enabled="false"
                                         android:gravity="start"
                                         android:fontFamily="@font/poppins"
-                                        android:text="Please Select Currency"
+                                        android:text="Please select currency."
                                         android:textColor="#000000"
                                         android:textSize="12sp" />
 
