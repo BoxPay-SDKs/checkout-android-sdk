@@ -69,6 +69,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.microsoft.clarity.Clarity
 import com.microsoft.clarity.ClarityConfig
+import com.microsoft.clarity.models.LogLevel
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,8 +84,11 @@ import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 import java.util.Objects
+import java.util.TimeZone
 import kotlin.random.Random
 
 
@@ -829,7 +833,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         })
         overlayViewModel.setShowOverlay(true)
         if (::context.isInitialized) {
-            val config = ClarityConfig("o4josf35jv")
+            val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
             Clarity.initialize(context, config)
             Clarity.setCustomTag("token", token)
         }
@@ -2720,7 +2724,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     showUPIOptions()
                     removeLoadingState()
                 }
-
+                val expireTiming = response.getString("sessionExpiryTimestamp")
+                startCountdown(expireTiming)
             } catch (e: Exception) {
                 Toast.makeText(
                     requireContext(),
@@ -3491,14 +3496,57 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     fun extractMessageFromErrorResponse(response: String): String? {
         try {
-            // Parse the JSON string
             val jsonObject = JSONObject(response)
-            // Retrieve the value associated with the "message" key
             return jsonObject.getString("message")
         } catch (e: Exception) {
-            // Handle JSON parsing exception
-
+            // no op
         }
         return null
+    }
+
+    fun startCountdown(endTime: String) {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault())
+        dateFormat.timeZone = TimeZone.getTimeZone("UTC")
+
+        try {
+            val endDate = dateFormat.parse(endTime) ?: return
+            val currentTime = Date().time
+            val timeDifference = endDate.time - currentTime
+            if (timeDifference > 0) {
+                object : CountDownTimer(timeDifference, 1000) {
+
+                    override fun onTick(millisUntilFinished: Long) {
+                        val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
+                        val minutes = (millisUntilFinished / (1000 * 60)) % 60
+                        val seconds = (millisUntilFinished / 1000) % 60
+                        println(String.format("%02d:%02d:%02d", hours, minutes, seconds))
+                        // no op
+                    }
+
+                    override fun onFinish() {
+                        val callback = SingletonClass.getInstance().getYourObject()
+                        val callbackForDismissing =
+                            SingletonForDismissMainSheet.getInstance().getYourObject()
+                        if (callback != null) {
+                            callback.onPaymentResult(
+                                PaymentResultObject(
+                                    "Expired",
+                                    transactionId ?: "",
+                                    transactionId ?: ""
+                                )
+                            )
+                        }
+                        if (callbackForDismissing != null) {
+                            callbackForDismissing.dismissFunction()
+                        }
+                        if (isAdded && isResumed && !isStateSaved) {
+                            SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                        }
+                    }
+                }.start()
+            }
+        } catch (_: Exception) {
+            // no op
+        }
     }
 }
