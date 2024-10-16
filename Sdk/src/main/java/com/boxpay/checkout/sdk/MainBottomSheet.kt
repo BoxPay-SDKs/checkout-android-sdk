@@ -800,14 +800,24 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             callback?.onBottomSheetOpened?.invoke()
 
-            overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
-                if (showOverlay) {
-                    addOverlayToActivity()
-                } else {
-                    removeOverlayFromActivity()
-                }
-            })
-            overlayViewModel.setShowOverlay(true)
+        val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
+
+        Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
+
+        fetchTransactionDetailsFromSharedPreferences()
+        overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
+            if (showOverlay) {
+                addOverlayToActivity()
+            } else {
+                removeOverlayFromActivity()
+            }
+        })
+        overlayViewModel.setShowOverlay(true)
+        if (::context.isInitialized) {
+            val config = ClarityConfig("o4josf35jv")
+            Clarity.initialize(context, config)
+            Clarity.setCustomTag("token", token)
+        }
 
             hidePriceBreakUp()
 
@@ -1886,10 +1896,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
-        if (::context.isInitialized) {
-            val config = ClarityConfig("o4josf35jv")
-            Clarity.initialize(context, config)
-        }
         dialog.setOnShowListener { dialog -> //Get the BottomSheetBehavior
             val d = dialog as BottomSheetDialog
             val bottomSheet =
