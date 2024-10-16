@@ -233,7 +233,7 @@
                                                 android:id="@+id/radioButton_1"
                                                 android:layout_width="0dp"
                                                 android:layout_weight="0.8"
-                                                android:buttonTint="#FF0023"
+                                                android:buttonTint="#ffffff"
                                                 android:layout_height="30dp"/>
 
                                             <androidx.cardview.widget.CardView

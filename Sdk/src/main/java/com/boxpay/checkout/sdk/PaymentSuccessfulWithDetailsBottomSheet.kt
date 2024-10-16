@@ -75,6 +75,9 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 android.R.color.white
             )
         )
+        binding.tvMerchantSite.setTextColor(Color.parseColor(
+            sharedPreferences.getString("primaryButtonColor", "#000000")
+        ))
         binding.tvMerchantSite.setOnClickListener(){
             val callback =  SingletonClass.getInstance().getYourObject()
             if(callback != null){
@@ -107,7 +110,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
             binding.transactionAmountTextView.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount
             binding.tvPaymentSuccess.text = "Payment Successful\n" + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount
             binding.tvCardHolderName.text = getDCCResponse(requireActivity(),"CARD_HOLDER_NAME")
-            binding.tvMerchantName.text = getDCCResponse(requireActivity(),"MERCHANT_NAME")
+            binding.tvMerchantName.text = getDCCResponse(requireActivity(),"MERCHANT_NAME_SESSION")
             binding.tvMerchantSite.paintFlags = binding.tvMerchantSite.paintFlags or Paint.UNDERLINE_TEXT_FLAG
 
 
