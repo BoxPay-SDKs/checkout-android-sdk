@@ -956,6 +956,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     hideViewWithAnimation(binding.tvInfoDcc,View.GONE)
                     hideViewWithAnimation(binding.llLoader,View.INVISIBLE)
+                    binding.tvSelectCurrency.text = "Please select currency."
                     binding.detailsText1.text =
                         "1 " + dccResponse.baseMoney!!.currencyCode + " = " + dccResponse.dccQuotationDetails!!.fxRate + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + "\n" + "Includes Margin: " + dccResponse.dccQuotationDetails!!.marginPercent + "%\n" + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
                 } else {
@@ -964,6 +965,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     showViewWithAnimation(binding.llDccOptions)
                     showViewWithAnimation(binding.tvInfoDcc)
                     hideViewWithAnimation(binding.llLoader,View.INVISIBLE)
+                    binding.tvSelectCurrency.text = "Please choose the currency to be charged to your account."
                     binding.detailsText1.text =
                         "1 " + dccResponse.baseMoney!!.currencyCode + " = " + dccResponse.dccQuotationDetails!!.fxRate + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + "\n" + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
                 }
