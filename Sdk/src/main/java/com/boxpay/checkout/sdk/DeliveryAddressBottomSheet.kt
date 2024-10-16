@@ -35,6 +35,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -181,6 +182,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                                 binding.panErrorText.text = ""
                                 binding.panErrorText.visibility = View.INVISIBLE
                                 isPANFilled = true
+                                editor.putString("panNumberChosen", it.toString())
+                                editor.apply()
                                 if (toCheckAllFieldsAreFilled()) {
                                     enableProceedButton()
                                 } else {
@@ -862,6 +865,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun showDatePickerDialog(editText: EditText) {
         // Get the current date to initialize the DatePickerDialog
         val calendar = Calendar.getInstance()
@@ -883,6 +887,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 }
                 binding.dobErrorText.visibility = View.INVISIBLE
                 convertedDate = convertDateFormat(formattedDate)
+                val (hour, minute, seconds) = getCurrentTime()
+                editor.putString("dateOfBirthChosen", convertToISO8601(formattedDate,hour, minute, seconds))
+                editor.apply()
             }, year, month, day)
         datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
         datePickerDialog.show()
@@ -922,6 +929,33 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             e.printStackTrace()
             null // Return null if parsing fails
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getCurrentTime(): Triple<Int, Int, Int> {
+        val now = LocalDateTime.now()
+        val hour = now.hour
+        val minute = now.minute
+        val second = now.second
+
+        return Triple(hour, minute, second) // Return as a triple of hour, minute, second
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun convertToISO8601(date: String, hour: Int, minute: Int, second: Int): String {
+        // Input date formatter (MM-dd-yyyy)
+        val inputFormatter = DateTimeFormatter.ofPattern("MM-dd-yyyy")
+        val localDate = LocalDate.parse(date, inputFormatter)
+
+        // Create a LocalDateTime with the provided time
+        val localDateTime = localDate.atTime(hour, minute, second)
+
+        // ISO 8601 formatter (yyyy-MM-dd'T'HH:mm:ss'Z')
+        val isoFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+
+        // Format the LocalDateTime to ISO 8601 string
+        return isoFormatter.format(localDateTime)
     }
 
 

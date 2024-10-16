@@ -1,9 +1,12 @@
 package com.boxpay.checkout.sdk
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,12 +17,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.boxpay.checkout.sdk.databinding.FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
+import com.boxpay.checkout.sdk.dataclasses.DCCResponse
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Date
+
 
 internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
@@ -27,9 +33,16 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private var transactionID: String? = null
     private var amount: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
+    var savedDccResponse : DCCResponse? = null
+    var isDccEnabled : Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        savedDccResponse = getDCCResponse(requireContext())
+        if (savedDccResponse != null) {
+            isDccEnabled = true
+        }
     }
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -62,16 +75,63 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 android.R.color.white
             )
         )
+        binding.tvMerchantSite.setTextColor(Color.parseColor(
+            sharedPreferences.getString("primaryButtonColor", "#000000")
+        ))
+        binding.tvMerchantSite.setOnClickListener(){
+            val callback =  SingletonClass.getInstance().getYourObject()
+            if(callback != null){
+                val transactionId = sharedPreferences.getString("transactionId","").toString()
+                val operationId = sharedPreferences.getString("operationId","").toString()
+                callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
+                val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                dismiss()
+            }
+        }
         binding. proceedButton.setOnClickListener(){
             val callback =  SingletonClass.getInstance().getYourObject()
             if(callback != null){
                 val transactionId = sharedPreferences.getString("transactionId","").toString()
                 val operationId = sharedPreferences.getString("operationId","").toString()
                 callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
-
                 val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
                 mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
                 dismiss()
+            }
+        }
+        if (isDccEnabled){
+            binding.tvCardType.text = savedDccResponse!!.brand
+            binding.tvCardHolderName.text = "AnkushTest"
+            binding.transTotalDCC.text = "Transaction Total " + savedDccResponse!!.baseMoney!!.currencyCode
+            binding.tvTransTotal.text =  savedDccResponse!!.baseMoney!!.currencyCode + " " +  savedDccResponse!!.baseMoney!!.amount
+            binding.tvExchangeRate.text = "1 " + savedDccResponse!!.baseMoney!!.currencyCode + " = " + savedDccResponse!!.dccQuotationDetails!!.fxRate + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
+            binding.tvTransCurrency.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
+            binding.transactionAmountTextView.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount
+            binding.tvPaymentSuccess.text = "Payment Successful\n" + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount
+            binding.tvCardHolderName.text = getDCCResponse(requireActivity(),"CARD_HOLDER_NAME")
+            binding.tvMerchantName.text = getDCCResponse(requireActivity(),"MERCHANT_NAME_SESSION")
+            binding.tvMerchantSite.paintFlags = binding.tvMerchantSite.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+
+
+            if (savedDccResponse!!.brand.equals("VISA",true)){
+                binding.llMargin.visibility = View.VISIBLE
+                binding.tvMargin.text = savedDccResponse!!.dccQuotationDetails!!.marginPercent.toString() + "%"
+                binding.tvInfo.text = "I have been offered a choice of currencies and agree to pay in " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + ". This currency conversion service is provide by " + getDCCResponse(requireActivity(),"MERCHANT_NAME") +".\n" +
+                        "\n" +
+                        "Please print and retain for your records."
+            }
+        }else{
+            binding.apply {
+                llMerchantName.visibility = View.GONE
+                llCardType.visibility = View.GONE
+                llCardHolderName.visibility = View.GONE
+                llTransTotal.visibility = View.GONE
+                llExchangeRate.visibility = View.GONE
+                llTransCurrency.visibility = View.GONE
+                tvInfo.visibility = View.GONE
+                dottedLast.visibility = View.GONE
+                transactionAmountTextView.text = getNonDCCResponse(requireActivity(),"CURRENCY_TYPE") +  " " +getNonDCCResponse(requireActivity(),"AMOUNT")
             }
         }
         return binding.root
@@ -100,6 +160,33 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
             // Log an error or handle the case where the context is not an AppCompatActivity
         }
     }
+
+    private fun getDCCResponse(context: Context): DCCResponse? {
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("DCC_PREF", Context.MODE_PRIVATE)
+
+        // Get the JSON string from SharedPreferences
+        val json = sharedPreferences.getString("DCC_RESPONSE_KEY", null) ?: return null
+
+        // Convert JSON string back to DCCResponse object
+        val gson = Gson()
+        return gson.fromJson(json, DCCResponse::class.java)
+    }
+
+    private fun getDCCResponse(context: Context, code:String): String {
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("DCC_PREF", Context.MODE_PRIVATE)
+        val value = sharedPreferences.getString(code, null)
+        return value!!
+    }
+
+    private fun getNonDCCResponse(context: Context, code:String): String {
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("NON_DCC_PREF", Context.MODE_PRIVATE)
+        val value = sharedPreferences.getString(code, null)
+        return value!!
+    }
+
 
     private fun getCurrentDateAndTimeInFormattedString() : String{
         val currentDateTime = Date()
