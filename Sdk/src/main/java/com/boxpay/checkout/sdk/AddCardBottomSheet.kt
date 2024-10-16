@@ -18,7 +18,6 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
-import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -32,19 +31,16 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.airbnb.lottie.LottieDrawable
 import androidx.lifecycle.distinctUntilChanged
 import coil.decode.SvgDecoder
 import coil.load
 import coil.size.Scale
-import coil.transform.CircleCropTransformation
-import coil.transform.RoundedCornersTransformation
+import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -65,7 +61,6 @@ import com.boxpay.checkout.sdk.dataclasses.SessionResponse
 import com.boxpay.checkout.sdk.dataclasses.Shopper
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -190,7 +185,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 }
 
             } catch (e: Exception) {
-                Log.e("TAG", "makeCardNetworkIdentificationCall: ", e)
                 binding.flLoaderAndDcc.visibility = View.GONE
                 PaymentFailureScreen(
                     errorMessage = "Please retry using other payment method or try again in sometime"
@@ -937,10 +931,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     showViewWithAnimation(binding.llLoader)
                 }
 
-                Log.e(
-                    "DCCRESPONSE",
-                    "" + GsonBuilder().setPrettyPrinting().create().toJson(dccResponse)
-                )
                 binding.countryCode1.text = dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode
                 binding.countryCode2.text = dccResponse.baseMoney!!.currencyCode
                 binding.detailsText2.text =

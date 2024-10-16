@@ -275,15 +275,13 @@ class Check : AppCompatActivity() {
                 val tokenFetched = response.getString("token")
                 val payload = response.optJSONObject("payload")
                 customerShopperToken = payload?.optString("shopper_token", "")
-                println("======customerShopperToken $tokenFetched")
                 tokenLiveData.value = tokenFetched
                 editor.putString("baseUrl", "test-apis.boxpay.tech")
                 editor.putString("token", tokenLiveData.value)
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                println("====error $error")
+            Response.ErrorListener {
                 /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {

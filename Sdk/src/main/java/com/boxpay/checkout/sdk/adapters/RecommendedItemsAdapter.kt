@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -126,7 +125,6 @@ class RecommendedItemsAdapter(
 
             // Check if the background drawable is a LayerDrawable
             if (radioButtonDrawable is LayerDrawable) {
-                Log.d("Drawable found", "success")
                 val layerDrawable = radioButtonDrawable as LayerDrawable
 
                 // Modify the solid color of the first item (assuming it's a GradientDrawable)
@@ -143,7 +141,6 @@ class RecommendedItemsAdapter(
                 // Apply the modified drawable back to the radioButton ImageView
                 imageView.background = layerDrawable
             } else {
-                Log.d("Drawable found", "failure in handle click")
             }
 
 //             Change the background of the clicked RadioButton
