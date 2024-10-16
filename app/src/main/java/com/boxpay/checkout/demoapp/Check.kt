@@ -117,19 +117,30 @@ class Check : AppCompatActivity() {
         "line1": "Some descriptor"
     },
     "shopper": {
-        "firstName": "Ishika cnsjbc cnbhsbc jbcydsbc bcydbc",
-        "lastName": "Bansal",
-        "email": "ishika.bansal@boxpay.tech",
-        "uniqueReference": "x123y",
-        "phoneNumber": "+919876543211",
-        "deliveryAddress": {
-            "address1": "first line",
-            "address2": "second line",
-            "city": "New Delhi",
-            "state": "Delhi",
-            "countryCode": "IN",
-            "postalCode": "147147"
-        }
+            "firstName": "Ankush",
+            "lastName": "Kashyap",
+            "gender": null,
+            "phoneNumber": "917986361129",
+            "email": "ankush.kashyap@boxpay.tech",
+            "uniqueReference": "x123y",
+            "deliveryAddress": {
+                "address1": "first line",
+                "address2": "second line",
+                "address3": null,
+                "city": "Chandigarh",
+                "state": "Chandigarh",
+                "countryCode": "IN",
+                "postalCode": "160002",
+                "shopperRef": null,
+                "addressRef": null,
+                "labelType": "Other",
+                "labelName": null,
+                "name": null,
+                "email": null,
+                "phoneNumber": null
+            },
+            "dateOfBirth": "2023-07-18T12:34:56Z",
+            "panNumber": "CTGPA0002G"
     },
     "order": {
         "originalAmount": 42113.73,

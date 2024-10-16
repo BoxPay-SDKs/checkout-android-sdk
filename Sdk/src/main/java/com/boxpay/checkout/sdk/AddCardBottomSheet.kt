@@ -1067,6 +1067,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                put("panNumber", sharedPreferences.getString("panNumber", null))
+                put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {

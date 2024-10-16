@@ -111,6 +111,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var showName = false
     private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
+    private var isPANEditable = true
+    private var isDOBEditable = true
+    private var showPAN = false
+    private var showDOB = false
     private var railyatriAmount: String? = null
     private var showShipping = false
     private var showPhone = false
@@ -650,6 +654,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                put("panNumber", sharedPreferences.getString("panNumber", null))
+                put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -779,10 +785,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             showName,
             showPhone,
             showEmail,
+            showPAN,
+            showDOB,
             showShipping,
             isNameEditable,
             isPhoneEditable,
-            isEmailEditable
+            isEmailEditable,
+            isPANEditable,
+            isDOBEditable
         )
 
         if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
@@ -1008,10 +1018,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     showName,
                     showPhone,
                     showEmail,
+                    showPAN,
+                    showDOB,
                     showShipping,
                     isNameEditable,
                     isPhoneEditable,
-                    isEmailEditable
+                    isEmailEditable,
+                    isPANEditable,
+                    isDOBEditable
                 )
                 bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
             }
@@ -1282,6 +1296,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                put("panNumber", sharedPreferences.getString("panNumber", null))
+                put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -1652,6 +1668,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                put("panNumber", sharedPreferences.getString("panNumber", null))
+                put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -2146,6 +2164,22 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
                 val checkoutThemeObject = merchantDetailsObject.getJSONObject("checkoutTheme")
+                val customFields = response.getJSONObject("merchantDetails").getJSONArray("customFields")
+
+                if (customFields.length() > 0) {
+                    for (i in 0 until customFields.length()) {
+                        val fieldObject = customFields.getJSONObject(i)
+                        if (fieldObject.getString("fieldName").contains("PAN", true)) {
+                            showPAN = true
+                        }
+
+                        if (fieldObject.getString("fieldName").contains("DATE_OF_BIRTH", true)) {
+                            showDOB = true
+                        }
+                    }
+                } else {
+                    println("No PAN or DOB fields found")
+                }
 
                 val sharedPreferences = requireContext().getSharedPreferences(
                     "TransactionDetails",
@@ -2271,6 +2305,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 } else {
                     editor.putString("firstName", shopperObject.getString("firstName"))
                 }
+                if (shopperObject.isNull("panNumber")) {
+                    editor.putString("panNumber", null)
+                } else {
+                    editor.putString("panNumber", shopperObject.getString("panNumber"))
+                }
+
+                if (shopperObject.isNull("dateOfBirth")) {
+                    editor.putString("dateOfBirth", null)
+                } else {
+                    editor.putString("dateOfBirth", shopperObject.getString("dateOfBirth"))
+                }
+
                 if (shopperObject.isNull("lastName")) {
                     editor.putString("lastName", null)
                 } else {
@@ -2319,16 +2365,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showName,
                         showPhone,
                         showEmail,
+                        showPAN,
+                        showDOB,
                         showShipping,
                         isNameEditable,
                         isPhoneEditable,
-                        isEmailEditable
+                        isEmailEditable,
+                        isPANEditable,
+                        isDOBEditable
                     )
                     showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull(
-                        "email"
-                    )) && (showName || showEmail || showPhone) && orderDetails == null
-                ) {
+                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull("email")) && (showName || showEmail || showPhone) && orderDetails == null) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
@@ -2351,10 +2398,80 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         showName,
                         showPhone,
                         showEmail,
+                        showPAN,
+                        showDOB,
                         showShipping,
                         isNameEditable,
                         isPhoneEditable,
-                        isEmailEditable
+                        isEmailEditable,
+                        isPANEditable,
+                        isDOBEditable
+                    )
+                    showPriceBreakUp()
+                }else if(showPAN && shopperObject.isNull("panNumber")){
+                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.textView12.visibility = View.GONE
+                    binding.upiLinearLayout.visibility = View.GONE
+                    binding.cardView5.visibility = View.GONE
+                    binding.cardView6.visibility = View.GONE
+                    binding.cardView7.visibility = View.GONE
+                    binding.netBankingConstraint.visibility = View.GONE
+                    binding.bnplConstraint.visibility = View.GONE
+                    binding.cardConstraint.visibility = View.GONE
+                    binding.walletConstraint.visibility = View.GONE
+                    binding.linearLayout.visibility = View.GONE
+                    binding.textView111.text = "Order Details"
+                    binding.proceedButton.visibility = View.VISIBLE
+                    binding.recommendedCardView.visibility = View.GONE
+                    binding.recommendedLinearLayout.visibility = View.GONE
+                    priceBreakUpVisible = true
+                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                        this,
+                        false,
+                        showName,
+                        showPhone,
+                        showEmail,
+                        showPAN,
+                        showDOB,
+                        showShipping,
+                        isNameEditable,
+                        isPhoneEditable,
+                        isEmailEditable,
+                        isPANEditable,
+                        isDOBEditable
+                    )
+                    showPriceBreakUp()
+                }else if(showDOB && shopperObject.isNull("dateOfBirth")){
+                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.textView12.visibility = View.GONE
+                    binding.upiLinearLayout.visibility = View.GONE
+                    binding.cardView5.visibility = View.GONE
+                    binding.cardView6.visibility = View.GONE
+                    binding.cardView7.visibility = View.GONE
+                    binding.netBankingConstraint.visibility = View.GONE
+                    binding.bnplConstraint.visibility = View.GONE
+                    binding.cardConstraint.visibility = View.GONE
+                    binding.walletConstraint.visibility = View.GONE
+                    binding.linearLayout.visibility = View.GONE
+                    binding.textView111.text = "Order Details"
+                    binding.proceedButton.visibility = View.VISIBLE
+                    binding.recommendedCardView.visibility = View.GONE
+                    binding.recommendedLinearLayout.visibility = View.GONE
+                    priceBreakUpVisible = true
+                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                        this,
+                        false,
+                        showName,
+                        showPhone,
+                        showEmail,
+                        showPAN,
+                        showDOB,
+                        showShipping,
+                        isNameEditable,
+                        isPhoneEditable,
+                        isEmailEditable,
+                        isPANEditable,
+                        isDOBEditable
                     )
                     showPriceBreakUp()
                 } else {
@@ -2362,6 +2479,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.proceedButton.visibility = View.GONE
                     if (!shopperObject.isNull("firstName")) {
                         editor.putString("firstName", shopperObject.getString("firstName"))
+                    }
+                    if (!shopperObject.isNull("panNumber")) {
+                        editor.putString("panNumber", shopperObject.getString("panNumber"))
+                    }
+                    if (!shopperObject.isNull("dateOfBirth")) {
+                        editor.putString("dateOfBirth", shopperObject.getString("dateOfBirth"))
                     }
                     if (!shopperObject.isNull("lastName")) {
                         editor.putString("lastName", shopperObject.getString("lastName"))
@@ -2787,6 +2910,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                put("panNumber", sharedPreferences.getString("panNumber", null))
+                put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
