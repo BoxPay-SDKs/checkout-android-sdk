@@ -11,6 +11,7 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -154,12 +155,17 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 }
             })
 
-            binding.proceedButton.setOnClickListener() {
-                showLoadingInButton()
-                var walletInstrumentTypeValue = ""
-                walletInstrumentTypeValue =
-                    walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
-                callUIAnalytics(requireContext(),"PAYMENT_INITIATED",bnplDetailOriginal[checkedPosition!!].bnplBrand,"BNPL")
+        binding.proceedButton.setOnClickListener() {
+            showLoadingInButton()
+            var walletInstrumentTypeValue = ""
+            walletInstrumentTypeValue =
+                walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
+            callUIAnalytics(
+                requireContext(),
+                "PAYMENT_INITIATED",
+                bnplDetailOriginal[checkedPosition!!].bnplBrand,
+                "BNPL"
+            )
 
 
                 postRequest(requireContext(), walletInstrumentTypeValue)
@@ -460,11 +466,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
-
-                // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-
-                // Get the screen height and width
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
                 put("screenWidth", displayMetrics.widthPixels.toString())
@@ -479,12 +481,10 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             }
             put("browserData", browserData)
 
-            // Instrument Details
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", instrumentTypeValue)
             }
             put("instrumentDetails", instrumentDetailsObject)
-
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email", null))
@@ -515,10 +515,16 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                     put("deliveryAddress", deliveryAddressObject)
                 }
             }
-
             put("shopper", shopperObject)
 
-
+            val deviceDetails = JSONObject().apply {
+                put("browser", Build.BRAND)
+                put("platformVersion", Build.VERSION.RELEASE)
+                put("deviceType", Build.MANUFACTURER)
+                put("deviceName", Build.MANUFACTURER)
+                put("deviceBrandName", Build.MODEL)
+            }
+            put("deviceDetails", deviceDetails)
         }
 
         // Request a JSONObject response from the provided URL
@@ -543,11 +549,13 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-                        if (!response.isNull("actions") && response.getJSONArray("actions").length() != 0) {
+                        if (!response.isNull("actions") && response.getJSONArray("actions")
+                                .length() != 0
+                        ) {
                             val type =
                                 response.getJSONArray("actions").getJSONObject(0).getString("type")
                             if (status.contains("RequiresAction", ignoreCase = true)) {
-                                editor.putString("status","RequiresAction")
+                                editor.putString("status", "RequiresAction")
                             }
                             if (type.contains("html", true)) {
                                 url = response
@@ -562,7 +570,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                             }
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
-                            intent.putExtra("type",type)
+                            intent.putExtra("type", type)
                             startFunctionCalls()
                             startActivityForResult(intent, 333)
                         } else {
@@ -585,7 +593,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         val callback = SingletonClass.getInstance().getYourObject()
                         val callbackForDismissing =
                             SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -613,8 +621,8 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                headers["X-Client-Connector-Name"] =  "Android SDK"
-                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -709,7 +717,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
     }
 
     fun generateRandomAlphanumericString(length: Int): String {
-        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length)
             .map { Random.nextInt(0, charPool.size) }
             .map(charPool::get)
@@ -724,7 +732,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
     private fun fetchStatusAndReason(url: String) {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
-            Response.Listener{ response ->
+            Response.Listener { response ->
                 try {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId")
@@ -735,7 +743,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
 
-                        editor.putString("status","Success")
+                        editor.putString("status", "Success")
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
@@ -763,14 +771,14 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status","RequiresAction")
+                        editor.putString("status", "RequiresAction")
                         editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status","Posted")
+                        editor.putString("status", "Posted")
                         editor.apply()
                     } else if (status.contains("FAILED", ignoreCase = true)) {
 
-                        editor.putString("status","Failed")
+                        editor.putString("status", "Failed")
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
@@ -793,6 +801,8 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }
