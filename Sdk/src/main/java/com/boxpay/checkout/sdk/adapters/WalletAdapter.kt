@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -236,7 +235,6 @@ class WalletAdapter(
 
             // Check if the background drawable is a LayerDrawable
             if (radioButtonDrawable is LayerDrawable) {
-                Log.d("Drawable found","success")
                 val layerDrawable = radioButtonDrawable as LayerDrawable
 
                 // Modify the solid color of the first item (assuming it's a GradientDrawable)
@@ -246,7 +244,6 @@ class WalletAdapter(
                 // Apply the modified drawable back to the radioButton ImageView
                 imageView.background = layerDrawable
             }else{
-                Log.d("Drawable found","failure in handle click")
             }
 
 //             Change the background of the clicked RadioButton

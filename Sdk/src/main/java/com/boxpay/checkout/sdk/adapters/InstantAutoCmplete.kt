@@ -48,7 +48,6 @@ class InstantAutoComplete : AppCompatAutoCompleteTextView {
             } else {
                 maxDropdownHeight
             }
-            println("====dropdoen $dropDownHeight")
         }
     }
 }
