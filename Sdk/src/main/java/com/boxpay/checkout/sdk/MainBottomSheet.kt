@@ -22,7 +22,6 @@ import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
-import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -2130,7 +2129,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         }
                     }
                 } else {
-                    println("No enabled fields found")
                 }
                 if (showShipping) {
                     binding.textView6.text = "Continue to Add New Address"
@@ -2204,7 +2202,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         }
                     }
                 } else {
-                    println("No PAN or DOB fields found")
                 }
 
                 val sharedPreferences = requireContext().getSharedPreferences(
@@ -3142,7 +3139,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "linegap" -> addLineGap(container, item)
                         "background" -> setBackground(horizontalLayout, item)
                         "accordion" -> addAccordionView(container, item)
-                        else -> Log.w("JSONParsing", "Unknown type: ${item.getString("type")}")
+                        else -> {
+                            // no op
+                        }
                     }
 
                     // After processing the first non-"linegap" element, no need to reset `j` again
@@ -3153,7 +3152,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
         } catch (e: Exception) {
-            Log.e("JSONParsingError", "Error parsing JSON", e)
+
         }
     }
 
@@ -3206,7 +3205,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             container.addView(textView)
         } catch (e: Exception) {
-            Log.e("AddTextViewError", "Error adding TextView", e)
+
         }
     }
 
@@ -3238,7 +3237,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             container.addView(imageView)
         } catch (e: Exception) {
-            Log.e("AddImageViewError", "Error adding ImageView", e)
+
         }
     }
 
@@ -3258,7 +3257,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             container.addView(divider)
         } catch (e: Exception) {
-            Log.e("AddDividerViewError", "Error adding Divider", e)
+
         }
     }
 
@@ -3274,7 +3273,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             container.addView(gap)
         } catch (e: Exception) {
-            Log.e("AddLineGapError", "Error adding LineGap", e)
+
         }
     }
 
@@ -3364,10 +3363,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 "image" -> addImageView(firstRowLayout, item)
                                 "divider" -> addDividerView(firstRowLayout, item)
                                 "background" -> setBackground(firstRowLayout, item)
-                                else -> Log.w(
-                                    "JSONParsing",
-                                    "Unknown type: ${item.getString("type")}"
-                                )
+                                else -> {
+                                    // no op
+                                }
                             }
                         }
                         contentLayout.addView(firstRowLayout)
@@ -3386,10 +3384,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 "image" -> addImageView(secondRowLayout, item)
                                 "divider" -> addDividerView(secondRowLayout, item)
                                 "background" -> setBackground(secondRowLayout, item)
-                                else -> Log.w(
-                                    "JSONParsing",
-                                    "Unknown type: ${item.getString("type")}"
-                                )
+                                else -> {
+                                    // no op
+                                }
                             }
                         }
                         contentLayout.addView(secondRowLayout)
@@ -3402,10 +3399,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 "image" -> addImageView(horizontalLayout, item)
                                 "divider" -> addDividerView(horizontalLayout, item)
                                 "background" -> setBackground(horizontalLayout, item)
-                                else -> Log.w(
-                                    "JSONParsing",
-                                    "Unknown type: ${item.getString("type")}"
-                                )
+                                else -> {
+                                    // no op
+                                }
                             }
                         }
                     }
@@ -3427,7 +3423,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             accordionLayout.addView(contentLayout)
             container.addView(accordionLayout)
         } catch (e: Exception) {
-            Log.e("AddAccordionViewError", "Error adding Accordion View", e)
+
         }
     }
 
@@ -3469,7 +3465,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             headerLayout.addView(toggleImageView)
 
         } catch (e: Exception) {
-            Log.e("AddToggleImageViewError", "Error adding toggle image view", e)
+
         }
     }
 
