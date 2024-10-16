@@ -117,26 +117,37 @@ class Check : AppCompatActivity() {
         "line1": "Some descriptor"
     },
     "shopper": {
-        "firstName": "Ishika cnsjbc cnbhsbc jbcydsbc bcydbc",
-        "lastName": "Bansal",
-        "email": "ishika.bansal@boxpay.tech",
-        "uniqueReference": "x123y",
-        "phoneNumber": "919876543211",
-        "deliveryAddress": {
-            "address1": "first line",
-            "address2": "second line",
-            "city": "New Delhi",
-            "state": "Delhi",
-            "countryCode": "IN",
-            "postalCode": "147147"
-        }
+            "firstName": "Ankush",
+            "lastName": "Kashyap",
+            "gender": null,
+            "phoneNumber": "917986361129",
+            "email": "ankush.kashyap@boxpay.tech",
+            "uniqueReference": "x123y",
+            "deliveryAddress": {
+                "address1": "first line",
+                "address2": "second line",
+                "address3": null,
+                "city": "Chandigarh",
+                "state": "Chandigarh",
+                "countryCode": "IN",
+                "postalCode": "160002",
+                "shopperRef": null,
+                "addressRef": null,
+                "labelType": "Other",
+                "labelName": null,
+                "name": null,
+                "email": null,
+                "phoneNumber": null
+            },
+            "dateOfBirth": "2023-07-18T12:34:56Z",
+            "panNumber": "CTGPA0002G"
     },
     "order": {
-        "originalAmount": 423.73,
-        "shippingAmount": 50,
+        "originalAmount": 42113.73,
+        "shippingAmount": 5110,
         "voucherCode": "VOUCHER",
-        "taxAmount": 76.27,
-        "totalAmountWithoutTax": 423.73,
+        "taxAmount": 7611.27,
+        "totalAmountWithoutTax": 42311.73,
         "items": [
             {
                 "id": "test",
@@ -167,7 +178,7 @@ class Check : AppCompatActivity() {
                 "productUrl": null,
                 "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
                 "categories": null,
-                "amountWithoutTax": 423.73,
+                "amountWithoutTax": 1423.73,
                 "taxAmount": 76.27,
                 "taxPercentage": null,
                 "discountedAmount": null,
@@ -264,15 +275,13 @@ class Check : AppCompatActivity() {
                 val tokenFetched = response.getString("token")
                 val payload = response.optJSONObject("payload")
                 customerShopperToken = payload?.optString("shopper_token", "")
-                println("======customerShopperToken $tokenFetched")
                 tokenLiveData.value = tokenFetched
                 editor.putString("baseUrl", "test-apis.boxpay.tech")
                 editor.putString("token", tokenLiveData.value)
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                println("====error $error")
+            Response.ErrorListener {
                 /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {

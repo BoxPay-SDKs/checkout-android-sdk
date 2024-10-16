@@ -8,14 +8,6 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bottom_sheet_bg">
 
-    <FrameLayout
-        android:id="@+id/overlayContainer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#6E5B5B"
-        android:visibility="gone"/>
-
-
     <LinearLayout
         android:id="@+id/linearLayoutMain"
         android:layout_width="match_parent"
@@ -64,6 +56,8 @@
             android:layout_marginTop="16dp"
             android:layout_weight="1"
             android:isScrollContainer="true"
+            android:scrollbars="vertical"
+            android:fadeScrollbars="false"
             app:layout_constraintTop_toBottomOf="@id/topConstraint"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -135,6 +129,7 @@
                                 android:fontFamily="@font/inter_semibold"
                                 android:textColor="@android:color/black"
                                 android:textSize="16sp"
+                                android:layout_marginEnd="16dp"
                                 app:layout_constraintBottom_toTopOf="@+id/itemsInOrderRecyclerView"
                                 app:layout_constraintEnd_toStartOf="@+id/arrowIcon"
                                 app:layout_constraintTop_toTopOf="parent" />
@@ -157,9 +152,12 @@
                                 android:layout_marginTop="8dp"
                                 android:layout_marginEnd="14dp"
                                 android:visibility="visible"
+                                android:scrollbars="vertical"
+                                android:fadeScrollbars="false"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toBottomOf="@+id/numberOfItems"
+                                app:layout_constraintHeight_max="200dp"
                                 tools:itemCount="1"
                                 tools:listitem="@layout/order_summary_item" />
 
@@ -322,7 +320,7 @@
                         app:cardCornerRadius="10dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardView3">
+                        app:layout_constraintTop_toBottomOf="@+id/cardView8">
 
                         <LinearLayout
                             android:id="@+id/container"
@@ -341,7 +339,7 @@
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
                         android:layout_marginTop="16dp"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         android:background="@android:color/white"
                         app:cardCornerRadius="10dp"
                         app:layout_constraintEnd_toEndOf="parent"

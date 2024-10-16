@@ -12,7 +12,7 @@ android {
     compileSdk = 33
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 21
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
@@ -77,6 +77,11 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
     implementation("com.microsoft.clarity:clarity:2.5.1")
     testImplementation("org.mockito:mockito-core:5.7.0") // Replace with the latest version
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    // gson converter
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0")
+    implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
 }
 
 

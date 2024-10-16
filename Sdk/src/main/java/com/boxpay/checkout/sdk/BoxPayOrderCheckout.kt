@@ -68,7 +68,7 @@ class BoxPayOrderCheckout(
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "${BASE_URL}/v0/ui-analytics", requestBody,
+            Method.POST, "https://${BASE_URL}/v0/ui-analytics", requestBody,
             Response.Listener { /*no response handling */ },
             Response.ErrorListener { /*no response handling */ }) {}.apply {
             // Set retry policy

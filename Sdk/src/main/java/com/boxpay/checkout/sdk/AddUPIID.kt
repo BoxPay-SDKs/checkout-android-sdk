@@ -19,7 +19,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
-import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -169,6 +168,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             if (checkString(userVPA!!)) {
                 binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                binding.editText.isEnabled = false
                 validateAPICall(requireContext(), userVPA!!)
                 showLoadingInButton()
             } else {
@@ -408,10 +408,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
-
-                val webView = WebView(requireContext())
-
-                // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
 
                 // Get the screen height and width
@@ -427,7 +423,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             }
             put("browserData", browserData)
 
-            // Instrument Details
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", "upi/collect")
 
@@ -437,7 +432,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("upi", upiObject)
             }
             put("instrumentDetails", instrumentDetailsObject)
-
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email", null))
@@ -449,6 +443,17 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                if (sharedPreferences.getString("dateOfBirthChosen", null) != null){
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
+                }else{
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }
+
+                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
+                }else{
+                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -468,8 +473,16 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     put("deliveryAddress", deliveryAddressObject)
                 }
             }
-
             put("shopper", shopperObject)
+
+            val deviceDetails = JSONObject().apply {
+                put("browser", Build.BRAND)
+                put("platformVersion", Build.VERSION.RELEASE)
+                put("deviceType", Build.MANUFACTURER)
+                put("deviceName", Build.MANUFACTURER)
+                put("deviceBrandName", Build.MODEL)
+            }
+            put("deviceDetails", deviceDetails)
         }
 
         // Request a JSONObject response from the provided URL
@@ -478,6 +491,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Response.Listener { response ->
 
                 val status = response.getJSONObject("status").getString("status")
+                binding.editText.isEnabled = true
                 val reason = response.getJSONObject("status").getString("reason")
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
