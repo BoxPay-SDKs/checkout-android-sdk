@@ -144,6 +144,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private lateinit var Base_Session_API_URL: String
     var queue: RequestQueue? = null
     private lateinit var countdownTimer: CountDownTimer
+    private lateinit var sessionTimer : CountDownTimer
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     var isGpayReturned = false
@@ -166,6 +167,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         removeOverlayFromActivity()
+        sessionTimer.cancel()
         dismiss()
     }
 
@@ -916,6 +918,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         binding.backButton.setOnClickListener() {
             removeOverlayFromActivity()
+
             dismiss()
         }
         binding.upiLinearLayout.setOnClickListener() {
@@ -1080,6 +1083,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val netBankingBottomSheet =
                 parentFragmentManager.findFragmentByTag("NetBankingBottomSheet") as? NetBankingBottomSheet
             netBankingBottomSheet?.dismissCurrentBottomSheet()
+            sessionTimer.cancel()
 
             dismiss()
         }, 500)
@@ -1835,6 +1839,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             windowManager.removeView(it)
         }
         overlayViewMainBottomSheet = null
+        sessionTimer.cancel()
     }
 
     fun removeOverlayFromCurrentBottomSheet() {
@@ -1959,6 +1964,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
                             dismiss()
+                            sessionTimer.cancel()
                             val callback = SingletonClass.getInstance().getYourObject()
                             if (callback != null) {
                                 val status = sharedPreferences.getString("status", "")
@@ -2121,15 +2127,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         val fieldObject = enabledFields.getJSONObject(i)
                         if (fieldObject.optString("field", "UNKNOWN").contains("phone", true)) {
                             showPhone = true
-                            isPhoneEditable = fieldObject.optBoolean("editable", false)
+                            isPhoneEditable = fieldObject.optBoolean("editable", false) || showShipping
                         }
                         if (fieldObject.optString("field", "UNKNOWN").contains("name", true)) {
                             showName = true
-                            isNameEditable = fieldObject.optBoolean("editable", false)
+                            isNameEditable = fieldObject.optBoolean("editable", false) || showShipping
                         }
                         if (fieldObject.optString("field", "UNKNOWN").contains("email", true)) {
                             showEmail = true
-                            isEmailEditable = fieldObject.optBoolean("editable", false)
+                            isEmailEditable = fieldObject.optBoolean("editable", false) || showShipping
                         }
                     }
                 } else {
@@ -3513,7 +3519,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val currentTime = Date().time
             val timeDifference = endDate.time - currentTime
             if (timeDifference > 0) {
-                object : CountDownTimer(timeDifference, 1000) {
+                 sessionTimer = object : CountDownTimer(timeDifference, 1000) {
 
                     override fun onTick(millisUntilFinished: Long) {
                         val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
@@ -3539,11 +3545,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (callbackForDismissing != null) {
                             callbackForDismissing.dismissFunction()
                         }
-                        if (isAdded && isResumed && !isStateSaved) {
-                            SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
-                        }
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     }
-                }.start()
+                }
+                sessionTimer.start()
             }
         } catch (_: Exception) {
             // no op

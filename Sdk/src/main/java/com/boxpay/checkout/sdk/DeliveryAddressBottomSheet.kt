@@ -1381,7 +1381,7 @@ class CustomArrayAdapter(
 
         // Display the "No results found" message and style it if the list is empty
         if (filteredArray.isEmpty()) {
-            textView.text = "No results found"
+            textView.text = "No results"
             textView.setTextColor(Color.GRAY)  // Optional: Gray color for the "No results" message
         } else {
             textView.setTextColor(Color.BLACK)  // Regular color for normal items
