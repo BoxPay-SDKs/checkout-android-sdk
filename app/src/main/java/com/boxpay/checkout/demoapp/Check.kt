@@ -110,7 +110,7 @@ class Check : AppCompatActivity() {
     },
     "paymentType": "S",
     "money": {
-        "amount": "1000",
+        "amount": "5000",
         "currencyCode": "INR"
     },
     "descriptor": {
@@ -204,7 +204,8 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener {
+            Response.ErrorListener { error ->
+                Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
                 /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {

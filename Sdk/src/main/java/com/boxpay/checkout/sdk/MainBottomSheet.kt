@@ -990,6 +990,16 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
         }
 
+        binding.emiConstraint.setOnClickListener() {
+            if (!binding.loadingRelativeLayout.isVisible) {
+                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
+                hideRecommendedOptions()
+                binding.emiConstraint.isEnabled = false
+                callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Emi")
+                openEmiBottomSheet()
+            }
+        }
+
         binding.bnplConstraint.setOnClickListener() {
             if (!binding.loadingRelativeLayout.isVisible) {
                 recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
@@ -1469,6 +1479,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.walletConstraint.isEnabled = true
         binding.netBankingConstraint.isEnabled = true
         binding.bnplConstraint.isEnabled = true
+        binding.emiConstraint.isEnabled = true
     }
 
     private fun populatePopularUPIApps() {
@@ -2017,6 +2028,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val bottomSheetFragment = WalletBottomSheet.newInstance(shippingEnabled)
         bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
+    }
+
+    private fun openEmiBottomSheet() {
+        val bottomSheetFragment = EmiBottomSheet.newInstance()
+        bottomSheetFragment.show(parentFragmentManager, "EmiBottomSheet")
     }
 
     private fun openBNPLBottomSheet() {
