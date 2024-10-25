@@ -663,6 +663,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 walletDetailsOriginal = ArrayList(walletDetailsOriginal.sortedBy { it.walletBrand })
 
                 // Print the filtered wallet payment methods
+                if (walletDetailsOriginal.size < 5){
+                    binding.searchView.visibility = View.GONE
+                }else{
+                    binding.searchView.visibility = View.VISIBLE
+                }
                 showAllWallets()
                 fetchAndUpdateApiInPopularWallets()
                 removeLoadingScreenState()
@@ -1029,6 +1034,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -1037,7 +1043,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
                 requireContext(),
@@ -1065,6 +1070,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -1073,7 +1079,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
 

@@ -654,6 +654,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -662,7 +663,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
                 requireContext(),
@@ -689,6 +689,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -697,7 +698,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
 

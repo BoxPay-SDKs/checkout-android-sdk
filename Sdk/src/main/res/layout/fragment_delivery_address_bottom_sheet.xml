@@ -69,9 +69,7 @@
 
                 <androidx.core.widget.NestedScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scrollbars="vertical"
-                    android:fadeScrollbars="false">
+                    android:layout_height="match_parent">
 
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -91,45 +89,45 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
-                        <TextView
-                            android:id="@+id/fullNameTextView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/poppins"
-                            android:gravity="center_vertical"
-                            android:lineSpacingExtra="-1sp"
-                            android:text="Full Name*"
-                            android:textColor="@android:color/black" />
+                            <TextView
+                                android:id="@+id/fullNameTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="Full Name*"
+                                android:textColor="@android:color/black" />
 
-                        <EditText
-                            android:id="@+id/fullNameEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="5dp"
-                            android:layout_marginStart="2dp"
-                            android:layout_marginEnd="2dp"
-                            android:background="@drawable/edittext_bg"
-                            android:fontFamily="@font/poppins"
-                            android:gravity="center_vertical"
-                            android:hint="Full Name"
-                            android:inputType="text"
-                            android:padding="8dp"
-                            android:textColor="#000000"
-                            android:textColorHint="#7F7D83"
-                            android:textSize="14sp"
-                            tools:ignore="TouchTargetSizeCheck" />
+                            <EditText
+                                android:id="@+id/fullNameEditText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="5dp"
+                                android:layout_marginStart="2dp"
+                                android:layout_marginEnd="2dp"
+                                android:background="@drawable/edittext_bg"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:hint="Full Name"
+                                android:inputType="text"
+                                android:padding="8dp"
+                                android:textColor="#000000"
+                                android:textColorHint="#7F7D83"
+                                android:textSize="14sp"
+                                tools:ignore="TouchTargetSizeCheck" />
 
-                        <TextView
-                            android:id="@+id/fullNameErrorTex"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:fontFamily="@font/poppins"
-                            android:gravity="center_vertical"
-                            android:lineSpacingExtra="-1sp"
-                            android:text="Required"
-                            android:visibility="invisible"
-                            android:textColor="#ffff4d4f" />
+                            <TextView
+                                android:id="@+id/fullNameErrorTex"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="Required"
+                                android:visibility="invisible"
+                                android:textColor="#ffff4d4f" />
                         </LinearLayout>
 
 
@@ -167,6 +165,8 @@
                                     android:layout_marginStart="4dp"
                                     android:background="#ffffffff"
                                     android:inputType="number"
+                                    android:dropDownWidth="75dp"
+                                    android:dropDownAnchor="@+id/mobileNumberLinearLayout"
                                     android:textSize="14sp"
                                     tools:ignore="TouchTargetSizeCheck" />
 
@@ -266,6 +266,7 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="PAN*"
+                                android:drawableEnd="@drawable/help_circle"
                                 android:textColor="@android:color/black" />
 
                             <EditText
@@ -277,8 +278,9 @@
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:hint="PAN"
-                                android:inputType="text"
+                                android:inputType="text|textCapCharacters"
                                 android:padding="8dp"
+                                android:textAllCaps="true"
                                 android:textColor="#000000"
                                 android:textColorHint="#7F7D83"
                                 android:textSize="14sp"
@@ -314,6 +316,7 @@
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
+                                android:drawableEnd="@drawable/help_circle"
                                 android:text="Date of Birth/Incorporation*"
                                 android:textColor="@android:color/black" />
 
@@ -327,10 +330,11 @@
                                 android:gravity="center_vertical"
                                 android:hint="mm-dd-yyyy"
                                 android:inputType="text"
-                                android:focusable="false"
                                 android:padding="8dp"
-                                android:drawableEnd="@drawable/baseline_calendar_month_24"
+                                android:focusable="false"
+                                android:clickable="true"
                                 android:textColor="#000000"
+                                android:drawableEnd="@drawable/baseline_calendar_month_24"
                                 android:textColorHint="#7F7D83"
                                 android:textSize="14sp"
                                 tools:ignore="TouchTargetSizeCheck" />
@@ -347,6 +351,7 @@
                                 android:visibility="invisible"
                                 android:textColor="#ffff4d4f" />
                         </LinearLayout>
+
 
                         <LinearLayout
                             android:id="@+id/addressLayout"
@@ -656,5 +661,4 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-</LinearLayout></androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+    </LinearLayout></androidx.coordinatorlayout.widget.CoordinatorLayout>

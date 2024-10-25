@@ -23,8 +23,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 
 internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
@@ -33,8 +35,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private var transactionID: String? = null
     private var amount: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
-    var savedDccResponse : DCCResponse? = null
-    var isDccEnabled : Boolean = false
+    private var savedDccResponse : DCCResponse? = null
+    private var isDccEnabled : Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         savedDccResponse = getDCCResponse(requireContext())
@@ -60,6 +62,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
         binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -68,7 +71,6 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
                 requireContext(),
@@ -102,13 +104,12 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         }
         if (isDccEnabled){
             binding.tvCardType.text = savedDccResponse!!.brand
-            binding.tvCardHolderName.text = "AnkushTest"
             binding.transTotalDCC.text = "Transaction Total " + savedDccResponse!!.baseMoney!!.currencyCode
-            binding.tvTransTotal.text =  savedDccResponse!!.baseMoney!!.currencyCode + " " +  savedDccResponse!!.baseMoney!!.amount
-            binding.tvExchangeRate.text = "1 " + savedDccResponse!!.baseMoney!!.currencyCode + " = " + savedDccResponse!!.dccQuotationDetails!!.fxRate + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
+            binding.tvTransTotal.text =  savedDccResponse!!.baseMoney!!.currencyCode + " " +  formatToINR(savedDccResponse!!.baseMoney!!.amount!!.toDouble())
+            binding.tvExchangeRate.text = "1 " + savedDccResponse!!.baseMoney!!.currencyCode + " = " + formatToTwoDecimalPlaces(savedDccResponse!!.dccQuotationDetails!!.fxRate!!) + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
             binding.tvTransCurrency.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
-            binding.transactionAmountTextView.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount
-            binding.tvPaymentSuccess.text = "Payment Successful\n" + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount
+            binding.transactionAmountTextView.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR(savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount!!.toDouble())
+            binding.tvPaymentSuccess.text = "Payment Successful\n" + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR(savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount!!.toDouble())
             binding.tvCardHolderName.text = getDCCResponse(requireActivity(),"CARD_HOLDER_NAME")
             binding.tvMerchantName.text = getDCCResponse(requireActivity(),"MERCHANT_NAME_SESSION")
             binding.tvMerchantSite.paintFlags = binding.tvMerchantSite.paintFlags or Paint.UNDERLINE_TEXT_FLAG
@@ -121,6 +122,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                         "\n" +
                         "Please print and retain for your records."
             }
+            binding.proceedButton.visibility = View.VISIBLE
         }else{
             binding.apply {
                 llMerchantName.visibility = View.GONE
@@ -132,7 +134,6 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 tvInfo.visibility = View.GONE
                 dottedLast.visibility = View.INVISIBLE
                 binding.proceedButton.visibility = View.VISIBLE
-                binding.llRedirectLink.visibility = View.INVISIBLE
                 val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
                 val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
                 if (amount.isNotEmpty() && currencyType.isNotEmpty()){
@@ -167,6 +168,15 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         }
     }
 
+    fun formatToINR(amount: Double): String {
+        val format = NumberFormat.getNumberInstance(Locale("en", "IN"))
+        return format.format(amount)
+    }
+
+    fun formatToTwoDecimalPlaces(value: Double): String {
+        return String.format("%.2f", value)
+    }
+
     private fun getDCCResponse(context: Context): DCCResponse? {
         val sharedPreferences: SharedPreferences =
             context.getSharedPreferences("DCC_PREF", Context.MODE_PRIVATE)
@@ -196,7 +206,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
 
     private fun getCurrentDateAndTimeInFormattedString() : String{
         val currentDateTime = Date()
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
         return dateFormat.format(currentDateTime)
     }
 

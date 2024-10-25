@@ -611,6 +611,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -619,7 +620,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
 
@@ -638,12 +638,12 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     private fun enableProceedButton() {
         binding.proceedButtonRelativeLayout.isEnabled = true
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.ll1InvalidUPI.visibility = View.INVISIBLE
         binding.textView6.setTextColor(
             ContextCompat.getColor(
