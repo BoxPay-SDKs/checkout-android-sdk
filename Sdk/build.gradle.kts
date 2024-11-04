@@ -86,6 +86,7 @@ dependencies {
     implementation("androidx.compose.material:material:1.7.4")
     implementation("androidx.compose.ui:ui-tooling:1.7.4")
     implementation("androidx.compose.material:material-icons-core:1.5.1")
+    implementation("androidx.compose.material3:material3:1.1.1")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("io.coil-kt:coil-svg:2.2.2")

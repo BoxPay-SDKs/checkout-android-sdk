@@ -17,6 +17,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
 
 @Composable
 fun TopBar(modifier: Modifier = Modifier, text:String, onClickBack:()-> Unit) {
@@ -33,8 +34,9 @@ fun TopBar(modifier: Modifier = Modifier, text:String, onClickBack:()-> Unit) {
         Text(
             text = text,
             style = TextStyle(
-                fontSize = 18.sp,
-                fontWeight = FontWeight(800)
+                fontFamily = defaultFontFamily,
+                fontSize = 16.sp,
+                fontWeight = FontWeight(600)
             ),
             color = Color(0xFF02040E).copy(0.7f)
         )

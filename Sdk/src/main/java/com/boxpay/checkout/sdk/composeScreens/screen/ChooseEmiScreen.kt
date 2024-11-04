@@ -23,8 +23,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,10 +34,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,8 +53,6 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import com.boxpay.checkout.sdk.R
 import com.boxpay.checkout.sdk.composeScreens.components.BankRow
-import com.boxpay.checkout.sdk.composeScreens.components.CardAcceptanceRow
-import com.boxpay.checkout.sdk.composeScreens.components.CardSecureRow
 import com.boxpay.checkout.sdk.composeScreens.components.CvvBottomSheet
 import com.boxpay.checkout.sdk.composeScreens.components.EmiAmountDetails
 import com.boxpay.checkout.sdk.composeScreens.components.FilterCard
@@ -57,6 +60,8 @@ import com.boxpay.checkout.sdk.composeScreens.components.OthersEmiRow
 import com.boxpay.checkout.sdk.composeScreens.components.TopBar
 import com.boxpay.checkout.sdk.composeScreens.model.Bank
 import com.boxpay.checkout.sdk.composeScreens.model.ChooseEmiModel
+import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
+import com.boxpay.checkout.sdk.composeScreens.model.interFontFamily
 
 @Composable
 fun ChooseEmiScreen(
@@ -70,7 +75,8 @@ fun ChooseEmiScreen(
     sharedPreferences: SharedPreferences,
     searchQuery: String,
     onValueChange: (String) -> Unit,
-    onClickBank: (Bank) -> Unit
+    onClickBank: (Bank) -> Unit,
+    onClickFilter: (text: String) -> Unit
 ) {
     ConstraintLayout(
         modifier = Modifier
@@ -78,7 +84,7 @@ fun ChooseEmiScreen(
             .wrapContentHeight()
             .background(Color(0xFFF5F6FB))
     ) {
-        val (topBar, filterBackground, cardRow, searchField, filterRow, allBanksText, list, footerRow, divider, cta) = createRefs()
+        val (topBar, filterBackground, cardRow, searchField, filterRow, allBanksText, list, divider, cta) = createRefs()
         TopBar(
             text = "Choose EMI Option",
             modifier = Modifier
@@ -122,8 +128,9 @@ fun ChooseEmiScreen(
                     Text(
                         text = it.cardType,
                         style = TextStyle(
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight(800)
+                            fontFamily = defaultFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(600)
                         ),
                         textAlign = TextAlign.Center,
                         color = if (it.cardType.equals(
@@ -193,8 +200,9 @@ fun ChooseEmiScreen(
                 Text(
                     text = "Search for bank",
                     style = TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight(500)
+                        fontFamily = defaultFontFamily,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight(400)
                     ),
                     color = Color(0xFF7F7D83)
                 )
@@ -215,14 +223,29 @@ fun ChooseEmiScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             filterList.map {
-                FilterCard(text = it.first, modifier = Modifier.padding(end = 8.dp))
+                FilterCard(
+                    text = it.first,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .clickable { onClickFilter(isSelectedCard) },
+                    isSelected = it.second,
+                    selectedColor = Color(
+                        android.graphics.Color.parseColor(
+                            sharedPreferences.getString(
+                                "primaryButtonColor",
+                                "#000000"
+                            )
+                        )
+                    )
+                )
             }
         }
         Text(
             text = if (isSelectedCard.equals("others", true)) "Others" else "All Banks",
             style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight(800)
+                fontFamily = defaultFontFamily,
+                fontSize = 14.sp,
+                fontWeight = FontWeight(600)
             ),
             color = Color(0xFF020815).copy(0.71f),
             modifier = Modifier.constrainAs(allBanksText) {
@@ -242,7 +265,7 @@ fun ChooseEmiScreen(
                     if (selectedRadioButton.isNotEmpty()) {
                         bottom.linkTo(cta.top, 30.dp)
                     } else {
-                        bottom.linkTo(footerRow.top, 30.dp)
+                        bottom.linkTo(parent.bottom, 30.dp)
                     }
 
                     width = Dimension.fillToConstraints
@@ -305,7 +328,7 @@ fun ChooseEmiScreen(
                     .constrainAs(cta) {
                         start.linkTo(parent.start, 16.dp)
                         end.linkTo(parent.end, 16.dp)
-                        bottom.linkTo(footerRow.top, 10.dp)
+                        bottom.linkTo(parent.bottom, 30.dp)
 
                         width = Dimension.fillToConstraints
                     },
@@ -324,8 +347,9 @@ fun ChooseEmiScreen(
                 Text(
                     text = "Proceed",
                     style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight(800)
+                        fontFamily = defaultFontFamily,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight(600)
                     ),
                     color = Color.White,
                     modifier = Modifier
@@ -334,29 +358,6 @@ fun ChooseEmiScreen(
                     textAlign = TextAlign.Center
                 )
             }
-        }
-        Row(
-            modifier = Modifier.constrainAs(footerRow) {
-                start.linkTo(parent.start, 16.dp)
-                end.linkTo(parent.end, 16.dp)
-                bottom.linkTo(parent.bottom, 16.dp)
-            },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Secured by",
-                style = TextStyle(
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight(500)
-                ),
-                color = Color(0xFF888888),
-                modifier = Modifier
-            )
-            Image(
-                painter = painterResource(id = R.drawable.boxpay_copyright),
-                contentDescription = "",
-                modifier = Modifier.size(40.dp)
-            )
         }
     }
 }
@@ -370,7 +371,8 @@ fun SelectTenureEmi(
     selectedEmi: Pair<Int, String>,
     sharedPreferences: SharedPreferences,
     onClickRadio: (duration: Int, amount: String) -> Unit,
-    onProceed: (Int) -> Unit
+    onProceed: (Int) -> Unit,
+    currencySymbol : String
 ) {
     val imageLoader = ImageLoader.Builder(LocalContext.current)
         .components {
@@ -383,7 +385,7 @@ fun SelectTenureEmi(
             .wrapContentHeight()
             .background(Color(0xFFF5F6FB))
     ) {
-        val (topBar, itemsPrice, list, footerRow) = createRefs()
+        val (topBar, itemsPrice, list) = createRefs()
         TopBar(
             text = "Select Tenure",
             modifier = Modifier
@@ -398,11 +400,38 @@ fun SelectTenureEmi(
             onClickBack = onClickBack
         )
         Text(
-            text = "Item(s) price: $totalPrice",
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight(800)
-            ),
+            text = buildAnnotatedString {
+                append(
+                    AnnotatedString(
+                        text = "Item(s) price: ",
+                        spanStyle = SpanStyle(
+                            fontFamily = defaultFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(400)
+                        )
+                    )
+                )
+                append(
+                    AnnotatedString(
+                        text = currencySymbol,
+                        spanStyle = SpanStyle(
+                            fontFamily = interFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(200)
+                        )
+                    )
+                )
+                append(
+                    AnnotatedString(
+                        text = totalPrice,
+                        spanStyle = SpanStyle(
+                            fontFamily = defaultFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(600)
+                        )
+                    )
+                )
+            },
             color = Color(0xFF2D2B32),
             modifier = Modifier.constrainAs(itemsPrice) {
                 start.linkTo(parent.start, 16.dp)
@@ -415,7 +444,7 @@ fun SelectTenureEmi(
                     start.linkTo(parent.start, 16.dp)
                     end.linkTo(parent.end, 16.dp)
                     top.linkTo(itemsPrice.bottom, 12.dp)
-                    bottom.linkTo(footerRow.top, 20.dp)
+                    bottom.linkTo(parent.bottom, 30.dp)
 
                     width = Dimension.fillToConstraints
                 }
@@ -443,8 +472,9 @@ fun SelectTenureEmi(
                     Text(
                         text = "${selectedBank.name} | $cardType",
                         style = TextStyle(
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight(800)
+                            fontFamily = defaultFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(600)
                         ),
                         color = Color(0xFF2D2B32),
                         modifier = Modifier.padding(start = 8.dp, end = 8.dp)
@@ -469,6 +499,7 @@ fun SelectTenureEmi(
                             )
                         )
                     ),
+                    currencySymbol = currencySymbol,
                     month = it.duration,
                     amount = it.amount,
                     percent = it.percent,
@@ -479,35 +510,13 @@ fun SelectTenureEmi(
                     bankName = selectedBank.name,
                     onProceed = {
                         onProceed(it.percent)
-                    }
+                    },
+                    isNoCostApplied = it.noCostApplied
                 )
-                if (it.duration != selectedBank.emiList.last().duration && it.amount != selectedBank.emiList.last().amount) {
+                if (it.amount != selectedBank.emiList.last().amount) {
                     Divider(modifier = Modifier.fillParentMaxWidth())
                 }
             }
-        }
-        Row(
-            modifier = Modifier.constrainAs(footerRow) {
-                start.linkTo(parent.start, 16.dp)
-                end.linkTo(parent.end, 16.dp)
-                bottom.linkTo(parent.bottom, 16.dp)
-            },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Secured by",
-                style = TextStyle(
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight(500)
-                ),
-                color = Color(0xFF888888),
-                modifier = Modifier
-            )
-            Image(
-                painter = painterResource(id = R.drawable.boxpay_copyright),
-                contentDescription = "",
-                modifier = Modifier.size(40.dp)
-            )
         }
     }
 }
@@ -521,14 +530,18 @@ fun AddCardDetailsScreen(
     percent: Int,
     onClickBack: () -> Unit,
     sharedPreferences: SharedPreferences,
-    cardNumber: String,
+    cardNumber: TextFieldValue,
     cardName: String,
-    expiry: String,
+    expiry: TextFieldValue,
     cvv: String,
-    onCardNumberChange:(String)-> Unit,
-    onCardNameChange:(String) -> Unit,
-    onCardExpiryChange:(String)-> Unit,
-    onCardCvvChange:(String)-> Unit
+    onCardNumberChange: (TextFieldValue) -> Unit,
+    onCardNameChange: (String) -> Unit,
+    onCardExpiryChange: (TextFieldValue) -> Unit,
+    onCardCvvChange: (String) -> Unit,
+    onProceedClick: () -> Unit,
+    cardIcon: Int,
+    currencySymbol: String,
+    allDetailsValid: Boolean
 ) {
     val imageLoader = ImageLoader.Builder(LocalContext.current)
         .components {
@@ -546,7 +559,7 @@ fun AddCardDetailsScreen(
             .imePadding()
     ) {
         val (topBar, bankBorder, bankIcon, bankName, divider, emiDetails, cardNumberTitle, cardNumberInput, cardNameTitle, cardNameInput, expiryTitle, expiryInput, cvvTitle, cvvInput, footerStart, footerEnd) = createRefs()
-        val (cvvBottomSheet, interestRate, topDivider, cta) = createRefs()
+        val (interestRate, topDivider, cta) = createRefs()
         TopBar(
             text = "Add Card Details",
             modifier = Modifier
@@ -596,6 +609,7 @@ fun AddCardDetailsScreen(
         Text(
             text = name,
             style = TextStyle(
+                fontFamily = defaultFontFamily,
                 fontSize = 14.sp,
                 fontWeight = FontWeight(600)
             ),
@@ -610,11 +624,38 @@ fun AddCardDetailsScreen(
             }
         )
         Text(
-            text = "$month months x ₹$amount",
-            style = TextStyle(
-                fontSize = 14.sp,
-                fontWeight = FontWeight(600)
-            ),
+            text =buildAnnotatedString {
+                append(
+                    AnnotatedString(
+                        text = "$month months x ",
+                        spanStyle = SpanStyle(
+                            fontFamily = defaultFontFamily,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight(600)
+                        )
+                    )
+                )
+                append(
+                    AnnotatedString(
+                        text = currencySymbol,
+                        spanStyle = SpanStyle(
+                            fontFamily = interFontFamily,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight(200)
+                        )
+                    )
+                )
+                append(
+                    AnnotatedString(
+                        text = amount,
+                        spanStyle = SpanStyle(
+                            fontFamily = defaultFontFamily,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight(600)
+                        )
+                    )
+                )
+            },
             color = Color(0xFF2D2B32),
             modifier = Modifier
                 .constrainAs(emiDetails) {
@@ -626,7 +667,8 @@ fun AddCardDetailsScreen(
         Text(
             text = "@$percent% p.a.",
             style = TextStyle(
-                fontSize = 14.sp,
+                fontFamily = defaultFontFamily,
+                fontSize = 12.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -650,7 +692,8 @@ fun AddCardDetailsScreen(
         Text(
             text = "Card Number",
             style = TextStyle(
-                fontSize = 14.sp,
+                fontFamily = defaultFontFamily,
+                fontSize = 12.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -680,10 +723,11 @@ fun AddCardDetailsScreen(
             shape = RoundedCornerShape(8.dp),
             placeholder = {
                 Text(
-                    text = "XXXX XXXX XXXX XXXX",
+                    text = "Enter card number",
                     style = TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight(500)
+                        fontFamily = defaultFontFamily,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight(400)
                     ),
                     color = Color(0xFF7F7D83)
                 )
@@ -691,12 +735,20 @@ fun AddCardDetailsScreen(
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next,
                 keyboardType = KeyboardType.NumberPassword
-            )
+            ),
+            trailingIcon = {
+                Image(
+                    painter = painterResource(id = cardIcon),
+                    contentDescription = "",
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         )
         Text(
             text = "Name on card",
             style = TextStyle(
-                fontSize = 14.sp,
+                fontFamily = defaultFontFamily,
+                fontSize = 12.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -726,10 +778,11 @@ fun AddCardDetailsScreen(
             shape = RoundedCornerShape(8.dp),
             placeholder = {
                 Text(
-                    text = "Please enter name on your card",
+                    text = "Enter name on the card",
                     style = TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight(500)
+                        fontFamily = defaultFontFamily,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight(400)
                     ),
                     color = Color(0xFF7F7D83)
                 )
@@ -741,7 +794,8 @@ fun AddCardDetailsScreen(
         Text(
             text = "Expiry",
             style = TextStyle(
-                fontSize = 14.sp,
+                fontFamily = defaultFontFamily,
+                fontSize = 12.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -773,20 +827,23 @@ fun AddCardDetailsScreen(
                 Text(
                     text = "MM/YY",
                     style = TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight(500)
+                        fontFamily = defaultFontFamily,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight(400)
                     ),
                     color = Color(0xFF7F7D83)
                 )
             },
             keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.NumberPassword
             )
         )
         Text(
             text = "CVV",
             style = TextStyle(
-                fontSize = 14.sp,
+                fontFamily = defaultFontFamily,
+                fontSize = 12.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -817,8 +874,9 @@ fun AddCardDetailsScreen(
                 Text(
                     text = "Enter CVV",
                     style = TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight(500)
+                        fontFamily = defaultFontFamily,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight(400)
                     ),
                     color = Color(0xFF7F7D83)
                 )
@@ -827,34 +885,27 @@ fun AddCardDetailsScreen(
                 Image(
                     painter = painterResource(id = R.drawable.ic_question_mark),
                     contentDescription = "",
-                    modifier = Modifier.size(20.dp).clickable {
-                        showCvvDetails.value = true
-                    }
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable {
+                            showCvvDetails.value = true
+                        }
                 )
             },
             keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done
-            )
-        )
-        CardAcceptanceRow(
-            modifier = Modifier.constrainAs(footerStart) {
-                start.linkTo(parent.start, 16.dp)
-                top.linkTo(expiryInput.bottom, 12.dp)
-            }
-        )
-        CardSecureRow(
-            modifier = Modifier.constrainAs(footerEnd) {
-                end.linkTo(parent.end, 16.dp)
-                centerVerticallyTo(footerStart)
-            }
+                imeAction = ImeAction.Done,
+                keyboardType = KeyboardType.NumberPassword
+            ),
+            visualTransformation = PasswordVisualTransformation()
         )
         Button(
-            onClick = {},
+            enabled = allDetailsValid,
+            onClick = onProceedClick,
             modifier = Modifier
                 .constrainAs(cta) {
                     start.linkTo(parent.start, 16.dp)
                     end.linkTo(parent.end, 16.dp)
-                    top.linkTo(footerEnd.bottom, 40.dp)
+                    top.linkTo(cvvInput.bottom, 40.dp)
 
                     width = Dimension.fillToConstraints
                 }
@@ -874,8 +925,9 @@ fun AddCardDetailsScreen(
             Text(
                 text = "Pay Now",
                 style = TextStyle(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight(800)
+                    fontFamily = defaultFontFamily,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight(600)
                 ),
                 color = Color.White,
                 modifier = Modifier

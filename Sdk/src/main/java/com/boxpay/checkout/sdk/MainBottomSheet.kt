@@ -1138,6 +1138,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val netBankingBottomSheet =
                 parentFragmentManager.findFragmentByTag("NetBankingBottomSheet") as? NetBankingBottomSheet
             netBankingBottomSheet?.dismissCurrentBottomSheet()
+            val emiBottomSheet =
+                parentFragmentManager.findFragmentByTag("EmiBottomSheet") as? EmiBottomSheet
+            emiBottomSheet?.dismissFunction()
             sessionTimer.cancel()
 
             dismiss()
@@ -2077,7 +2080,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun openEmiBottomSheet() {
-        val bottomSheetFragment = EmiBottomSheet.newInstance()
+        val bottomSheetFragment = EmiBottomSheet.newInstance(shippingEnabled)
         bottomSheetFragment.show(parentFragmentManager, "EmiBottomSheet")
     }
 
