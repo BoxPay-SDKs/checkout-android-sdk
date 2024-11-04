@@ -1,44 +1,57 @@
 package com.boxpay.checkout.sdk
 
-import FailureScreenSharedViewModel
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.WebSettings
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieDrawable
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
+import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.EmiViewModel
+import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.composeScreens.model.Bank
 import com.boxpay.checkout.sdk.composeScreens.model.Emi
 import com.boxpay.checkout.sdk.composeScreens.screen.AddCardDetailsScreen
 import com.boxpay.checkout.sdk.composeScreens.screen.ChooseEmiScreen
 import com.boxpay.checkout.sdk.composeScreens.screen.SelectTenureEmi
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
+import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.Locale
+import kotlin.random.Random
 
 internal class EmiBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentChooseEmiOptionBinding
@@ -50,6 +63,9 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     private lateinit var Base_Session_API_URL: String
     private var successScreenFullReferencePath: String? = null
     private var token: String? = null
+    private var shippingEnabled: Boolean = false
+    private var transactionId: String? = null
+    private var job: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,6 +107,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
 
             dialog.setOnKeyListener { _, keyCode, _ ->
@@ -141,10 +158,25 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         return dialog
     }
 
+    override fun onStart() {
+        super.onStart()
+
+        dialog?.window?.setGravity(Gravity.BOTTOM)
+        dialog?.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+    }
+
     private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
         val mainBottomSheetFragment =
             parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
         mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        emiViewModel.clearFields()
+        dismiss()
+    }
+
+    fun dismissFunction() {
         emiViewModel.clearFields()
         dismiss()
     }
@@ -157,11 +189,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         requestQueue = Volley.newRequestQueue(context)
         binding = FragmentChooseEmiOptionBinding.inflate(layoutInflater, container, false)
 
-
-        val failureScreenSharedViewModelCallback =
-            FailureScreenSharedViewModel(::failurePaymentFunction)
-        FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
-            failureScreenSharedViewModelCallback
 
         requestQueue = Volley.newRequestQueue(context)
         showLoadingState()
@@ -184,84 +211,103 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         lifecycleScope.launchWhenStarted {
             emiViewModel.emiBankList.collectLatest { emiBankList ->
                 binding.composeView.setContent {
-                    if (emiBankList.cards.isNotEmpty() && !binding.loadingRelativeLayout.isVisible && !emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
-                        ChooseEmiScreen(
-                            cardList = emiBankList,
-                            filterList = emptyList(),
-                            isSelectedCard = emiViewModel.selectedCard.value,
-                            onClickCard = {
-                                emiViewModel.onCardClick(it)
-                            },
-                            onClickBack = {
-                                dismissAndMakeButtonsOfMainBottomSheetEnabled()
-                            },
-                            onClickRadio = {
-                                emiViewModel.onClickRadio(it)
-                            },
-                            selectedRadioButton = emiViewModel.selectedOthersOption.value,
-                            sharedPreferences = sharedPreferences,
-                            searchQuery = emiViewModel.searchQuery.value,
-                            onValueChange = {
-                                emiViewModel.onValueChange(it)
-                            },
-                            onClickBank = {
-                                emiViewModel.onClickBank(it)
-                            }
-                        )
-                    }
-                    if (emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
-                        SelectTenureEmi(
-                            totalPrice = sharedPreferences.getString(
-                                "currencySymbol",
-                                "₹"
-                            ) + sharedPreferences.getString("amount", "empty"),
-                            onClickBack = { emiViewModel.onBackTenure() },
-                            selectedBank = emiViewModel.selectedBank.value!!,
-                            cardType = emiViewModel.selectedCard.value,
-                            selectedEmi = emiViewModel.selectedEmi.value,
-                            sharedPreferences = sharedPreferences,
-                            onClickRadio = { duration, amount ->
-                                emiViewModel.onClickRadio(duration, amount)
-                            },
-                            onProceed = {
-                                emiViewModel.onProceedEmi(it)
-                            }
-                        )
-                    }
-
-                    if (emiViewModel.addCardScreen.value) {
-                        AddCardDetailsScreen(
-                            iconUrl = emiViewModel.selectedBank.value?.iconUrl ?: "",
-                            name = emiViewModel.selectedBank.value?.name ?: "",
-                            month = emiViewModel.selectedEmi.value.first,
-                            amount = emiViewModel.selectedEmi.value.second,
-                            percent = emiViewModel.selectedPercent.value ?: 0,
-                            onClickBack = {
-                                emiViewModel.onBackAddCard()
-                            },
-                            sharedPreferences = sharedPreferences,
-                            cardNumber = emiViewModel.cardNumber.value,
-                            cardName = emiViewModel.cardName.value,
-                            expiry = emiViewModel.expiry.value,
-                            cvv = emiViewModel.cvv.value,
-                            onCardNameChange = {
-                                emiViewModel.onCardNameChange(it)
-                            },
-                            onCardExpiryChange = {
-                                emiViewModel.onCardExpiryChange(it)
-                            },
-                            onCardNumberChange = {
-                                emiViewModel.onCardNumberChange(it)
-                            },
-                            onCardCvvChange = {
-                                emiViewModel.onCardCvvChange(it)
-                            }
-                        )
+                    if (emiViewModel.contentLoaded.value) {
+                        if (emiBankList.cards.isNotEmpty() && !emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
+                            ChooseEmiScreen(
+                                cardList = emiBankList,
+                                filterList = if (emiViewModel.isFilterExisted.value) emiViewModel.filterList.value else emptyList(),
+                                isSelectedCard = emiViewModel.selectedCard.value,
+                                onClickCard = {
+                                    emiViewModel.onCardClick(it)
+                                },
+                                onClickBack = {
+                                    dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                                },
+                                onClickRadio = {
+                                    emiViewModel.onClickRadio(it)
+                                },
+                                selectedRadioButton = emiViewModel.selectedOthersOption.value,
+                                sharedPreferences = sharedPreferences,
+                                searchQuery = emiViewModel.searchQuery.value,
+                                onValueChange = {
+                                    emiViewModel.onValueChange(it)
+                                },
+                                onClickBank = {
+                                    emiViewModel.onClickBank(it)
+                                },
+                                onClickFilter = {
+                                    emiViewModel.getNoCostBanks(it)
+                                }
+                            )
+                        }
+                        if (emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
+                            SelectTenureEmi(
+                                totalPrice = sharedPreferences.getString("amount", "empty")
+                                    ?: "",
+                                onClickBack = { emiViewModel.onBackTenure() },
+                                selectedBank = emiViewModel.selectedBank.value!!,
+                                cardType = emiViewModel.selectedCard.value,
+                                selectedEmi = emiViewModel.selectedEmi.value,
+                                sharedPreferences = sharedPreferences,
+                                onClickRadio = { duration, amount ->
+                                    emiViewModel.onClickRadio(duration, amount)
+                                },
+                                onProceed = {
+                                    emiViewModel.onProceedEmi(it)
+                                },
+                                currencySymbol = sharedPreferences.getString(
+                                    "currencySymbol",
+                                    "₹"
+                                ) ?: ""
+                            )
+                        }
+                        if (emiViewModel.addCardScreen.value) {
+                            AddCardDetailsScreen(
+                                iconUrl = emiViewModel.selectedBank.value?.iconUrl ?: "",
+                                name = emiViewModel.selectedBank.value?.name ?: "",
+                                month = emiViewModel.selectedEmi.value.first,
+                                amount = emiViewModel.selectedEmi.value.second,
+                                percent = emiViewModel.selectedPercent.value ?: 0,
+                                onClickBack = {
+                                    emiViewModel.onBackAddCard()
+                                },
+                                sharedPreferences = sharedPreferences,
+                                cardNumber = emiViewModel.cardNumber.value,
+                                cardName = emiViewModel.cardName.value,
+                                expiry = emiViewModel.expiry.value,
+                                cvv = emiViewModel.cvv.value,
+                                onCardNameChange = {
+                                    emiViewModel.onCardNameChange(it)
+                                },
+                                onCardExpiryChange = {
+                                    emiViewModel.onCardExpiryChange(it)
+                                },
+                                onCardNumberChange = {
+                                    emiViewModel.onCardNumberChange(it)
+                                    if (emiViewModel.cardNumber.value.text.length >= 9) {
+                                        makeCardNetworkIdentificationCall(
+                                            context!!,
+                                            emiViewModel.cardNumber.value.text.filter { it.isDigit() })
+                                    }
+                                },
+                                onCardCvvChange = {
+                                    emiViewModel.onCardCvvChange(it)
+                                },
+                                onProceedClick = {
+                                    postRequest(context!!)
+                                },
+                                cardIcon = emiViewModel.cardIcon.value,
+                                currencySymbol = sharedPreferences.getString(
+                                    "currencySymbol",
+                                    "₹"
+                                ) ?: "",
+                                allDetailsValid = emiViewModel.isCardValid.value
+                            )
+                        }
                     }
                 }
             }
         }
-        showLoadingState()
 
 
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
@@ -270,21 +316,11 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
 
         fetchTransactionDetailsFromSharedPreferences()
         fetchEmiDetails()
+        binding.loadingRelativeLayout.viewTreeObserver.addOnGlobalLayoutListener {
+            emiViewModel.updateAddCardVisibility(!binding.loadingRelativeLayout.isVisible)
+        }
 
         return binding.root
-    }
-
-    fun failurePaymentFunction() {
-
-        // Start a coroutine with a delay of 5 seconds
-        CoroutineScope(Dispatchers.Main).launch {
-            delay(1000) // Delay for 1 seconds
-
-            // Code inside this block will execute after the delay
-            // Code inside this block will execute after the delay
-            val bottomSheet = PaymentFailureScreen()
-            bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
-        }
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
@@ -315,55 +351,69 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
 
                 // Filter payment methods based on type equal to "Wallet"
                 for (i in 0 until paymentMethodsArray.length()) {
-                    val paymentMethod = paymentMethodsArray.getJSONObject(i)
-                    if (paymentMethod.getString("type") == "Emi") {
-                        val emiCardName = if (paymentMethod.getString("title")
-                                .contains("credit", true)
-                        ) "Credit Card" else if (paymentMethod.getString("title")
-                                .contains("debit", true)
-                        ) "Debit Card" else "Others"
-                        var emiBankImage = paymentMethod.getString("logoUrl")
-                        if (emiBankImage.startsWith("/assets")) {
-                            emiBankImage =
-                                "https://checkout.boxpay.in" + paymentMethod.getString("logoUrl")
+                    try {
+                        val paymentMethod = paymentMethodsArray.getJSONObject(i)
+                        if (paymentMethod.getString("type") == "Emi") {
+                            val emiCardName = if (paymentMethod.getString("title")
+                                    .contains("credit", true)
+                            ) "Credit Card" else if (paymentMethod.getString("title")
+                                    .contains("debit", true)
+                            ) "Debit Card" else "Others"
+                            var emiBankImage = paymentMethod.getString("logoUrl")
+                            if (emiBankImage.startsWith("/assets")) {
+                                emiBankImage =
+                                    "https://checkout.boxpay.in" + paymentMethod.getString("logoUrl")
+                            }
+                            val bankName =
+                                if (emiCardName.equals(
+                                        "others",
+                                        true
+                                    )
+                                ) paymentMethod.getJSONObject("emiMethod")
+                                    .getString("cardlessEmiProviderTitle") else paymentMethod.getJSONObject(
+                                    "emiMethod"
+                                ).getString("issuerTitle")
+                            val bankInterestRate =
+                                if (emiCardName.equals(
+                                        "others",
+                                        true
+                                    )
+                                ) 0 else paymentMethod.getJSONObject("emiMethod")
+                                    .getInt("interestRate")
+                            val emiMethod = paymentMethod.getJSONObject("emiMethod")
+                            var noApplicableOffer = false
+                            if (emiMethod.has("applicableOffer")) {
+                                val applicableOffer = emiMethod.getJSONObject("applicableOffer")
+                                val discount = applicableOffer.getJSONObject("discount")
+                                noApplicableOffer = discount.getString("type").equals(
+                                    "NoCostEmi", true
+                                ) // Retrieve the discount type
+                            }
+                            val bank = Bank(
+                                iconUrl = emiBankImage,
+                                name = bankName,
+                                percent = "@$bankInterestRate% p.a.",
+                                noCostApplied = noApplicableOffer,
+                                emiList = emptyList()
+                            )
+                            val emi = Emi(
+                                duration = emiMethod.getInt("duration"),
+                                percent = emiMethod.getInt("interestRate"),
+                                amount = emiMethod.getString("emiAmountLocaleFull"),
+                                totalAmount = emiMethod.getString("totalAmountLocaleFull"),
+                                discount = null,
+                                interestCharged = emiMethod.getString("interestChargedAmountLocaleFull"),
+                                noCostApplied = noApplicableOffer,
+                                processingFee = if (emiMethod.optJSONObject("processingFee") == null) "0" else emiMethod.getJSONObject(
+                                    "processingFee"
+                                ).getString("amountLocale") ?: ""
+                            )
+                            addBankDetails(cardType = emiCardName, bank = bank, emi = emi)
                         }
-                        val bankName =
-                            if (emiCardName.equals(
-                                    "others",
-                                    true
-                                )
-                            ) paymentMethod.getJSONObject("emiMethod")
-                                .getString("cardlessEmiProviderTitle") else paymentMethod.getJSONObject(
-                                "emiMethod"
-                            ).getString("issuerTitle")
-                        val bankInterestRate =
-                            if (emiCardName.equals(
-                                    "others",
-                                    true
-                                )
-                            ) 0 else paymentMethod.getJSONObject("emiMethod").getInt("interestRate")
-                        val bank = Bank(
-                            iconUrl = emiBankImage,
-                            name = bankName,
-                            percent = "@$bankInterestRate%p.a",
-                            noCostApplied = false,
-                            emiList = emptyList()
-                        )
-                        val emiMethod = paymentMethod.getJSONObject("emiMethod")
-                        val emi = Emi(
-                            duration = emiMethod.getInt("duration"),
-                            percent = emiMethod.getInt("interestRate"),
-                            amount = emiMethod.getString("emiAmountLocale"),
-                            totalAmount = emiMethod.getString("totalAmountLocale"),
-                            discount = null,
-                            interestCharged = emiMethod.getString("interestChargedAmountLocale"),
-                            noCostApplied = false,
-                            processingFee = emiMethod.getJSONObject("processingFee")
-                                .getString("amountLocale")
-                        )
-                        addBankDetails(cardType = emiCardName, bank = bank, emi = emi)
+                        hideLoader()
+                    } catch (e: Exception) {
+                        println("Exception at index $i: ${e.message}")
                     }
-                    hideLoader()
                 }
             } catch (_: Exception) {
 
@@ -387,8 +437,11 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     }
 
     companion object {
-        fun newInstance(): EmiBottomSheet {
+        fun newInstance(
+            shippingEnabled: Boolean
+        ): EmiBottomSheet {
             val fragment = EmiBottomSheet()
+            fragment.shippingEnabled = shippingEnabled
             return fragment
         }
     }
@@ -398,5 +451,363 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         // Handle the back button press here
         // Dismiss the dialog when the back button is pressed
         dismissAndMakeButtonsOfMainBottomSheetEnabled()
+    }
+
+    fun postRequest(context: Context) {
+        showLoadingState()
+        val requestQueue = Volley.newRequestQueue(context)
+        val cardNumber = emiViewModel.cardNumber.value.text.filter { it.isDigit() }
+        val expiry = emiViewModel.addDashInsteadOfSlash(emiViewModel.expiry.value.text)
+
+
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+
+            // Create the browserData JSON object
+            val browserData = JSONObject().apply {
+                // Get the default User-Agent string
+                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+
+                // Get the screen height and width
+                val displayMetrics = resources.displayMetrics
+                put("screenHeight", displayMetrics.heightPixels.toString())
+                put("screenWidth", displayMetrics.widthPixels.toString())
+                put("acceptHeader", "application/json")
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", Locale.getDefault().toString())
+                put("ipAddress", sharedPreferences.getString("ipAddress", "null"))
+                put("colorDepth", 24) // Example value
+                put("javaEnabled", true) // Example value
+                put("timeZoneOffSet", 330) // Example value
+                put("packageId", requireActivity().packageName)
+            }
+            put("browserData", browserData)
+
+            val instrumentDetailsObject = JSONObject().apply {
+                put(
+                    "type",
+                    if (emiViewModel.selectedCard.value.contains(
+                            "credit",
+                            true
+                        )
+                    ) "emi/cc" else "emi/dc"
+                )
+
+                val cardObject = JSONObject().apply {
+                    put("number", cardNumber)
+                    put("expiry", expiry)
+                    put("cvc", emiViewModel.cvv.value)
+                    put("holderName", emiViewModel.cardName.value)
+
+                    // Replace with the actual shopper VPA value
+                }
+                put("card", cardObject)
+                val emiObject = JSONObject().apply {
+                    put("duration", emiViewModel.selectedEmi.value.first)
+                }
+                put("emi", emiObject)
+            }
+            put("instrumentDetails", instrumentDetailsObject)
+
+            val shopperObject = JSONObject().apply {
+                put("email", sharedPreferences.getString("email", null))
+                put("firstName", sharedPreferences.getString("firstName", null))
+
+                put("gender", sharedPreferences.getString("gender", null))
+                put("lastName", sharedPreferences.getString("lastName", null))
+                put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+                put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
+                } else {
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }
+
+                if (sharedPreferences.getString("panNumberChosen", null) != null) {
+                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
+                } else {
+                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                }
+
+                if (shippingEnabled) {
+                    val deliveryAddressObject = JSONObject().apply {
+
+                        put("address1", sharedPreferences.getString("address1", null))
+                        put("address2", sharedPreferences.getString("address2", null))
+                        put("city", sharedPreferences.getString("city", null))
+                        put("countryCode", sharedPreferences.getString("countryCode", null))
+                        put("postalCode", sharedPreferences.getString("postalCode", null))
+                        put("state", sharedPreferences.getString("state", null))
+                        put("city", sharedPreferences.getString("city", null))
+                        put("email", sharedPreferences.getString("email", null))
+                        put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
+                        put("countryName", sharedPreferences.getString("countryName", null))
+
+                    }
+                    put("deliveryAddress", deliveryAddressObject)
+                }
+            }
+            put("shopper", shopperObject)
+
+            val deviceDetails = JSONObject().apply {
+                put("browser", Build.BRAND)
+                put("platformVersion", Build.VERSION.RELEASE)
+                put("deviceType", Build.MANUFACTURER)
+                put("deviceName", Build.MANUFACTURER)
+                put("deviceBrandName", Build.MODEL)
+            }
+            put("deviceDetails", deviceDetails)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, Base_Session_API_URL + token, requestBody,
+            Response.Listener { response ->
+                // Handle response
+                try {
+                    hideLoader()
+                    val status = response.getJSONObject("status").getString("status")
+                    val reasonCode = response.getJSONObject("status").getString("reasonCode")
+                    val reason = response.getJSONObject("status").getString("reason")
+                    transactionId = response.getString("transactionId").toString()
+                    updateTransactionIDInSharedPreferences(transactionId!!)
+
+                    var url = ""
+
+                    if (status.contains("Rejected", ignoreCase = true)) {
+                        var cleanedMessage = reason.substringAfter(":")
+                        if (!reasonCode.startsWith("uf", true)) {
+                            cleanedMessage =
+                                "Please retry using other payment method or try again in sometime"
+                        }
+                        PaymentFailureScreen(errorMessage = cleanedMessage).show(
+                            parentFragmentManager,
+                            "FailureScreen"
+                        )
+                    } else {
+                        val type =
+                            response.getJSONArray("actions").getJSONObject(0).getString("type")
+                        if (status.contains("RequiresAction", ignoreCase = true)) {
+                            editor.putString("status", "RequiresAction")
+                        }
+                        if (type.contains("html", true)) {
+                            url = response
+                                .getJSONArray("actions")
+                                .getJSONObject(0)
+                                .getString("htmlPageString")
+                        } else {
+                            url = response
+                                .getJSONArray("actions")
+                                .getJSONObject(0)
+                                .getString("url")
+                        }
+
+                        if (status.contains("Approved", ignoreCase = true)) {
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        } else {
+                            showLoadingState()
+                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                            intent.putExtra("url", url)
+                            intent.putExtra("type", type)
+                            startFunctionCalls()
+                            startActivity(intent)
+                        }
+                    }
+                    editor.apply()
+                } catch (e: JSONException) {
+                    hideLoader()
+                }
+
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                hideLoader()
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    val errorMessage = extractMessageFromErrorResponse(errorResponse)
+                    println("======errormessage $errorMessage")
+
+                    if (errorMessage?.contains("expired", true) == true) {
+                        val callback = SingletonClass.getInstance().getYourObject()
+                        val callbackForDismissing =
+                            SingletonForDismissMainSheet.getInstance().getYourObject()
+                        if (callback != null) {
+                            callback.onPaymentResult(
+                                PaymentResultObject(
+                                    "Expired",
+                                    transactionId ?: "",
+                                    transactionId ?: ""
+                                )
+                            )
+                        }
+                        if (callbackForDismissing != null) {
+                            callbackForDismissing.dismissFunction()
+                        }
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    } else {
+                        PaymentFailureScreen(
+                            errorMessage = "Please retry using other payment method or try again in sometime"
+                        ).show(parentFragmentManager, "FailureScreen")
+                    }
+                }
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
+                return headers
+            }
+        }.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
+        editor.putString("transactionId", transactionIdArg)
+        editor.putString("operationId", transactionIdArg)
+        editor.apply()
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
+    }
+
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+        }
+        return null
+    }
+
+    fun makeCardNetworkIdentificationCall(
+        context: Context, cardNumber: String
+    ) {
+        val queue = Volley.newRequestQueue(context)
+        val url = Base_Session_API_URL + "${token}/bank-identification-numbers/${cardNumber}"
+        val jsonData = JSONObject()
+        val request = object : JsonObjectRequest(Method.POST, url, jsonData, { response ->
+            try {
+                val currBrand = response.getJSONObject("paymentMethod").getString("brand")
+                val methodEnabled = response.getBoolean("methodEnabled")
+                emiViewModel.cardIcon.value = emiViewModel.getImageDrawableForItem(currBrand)
+                emiViewModel.isAmexCard.value = currBrand.equals("AmericanExpress", true)
+            } catch (_: Exception) {
+
+            }
+        }, Response.ErrorListener { _ ->
+
+        }) {}
+        queue.add(request)
+    }
+    private fun fetchStatusAndReason(url: String) {
+
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.GET, url, null,
+            Response.Listener { response ->
+                try {
+                    val status = response.getString("status")
+                    val transactionId = response.getString("transactionId").toString()
+
+                    if (status.contains(
+                            "Approved",
+                            ignoreCase = true
+                        ) || status.contains("PAID", ignoreCase = true)
+                    ) {
+
+                        editor.putString("status", "Success")
+                        editor.putString("amount", response.getString("amount").toString())
+                        editor.putString("transactionId", transactionId)
+                        editor.apply()
+
+                        if (isAdded && isResumed && !isStateSaved) {
+                            hideLoader()
+                            val callback = SingletonClass.getInstance().getYourObject()
+                            val callbackForDismissing =
+                                SingletonForDismissMainSheet.getInstance().getYourObject()
+                            job?.cancel()
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            if (callback != null) {
+                                callback.onPaymentResult(
+                                    PaymentResultObject(
+                                        "Success",
+                                        transactionId,
+                                        transactionId
+                                    )
+                                )
+                            }
+                            if (callbackForDismissing != null) {
+                                callbackForDismissing.dismissFunction()
+                            }
+                        }
+
+                    } else if (status.contains("RequiresAction", ignoreCase = true)) {
+                        editor.putString("status", "RequiresAction")
+                        editor.apply()
+                    } else if (status.contains("Processing", ignoreCase = true)) {
+                        editor.putString("status", "Posted")
+                        editor.apply()
+                    } else if (status.contains("FAILED", ignoreCase = true)) {
+
+                        editor.putString("status", "Failed")
+                        editor.apply()
+
+                        if (isAdded && isResumed && !isStateSaved) {
+                            hideLoader()
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    }
+
+                } catch (e: JSONException) {
+
+                }
+            },
+            Response.ErrorListener {
+                // no op
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                return headers
+            }
+        }
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    private fun startFunctionCalls() {
+        job = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                delay(3000)
+                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+            }
+        }
     }
 }
