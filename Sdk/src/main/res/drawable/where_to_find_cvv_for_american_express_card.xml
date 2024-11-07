@@ -33,29 +33,19 @@
       android:fillColor="#ffffff"/>
   <path
       android:pathData="M24.79,27.95L6.59,28.03L6.61,32.38L24.81,32.31L24.79,27.95Z"
-      android:strokeAlpha="0.8"
-      android:fillColor="#000000"
-      android:fillAlpha="0.8"/>
+      android:fillColor="#A5A7AC"/>
   <path
       android:pathData="M45.79,27.95L27.59,28.03L27.61,32.38L45.81,32.31L45.79,27.95Z"
-      android:strokeAlpha="0.8"
-      android:fillColor="#000000"
-      android:fillAlpha="0.8"/>
+      android:fillColor="#A5A7AC"/>
   <path
       android:pathData="M66.79,27.95L48.59,28.03L48.61,32.38L66.81,32.31L66.79,27.95Z"
-      android:strokeAlpha="0.8"
-      android:fillColor="#000000"
-      android:fillAlpha="0.8"/>
+      android:fillColor="#A5A7AC"/>
   <path
       android:pathData="M87.79,27.95L69.59,28.03L69.61,32.38L87.81,32.31L87.79,27.95Z"
-      android:strokeAlpha="0.8"
-      android:fillColor="#000000"
-      android:fillAlpha="0.8"/>
+      android:fillColor="#A5A7AC"/>
   <path
       android:pathData="M87.75,37.99L76.55,38.03L76.6,49.23L87.8,49.18L87.75,37.99Z"
-      android:strokeAlpha="0.2"
-      android:fillColor="#000000"
-      android:fillAlpha="0.2"/>
+      android:fillColor="#A5A7AC"/>
   <path
       android:pathData="M101.94,17.76C101.56,18.14 101.35,18.66 101.35,19.2C101.35,19.74 101.56,20.25 101.94,20.63L109.6,28.3C109.99,28.68 110.5,28.89 111.04,28.89C111.58,28.89 112.1,28.68 112.48,28.3C112.86,27.91 113.07,27.4 113.07,26.86C113.07,26.32 112.86,25.8 112.48,25.42L108.29,21.23H123.9C124.44,21.23 124.96,21.01 125.34,20.63C125.72,20.25 125.94,19.74 125.94,19.2C125.94,18.66 125.72,18.14 125.34,17.76C124.96,17.38 124.44,17.17 123.9,17.17H108.29L112.48,12.97C112.67,12.78 112.82,12.56 112.92,12.31C113.02,12.07 113.07,11.8 113.07,11.54C113.07,11.27 113.02,11.01 112.92,10.76C112.82,10.51 112.67,10.29 112.48,10.1C112.29,9.91 112.07,9.76 111.82,9.66C111.57,9.56 111.31,9.5 111.04,9.5C110.77,9.5 110.51,9.56 110.26,9.66C110.02,9.76 109.79,9.91 109.6,10.1L101.94,17.76Z"
       android:fillColor="#C6C9D0"/>
