@@ -110,38 +110,29 @@ class Check : AppCompatActivity() {
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "1000",
+    "amount" : "1223",
     "currencyCode" : "USD"
   },
   "descriptor" : {
     "line1" : "Some descriptor"
   },
-  "shopper": {
-            "firstName": "Ankush",
-            "lastName": "Kashyap",
-            "gender": null,
-            "phoneNumber": "917777777777",
-            "email": "ankush.kashyap@boxpay.tech",
-            "uniqueReference": "x123y",
-            "deliveryAddress": {
-                "address1": "first line",
-                "address2": "second line",
-                "address3": null,
-                "city": "Chandigarh",
-                "state": "Chandigarh",
-                "countryCode": "IN",
-                "postalCode": "160002",
-                "shopperRef": null,
-                "addressRef": null,
-                "labelType": "Other",
-                "labelName": null,
-                "name": null,
-                "email": null,
-                "phoneNumber": null
-            },
-            "dateOfBirth": "2023-07-17T12:34:56Z",
-            "panNumber": "CTGPA2222D"
-        },
+  "shopper" : {
+    "firstName" : "Ankush",
+    "lastName" : "Kashyap",
+    "email" : "ankush.kashyap@boxpay.tech",
+    "uniqueReference" : "x123y",
+    "phoneNumber" : "917986361129",
+    "deliveryAddress" : {
+      "address1" : "first line",
+      "address2" : "second line",
+      "city" : "Chandigarh",
+      "state" : "Chandigarh",
+      "countryCode" : "IN",
+      "postalCode" : "160002"  
+    },
+    "dateOfBirth": "2023-07-17T12:34:56Z",
+    "panNumber": "CTGPA0009K"
+  },
   "order" : {
     "originalAmount" : 423.73,
     "shippingAmount" : 50,
