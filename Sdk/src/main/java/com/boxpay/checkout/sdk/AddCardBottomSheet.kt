@@ -31,6 +31,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -78,6 +79,11 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.text.NumberFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 import kotlin.random.Random
@@ -180,18 +186,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                                 dccResponseUniversal = dccResponse
                             } else {
                                 binding.flLoaderAndDcc.visibility = View.GONE
-                                PaymentFailureScreen(
-                                    errorMessage = "Please retry using other payment method or try again in sometime"
-                                ).show(parentFragmentManager, "FailureScreen")
                             }
                         }
                 }
 
             } catch (e: Exception) {
                 binding.flLoaderAndDcc.visibility = View.GONE
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
             }
         }, Response.ErrorListener { _ ->
 
@@ -279,6 +279,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n", "SourceLockedOrientationActivity")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -542,12 +543,21 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         }
                     }
                 }
-                if(s.toString().length < 19){
+                if(s.toString().isEmpty()){
                     isCardNumberValid = false
                     proceedButtonIsEnabled.value = false
                     if(!isFirstTimeFillingCardNumber){
                         binding.ll1InvalidCardNumber.visibility = View.VISIBLE
                     }
+                    binding.textView4.text = "Required"
+                    disableProceedButton()
+                }else if(s.toString().length < 19){
+                    isCardNumberValid = false
+                    proceedButtonIsEnabled.value = false
+                    if(!isFirstTimeFillingCardNumber){
+                        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                    }
+                    binding.textView4.text = "Invalid Card Number"
                     disableProceedButton()
                 }else{
                     isCardNumberValid = true
@@ -1303,6 +1313,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context) {
         job?.cancel()
         val requestQueue = Volley.newRequestQueue(context)
@@ -1354,10 +1365,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null){
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
                 }else{
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                    put("dateOfBirth", formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null){
@@ -1515,6 +1526,22 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun formatToISO8601WithCurrentTime(dateString: String): String {
+        // Check if dateString is already in ISO 8601 format with "Z" suffix
+        val iso8601Pattern = Regex("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z")
+        if (iso8601Pattern.matches(dateString)) {
+            return dateString
+        }
+
+        val date = LocalDate.parse(dateString)
+        val dateTime = LocalDateTime.of(date, LocalDateTime.now().toLocalTime())
+        // Convert LocalDateTime to ZonedDateTime in UTC
+        val zonedDateTime = dateTime.atZone(ZoneOffset.UTC)
+        // Format to ISO 8601 with Z suffix
+        return zonedDateTime.format(DateTimeFormatter.ISO_INSTANT)
     }
 
     private fun handleDccEvents() {

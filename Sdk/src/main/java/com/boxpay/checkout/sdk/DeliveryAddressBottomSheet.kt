@@ -199,16 +199,19 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                             } else {
                                 binding.panErrorText.text = "Invalid PAN Number"
                                 binding.panErrorText.visibility = View.VISIBLE
+                                isPANFilled = false
                                 disableProceedButton()
                             }
                         } else {
                             binding.panErrorText.text = "PAN must be 10 characters"
                             binding.panErrorText.visibility = View.VISIBLE
+                            isPANFilled = false
                             disableProceedButton()
                         }
                     }else{
                         binding.panErrorText.text = "Required"
                         binding.panErrorText.visibility = View.VISIBLE
+                        isPANFilled = false
                         disableProceedButton()
                     }
                 }

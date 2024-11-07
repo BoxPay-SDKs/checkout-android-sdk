@@ -13,6 +13,7 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -661,6 +662,11 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                                     )
                                 // Set background for the clicked constraint layout
                                 relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                                val primaryButtonColorString = sharedPreferences.getString("primaryButtonColor", "#000000") ?: "#000000"
+                                val strokeColor = Color.parseColor(primaryButtonColorString)
+
+                                val shapeDrawable = relativeLayout.background as? GradientDrawable
+                                shapeDrawable?.setStroke(2, strokeColor)
                                 popularBanksSelected = true
                                 proceedButtonIsEnabled.value = true
                                 popularBanksSelectedIndex = index

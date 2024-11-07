@@ -136,7 +136,7 @@
                             <androidx.recyclerview.widget.RecyclerView
                                 android:id="@+id/walletsRecyclerView"
                                 android:layout_width="match_parent"
-                                android:layout_height="500dp"
+                                android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:visibility="gone"
                                 app:layout_constraintEnd_toEndOf="parent"
