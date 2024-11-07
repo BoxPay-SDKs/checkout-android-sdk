@@ -147,7 +147,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private lateinit var Base_Session_API_URL: String
     var queue: RequestQueue? = null
     private lateinit var countdownTimer: CountDownTimer
-    private lateinit var sessionTimer : CountDownTimer
+    private lateinit var sessionTimer: CountDownTimer
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     var isGpayReturned = false
@@ -2200,15 +2200,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         val fieldObject = enabledFields.getJSONObject(i)
                         if (fieldObject.optString("field", "UNKNOWN").contains("phone", true)) {
                             showPhone = true
-                            isPhoneEditable = fieldObject.optBoolean("editable", false) || showShipping
+                            isPhoneEditable =
+                                fieldObject.optBoolean("editable", false) || showShipping
                         }
                         if (fieldObject.optString("field", "UNKNOWN").contains("name", true)) {
                             showName = true
-                            isNameEditable = fieldObject.optBoolean("editable", false) || showShipping
+                            isNameEditable =
+                                fieldObject.optBoolean("editable", false) || showShipping
                         }
                         if (fieldObject.optString("field", "UNKNOWN").contains("email", true)) {
                             showEmail = true
-                            isEmailEditable = fieldObject.optBoolean("editable", false) || showShipping
+                            isEmailEditable =
+                                fieldObject.optBoolean("editable", false) || showShipping
                         }
                     }
                 } else {
@@ -2240,6 +2243,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val currencyCode = moneyObject.getString("currencyCode")
                 var currencySymbol = moneyObject.getString("currencySymbol")
+                val currencyCode = moneyObject.getString("currencyCode")
                 if (currencySymbol == "")
                     currencySymbol = "₹"
 
@@ -2249,6 +2253,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.apply()
 
                 transactionAmount = totalAmount
+                updateTransactionAmountInSharedPreferences(transactionAmount.toString(),currencyCode ?: "")
 
                 updateTransactionAmountInSharedPreferences(transactionAmount.toString(),currencyCode ?: "")
                 val itemsArray =
@@ -3616,7 +3621,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val currentTime = Date().time
             val timeDifference = endDate.time - currentTime
             if (timeDifference > 0) {
-                 sessionTimer = object : CountDownTimer(timeDifference, 1000) {
+                sessionTimer = object : CountDownTimer(timeDifference, 1000) {
 
                     override fun onTick(millisUntilFinished: Long) {
                         val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24

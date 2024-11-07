@@ -13,7 +13,8 @@
         <RelativeLayout
             android:id="@+id/loading_relative_layout"
             android:layout_width="match_parent"
-            android:layout_height="560dp">
+            android:layout_height="560dp"
+            android:visibility="gone">
 
             <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/boxPayLogoLottieAnimation"

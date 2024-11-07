@@ -87,7 +87,7 @@
                             android:fontFamily="@font/poppins"
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
-                            android:text="Name on card*"
+                            android:text="Name on card"
                             android:textColor="#2D2B32"
                             app:layout_constraintStart_toStartOf="@+id/linearLayout3"
                             app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
@@ -101,10 +101,9 @@
                             android:layout_marginStart="2dp"
                             android:layout_marginEnd="2dp"
                             android:gravity="center_vertical"
-                            android:hint="Please enter name on your card"
+                            android:hint="Enter name on the card"
                             android:inputType="text"
                             android:paddingStart="12dp"
-
                             android:paddingTop="8dp"
                             android:paddingBottom="8dp"
                             android:textColor="#000000"
@@ -138,7 +137,7 @@
                                 android:enabled="false"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical|left"
-                                android:text="Enter Name"
+                                android:text="Required"
                                 android:textColor="#B9232F"
                                 android:textSize="12sp" />
                         </LinearLayout>
@@ -381,7 +380,7 @@
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
-                                android:text="Validity*"
+                                android:text="Expiry"
                                 android:textColor="#2D2B32" />
 
                             <EditText
@@ -454,7 +453,7 @@
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
-                                android:text="CVV*"
+                                android:text="CVV"
                                 android:textColor="#2D2B32" />
 
                             <EditText
@@ -547,7 +546,7 @@
                             android:fontFamily="@font/poppins"
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
-                            android:text="Enter card number*"
+                            android:text="Card Number"
                             android:textColor="#2D2B32"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/textView2" />
@@ -583,7 +582,7 @@
                                     android:gravity="center_vertical"
                                     android:layout_marginStart="2dp"
                                     android:layout_marginEnd="2dp"
-                                    android:hint="XXXX XXXX XXXX XXXX"
+                                    android:hint="Enter card number"
                                     android:inputType="number"
                                     android:maxLength="19"
                                     android:paddingStart="12dp"
@@ -613,21 +612,8 @@
                                             android:id="@+id/cardNetwork1"
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
-                                            android:src="@drawable/ic_boxpay_mastercard" />
+                                            android:src="@drawable/default_card_icon" />
 
-                                        <ImageView
-                                            android:id="@+id/cardNetwork2"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_marginStart="2dp"
-                                            android:src="@drawable/ic_boxpay_visa" />
-
-                                        <ImageView
-                                            android:id="@+id/cardNetwork3"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_marginStart="2dp"
-                                            android:src="@drawable/ic_boxpay_discover" />
                                     </LinearLayout>
 
                                     <LinearLayout
