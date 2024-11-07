@@ -888,6 +888,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 recommendedCheckedPosition = checkedPositon
                 if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
                     binding.recommendedProceedButton.visibility = View.VISIBLE
+                    binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+                    binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "primaryButtonColor",
+                                "#000000"
+                            )
+                        )
+                    )
                 }
             }
         }
@@ -1450,8 +1459,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         }
                         if (recommendedInstrumentationList.isNotEmpty() && binding.upiLinearLayout.isVisible) {
                             binding.recommendedCardView.visibility = View.VISIBLE
-                            binding.recommendedLinearLayout.visibility = View.VISIBLE
+                            binding.recommendedProceedButtonRelativeLayout.visibility = View.VISIBLE
                             binding.recommendedProceedButton.visibility = View.VISIBLE
+                            binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+                            binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
+                                Color.parseColor(
+                                    sharedPreferences.getString(
+                                        "primaryButtonColor",
+                                        "#000000"
+                                    )
+                                )
+                            )
                             recommendedCheckedPosition = 0
                             showRecommendedOptions()
                         } else {
@@ -2202,7 +2220,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 productSummary?.let { parseAndRenderProductSummary(it) }
 
-                val currencyCode = moneyObject.getString("currencyCode")
                 var currencySymbol = moneyObject.getString("currencySymbol")
                 val currencyCode = moneyObject.getString("currencyCode")
                 if (currencySymbol == "")
