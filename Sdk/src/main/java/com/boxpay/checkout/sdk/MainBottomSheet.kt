@@ -1040,7 +1040,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("countryName", countryCode?.first)
                     editor.apply()
                 }
-                bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                val bottomSheet = DeliveryAddressBottomSheet.newInstance(
                     this,
                     false,
                     showName,
@@ -1069,7 +1069,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("phoneCode", countryCode?.second)
                     editor.apply()
                 }
-                bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                val bottomSheet = DeliveryAddressBottomSheet.newInstance(
                     this,
                     true,
                     showName,

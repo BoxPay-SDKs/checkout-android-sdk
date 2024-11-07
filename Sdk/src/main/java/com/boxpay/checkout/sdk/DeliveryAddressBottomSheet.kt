@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -77,6 +78,16 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isDOBEditable = true
     private var isDobSelected = false
     private var isPANFilled = false
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        if (binding.proceedButton.isEnabled) {
+            editor.putString("phoneNumber", "$countryCodePhoneNum${binding.mobileNumberEditText.text}")
+            editor.apply()
+        }
+        editor.putString("dateOfBirth", sharedPreferences.getString("dateOfBirth", "")).apply()
+    }
+
     private var minPhoneLength = 10
     private var convertedDate : String? = null
     val emailRegex =
