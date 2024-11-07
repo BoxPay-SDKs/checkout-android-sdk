@@ -101,26 +101,26 @@ class Check : AppCompatActivity() {
         val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
         val jsonData = JSONObject(
             """ {
-    "context": {
-        "countryCode": "IN",
-        "legalEntity": {
-            "code": "razorpay"
-        },
-        "orderId": "test12"
+  "context" : {
+    "countryCode" : "IN",
+    "legalEntity" : {
+      "code" : "razorpay"
     },
-    "paymentType": "S",
-    "money": {
-        "amount": "10000",
-        "currencyCode": "INR"
-    },
-    "descriptor": {
-        "line1": "Some descriptor"
-    },
-    "shopper": {
+    "orderId" : "test12"
+  },
+  "paymentType" : "S",
+  "money" : {
+    "amount" : "1000",
+    "currencyCode" : "INR"
+  },
+  "descriptor" : {
+    "line1" : "Some descriptor"
+  },
+  "shopper": {
             "firstName": "Ankush",
             "lastName": "Kashyap",
             "gender": null,
-            "phoneNumber": "917986361129",
+            "phoneNumber": "917777777777",
             "email": "ankush.kashyap@boxpay.tech",
             "uniqueReference": "x123y",
             "deliveryAddress": {
@@ -204,15 +204,14 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
+            Response.ErrorListener {
                 /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =
-                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
+                    "Bearer i8zuZD3mR9SYvT29z3p4DHRigXBcL5Cu5H2Lpl5M9w1LP7BVqj79YE09vhrskbXTbJjtZ5HsLFfivNjtdCZZZk"
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers

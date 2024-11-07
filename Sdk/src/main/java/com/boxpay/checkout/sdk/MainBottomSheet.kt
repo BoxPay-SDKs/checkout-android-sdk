@@ -22,7 +22,6 @@ import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
-import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -917,6 +916,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                         )
                     )
+                    binding.recommendedProceedButton.isEnabled = true
                 }
             }
         }
@@ -1508,6 +1508,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     )
                                 )
                             )
+                            binding.recommendedProceedButton.isEnabled = true
                             recommendedCheckedPosition = 0
                             showRecommendedOptions()
                         } else {
@@ -3219,16 +3220,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             )
         )
         binding.proceedtext.visibility = View.VISIBLE
-        binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-        binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
-            Color.parseColor(
-                sharedPreferences.getString(
-                    "primaryButtonColor",
-                    "#000000"
-                )
-            )
-        )
-        binding.recommendedProceedButton.isEnabled = true
     }
 
     private fun parseAndRenderProductSummary(jsonString: String) {
