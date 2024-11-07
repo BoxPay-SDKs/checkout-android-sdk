@@ -1367,13 +1367,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
                 if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else{
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
                     put("dateOfBirth", formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null){
                     put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                }else{
+                }else if (sharedPreferences.getString("panNumber", null) != null){
                     put("panNumber", sharedPreferences.getString("panNumber", null))
                 }
 
@@ -1540,8 +1540,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         val dateTime = LocalDateTime.of(date, LocalDateTime.now().toLocalTime())
         // Convert LocalDateTime to ZonedDateTime in UTC
         val zonedDateTime = dateTime.atZone(ZoneOffset.UTC)
-        // Format to ISO 8601 with Z suffix
-        return zonedDateTime.format(DateTimeFormatter.ISO_INSTANT)
+        // Format to ISO 8601 with seconds precision and Z suffix
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+        return zonedDateTime.format(formatter)
     }
 
     private fun handleDccEvents() {
