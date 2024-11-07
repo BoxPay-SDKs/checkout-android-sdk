@@ -13,7 +13,7 @@ interface ApiInterface {
     @POST(ApiUrls.DCC)
     fun getUserDCC(@Body dccRequest: DCCRequest, @Path("token") token: String): Call<DCCResponse>
 
-    @GET("v0/checkout/sessions/{token}")
+    @GET(ApiUrls.CREATE_SESSION)
     fun createCheckoutSession(
         @Path("token") token: String
     ): Call<SessionResponse>

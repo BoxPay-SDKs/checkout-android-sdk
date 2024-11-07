@@ -23,8 +23,11 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
+import com.microsoft.clarity.Clarity
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 
 internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
@@ -33,8 +36,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private var transactionID: String? = null
     private var amount: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
-    var savedDccResponse : DCCResponse? = null
-    var isDccEnabled : Boolean = false
+    private var savedDccResponse : DCCResponse? = null
+    private var isDccEnabled : Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         savedDccResponse = getDCCResponse(requireContext())
@@ -54,90 +57,90 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         fetchTransactionDetailsFromSharedPreferences()
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
-        binding.transactionAmountTextView.text = amount
-        binding.transactionIDTextView.text = transactionID
-        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
-        binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
-        binding.proceedButton.isEnabled = true
-        binding.proceedButtonRelativeLayout.setBackgroundColor(
-            Color.parseColor(
-                sharedPreferences.getString(
-                    "primaryButtonColor",
-                    "#000000"
+        binding.apply {
+            textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
+            transactionAmountTextView.text = amount
+            transactionIDTextView.text = transactionID
+            proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
+            transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
+            proceedButton.isEnabled = true
+            proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+            proceedButtonRelativeLayout.setBackgroundColor(
+                Color.parseColor(
+                    sharedPreferences.getString(
+                        "primaryButtonColor",
+                        "#000000"
+                    )
                 )
             )
-        )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+            textView6.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    android.R.color.white
+                )
             )
-        )
-        binding.tvMerchantSite.setTextColor(Color.parseColor(
-            sharedPreferences.getString("primaryButtonColor", "#000000")
-        ))
-        binding.tvMerchantSite.setOnClickListener(){
-            val callback =  SingletonClass.getInstance().getYourObject()
-            if(callback != null){
-                val transactionId = sharedPreferences.getString("transactionId","").toString()
-                val operationId = sharedPreferences.getString("operationId","").toString()
-                callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
-                val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
-                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
-                dismiss()
-            }
-        }
-        binding. proceedButton.setOnClickListener(){
-            val callback =  SingletonClass.getInstance().getYourObject()
-            if(callback != null){
-                val transactionId = sharedPreferences.getString("transactionId","").toString()
-                val operationId = sharedPreferences.getString("operationId","").toString()
-                callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
-                val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
-                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
-                dismiss()
-            }
-        }
-        if (isDccEnabled){
-            binding.tvCardType.text = savedDccResponse!!.brand
-            binding.tvCardHolderName.text = "AnkushTest"
-            binding.transTotalDCC.text = "Transaction Total " + savedDccResponse!!.baseMoney!!.currencyCode
-            binding.tvTransTotal.text =  savedDccResponse!!.baseMoney!!.currencyCode + " " +  savedDccResponse!!.baseMoney!!.amount
-            binding.tvExchangeRate.text = "1 " + savedDccResponse!!.baseMoney!!.currencyCode + " = " + savedDccResponse!!.dccQuotationDetails!!.fxRate + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
-            binding.tvTransCurrency.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
-            binding.transactionAmountTextView.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount
-            binding.tvPaymentSuccess.text = "Payment Successful\n" + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount
-            binding.tvCardHolderName.text = getDCCResponse(requireActivity(),"CARD_HOLDER_NAME")
-            binding.tvMerchantName.text = getDCCResponse(requireActivity(),"MERCHANT_NAME_SESSION")
-            binding.tvMerchantSite.paintFlags = binding.tvMerchantSite.paintFlags or Paint.UNDERLINE_TEXT_FLAG
-
-
-            if (savedDccResponse!!.brand.equals("VISA",true)){
-                binding.llMargin.visibility = View.VISIBLE
-                binding.tvMargin.text = savedDccResponse!!.dccQuotationDetails!!.marginPercent.toString() + "%"
-                binding.tvInfo.text = "I have been offered a choice of currencies and agree to pay in " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + ". This currency conversion service is provide by " + getDCCResponse(requireActivity(),"MERCHANT_NAME") +".\n" +
-                        "\n" +
-                        "Please print and retain for your records."
-            }
-        }else{
-            binding.apply {
-                llMerchantName.visibility = View.GONE
-                llCardType.visibility = View.GONE
-                llCardHolderName.visibility = View.GONE
-                llTransTotal.visibility = View.GONE
-                llExchangeRate.visibility = View.GONE
-                llTransCurrency.visibility = View.GONE
-                tvInfo.visibility = View.GONE
-                dottedLast.visibility = View.INVISIBLE
-                binding.proceedButton.visibility = View.VISIBLE
-                binding.llRedirectLink.visibility = View.INVISIBLE
-                val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
-                val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
-                if (amount.isNotEmpty() && currencyType.isNotEmpty()){
-                    transactionAmountTextView.text = "$currencyType $amount"
+            tvMerchantSite.setTextColor(Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            ))
+            tvMerchantSite.setOnClickListener(){
+                val callback =  SingletonClass.getInstance().getYourObject()
+                if(callback != null){
+                    val transactionId = sharedPreferences.getString("transactionId","").toString()
+                    val operationId = sharedPreferences.getString("operationId","").toString()
+                    callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
+                    val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                    mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                    dismiss()
                 }
+            }
+             proceedButton.setOnClickListener(){
+                val callback =  SingletonClass.getInstance().getYourObject()
+                if(callback != null){
+                    val transactionId = sharedPreferences.getString("transactionId","").toString()
+                    val operationId = sharedPreferences.getString("operationId","").toString()
+                    callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
+                    val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                    mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                    Clarity.pause()
+                    dismiss()
+                }
+            }
+            if (isDccEnabled){
+                tvCardType.text = savedDccResponse!!.brand
+                transTotalDCC.text = "Transaction Total " + savedDccResponse!!.baseMoney!!.currencyCode
+                tvTransTotal.text =  savedDccResponse!!.baseMoney!!.currencyCode + " " +  formatToINR(savedDccResponse!!.baseMoney!!.amount!!.toDouble())
+                tvExchangeRate.text = "1 " + savedDccResponse!!.baseMoney!!.currencyCode + " = " + formatToTwoDecimalPlaces(savedDccResponse!!.dccQuotationDetails!!.fxRate!!) + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
+                tvTransCurrency.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
+                transactionAmountTextView.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR(savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount!!.toDouble())
+                tvPaymentSuccess.text = "Payment Successful\n" + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR(savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount!!.toDouble())
+                tvCardHolderName.text = getDCCResponse(requireActivity(),"CARD_HOLDER_NAME")
+                tvMerchantName.text = getDCCResponse(requireActivity(),"MERCHANT_NAME_SESSION")
+                tvMerchantSite.paintFlags = tvMerchantSite.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+
+
+                if (savedDccResponse!!.brand.equals("VISA",true)){
+                    llMargin.visibility = View.VISIBLE
+                    tvMargin.text = savedDccResponse!!.dccQuotationDetails!!.marginPercent.toString() + "%"
+                    tvInfo.text = "I have been offered a choice of currencies and agree to pay in " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + ". This currency conversion service is provide by " + getDCCResponse(requireActivity(),"MERCHANT_NAME") +".\n" +
+                            "\n" +
+                            "Please print and retain for your records."
+                }
+                proceedButton.visibility = View.VISIBLE
+            }else{
+                    llMerchantName.visibility = View.GONE
+                    llCardType.visibility = View.GONE
+                    llCardHolderName.visibility = View.GONE
+                    llTransTotal.visibility = View.GONE
+                    llExchangeRate.visibility = View.GONE
+                    llTransCurrency.visibility = View.GONE
+                    tvInfo.visibility = View.GONE
+                    dottedLast.visibility = View.INVISIBLE
+                    proceedButton.visibility = View.VISIBLE
+                    val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
+                    val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
+                    if (amount.isNotEmpty() && currencyType.isNotEmpty()){
+                        transactionAmountTextView.text = "$currencyType $amount"
+                    }
             }
         }
         return binding.root
@@ -165,6 +168,15 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         } else {
             // Log an error or handle the case where the context is not an AppCompatActivity
         }
+    }
+
+    fun formatToINR(amount: Double): String {
+        val format = NumberFormat.getNumberInstance(Locale("en", "IN"))
+        return format.format(amount)
+    }
+
+    fun formatToTwoDecimalPlaces(value: Double): String {
+        return String.format("%.2f", value)
     }
 
     private fun getDCCResponse(context: Context): DCCResponse? {
@@ -196,7 +208,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
 
     private fun getCurrentDateAndTimeInFormattedString() : String{
         val currentDateTime = Date()
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
         return dateFormat.format(currentDateTime)
     }
 

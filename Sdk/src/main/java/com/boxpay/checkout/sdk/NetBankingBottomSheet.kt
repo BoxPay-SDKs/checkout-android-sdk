@@ -13,8 +13,10 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -231,12 +233,17 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             ArrayList(banksDetailsOriginal.sortedBy { it.bankBrand })
                     }
                 }
+                if (banksDetailsOriginal.size < 5){
+                    binding.searchView.visibility = View.GONE
+                }else{
+                    binding.searchView.visibility = View.VISIBLE
+                }
                 showAllBanks()
                 removeLoadingScreenState()
                 fetchAndUpdateApiInPopularBanks()
 
             } catch (e: Exception) {
-
+                Log.e("NetBankingSheet 245", "fetchBanksDetails: ", e)
             }
 
         }, { _ ->
@@ -655,6 +662,11 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                                     )
                                 // Set background for the clicked constraint layout
                                 relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                                val primaryButtonColorString = sharedPreferences.getString("primaryButtonColor", "#000000") ?: "#000000"
+                                val strokeColor = Color.parseColor(primaryButtonColorString)
+
+                                val shapeDrawable = relativeLayout.background as? GradientDrawable
+                                shapeDrawable?.setStroke(2, strokeColor)
                                 popularBanksSelected = true
                                 proceedButtonIsEnabled.value = true
                                 popularBanksSelectedIndex = index
@@ -980,12 +992,12 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private fun enableProceedButton() {
         binding.proceedButtonRelativeLayout.isEnabled = true
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
                 requireContext(),
@@ -1012,12 +1024,12 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
 

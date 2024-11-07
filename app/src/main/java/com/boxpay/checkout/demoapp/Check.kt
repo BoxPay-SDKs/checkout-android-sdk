@@ -98,16 +98,16 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context) {
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/oh3mnorsME/sessions"
         val jsonData = JSONObject(
             """ {
-    "context": {
-        "countryCode": "IN",
-        "legalEntity": {
-            "code": "razorpay"
-        },
-        "orderId": "test12"
+  "context" : {
+    "countryCode" : "US",
+    "legalEntity" : {
+      "code" : "dcc_usd"
     },
+    "orderId" : "test12"
+  },
     "paymentType": "S",
     "money": {
         "amount": "10000",
@@ -212,7 +212,7 @@ class Check : AppCompatActivity() {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =
-                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
+                    "Bearer i8zuZD3mR9SYvT29z3p4DHRigXBcL5Cu5H2Lpl5M9w1LP7BVqj79YE09vhrskbXTbJjtZ5HsLFfivNjtdCZZZk"
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers

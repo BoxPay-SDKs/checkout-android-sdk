@@ -22,6 +22,7 @@ import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
+import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -837,6 +838,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         if (::context.isInitialized) {
             val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
             Clarity.initialize(context, config)
+            Clarity.setCustomTag("token", token)
         }
 
         hidePriceBreakUp()
@@ -855,7 +857,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         )
         binding.recomendedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
-
         binding.orderSummaryConstraintLayout.setOnClickListener { // Toggle visibility of the price break-up card
             if (!binding.loadingRelativeLayout.isVisible) {
                 if (!priceBreakUpVisible) {
@@ -1058,8 +1059,22 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("phoneCode", countryCode?.second)
                     editor.apply()
                 }
-                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
-            }
+                bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                    this,
+                    true,
+                    showName,
+                    showPhone,
+                    showEmail,
+                    showPAN,
+                    showDOB,
+                    showShipping,
+                    isNameEditable,
+                    isPhoneEditable,
+                    isEmailEditable,
+                    isPANEditable,
+                    isDOBEditable
+                )
+                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")            }
         }
 
         return binding.root
@@ -2088,7 +2103,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!paymentDetailsObject.isNull("order")) {
                     orderObject = paymentDetailsObject.getJSONObject("order")
                 }
-
+                if (orderObject == null){
+                    binding.textView9.visibility = View.GONE
+                    binding.numberOfItems.visibility = View.GONE
+                    binding.unopenedTotalValue.visibility = View.GONE
+                }else{
+                    binding.textView9.visibility = View.VISIBLE
+                    binding.numberOfItems.visibility = View.VISIBLE
+                    binding.unopenedTotalValue.visibility = View.VISIBLE
+                }
                 val subscriptionDetails = paymentDetailsObject.optJSONObject("subscriptionDetails")
                 val toShowSubscription =
                     subscriptionDetails != null && subscriptionDetails.optJSONObject("billingCycle")
@@ -2154,11 +2177,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 } else {
                 }
-                if (showShipping) {
-                    binding.textView6.text = "Continue to Add New Address"
-                } else {
-                    binding.textView6.text = "Continue to Add Personal Details"
-                }
 
                 if (showEmail || showShipping || showPhone || showName) {
                     binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
@@ -2184,6 +2202,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 productSummary?.let { parseAndRenderProductSummary(it) }
 
+                val currencyCode = moneyObject.getString("currencyCode")
                 var currencySymbol = moneyObject.getString("currencySymbol")
                 val currencyCode = moneyObject.getString("currencyCode")
                 if (currencySymbol == "")
@@ -2197,7 +2216,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 transactionAmount = totalAmount
                 updateTransactionAmountInSharedPreferences(transactionAmount.toString(),currencyCode ?: "")
 
-
+                updateTransactionAmountInSharedPreferences(transactionAmount.toString(),currencyCode ?: "")
                 val itemsArray =
                     if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
 
@@ -2265,6 +2284,28 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         NumberFormat.getNumberInstance(Locale.US).format(originalAmount.toDouble())
                     binding.subtotalTextView.text = "${currencySymbol}${doubleTypeOriginal}"
                     binding.subTotalRelativeLayout.visibility = View.VISIBLE
+                }
+
+                if (showShipping) {
+                    binding.textView6.text = "Continue to Add New Address"
+                    binding.proceedButtonRelativeLayout.setBackgroundColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "primaryButtonColor",
+                                "#000000"
+                            )
+                        )
+                    )
+                } else {
+                    binding.textView6.text = "Continue to Add Personal Details"
+                    binding.proceedButtonRelativeLayout.setBackgroundColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "primaryButtonColor",
+                                "#000000"
+                            )
+                        )
+                    )
                 }
 
                 if (taxes != null && taxes != "null" && taxes != "0") {
@@ -3122,6 +3163,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             )
         )
         binding.proceedtext.visibility = View.VISIBLE
+        binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -3130,7 +3172,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 )
             )
         )
-        binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.recommendedProceedButton.isEnabled = true
     }
 

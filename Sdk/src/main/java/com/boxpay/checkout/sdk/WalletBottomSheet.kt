@@ -4,6 +4,7 @@ import FailureScreenSharedViewModel
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -13,6 +14,7 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
@@ -211,6 +213,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         return constraintLayout
     }
 
+    @SuppressLint("ResourceType")
     private fun fetchAndUpdateApiInPopularWallets() {
         binding.apply {
             for (index in 0 until 4) {
@@ -261,6 +264,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                                     )
                                 // Set background for the clicked constraint layout
                                 relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                                val primaryButtonColorString = sharedPreferences.getString("primaryButtonColor", "#000000") ?: "#000000"
+                                val strokeColor = Color.parseColor(primaryButtonColorString)
+
+                                val shapeDrawable = relativeLayout.background as? GradientDrawable
+                                shapeDrawable?.setStroke(2, strokeColor)
                                 popularWalletsSelected = true
                                 proceedButtonIsEnabled.value = true
                                 popularWalletsSelectedIndex = index
@@ -659,6 +667,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 walletDetailsOriginal = ArrayList(walletDetailsOriginal.sortedBy { it.walletBrand })
 
                 // Print the filtered wallet payment methods
+                if (walletDetailsOriginal.size < 5){
+                    binding.searchView.visibility = View.GONE
+                }else{
+                    binding.searchView.visibility = View.VISIBLE
+                }
                 showAllWallets()
                 fetchAndUpdateApiInPopularWallets()
                 removeLoadingScreenState()
@@ -1025,6 +1038,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -1033,7 +1047,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
                 requireContext(),
@@ -1061,6 +1074,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             )
         )
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -1069,7 +1083,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButton.isEnabled = true
     }
 

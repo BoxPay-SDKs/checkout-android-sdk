@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
@@ -20,7 +21,10 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Filter
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
@@ -33,10 +37,13 @@ import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.datepicker.MaterialDatePicker
 import org.json.JSONObject
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Calendar
@@ -105,7 +112,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         token = sharedPreferences.getString("token", "empty")
         Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
 
-        val indexCountryPhone = sharedPreferences.getString("phoneCode", "+91")
+        var indexCountryPhone = sharedPreferences.getString("phoneCode", "+91")
 
 
         binding.countryEditText.addTextChangedListener(object : TextWatcher {
@@ -192,16 +199,19 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                             } else {
                                 binding.panErrorText.text = "Invalid PAN Number"
                                 binding.panErrorText.visibility = View.VISIBLE
+                                isPANFilled = false
                                 disableProceedButton()
                             }
                         } else {
                             binding.panErrorText.text = "PAN must be 10 characters"
                             binding.panErrorText.visibility = View.VISIBLE
+                            isPANFilled = false
                             disableProceedButton()
                         }
                     }else{
                         binding.panErrorText.text = "Required"
                         binding.panErrorText.visibility = View.VISIBLE
+                        isPANFilled = false
                         disableProceedButton()
                     }
                 }
@@ -317,7 +327,34 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         binding.backButton.visibility = View.VISIBLE
 
-        binding.spinnerDialCodes.setText(indexCountryPhone)
+        if(indexCountryPhone!!.isNotEmpty()){
+            binding.spinnerDialCodes.setText(indexCountryPhone)
+        }else{
+            indexCountryPhone = "+91"
+            binding.spinnerDialCodes.setText(indexCountryPhone)
+
+            countryCodePhoneNum = indexCountryPhone
+            indexCountryCodePhone = indexCountryPhone
+            phoneCodeSelected = true
+            countrySelectedFromDropDown =
+                setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
+            binding.countryEditText.setText(countrySelectedFromDropDown)
+            binding.stateEditText.isEnabled = true
+            phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone)
+            minPhoneLength = phoneLength.first
+            maxPhoneLength = phoneLength.second
+            if (countryCodePhoneNum.equals("+91", true)) {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
+            } else {
+                binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_TEXT
+            }
+            if (binding.postalCodeEditText.text.isNotEmpty()) {
+                isPostalValid()
+            }
+            if (isMobileNumberValid()) {
+                enableProceedButton()
+            }
+        }
         phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
         minPhoneLength = phoneLength.first
         maxPhoneLength = phoneLength.second
@@ -341,36 +378,38 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             binding.postalCodeEditText.setText(postalCode)
         }
 
-        if (name != null) {
+        if (name.isNotEmpty()) {
             binding.fullNameEditText.setText(name)
         }
         if (panNumber!!.isNotEmpty()) {
             binding.panEditText.setText(panNumber)
             isPANFilled = true
         }else{
-            binding.panErrorText.text = "Required"
-            binding.panErrorText.visibility = View.VISIBLE
             disableProceedButton()
         }
         if (isDOBEnabled && dateOfBirth!!.isNotEmpty()) {
             binding.dobEditText.setText(convertToMMDDYYYY(extractDateFromTimestamp(dateOfBirth)))
             isDobSelected = true
         }else{
-            binding.dobErrorText.text = "Required"
-            binding.dobErrorText.visibility = View.VISIBLE
             disableProceedButton()
         }
         if (email != null) {
             binding.emailEditText.setText(email)
         }
         if (phoneNumber != null) {
-            binding.mobileNumberEditText.setText(phoneNumber)
+            if (phoneNumber.isNotEmpty()){
+                binding.mobileNumberEditText.setText(phoneNumber)
+            }else{
+                binding.mobileErrorText.visibility = View.INVISIBLE
+            }
+        }
+        if (countryName!!.isNotEmpty()){
+            binding.countryEditText.setText(countryName)
+            countrySelectedFromDropDown = countryName
         }
         binding.fullNameEditText.isEnabled = isNameEditable
         binding.mobileNumberEditText.isEnabled = isPhoneEditable
         binding.emailEditText.isEnabled = isEmailEditable
-        binding.countryEditText.setText(countryName)
-        countrySelectedFromDropDown = countryName
         countryCodePhoneNum = indexCountryPhone ?: "+91"
         countrySelected = true
         disableProceedButton()
@@ -753,6 +792,13 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
         })
 
+        binding.panTextView.setOnClickListener(){
+            showBubbleMessage(binding.panTextView,"Enter Permanent Account Number issued \nby the Indian Government, Example: AAAPZ1234C")
+        }
+
+        binding.dobTextView.setOnClickListener(){
+            showBubbleMessage(binding.dobTextView,"For business transactions, please enter the \norganization's date of incorporation. For \npersonal transactions, enter the individual's \ndate of birth")
+        }
 
 
         binding.proceedButton.setOnClickListener() {
@@ -770,10 +816,10 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                PAN = binding.panEditText.text.toString()
             }
             if (binding.dobEditText.text.toString().isNotEmpty()){
-                if(convertedDate != null){
-                    DOB = convertedDate!!
+                DOB = if(convertedDate != null){
+                    convertedDate!!
                 }else{
-                    DOB = convertDateFormat(extractDateFromTimestamp(binding.dobEditText.text.toString()))!!
+                    convertDateFormat(extractDateFromTimestamp(binding.dobEditText.text.toString()))!!
                 }
             }
             val city = binding.cityEditText.text
@@ -829,6 +875,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -837,7 +884,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.textView6.setTextColor(
             ContextCompat.getColor(
                 requireContext(),
@@ -865,6 +911,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun showDatePickerDialog(editText: EditText) {
         // Get the current date to initialize the DatePickerDialog
@@ -874,7 +921,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
         // Show the DatePickerDialog
-        val datePickerDialog = DatePickerDialog(requireActivity(),
+        val datePickerDialog = DatePickerDialog(requireActivity(), R.style.CustomDatePickerTheme,
             { _, selectedYear, selectedMonth, selectedDay ->
                 // Format the selected date as mm-dd-yyyy
                 val formattedDate = formatDate(selectedYear, selectedMonth, selectedDay)
@@ -893,6 +940,26 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }, year, month, day)
         datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
         datePickerDialog.show()
+    }
+
+    private fun showBubbleMessage(anchorView: View, message: String) {
+        val inflater = LayoutInflater.from(anchorView.context)
+        val bubbleView = inflater.inflate(R.layout.tooltip_bubble, null)
+
+        val tooltipText = bubbleView.findViewById<TextView>(R.id.tooltipText)
+        tooltipText.text = message
+
+        val popupWindow = PopupWindow(
+            bubbleView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        popupWindow.isOutsideTouchable = true
+        popupWindow.isFocusable = true
+
+        // Show the popup below the anchor view (EditText)
+        popupWindow.showAsDropDown(anchorView, 0, 0)
     }
 
     private fun formatDate(year: Int, month: Int, day: Int): String {
@@ -947,13 +1014,10 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         // Input date formatter (MM-dd-yyyy)
         val inputFormatter = DateTimeFormatter.ofPattern("MM-dd-yyyy")
         val localDate = LocalDate.parse(date, inputFormatter)
-
-        // Create a LocalDateTime with the provided time
         val localDateTime = localDate.atTime(hour, minute, second)
 
         // ISO 8601 formatter (yyyy-MM-dd'T'HH:mm:ss'Z')
         val isoFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-
         // Format the LocalDateTime to ISO 8601 string
         return isoFormatter.format(localDateTime)
     }
@@ -1115,14 +1179,14 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    fun readJsonFromAssets(context: Context, fileName: String): String {
+    private fun readJsonFromAssets(context: Context, fileName: String): String {
         val assetManager = context.assets
         val inputStream = assetManager.open(fileName)
         val bufferedReader = inputStream.bufferedReader()
         return bufferedReader.use { it.readText() }
     }
 
-    fun loadCountryCodes(countryCodeJson: JSONObject): Array<String> {
+    private fun loadCountryCodes(countryCodeJson: JSONObject): Array<String> {
         val isdCodes = mutableSetOf<String>()
 
         // Iterate through each country and extract the isdCode
@@ -1138,7 +1202,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         return sorted.toTypedArray()
     }
 
-    fun loadCountryName(countryCodeJson: JSONObject): Array<String> {
+    private fun loadCountryName(countryCodeJson: JSONObject): Array<String> {
         val isdCodes = mutableSetOf<String>()
 
         // Iterate through each country and extract the isdCode
@@ -1155,7 +1219,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     }
 
 
-    fun findCountryCodeByIsdCode(countryCodeJson: JSONObject, isdCode: String): String? {
+    private fun findCountryCodeByIsdCode(countryCodeJson: JSONObject, isdCode: String): String? {
         countryCodeJson.keys().forEach { key ->
             val countryDetails = countryCodeJson.getJSONObject(key)
             val code = countryDetails.getString("fullName")
@@ -1169,7 +1233,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     }
 
 
-    fun setPhoneCodeUsingCountryName(countryCodeJson: JSONObject, countryName: String): String {
+    private fun setPhoneCodeUsingCountryName(countryCodeJson: JSONObject, countryName: String): String {
         countryCodeJson.keys().forEach { key ->
             val countryDetails = countryCodeJson.getJSONObject(key)
             val code = countryDetails.getString("fullName")
@@ -1180,7 +1244,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         return ""
     }
 
-    fun setCountryNameUsingPhoneCode(countryCodeJson: JSONObject, isdCode: String): String {
+    private fun setCountryNameUsingPhoneCode(countryCodeJson: JSONObject, isdCode: String): String {
         countryCodeJson.keys().forEach { key ->
             val countryDetails = countryCodeJson.getJSONObject(key)
             val code = countryDetails.getString("isdCode")
