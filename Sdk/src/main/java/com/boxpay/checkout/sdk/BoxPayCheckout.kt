@@ -103,7 +103,7 @@ class BoxPayCheckout(
             val fragmentManager = activity.supportFragmentManager
             // Now you can use fragmentManager
             val bottomSheet = MainBottomSheet()
-            bottomSheet.setContext(activity)
+            bottomSheet.setContext(activity.applicationContext)
             bottomSheet.show(fragmentManager, "MainBottomSheet")
         }
     }
