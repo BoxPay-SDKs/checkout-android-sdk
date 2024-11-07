@@ -20,10 +20,6 @@ class MainActivity : AppCompatActivity() {
         val sharedPrefs = getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE).edit()
         sharedPrefs.clear()
         sharedPrefs.apply()
-        val config = ClarityConfig("o4josf35jv")
-        Clarity.initialize(applicationContext, config)
-
-
         binding.openByDefault.setOnClickListener {
             //        var intent: Intent? = null
             try {
