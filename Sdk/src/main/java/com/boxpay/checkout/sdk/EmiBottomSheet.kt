@@ -35,6 +35,7 @@ import com.boxpay.checkout.sdk.composeScreens.model.Bank
 import com.boxpay.checkout.sdk.composeScreens.model.Emi
 import com.boxpay.checkout.sdk.composeScreens.screen.AddCardDetailsScreen
 import com.boxpay.checkout.sdk.composeScreens.screen.ChooseEmiScreen
+import com.boxpay.checkout.sdk.composeScreens.screen.EmiShimmerScreen
 import com.boxpay.checkout.sdk.composeScreens.screen.SelectTenureEmi
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
@@ -107,8 +108,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.isDraggable = false
             bottomSheetBehavior?.isHideable = false
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
-            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-
 
             dialog.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -119,6 +118,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                     false
                 }
             }
+
+            dialog.setCancelable(!binding.boxPayLogoLottieAnimation.isVisible)
 
             bottomSheetBehavior?.addBottomSheetCallback(object :
                 BottomSheetBehavior.BottomSheetCallback() {
@@ -212,7 +213,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             emiViewModel.emiBankList.collectLatest { emiBankList ->
                 binding.composeView.setContent {
                     if (emiViewModel.contentLoaded.value) {
-                        if (emiBankList.cards.isNotEmpty() && !emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
+                        if (!emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
+                            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
                             ChooseEmiScreen(
                                 cardList = emiBankList,
                                 filterList = if (emiViewModel.isFilterExisted.value) emiViewModel.filterList.value else emptyList(),
@@ -262,6 +264,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                             )
                         }
                         if (emiViewModel.addCardScreen.value) {
+                            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
                             AddCardDetailsScreen(
                                 iconUrl = emiViewModel.selectedBank.value?.iconUrl ?: "",
                                 name = emiViewModel.selectedBank.value?.name ?: "",
@@ -284,10 +287,10 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 },
                                 onCardNumberChange = {
                                     emiViewModel.onCardNumberChange(it)
-                                    if (emiViewModel.cardNumber.value.text.length >= 9) {
+                                    if ((emiViewModel.cardNumber.value?.text?.length ?: 0) >= 9) {
                                         makeCardNetworkIdentificationCall(
                                             context!!,
-                                            emiViewModel.cardNumber.value.text.filter { it.isDigit() })
+                                            emiViewModel.cardNumber.value!!.text.filter { it.isDigit() })
                                     }
                                 },
                                 onCardCvvChange = {
@@ -301,9 +304,14 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     "currencySymbol",
                                     "₹"
                                 ) ?: "",
-                                allDetailsValid = emiViewModel.isCardValid.value
+                                allDetailsValid = emiViewModel.isCardValid.value,
+                                isCardNumberEnabled = emiViewModel.isCardNumberEnabled.value,
+                                isAmexCard = emiViewModel.isAmexCard.value
                             )
                         }
+                    }
+                    if (emiViewModel.firstTimeLoaded.value) {
+                        EmiShimmerScreen()
                     }
                 }
             }
@@ -316,9 +324,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
 
         fetchTransactionDetailsFromSharedPreferences()
         fetchEmiDetails()
-        binding.loadingRelativeLayout.viewTreeObserver.addOnGlobalLayoutListener {
-            emiViewModel.updateAddCardVisibility(!binding.loadingRelativeLayout.isVisible)
-        }
 
         return binding.root
     }
@@ -332,11 +337,14 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun showLoadingState() {
-        binding.boxPayLogoLottieAnimation.apply {
-            playAnimation()
-            repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+        if (!emiViewModel.firstTimeLoaded.value) {
+            binding.boxPayLogoLottieAnimation.apply {
+                playAnimation()
+                repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+            }
+            binding.loadingRelativeLayout.visibility = View.VISIBLE
+            emiViewModel.updateAddCardVisibility(!binding.loadingRelativeLayout.isVisible)
         }
-        binding.loadingRelativeLayout.visibility = View.VISIBLE
     }
 
     private fun fetchEmiDetails() {
@@ -433,7 +441,11 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun hideLoader() {
+        if (emiViewModel.firstTimeLoaded.value) {
+            emiViewModel.firstTimeLoaded.value = false
+        }
         binding.loadingRelativeLayout.visibility = View.GONE
+        emiViewModel.updateAddCardVisibility(!binding.loadingRelativeLayout.isVisible)
     }
 
     companion object {
@@ -456,8 +468,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     fun postRequest(context: Context) {
         showLoadingState()
         val requestQueue = Volley.newRequestQueue(context)
-        val cardNumber = emiViewModel.cardNumber.value.text.filter { it.isDigit() }
-        val expiry = emiViewModel.addDashInsteadOfSlash(emiViewModel.expiry.value.text)
+        val cardNumber = emiViewModel.cardNumber.value!!.text.filter { it.isDigit() }
+        val expiry = emiViewModel.addDashInsteadOfSlash(emiViewModel.expiry.value!!.text)
 
 
         // Constructing the request body
@@ -711,6 +723,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             try {
                 val currBrand = response.getJSONObject("paymentMethod").getString("brand")
                 val methodEnabled = response.getBoolean("methodEnabled")
+                emiViewModel.isCardNumberEnabled.value = methodEnabled
                 emiViewModel.cardIcon.value = emiViewModel.getImageDrawableForItem(currBrand)
                 emiViewModel.isAmexCard.value = currBrand.equals("AmericanExpress", true)
             } catch (_: Exception) {
@@ -721,6 +734,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         }) {}
         queue.add(request)
     }
+
     private fun fetchStatusAndReason(url: String) {
 
         val jsonObjectRequest = object : JsonObjectRequest(

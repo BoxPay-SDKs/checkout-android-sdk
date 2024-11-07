@@ -144,7 +144,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private lateinit var Base_Session_API_URL: String
     var queue: RequestQueue? = null
     private lateinit var countdownTimer: CountDownTimer
-    private lateinit var sessionTimer : CountDownTimer
+    private lateinit var sessionTimer: CountDownTimer
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     var isGpayReturned = false
@@ -837,7 +837,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         if (::context.isInitialized) {
             val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
             Clarity.initialize(context, config)
-            Clarity.setCustomTag("token", token)
         }
 
         hidePriceBreakUp()
@@ -856,13 +855,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         )
         binding.recomendedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
-        var currencySymbol = sharedPreferences.getString("currencySymbol", "")
-        updateTransactionAmountInSharedPreferences(currencySymbol + transactionAmount.toString())
-        if (currencySymbol == "")
-            currencySymbol = "₹"
-
-
-        // Set click listeners
 
         binding.orderSummaryConstraintLayout.setOnClickListener { // Toggle visibility of the price break-up card
             if (!binding.loadingRelativeLayout.isVisible) {
@@ -2146,15 +2138,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         val fieldObject = enabledFields.getJSONObject(i)
                         if (fieldObject.optString("field", "UNKNOWN").contains("phone", true)) {
                             showPhone = true
-                            isPhoneEditable = fieldObject.optBoolean("editable", false) || showShipping
+                            isPhoneEditable =
+                                fieldObject.optBoolean("editable", false) || showShipping
                         }
                         if (fieldObject.optString("field", "UNKNOWN").contains("name", true)) {
                             showName = true
-                            isNameEditable = fieldObject.optBoolean("editable", false) || showShipping
+                            isNameEditable =
+                                fieldObject.optBoolean("editable", false) || showShipping
                         }
                         if (fieldObject.optString("field", "UNKNOWN").contains("email", true)) {
                             showEmail = true
-                            isEmailEditable = fieldObject.optBoolean("editable", false) || showShipping
+                            isEmailEditable =
+                                fieldObject.optBoolean("editable", false) || showShipping
                         }
                     }
                 } else {
@@ -2190,14 +2185,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 productSummary?.let { parseAndRenderProductSummary(it) }
 
                 var currencySymbol = moneyObject.getString("currencySymbol")
+                val currencyCode = moneyObject.getString("currencyCode")
                 if (currencySymbol == "")
                     currencySymbol = "₹"
 
                 var totalQuantity = 0
                 editor.putString("currencySymbol", currencySymbol)
+                editor.putString("currencyCode", currencyCode)
                 editor.apply()
 
                 transactionAmount = totalAmount
+                updateTransactionAmountInSharedPreferences(transactionAmount.toString(),currencyCode ?: "")
 
 
                 val itemsArray =
@@ -2791,13 +2789,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
-    private fun updateTransactionAmountInSharedPreferences(transactionAmountArgs: String) {
-        val sharedPreferences =
-            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+    private fun updateTransactionAmountInSharedPreferences(
+        transactionAmountArgs: String,
+        currencyCode: String
+    ) {
+        val sharedPreferences: SharedPreferences =
+            requireActivity().getSharedPreferences("NON_DCC_PREF", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
-
-
-        editor.putString("transactionAmount", transactionAmountArgs)
+        editor.putString("CURRENCY_TYPE", currencyCode)
+        editor.putString(
+            "AMOUNT",
+            transactionAmountArgs
+        )
         editor.apply()
     }
 
@@ -3538,7 +3541,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val currentTime = Date().time
             val timeDifference = endDate.time - currentTime
             if (timeDifference > 0) {
-                 sessionTimer = object : CountDownTimer(timeDifference, 1000) {
+                sessionTimer = object : CountDownTimer(timeDifference, 1000) {
 
                     override fun onTick(millisUntilFinished: Long) {
                         val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
