@@ -850,7 +850,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
             Clarity.initialize(context, config)
             Clarity.setCustomTag("token", token)
-            Log.d("TransactionToken", token + "")
         }
 
             hidePriceBreakUp()
@@ -2127,6 +2126,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             try {
                 val status = response.getString("status")
+                Clarity.setCustomTag("token", token)
                 val transactionId = response.getString("lastTransactionId").toString()
                 if (status.equals(
                         "Approved",
