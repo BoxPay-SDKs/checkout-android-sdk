@@ -108,146 +108,85 @@ class Check : AppCompatActivity() {
     },
     "orderId" : "test12"
   },
-  "paymentType" : "S",
-  "money" : {
-    "amount" : "1223",
-    "currencyCode" : "USD"
-  },
-  "descriptor" : {
-    "line1" : "Some descriptor"
-  },
-  "shopper" : {
-    "firstName" : "Ankush",
-    "lastName" : "Kashyap",
-    "email" : "ankush.kashyap@boxpay.tech",
-    "uniqueReference" : "x123y",
-    "phoneNumber" : "917986361129",
-    "deliveryAddress" : {
-      "address1" : "first line",
-      "address2" : "second line",
-      "city" : "Chandigarh",
-      "state" : "Chandigarh",
-      "countryCode" : "IN",
-      "postalCode" : "160002"  
+    "paymentType": "S",
+    "money": {
+        "amount": "10000",
+        "currencyCode": "INR"
     },
-    "dateOfBirth": "2023-07-17T12:34:56Z",
-    "panNumber": "CTGPA0009K"
-  },
-  "order" : {
-    "originalAmount" : 423.73,
-    "shippingAmount" : 50,
-    "voucherCode" : "VOUCHER",
-    "taxAmount" : 76.27,
-    "totalAmountWithoutTax" : 423.73,
-    "items" : [ {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    } ]
-  },
-  "statusNotifyUrl" : "https://www.boxpay.tech",
-  "frontendReturnUrl" : "https://www.boxpay.tech",
-  "frontendBackUrl" : "https://www.boxpay.tech",
-  "createShopperToken" : false,
-  "expiryDurationSec" : 900
+    "descriptor": {
+        "line1": "Some descriptor"
+    },
+    "shopper": {
+            "firstName": "Ankush",
+            "lastName": "Kashyap",
+            "gender": null,
+            "phoneNumber": "917986361129",
+            "email": "ankush.kashyap@boxpay.tech",
+            "uniqueReference": "x123y",
+            "deliveryAddress": {
+                "address1": "first line",
+                "address2": "second line",
+                "address3": null,
+                "city": "Chandigarh",
+                "state": "Chandigarh",
+                "countryCode": "IN",
+                "postalCode": "160002",
+                "shopperRef": null,
+                "addressRef": null,
+                "labelType": "Other",
+                "labelName": null,
+                "name": null,
+                "email": null,
+                "phoneNumber": null
+            },
+            "dateOfBirth": "2023-07-18T12:34:56Z",
+            "panNumber": "CTGPA0002G"
+    },
+    "order": {
+        "items": [
+            {
+                "id": "test",
+                "itemName": "Polo Neck T-Shirt (Grey)",
+                "description": "testProduct",
+                "quantity": 1,
+                "manufacturer": null,
+                "brand": null,
+                "color": null,
+                "productUrl": null,
+                "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ_IimVgaDOO192OJFnhc53MN4mvG2khFYrQ&s",
+                "categories": null,
+                "amountWithoutTax": 500,
+                "taxAmount": 76.27,
+                "taxPercentage": null,
+                "discountedAmount": null,
+                "amountWithoutTaxLocale": "10",
+                "amountWithoutTaxLocaleFull": "10"
+            },
+            {
+                "id": "test",
+                "itemName": "Denim Jacket (Blue)",
+                "description": "testProduct",
+                "quantity": 1,
+                "manufacturer": null,
+                "brand": null,
+                "color": null,
+                "productUrl": null,
+                "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgZJ_88kZDyCi_s1tAUZsEmAbTv6ChEyZA1w&s",
+                "categories": null,
+                "amountWithoutTax": 500,
+                "taxAmount": 76.27,
+                "taxPercentage": null,
+                "discountedAmount": null,
+                "amountWithoutTaxLocale": "10",
+                "amountWithoutTaxLocaleFull": "10"
+            }
+        ]
+    },
+    "statusNotifyUrl": "https://www.boxpay.tech",
+    "frontendReturnUrl": "https://www.boxpay.tech",
+    "frontendBackUrl": "https://www.boxpay.tech",
+    "createShopperToken":true,
+    "expiryDurationSec":900
 }"""
         )
 
@@ -265,7 +204,8 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener {
+            Response.ErrorListener { error ->
+                Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
                 /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {

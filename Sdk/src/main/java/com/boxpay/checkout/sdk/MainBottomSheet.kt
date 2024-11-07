@@ -145,7 +145,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private lateinit var Base_Session_API_URL: String
     var queue: RequestQueue? = null
     private lateinit var countdownTimer: CountDownTimer
-    private lateinit var sessionTimer : CountDownTimer
+    private lateinit var sessionTimer: CountDownTimer
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     var isGpayReturned = false
@@ -839,7 +839,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
             Clarity.initialize(context, config)
             Clarity.setCustomTag("token", token)
-            Log.d("TransactionToken", token + "")
         }
 
         hidePriceBreakUp()
@@ -984,6 +983,16 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
         }
 
+        binding.emiConstraint.setOnClickListener() {
+            if (!binding.loadingRelativeLayout.isVisible) {
+                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
+                hideRecommendedOptions()
+                binding.emiConstraint.isEnabled = false
+                callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Emi")
+                openEmiBottomSheet()
+            }
+        }
+
         binding.bnplConstraint.setOnClickListener() {
             if (!binding.loadingRelativeLayout.isVisible) {
                 recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
@@ -1091,6 +1100,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val netBankingBottomSheet =
                 parentFragmentManager.findFragmentByTag("NetBankingBottomSheet") as? NetBankingBottomSheet
             netBankingBottomSheet?.dismissCurrentBottomSheet()
+            val emiBottomSheet =
+                parentFragmentManager.findFragmentByTag("EmiBottomSheet") as? EmiBottomSheet
+            emiBottomSheet?.dismissFunction()
             sessionTimer.cancel()
 
             dismiss()
@@ -1477,6 +1489,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.walletConstraint.isEnabled = true
         binding.netBankingConstraint.isEnabled = true
         binding.bnplConstraint.isEnabled = true
+        binding.emiConstraint.isEnabled = true
     }
 
     private fun populatePopularUPIApps() {
@@ -2027,6 +2040,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
     }
 
+    private fun openEmiBottomSheet() {
+        val bottomSheetFragment = EmiBottomSheet.newInstance(shippingEnabled)
+        bottomSheetFragment.show(parentFragmentManager, "EmiBottomSheet")
+    }
+
     private fun openBNPLBottomSheet() {
 
         val bottomSheetFragment = BNPLBottomSheet.newInstance(shippingEnabled)
@@ -2143,15 +2161,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         val fieldObject = enabledFields.getJSONObject(i)
                         if (fieldObject.optString("field", "UNKNOWN").contains("phone", true)) {
                             showPhone = true
-                            isPhoneEditable = fieldObject.optBoolean("editable", false) || showShipping
+                            isPhoneEditable =
+                                fieldObject.optBoolean("editable", false) || showShipping
                         }
                         if (fieldObject.optString("field", "UNKNOWN").contains("name", true)) {
                             showName = true
-                            isNameEditable = fieldObject.optBoolean("editable", false) || showShipping
+                            isNameEditable =
+                                fieldObject.optBoolean("editable", false) || showShipping
                         }
                         if (fieldObject.optString("field", "UNKNOWN").contains("email", true)) {
                             showEmail = true
-                            isEmailEditable = fieldObject.optBoolean("editable", false) || showShipping
+                            isEmailEditable =
+                                fieldObject.optBoolean("editable", false) || showShipping
                         }
                     }
                 } else {
@@ -2183,6 +2204,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val currencyCode = moneyObject.getString("currencyCode")
                 var currencySymbol = moneyObject.getString("currencySymbol")
+                val currencyCode = moneyObject.getString("currencyCode")
                 if (currencySymbol == "")
                     currencySymbol = "₹"
 
@@ -2192,6 +2214,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.apply()
 
                 transactionAmount = totalAmount
+                updateTransactionAmountInSharedPreferences(transactionAmount.toString(),currencyCode ?: "")
 
                 updateTransactionAmountInSharedPreferences(transactionAmount.toString(),currencyCode ?: "")
                 val itemsArray =
@@ -3559,7 +3582,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val currentTime = Date().time
             val timeDifference = endDate.time - currentTime
             if (timeDifference > 0) {
-                 sessionTimer = object : CountDownTimer(timeDifference, 1000) {
+                sessionTimer = object : CountDownTimer(timeDifference, 1000) {
 
                     override fun onTick(millisUntilFinished: Long) {
                         val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
