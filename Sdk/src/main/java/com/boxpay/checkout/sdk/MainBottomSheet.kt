@@ -136,6 +136,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var isPhoneEditable = true
     private var isEmailEditable = true
     private var walletMethods = false
+    private var emiMethod = false
     private var bnplMethod = false
     private var netBankingMethods = false
     private var overLayPresent = false
@@ -1256,6 +1257,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (paymentMethodName == "Wallet") {
                         walletMethods = true
                     }
+                    if (paymentMethodName == "Emi") {
+                        emiMethod = true
+                    }
                     if (paymentMethodName == "BuyNowPayLater") {
                         bnplMethod = true
                     }
@@ -1273,7 +1277,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
 
                     if (upiQRMethod) {
-                        if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod) {
+                        if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod) {
                             showQRCode()
                         }
                         binding.UPIQRConstraint.visibility = View.VISIBLE
@@ -1293,6 +1297,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardView6.visibility = View.VISIBLE
                 } else {
                     binding.cardView6.visibility = View.GONE
+                }
+
+                if (emiMethod) {
+                    binding.emiCard.visibility = View.VISIBLE
+                } else {
+                    binding.emiCard.visibility = View.GONE
                 }
 
                 if (bnplMethod) {
@@ -2497,6 +2507,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
                     binding.cardView6.visibility = View.GONE
+                    binding.emiCard.visibility = View.GONE
                     binding.cardView7.visibility = View.GONE
                     binding.netBankingConstraint.visibility = View.GONE
                     binding.bnplConstraint.visibility = View.GONE
@@ -2504,6 +2515,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.recommendedCardView.visibility = View.GONE
                     binding.recommendedLinearLayout.visibility = View.GONE
                     binding.walletConstraint.visibility = View.GONE
+                    binding.emiConstraint.visibility = View.GONE
                     binding.linearLayout.visibility = View.GONE
                     binding.textView111.text = "Order Details"
                     binding.proceedButton.visibility = View.VISIBLE
@@ -2533,11 +2545,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
                     binding.cardView6.visibility = View.GONE
+                    binding.emiCard.visibility = View.GONE
                     binding.cardView7.visibility = View.GONE
                     binding.netBankingConstraint.visibility = View.GONE
                     binding.bnplConstraint.visibility = View.GONE
                     binding.cardConstraint.visibility = View.GONE
                     binding.walletConstraint.visibility = View.GONE
+                    binding.emiConstraint.visibility = View.GONE
                     binding.linearLayout.visibility = View.GONE
                     binding.textView111.text = "Order Details"
                     binding.proceedButton.visibility = View.VISIBLE
@@ -2566,11 +2580,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
                     binding.cardView6.visibility = View.GONE
+                    binding.emiCard.visibility = View.GONE
                     binding.cardView7.visibility = View.GONE
                     binding.netBankingConstraint.visibility = View.GONE
                     binding.bnplConstraint.visibility = View.GONE
                     binding.cardConstraint.visibility = View.GONE
                     binding.walletConstraint.visibility = View.GONE
+                    binding.emiConstraint.visibility = View.GONE
                     binding.linearLayout.visibility = View.GONE
                     binding.textView111.text = "Order Details"
                     binding.proceedButton.visibility = View.VISIBLE
@@ -2599,11 +2615,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
                     binding.cardView6.visibility = View.GONE
+                    binding.emiCard.visibility = View.GONE
                     binding.cardView7.visibility = View.GONE
                     binding.netBankingConstraint.visibility = View.GONE
                     binding.bnplConstraint.visibility = View.GONE
                     binding.cardConstraint.visibility = View.GONE
                     binding.walletConstraint.visibility = View.GONE
+                    binding.emiConstraint.visibility = View.GONE
                     binding.linearLayout.visibility = View.GONE
                     binding.textView111.text = "Order Details"
                     binding.proceedButton.visibility = View.VISIBLE
@@ -2743,6 +2761,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (paymentMethodName == "Wallet") {
                             walletMethods = true
                         }
+                        if (paymentMethodName == "Emi") {
+                            emiMethod = true
+                        }
                         if (paymentMethodName == "BuyNowPayLater") {
                             bnplMethod = true
                         }
@@ -2758,7 +2779,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             binding.addNewUPIIDConstraint.visibility = View.VISIBLE
                         }
                         if (upiQRMethod) {
-                            if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod) {
+                            if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod) {
                                 showQRCode()
                             }
                             binding.UPIQRConstraint.visibility = View.VISIBLE
@@ -2776,6 +2797,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         binding.cardView6.visibility = View.VISIBLE
                     } else {
                         binding.cardView6.visibility = View.GONE
+                    }
+                    if (emiMethod) {
+                        binding.emiCard.visibility = View.VISIBLE
+                    } else {
+                        binding.emiCard.visibility = View.GONE
                     }
                     if (bnplMethod) {
                         binding.cardView9.visibility = View.VISIBLE
@@ -2953,12 +2979,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.upiLinearLayout.visibility = View.VISIBLE
         binding.cardView5.visibility = View.VISIBLE
         binding.cardView6.visibility = View.VISIBLE
+        binding.emiCard.visibility = View.VISIBLE
         binding.cardView7.visibility = View.VISIBLE
         binding.walletConstraint.visibility = View.VISIBLE
+        binding.emiConstraint.visibility = View.VISIBLE
         binding.netBankingConstraint.visibility = View.VISIBLE
         binding.cardConstraint.visibility = View.VISIBLE
         binding.bnplConstraint.visibility = View.VISIBLE
-        binding.walletConstraint.visibility = View.VISIBLE
         binding.linearLayout.visibility = View.VISIBLE
         binding.textView111.text = "Payment Details"
         binding.proceedButton.visibility = View.GONE

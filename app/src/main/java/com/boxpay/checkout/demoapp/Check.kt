@@ -139,54 +139,51 @@ class Check : AppCompatActivity() {
                 "email": null,
                 "phoneNumber": null
             },
-            "dateOfBirth": "2023-07-18T12:34:56Z",
-            "panNumber": "CTGPA0002G"
-    },
-    "order": {
-        "items": [
-            {
-                "id": "test",
-                "itemName": "Polo Neck T-Shirt (Grey)",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ_IimVgaDOO192OJFnhc53MN4mvG2khFYrQ&s",
-                "categories": null,
-                "amountWithoutTax": 500,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            },
-            {
-                "id": "test",
-                "itemName": "Denim Jacket (Blue)",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgZJ_88kZDyCi_s1tAUZsEmAbTv6ChEyZA1w&s",
-                "categories": null,
-                "amountWithoutTax": 500,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            }
-        ]
-    },
-    "statusNotifyUrl": "https://www.boxpay.tech",
-    "frontendReturnUrl": "https://www.boxpay.tech",
-    "frontendBackUrl": "https://www.boxpay.tech",
-    "createShopperToken":true,
-    "expiryDurationSec":900
+            "dateOfBirth": "2023-07-17T12:34:56Z",
+            "panNumber": "CTGPA2222D"
+        },
+  "order" : {
+    "items" : [ {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ_IimVgaDOO192OJFnhc53MN4mvG2khFYrQ&s",
+      "categories" : null,
+      "amountWithoutTax" : 500,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Denim Jacket (Blue)",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgZJ_88kZDyCi_s1tAUZsEmAbTv6ChEyZA1w&s",
+      "categories" : null,
+      "amountWithoutTax" : 500,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    } ]
+  },
+  "statusNotifyUrl" : "https://www.boxpay.tech",
+  "frontendReturnUrl" : "https://www.boxpay.tech",
+  "frontendBackUrl" : "https://www.boxpay.tech",
+  "createShopperToken" : true,
+  "expiryDurationSec" : 900
 }"""
         )
 
@@ -211,7 +208,7 @@ class Check : AppCompatActivity() {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =
-                    "Bearer i8zuZD3mR9SYvT29z3p4DHRigXBcL5Cu5H2Lpl5M9w1LP7BVqj79YE09vhrskbXTbJjtZ5HsLFfivNjtdCZZZk"
+                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
