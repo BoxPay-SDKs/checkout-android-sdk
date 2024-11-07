@@ -143,6 +143,7 @@ class EmiViewModel : ViewModel() {
         addCardScreen.value = false
         contentLoaded.value = false
         firstTimeLoaded.value = true
+        filterList.value = listOf(Pair("No Cost EMI", false))
     }
 
     fun onCardClick(cardName: String) {

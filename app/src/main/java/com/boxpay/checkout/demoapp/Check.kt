@@ -98,29 +98,29 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context) {
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/oh3mnorsME/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
         val jsonData = JSONObject(
             """ {
   "context" : {
-    "countryCode" : "US",
+    "countryCode" : "IN",
     "legalEntity" : {
-      "code" : "dcc_usd"
+      "code" : "razorpay"
     },
     "orderId" : "test12"
   },
-    "paymentType": "S",
-    "money": {
-        "amount": "10000",
-        "currencyCode": "INR"
-    },
-    "descriptor": {
-        "line1": "Some descriptor"
-    },
-    "shopper": {
+  "paymentType" : "S",
+  "money" : {
+    "amount" : "1000",
+    "currencyCode" : "INR"
+  },
+  "descriptor" : {
+    "line1" : "Some descriptor"
+  },
+  "shopper": {
             "firstName": "Ankush",
             "lastName": "Kashyap",
             "gender": null,
-            "phoneNumber": "917986361129",
+            "phoneNumber": "917777777777",
             "email": "ankush.kashyap@boxpay.tech",
             "uniqueReference": "x123y",
             "deliveryAddress": {
@@ -139,54 +139,124 @@ class Check : AppCompatActivity() {
                 "email": null,
                 "phoneNumber": null
             },
-            "dateOfBirth": "2023-07-18T12:34:56Z",
-            "panNumber": "CTGPA0002G"
-    },
-    "order": {
-        "items": [
-            {
-                "id": "test",
-                "itemName": "Polo Neck T-Shirt (Grey)",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ_IimVgaDOO192OJFnhc53MN4mvG2khFYrQ&s",
-                "categories": null,
-                "amountWithoutTax": 500,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            },
-            {
-                "id": "test",
-                "itemName": "Denim Jacket (Blue)",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgZJ_88kZDyCi_s1tAUZsEmAbTv6ChEyZA1w&s",
-                "categories": null,
-                "amountWithoutTax": 500,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            }
-        ]
-    },
-    "statusNotifyUrl": "https://www.boxpay.tech",
-    "frontendReturnUrl": "https://www.boxpay.tech",
-    "frontendBackUrl": "https://www.boxpay.tech",
-    "createShopperToken":true,
-    "expiryDurationSec":900
+            "dateOfBirth": "2023-07-17T12:34:56Z",
+            "panNumber": "CTGPA2222D"
+        },
+  "order" : {
+    "originalAmount" : 423.73,
+    "shippingAmount" : 50,
+    "voucherCode" : "VOUCHER",
+    "taxAmount" : 76.27,
+    "totalAmountWithoutTax" : 423.73,
+    "items" : [ {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    } ]
+  },
+  "statusNotifyUrl" : "https://www.boxpay.tech",
+  "frontendReturnUrl" : "https://www.boxpay.tech",
+  "frontendBackUrl" : "https://www.boxpay.tech",
+  "createShopperToken" : true,
+  "expiryDurationSec" : 900
 }"""
         )
 
@@ -204,15 +274,14 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
+            Response.ErrorListener {
                 /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =
-                    "Bearer i8zuZD3mR9SYvT29z3p4DHRigXBcL5Cu5H2Lpl5M9w1LP7BVqj79YE09vhrskbXTbJjtZ5HsLFfivNjtdCZZZk"
+                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
