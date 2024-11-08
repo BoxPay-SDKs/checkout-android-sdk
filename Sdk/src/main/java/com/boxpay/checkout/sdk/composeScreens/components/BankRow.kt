@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -223,16 +224,16 @@ fun EmiAmountDetails(
     ConstraintLayout(
         modifier
             .background(
-                if (isSelected) Color(0xFFEFF3FA) else Color.White
+                if (isSelected) Color(0xFFEFF3FA) else Color.White,
             )
-            .padding(bottom = 10.dp)
+            .padding(bottom = 8.dp)
     ) {
         val (radioButton, heading, table, noteDesc, gst, cta, noCost) = createRefs()
         RadioButton(
             selected = isSelected,
             onClick = { onClickRadio() },
             modifier = Modifier.constrainAs(radioButton) {
-                top.linkTo(parent.top, 10.dp)
+                top.linkTo(parent.top, 8.dp)
             },
             colors = RadioButtonDefaults.colors(
                 selectedColor = selectedColor
@@ -316,7 +317,7 @@ fun EmiAmountDetails(
                         )
                         append(
                             AnnotatedString(
-                                text = " The bank will continue to charge to charge interest on No Cost EMI plans as per existing rates. However, the interest to be charged by bank will be passed on to you as an upfront discount.",
+                                text = " The bank will continue to charge interest on No Cost EMI plans as per existing rates. However, the interest to be charged by bank will be passed on to you as an upfront discount.",
                                 spanStyle = SpanStyle(
                                     fontFamily = defaultFontFamily,
                                     fontWeight = FontWeight(400),
@@ -436,7 +437,7 @@ fun TableDetails(
     isNoCostApplied: Boolean,
     currencySymbol: String
 ) {
-    Column(modifier.border(1.dp, Color(0xFFF1F1F1), RoundedCornerShape(12.dp))) {
+    Column(modifier.border(1.dp, Color(0xFFE6E6E6), RoundedCornerShape(12.dp))) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -634,7 +635,8 @@ fun CvvBottomSheet(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF04000B).copy(0.68f)),
+            .background(Color(0xFF04000B).copy(0.68f))
+            .clickable { onClickBack() },
         contentAlignment = Alignment.BottomCenter
     ) {
         Column(

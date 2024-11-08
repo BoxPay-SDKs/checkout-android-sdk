@@ -196,6 +196,9 @@ class EmiViewModel : ViewModel() {
     }
 
     fun onCardNumberChange(text: TextFieldValue) {
+        if (text.text.length < 9) {
+            cardIcon.value = (R.drawable.default_card_icon)
+        }
         // Sanitize the input and get the new formatted number
         val digitsOnly = text.text.filter { it.isDigit() }
 

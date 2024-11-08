@@ -98,59 +98,63 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context) {
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/oh3mnorsME/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
         val jsonData = JSONObject(
             """ {
   "context" : {
-    "countryCode" : "US",
+    "countryCode" : "IN",
     "legalEntity" : {
-      "code" : "dcc_usd"
+      "code" : "razorpay"
     },
     "orderId" : "test12"
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "1000",
-    "currencyCode" : "USD"
+    "amount" : "50000",
+    "currencyCode" : "INR"
   },
   "descriptor" : {
     "line1" : "Some descriptor"
   },
-  "shopper" : {
-    "firstName" : "Ankush",
-    "lastName" : "Kashyap",
-    "email" : "ankush.kashyap@boxpay.tech",
-    "uniqueReference" : "x123y",
-    "phoneNumber" : "917986361129",
-    "deliveryAddress" : {
-      "address1" : "first line",
-      "address2" : "second line",
-      "city" : "Chandigarh",
-      "state" : "Chandigarh",
-      "countryCode" : "IN",
-      "postalCode" : "160002"  
-    },
-    "dateOfBirth": "2023-07-17T12:34:56Z",
-    "panNumber": "CTGPA0009K"
-  },
+  "shopper": {
+            "firstName": "Ankush",
+            "lastName": "Kashyap",
+            "gender": null,
+            "phoneNumber": "917777777777",
+            "email": "ankush.kashyap@boxpay.tech",
+            "uniqueReference": "x123y",
+            "deliveryAddress": {
+                "address1": "first line",
+                "address2": "second line",
+                "address3": null,
+                "city": "Chandigarh",
+                "state": "Chandigarh",
+                "countryCode": "IN",
+                "postalCode": "160002",
+                "shopperRef": null,
+                "addressRef": null,
+                "labelType": "Other",
+                "labelName": null,
+                "name": null,
+                "email": null,
+                "phoneNumber": null
+            },
+            "dateOfBirth": null,
+            "panNumber": null
+        },
   "order" : {
-    "originalAmount" : 423.73,
-    "shippingAmount" : 50,
-    "voucherCode" : "VOUCHER",
-    "taxAmount" : 76.27,
-    "totalAmountWithoutTax" : 423.73,
     "items" : [ {
       "id" : "test",
-      "itemName" : "Sample Item",
+      "itemName" : "Sheesham Wood 6 Seater Dining Table with Chairs",
       "description" : "testProduct",
       "quantity" : 1,
       "manufacturer" : null,
       "brand" : null,
       "color" : null,
       "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "imageUrl" : "https://images-na.ssl-images-amazon.com/images/I/71Zkp0BxSfL._SL1300_.jpg",
       "categories" : null,
-      "amountWithoutTax" : 423.73,
+      "amountWithoutTax" : 25000,
       "taxAmount" : 76.27,
       "taxPercentage" : null,
       "discountedAmount" : null,
@@ -158,84 +162,16 @@ class Check : AppCompatActivity() {
       "amountWithoutTaxLocaleFull" : "10"
     }, {
       "id" : "test",
-      "itemName" : "Sample Item",
+      "itemName" : "Mi LED Smart TV 4A(43) - Full HD",
       "description" : "testProduct",
       "quantity" : 1,
       "manufacturer" : null,
       "brand" : null,
       "color" : null,
       "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "imageUrl" : "https://i01.appmifile.com/webfile/globalimg/7/E5F73D2A-3086-A8A6-CF7D-9BB24604449B.png",
       "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
+      "amountWithoutTax" : 25000,
       "taxAmount" : 76.27,
       "taxPercentage" : null,
       "discountedAmount" : null,
@@ -246,7 +182,7 @@ class Check : AppCompatActivity() {
   "statusNotifyUrl" : "https://www.boxpay.tech",
   "frontendReturnUrl" : "https://www.boxpay.tech",
   "frontendBackUrl" : "https://www.boxpay.tech",
-  "createShopperToken" : false,
+  "createShopperToken" : true,
   "expiryDurationSec" : 900
 }"""
         )
@@ -272,7 +208,7 @@ class Check : AppCompatActivity() {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =
-                    "Bearer i8zuZD3mR9SYvT29z3p4DHRigXBcL5Cu5H2Lpl5M9w1LP7BVqj79YE09vhrskbXTbJjtZ5HsLFfivNjtdCZZZk"
+                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
