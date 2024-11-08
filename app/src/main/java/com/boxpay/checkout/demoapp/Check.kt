@@ -110,7 +110,7 @@ class Check : AppCompatActivity() {
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "1000",
+    "amount" : "50000",
     "currencyCode" : "INR"
   },
   "descriptor" : {
@@ -145,16 +145,16 @@ class Check : AppCompatActivity() {
   "order" : {
     "items" : [ {
       "id" : "test",
-      "itemName" : "Sample Item",
+      "itemName" : "Sheesham Wood 6 Seater Dining Table with Chairs",
       "description" : "testProduct",
       "quantity" : 1,
       "manufacturer" : null,
       "brand" : null,
       "color" : null,
       "productUrl" : null,
-      "imageUrl" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ_IimVgaDOO192OJFnhc53MN4mvG2khFYrQ&s",
+      "imageUrl" : "https://images-na.ssl-images-amazon.com/images/I/71Zkp0BxSfL._SL1300_.jpg",
       "categories" : null,
-      "amountWithoutTax" : 500,
+      "amountWithoutTax" : 25000,
       "taxAmount" : 76.27,
       "taxPercentage" : null,
       "discountedAmount" : null,
@@ -162,16 +162,16 @@ class Check : AppCompatActivity() {
       "amountWithoutTaxLocaleFull" : "10"
     }, {
       "id" : "test",
-      "itemName" : "Denim Jacket (Blue)",
+      "itemName" : "Mi LED Smart TV 4A(43) - Full HD",
       "description" : "testProduct",
       "quantity" : 1,
       "manufacturer" : null,
       "brand" : null,
       "color" : null,
       "productUrl" : null,
-      "imageUrl" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgZJ_88kZDyCi_s1tAUZsEmAbTv6ChEyZA1w&s",
+      "imageUrl" : "https://i01.appmifile.com/webfile/globalimg/7/E5F73D2A-3086-A8A6-CF7D-9BB24604449B.png",
       "categories" : null,
-      "amountWithoutTax" : 500,
+      "amountWithoutTax" : 25000,
       "taxAmount" : 76.27,
       "taxPercentage" : null,
       "discountedAmount" : null,

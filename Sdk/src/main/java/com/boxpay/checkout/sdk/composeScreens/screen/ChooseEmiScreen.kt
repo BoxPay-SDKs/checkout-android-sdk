@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -54,6 +55,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -113,8 +115,7 @@ fun ChooseEmiScreen(
                     top.linkTo(parent.top)
 
                     width = Dimension.fillToConstraints
-                }
-                .background(Color.White),
+                },
             onClickBack = onClickBack
         )
         Box(
@@ -451,7 +452,7 @@ fun SelectTenureEmi(
             .wrapContentHeight()
             .background(Color(0xFFF1F1F1))
     ) {
-        val (topBar, itemsPrice, list) = createRefs()
+        val (topBar, list) = createRefs()
         TopBar(
             text = "Select Tenure",
             modifier = Modifier
@@ -461,55 +462,15 @@ fun SelectTenureEmi(
                     top.linkTo(parent.top)
 
                     width = Dimension.fillToConstraints
-                }
-                .background(Color.White),
+                },
             onClickBack = onClickBack
-        )
-        Text(
-            text = buildAnnotatedString {
-                append(
-                    AnnotatedString(
-                        text = "Item(s) price: ",
-                        spanStyle = SpanStyle(
-                            fontFamily = defaultFontFamily,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight(400)
-                        )
-                    )
-                )
-                append(
-                    AnnotatedString(
-                        text = currencySymbol,
-                        spanStyle = SpanStyle(
-                            fontFamily = interFontFamily,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight(200)
-                        )
-                    )
-                )
-                append(
-                    AnnotatedString(
-                        text = totalPrice,
-                        spanStyle = SpanStyle(
-                            fontFamily = defaultFontFamily,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight(600)
-                        )
-                    )
-                )
-            },
-            color = Color(0xFF2D2B32),
-            modifier = Modifier.constrainAs(itemsPrice) {
-                start.linkTo(parent.start, 16.dp)
-                top.linkTo(topBar.bottom, 10.dp)
-            }
         )
         LazyColumn(
             modifier = Modifier
                 .constrainAs(list) {
                     start.linkTo(parent.start, 16.dp)
                     end.linkTo(parent.end, 16.dp)
-                    top.linkTo(itemsPrice.bottom, 12.dp)
+                    top.linkTo(topBar.bottom, 12.dp)
                     bottom.linkTo(parent.bottom, 30.dp)
 
                     width = Dimension.fillToConstraints
@@ -517,12 +478,13 @@ fun SelectTenureEmi(
                 .heightIn(min = 300.dp, max = 400.dp)
                 .background(Color.White, RoundedCornerShape(12.dp))
                 .border(1.dp, Color(0xFFE6E6E6), RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.dp))
         ) {
             item {
                 Row(
                     modifier = Modifier
                         .fillParentMaxWidth()
-                        .padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+                        .padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
@@ -536,14 +498,16 @@ fun SelectTenureEmi(
                             .size(34.dp)
                     )
                     Text(
-                        text = "${selectedBank.name} | $cardType",
+                        text = "${selectedBank.name} | $cardType EMI",
                         style = TextStyle(
                             fontFamily = defaultFontFamily,
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight(600)
                         ),
                         color = Color(0xFF2D2B32),
-                        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Divider(
@@ -650,22 +614,17 @@ fun AddCardDetailsScreen(
     val AsteriskVisualTransformation = VisualTransformation { text ->
         val transformedText = buildString {
             for (i in text.text.indices) {
-                append('*')  // Replace each character with '*'
+                append('*')
             }
         }
-
-        // Create an OffsetMapping to map between the transformed text and the original text
         val offsetMapping = object : OffsetMapping {
             override fun originalToTransformed(offset: Int): Int {
-                return offset // Each character maps directly to the same position
+                return offset
             }
-
             override fun transformedToOriginal(offset: Int): Int {
-                return offset // Each character maps directly to the same position
+                return offset
             }
         }
-
-        // Return TransformedText with both the transformed string and the OffsetMapping
         TransformedText(AnnotatedString(transformedText), offsetMapping)
     }
 
@@ -676,8 +635,8 @@ fun AddCardDetailsScreen(
             .background(Color.White)
             .imePadding()
     ) {
-        val (topBar, bankBorder, bankIcon, bankName, divider, emiDetails, cardNumberTitle, cardNumberInput, cardNameTitle, cardNameInput, expiryTitle, expiryInput, cvvTitle, cvvInput, footerEnd,cardNumberInvalidError) = createRefs()
-        val (interestRate, topDivider, cta, cardNumberError, cardNameError, cardExpiryError, cardCvvError,cardCvvInvalidError, cardExpiryInvalidError) = createRefs()
+        val (topBar, bankBorder, bankIcon, bankName, divider, emiDetails, cardNumberTitle, cardNumberInput, cardNameTitle, cardNameInput, expiryTitle, expiryInput, cvvTitle, cvvInput, footerEnd, cardNumberInvalidError) = createRefs()
+        val (interestRate, topDivider, cta, cardNumberError, cardNameError, cardExpiryError, cardCvvError, cardCvvInvalidError, cardExpiryInvalidError) = createRefs()
         TopBar(
             text = "Add Card Details",
             modifier = Modifier
@@ -688,15 +647,8 @@ fun AddCardDetailsScreen(
 
                     width = Dimension.fillToConstraints
                 }
-                .background(Color.White),
+                .background(Color(0xFFF1F1F1)),
             onClickBack = onClickBack
-        )
-        Divider(
-            modifier = Modifier.constrainAs(topDivider) {
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-                top.linkTo(topBar.bottom)
-            }
         )
         Box(
             modifier = Modifier
@@ -719,7 +671,7 @@ fun AddCardDetailsScreen(
             contentDescription = "",
             modifier = Modifier
                 .constrainAs(bankIcon) {
-                    start.linkTo(bankBorder.start, 12.dp)
+                    start.linkTo(bankBorder.start, 10.dp)
                     top.linkTo(bankBorder.top, 14.dp)
                 }
                 .size(32.dp)
@@ -728,18 +680,17 @@ fun AddCardDetailsScreen(
             text = name,
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight(600)
             ),
             color = Color(0xFF2D2B32),
             modifier = Modifier.constrainAs(bankName) {
-                start.linkTo(bankIcon.end, 8.dp)
-                end.linkTo(divider.start, 8.dp)
-
-                width = Dimension.fillToConstraints
+                start.linkTo(bankIcon.end)
 
                 centerVerticallyTo(bankIcon)
-            }
+            },
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Text(
             text = buildAnnotatedString {
@@ -777,10 +728,13 @@ fun AddCardDetailsScreen(
             color = Color(0xFF2D2B32),
             modifier = Modifier
                 .constrainAs(emiDetails) {
-                    end.linkTo(bankBorder.end, 12.dp)
-                    top.linkTo(bankBorder.top, 12.dp)
-                }
-                .padding(start = 12.dp)
+                    start.linkTo(divider.end, 12.dp)
+                    end.linkTo(bankBorder.end, 2.dp)
+                    top.linkTo(divider.top)
+
+                    width = Dimension.fillToConstraints
+                },
+            maxLines = 1
         )
         Text(
             text = "@$percent% p.a.",
@@ -798,9 +752,9 @@ fun AddCardDetailsScreen(
         Box(
             modifier = Modifier
                 .constrainAs(divider) {
-                    start.linkTo(emiDetails.start)
-                    top.linkTo(emiDetails.top)
-                    bottom.linkTo(interestRate.bottom)
+                    start.linkTo(bankName.end, 12.dp)
+                    top.linkTo(bankIcon.top)
+                    bottom.linkTo(bankIcon.bottom)
 
                     height = Dimension.fillToConstraints
                 }
@@ -811,7 +765,7 @@ fun AddCardDetailsScreen(
             text = "Card Number",
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -857,7 +811,7 @@ fun AddCardDetailsScreen(
                         fontSize = 14.sp,
                         fontWeight = FontWeight(400)
                     ),
-                    color = Color(0xFF7F7D83)
+                    color = Color(0xFFADACB0)
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -868,7 +822,7 @@ fun AddCardDetailsScreen(
                 Image(
                     painter = painterResource(id = cardIcon),
                     contentDescription = "",
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             },
             colors = OutlinedTextFieldDefaults.colors(
@@ -903,13 +857,13 @@ fun AddCardDetailsScreen(
             text = "Name on card",
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
             modifier = Modifier.constrainAs(cardNameTitle) {
                 start.linkTo(parent.start, 16.dp)
-                top.linkTo(expiryInput.bottom, 16.dp)
+                top.linkTo(expiryInput.bottom, 22.dp)
                 end.linkTo(parent.end, 16.dp)
 
                 width = Dimension.fillToConstraints
@@ -944,7 +898,7 @@ fun AddCardDetailsScreen(
                         fontSize = 14.sp,
                         fontWeight = FontWeight(400)
                     ),
-                    color = Color(0xFF7F7D83)
+                    color = Color(0xFFADACB0)
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -971,13 +925,13 @@ fun AddCardDetailsScreen(
             text = "Expiry",
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
             modifier = Modifier.constrainAs(expiryTitle) {
                 start.linkTo(parent.start, 16.dp)
-                top.linkTo(cardNumberInput.bottom, 16.dp)
+                top.linkTo(cardNumberInput.bottom, 22.dp)
                 end.linkTo(cvvTitle.start, 16.dp)
 
                 width = Dimension.fillToConstraints
@@ -1015,7 +969,7 @@ fun AddCardDetailsScreen(
                         fontSize = 14.sp,
                         fontWeight = FontWeight(400)
                     ),
-                    color = Color(0xFF7F7D83)
+                    color = Color(0xFFADACB0)
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -1054,7 +1008,7 @@ fun AddCardDetailsScreen(
             text = "CVV",
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -1097,7 +1051,7 @@ fun AddCardDetailsScreen(
                         fontSize = 14.sp,
                         fontWeight = FontWeight(400)
                     ),
-                    color = Color(0xFF7F7D83)
+                    color = Color(0xFFADACB0)
                 )
             },
             trailingIcon = {
@@ -1245,8 +1199,7 @@ fun EmiShimmerScreen() {
                     top.linkTo(parent.top)
 
                     width = Dimension.fillToConstraints
-                }
-                .background(Color.White),
+                },
             onClickBack = {}
         )
         Box(

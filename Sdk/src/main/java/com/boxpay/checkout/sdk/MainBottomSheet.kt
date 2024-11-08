@@ -145,7 +145,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private lateinit var Base_Session_API_URL: String
     var queue: RequestQueue? = null
     private lateinit var countdownTimer: CountDownTimer
-    private lateinit var sessionTimer: CountDownTimer
+    var sessionTimer: CountDownTimer? = null
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     var isGpayReturned = false
@@ -168,7 +168,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         removeOverlayFromActivity()
-        sessionTimer.cancel()
+        sessionTimer?.cancel()
         dismiss()
     }
 
@@ -1112,7 +1112,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val emiBottomSheet =
                 parentFragmentManager.findFragmentByTag("EmiBottomSheet") as? EmiBottomSheet
             emiBottomSheet?.dismissFunction()
-            sessionTimer.cancel()
+            sessionTimer?.cancel()
 
             dismiss()
         }, 500)
@@ -1888,7 +1888,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             windowManager.removeView(it)
         }
         overlayViewMainBottomSheet = null
-        sessionTimer.cancel()
+        sessionTimer?.cancel()
     }
 
     fun removeOverlayFromCurrentBottomSheet() {
@@ -2013,7 +2013,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
                             dismiss()
-                            sessionTimer.cancel()
+                            sessionTimer?.cancel()
                             val callback = SingletonClass.getInstance().getYourObject()
                             if (callback != null) {
                                 val status = sharedPreferences.getString("status", "")
@@ -2253,7 +2253,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         val itemObject = itemsArray.getJSONObject(i)
 
                         items.add(itemObject.getString("itemName"))
-                        prices.add(itemObject.getString("amountWithoutTaxLocale"))
+                        prices.add(itemObject.getString("amountWithoutTaxLocaleFull"))
                         val quantity = itemObject.getInt("quantity")
                         itemQty.add(quantity.toString())
                         totalQuantity += quantity
@@ -3646,7 +3646,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     }
                 }
-                sessionTimer.start()
+                sessionTimer?.start()
             }
         } catch (_: Exception) {
             // no op
