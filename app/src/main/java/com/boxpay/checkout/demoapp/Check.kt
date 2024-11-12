@@ -1,15 +1,16 @@
-
 package com.boxpay.checkout.demoapp
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.BoxPayCheckout
@@ -99,59 +100,63 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context) {
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/oh3mnorsME/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
         val jsonData = JSONObject(
             """ {
   "context" : {
-    "countryCode" : "US",
+    "countryCode" : "IN",
     "legalEntity" : {
-      "code" : "dcc_usd"
+      "code" : "razorpay"
     },
     "orderId" : "test12"
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "1000",
-    "currencyCode" : "USD"
+    "amount" : "50000",
+    "currencyCode" : "INR"
   },
   "descriptor" : {
     "line1" : "Some descriptor"
   },
-  "shopper" : {
-    "firstName" : "Ankush",
-    "lastName" : "Kashyap",
-    "email" : "ankush.kashyap@boxpay.tech",
-    "uniqueReference" : "x123y",
-    "phoneNumber" : "917986361129",
-    "deliveryAddress" : {
-      "address1" : "first line",
-      "address2" : "second line",
-      "city" : "Chandigarh",
-      "state" : "Chandigarh",
-      "countryCode" : "IN",
-      "postalCode" : "160002"  
-    },
-    "dateOfBirth": "2023-07-17T12:34:56Z",
-    "panNumber": "CTGPA0009K"
-  },
+  "shopper": {
+            "firstName": "Ankush",
+            "lastName": "Kashyap",
+            "gender": null,
+            "phoneNumber": "917777777777",
+            "email": "ankush.kashyap@boxpay.tech",
+            "uniqueReference": "x123y",
+            "deliveryAddress": {
+                "address1": "first line",
+                "address2": "second line",
+                "address3": null,
+                "city": "Chandigarh",
+                "state": "Chandigarh",
+                "countryCode": "IN",
+                "postalCode": "160002",
+                "shopperRef": null,
+                "addressRef": null,
+                "labelType": "Other",
+                "labelName": null,
+                "name": null,
+                "email": null,
+                "phoneNumber": null
+            },
+            "dateOfBirth": null,
+            "panNumber": null
+        },
   "order" : {
-    "originalAmount" : 423.73,
-    "shippingAmount" : 50,
-    "voucherCode" : "VOUCHER",
-    "taxAmount" : 76.27,
-    "totalAmountWithoutTax" : 423.73,
     "items" : [ {
       "id" : "test",
-      "itemName" : "Sample Item",
+      "itemName" : "Sheesham Wood 6 Seater Dining Table with Chairs",
       "description" : "testProduct",
       "quantity" : 1,
       "manufacturer" : null,
       "brand" : null,
       "color" : null,
       "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "imageUrl" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ_IimVgaDOO192OJFnhc53MN4mvG2khFYrQ&s",
       "categories" : null,
-      "amountWithoutTax" : 423.73,
+      "amountWithoutTax" : 25000,
       "taxAmount" : 76.27,
       "taxPercentage" : null,
       "discountedAmount" : null,
@@ -159,84 +164,16 @@ class Check : AppCompatActivity() {
       "amountWithoutTaxLocaleFull" : "10"
     }, {
       "id" : "test",
-      "itemName" : "Sample Item",
+      "itemName" : "Mi LED Smart TV 4A(43) - Full HD",
       "description" : "testProduct",
       "quantity" : 1,
       "manufacturer" : null,
       "brand" : null,
       "color" : null,
       "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "imageUrl" : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgZJ_88kZDyCi_s1tAUZsEmAbTv6ChEyZA1w&s",
       "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
+      "amountWithoutTax" : 25000,
       "taxAmount" : 76.27,
       "taxPercentage" : null,
       "discountedAmount" : null,
@@ -247,7 +184,7 @@ class Check : AppCompatActivity() {
   "statusNotifyUrl" : "https://www.boxpay.tech",
   "frontendReturnUrl" : "https://www.boxpay.tech",
   "frontendBackUrl" : "https://www.boxpay.tech",
-  "createShopperToken" : false,
+  "createShopperToken" : true,
   "expiryDurationSec" : 900
 }"""
         )
@@ -266,19 +203,34 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener {
-                /* no response handling */
+            Response.ErrorListener { error ->
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    Log.e("CheckError", "" + errorResponse)
+                }
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =
-                    "Bearer i8zuZD3mR9SYvT29z3p4DHRigXBcL5Cu5H2Lpl5M9w1LP7BVqj79YE09vhrskbXTbJjtZ5HsLFfivNjtdCZZZk"
+                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }
         queue.add(request)
+    }
+
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+        }
+        return null
     }
 }
