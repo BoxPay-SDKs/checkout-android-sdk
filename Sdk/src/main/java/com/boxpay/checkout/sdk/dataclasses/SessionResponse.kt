@@ -35,6 +35,26 @@ data class ContextSession(
 
 )
 
+data class ApplicableOffer (
+
+    @SerializedName("title"       ) var title       : String?   = null,
+    @SerializedName("description" ) var description : String?   = null,
+    @SerializedName("terms"       ) var terms       : String?   = null,
+    @SerializedName("type"        ) var type        : String?   = null,
+    @SerializedName("code"        ) var code        : String?   = null,
+    @SerializedName("discount"    ) var discount    : Discount? = Discount()
+
+)
+
+data class Discount (
+
+    @SerializedName("percentage" ) var percentage : String? = null,
+    @SerializedName("amount"     ) var amount     : String? = null,
+    @SerializedName("type"       ) var type       : String? = null,
+    @SerializedName("maxAmount"  ) var maxAmount  : String? = null
+
+)
+
 data class LegalEntitySession(
 
     @SerializedName("code") var code: String? = null
@@ -76,6 +96,18 @@ data class DeliveryAddress(
 
 )
 
+
+data class ApplicableOffers (
+
+    @SerializedName("title"       ) var title       : String?   = null,
+    @SerializedName("description" ) var description : String?   = null,
+    @SerializedName("terms"       ) var terms       : String?   = null,
+    @SerializedName("type"        ) var type        : String?   = null,
+    @SerializedName("code"        ) var code        : String?   = null,
+    @SerializedName("discount"    ) var discount    : Discount? = Discount()
+
+)
+
 data class ShopperSession(
 
     @SerializedName("firstName") var firstName: String? = null,
@@ -87,6 +119,15 @@ data class ShopperSession(
     @SerializedName("deliveryAddress") var deliveryAddress: DeliveryAddress? = DeliveryAddress(),
     @SerializedName("dateOfBirth") var dateOfBirth: String? = null,
     @SerializedName("panNumber") var panNumber: String? = null
+
+)
+
+data class ProcessingFee (
+
+    @SerializedName("feeType"          ) var feeType          : String? = null,
+    @SerializedName("amount"           ) var amount           : Int?    = null,
+    @SerializedName("amountLocale"     ) var amountLocale     : String? = null,
+    @SerializedName("amountLocaleFull" ) var amountLocaleFull : String? = null
 
 )
 
@@ -173,16 +214,16 @@ data class MerchantDetails(
 
 )
 
-data class PaymentMethods(
+data class PaymentMethods (
 
-    @SerializedName("id") var id: String? = null,
-    @SerializedName("type") var type: String? = null,
-    @SerializedName("brand") var brand: String? = null,
-    @SerializedName("title") var title: String? = null,
-    @SerializedName("typeTitle") var typeTitle: String? = null,
-    @SerializedName("logoUrl") var logoUrl: String? = null,
-    @SerializedName("instrumentTypeValue") var instrumentTypeValue: String? = null,
-    @SerializedName("applicableOffers") var applicableOffers: ArrayList<String> = arrayListOf()
+    @SerializedName("id"                  ) var id                  : String?                     = null,
+    @SerializedName("type"                ) var type                : String?                     = null,
+    @SerializedName("brand"               ) var brand               : String?                     = null,
+    @SerializedName("title"               ) var title               : String?                     = null,
+    @SerializedName("typeTitle"           ) var typeTitle           : String?                     = null,
+    @SerializedName("logoUrl"             ) var logoUrl             : String?                     = null,
+    @SerializedName("instrumentTypeValue" ) var instrumentTypeValue : String?                     = null,
+    @SerializedName("applicableOffers"    ) var applicableOffers    : ArrayList<ApplicableOffers> = arrayListOf()
 
 )
 

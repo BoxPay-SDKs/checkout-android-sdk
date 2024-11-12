@@ -117,7 +117,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private val dccViewModel: DCCViewModel by viewModels()
     private val sessionViewModel: SessionViewModel by viewModels()
     private var sessionData: SessionResponse? = null
-    private var isCurrencySelected = false
+    private var isCurrencySelected = true
     private var dccRequest: DCCRequest? = null
     private var isDCCFetched = false
     private var isDCCEnabled = false
@@ -968,7 +968,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     binding.tvInfoDcc.text = ""
 
                     showViewWithAnimation(binding.llDccOptions)
-
+                    isCurrencySelected = false
                     hideViewWithAnimation(binding.tvInfoDcc,View.GONE)
                     hideViewWithAnimation(binding.llLoader,View.INVISIBLE)
                     binding.tvSelectCurrency.text = "Please select currency."
@@ -984,15 +984,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     binding.detailsText1.text =
                         "1 " + dccResponse.baseMoney!!.currencyCode + " = " + formatToTwoDecimalPlaces(dccResponse.dccQuotationDetails!!.fxRate!!) + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + "\n" + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
 
-                    if (!isCurrencySelected){
-                        binding.radioButton2.isChecked = false
-                        binding.radioButton1.isChecked = true
-                        isCurrencySelected = true
-                        proceedButtonIsEnabled.value = true
-                        enableProceedButton()
-                        isQuotationRequired = true
-                        binding.textView6.text = "Pay " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
-                    }
+                    binding.radioButton2.isChecked = false
+                    binding.radioButton1.isChecked = true
+                    isCurrencySelected = true
+                    proceedButtonIsEnabled.value = true
+                    enableProceedButton()
+                    isQuotationRequired = true
+                    binding.textView6.text = "Pay " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
+
                 }
 
                 binding.countryFlag1.load(getFlagForCurrencyCode(requireActivity(),dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode!!)) {

@@ -22,6 +22,7 @@ import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
+import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -159,6 +160,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var firstLoad: Boolean = true
     private var productSummary: String? = null
     private var orderDetails: String? = null
+    private var upiIntentError: String? = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -444,25 +446,33 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun launchUPIIntent(url: String) {
         val intent = Intent(Intent.ACTION_VIEW)
-
         val uri = Uri.parse(url)
         intent.data = uri
+
         try {
-            var resultCode: Int
-            startFunctionCalls()
-            if (url.startsWith("tez")) {
-                resultCode = 121
-            } else if (url.startsWith("paytm")) {
-                resultCode = 122
-            } else {
-                resultCode = 123
+            val resultCode = when {
+                url.startsWith("tez") -> 121
+                url.startsWith("paytm") -> 122
+                else -> 123
             }
 
+            startFunctionCalls()
             startActivityForResult(intent, resultCode)
-        } catch (_: ActivityNotFoundException) {
+        } catch (e: ActivityNotFoundException) {
+            // Log specific error if the app is not found
+            upiIntentError = e.message
+            callUIAnalytics(requireActivity(),"UPI_APP_NOT_FOUND","","UPI")
+            Log.e("UPIError", "UPI app not found: ${e.message}")
+            removeLoadingState()
+        } catch (e: Exception) {
+            // Log any other error that occurs
+            upiIntentError = e.message
+            callUIAnalytics(requireActivity(),"FAILED_TO_LAUNCH_UPI_INTENT","","UPI")
+            Log.e("UPIError", "Failed to launch UPI intent: ${e.message}", e)
             removeLoadingState()
         }
     }
+
 
     private fun startFunctionCalls() {
         job?.cancel()
@@ -736,6 +746,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     launchUPIIntent(urlInBase64)
                 } catch (e: JSONException) {
                     removeLoadingState()
+                    callUIAnalytics(requireActivity(),"ERROR_GETTING_UPI_URL ${e.message}","","UPI")
                     PaymentFailureScreen().show(parentFragmentManager, "FailureScreenFromUPIIntent")
                 }
             },
@@ -744,6 +755,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
+                    callUIAnalytics(requireActivity(),"ERROR_GETTING_UPI_URL $errorMessage","","UPI")
 
                     if (errorMessage?.contains("expired", true) == true) {
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
@@ -837,7 +849,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         overlayViewModel.setShowOverlay(true)
         if (::context.isInitialized) {
             val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
-            Clarity.initialize(context, config)
+            Clarity.initialize(context.applicationContext, config)
         }
 
         hidePriceBreakUp()
@@ -1638,6 +1650,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             // Create eventAttrs JSON object
             val eventAttrs = JSONObject().apply {
                 put("paymentType", paymentType)
+                put("upiIntentError", upiIntentError)
 
                 if (paymentSubType.isBlank())
                     put("paymentSubType", paymentSubType)
