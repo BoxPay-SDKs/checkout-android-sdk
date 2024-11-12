@@ -3,12 +3,14 @@ package com.boxpay.checkout.demoapp
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.BoxPayCheckout
@@ -110,7 +112,7 @@ class Check : AppCompatActivity() {
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "50000",
+    "amount" : "100000",
     "currencyCode" : "INR"
   },
   "descriptor" : {
@@ -139,22 +141,27 @@ class Check : AppCompatActivity() {
                 "email": null,
                 "phoneNumber": null
             },
-            "dateOfBirth": null,
-            "panNumber": null
+            "dateOfBirth": "2023-07-17T12:34:56Z",
+            "panNumber": "CTGPA2222D"
         },
   "order" : {
+    "originalAmount" : 423.73,
+    "shippingAmount" : 50,
+    "voucherCode" : "VOUCHER",
+    "taxAmount" : 76.27,
+    "totalAmountWithoutTax" : 423.73,
     "items" : [ {
       "id" : "test",
-      "itemName" : "Sheesham Wood 6 Seater Dining Table with Chairs",
+      "itemName" : "Sample Item",
       "description" : "testProduct",
       "quantity" : 1,
       "manufacturer" : null,
       "brand" : null,
       "color" : null,
       "productUrl" : null,
-      "imageUrl" : "https://images-na.ssl-images-amazon.com/images/I/71Zkp0BxSfL._SL1300_.jpg",
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
       "categories" : null,
-      "amountWithoutTax" : 25000,
+      "amountWithoutTax" : 423.73,
       "taxAmount" : 76.27,
       "taxPercentage" : null,
       "discountedAmount" : null,
@@ -162,16 +169,84 @@ class Check : AppCompatActivity() {
       "amountWithoutTaxLocaleFull" : "10"
     }, {
       "id" : "test",
-      "itemName" : "Mi LED Smart TV 4A(43) - Full HD",
+      "itemName" : "Sample Item",
       "description" : "testProduct",
       "quantity" : 1,
       "manufacturer" : null,
       "brand" : null,
       "color" : null,
       "productUrl" : null,
-      "imageUrl" : "https://i01.appmifile.com/webfile/globalimg/7/E5F73D2A-3086-A8A6-CF7D-9BB24604449B.png",
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
       "categories" : null,
-      "amountWithoutTax" : 25000,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }, {
+      "id" : "test",
+      "itemName" : "Sample Item",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "categories" : null,
+      "amountWithoutTax" : 423.73,
       "taxAmount" : 76.27,
       "taxPercentage" : null,
       "discountedAmount" : null,
@@ -182,7 +257,7 @@ class Check : AppCompatActivity() {
   "statusNotifyUrl" : "https://www.boxpay.tech",
   "frontendReturnUrl" : "https://www.boxpay.tech",
   "frontendBackUrl" : "https://www.boxpay.tech",
-  "createShopperToken" : true,
+  "createShopperToken" : false,
   "expiryDurationSec" : 900
 }"""
         )
@@ -201,8 +276,11 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener {
-                /* no response handling */
+            Response.ErrorListener { error ->
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    Log.e("CheckError", "" + errorResponse)
+                }
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
@@ -215,5 +293,17 @@ class Check : AppCompatActivity() {
             }
         }
         queue.add(request)
+    }
+
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+        }
+        return null
     }
 }
