@@ -141,8 +141,8 @@ class Check : AppCompatActivity() {
                 "email": null,
                 "phoneNumber": null
             },
-            "dateOfBirth": null,
-            "panNumber": null
+            "dateOfBirth": "2023-07-18T12:34:56Z",
+        "panNumber": "CTGPA0002G"
         },
   "order" : {
     "items" : [ {

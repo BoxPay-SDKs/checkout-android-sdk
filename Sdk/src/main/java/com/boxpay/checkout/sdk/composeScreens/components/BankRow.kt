@@ -187,6 +187,7 @@ fun OthersEmiRow(
                 width = Dimension.fillToConstraints
                 centerVerticallyTo(icon)
             }
+                .clickable { onClickRadio() }
         )
         RadioButton(
             selected = isSelected,

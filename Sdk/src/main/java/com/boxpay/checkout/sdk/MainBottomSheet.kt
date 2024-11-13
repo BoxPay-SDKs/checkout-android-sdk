@@ -184,11 +184,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onStart() {
         super.onStart()
-
-        showLoadingState("") // Show loading state before initiating tasks
-
-
-        // Show loading state while executing time-consuming tasks
         if (firstLoad) {
             sharedPreferences =
                 requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
@@ -818,7 +813,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         props.put("Initialized", ":MainBottomSheet")
         mp.track("MainScreen", props)
         return try {
-            binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
+        binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
+        showLoadingState("")
 
             val imm =
                 requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -1940,10 +1936,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-        if (context != null) {
-            requireActivity().runOnUiThread {
-                windowManager.addView(overlayViewMainBottomSheet, layoutParams)
-            }
+        requireActivity().runOnUiThread {
+            windowManager.addView(overlayViewMainBottomSheet, layoutParams)
         }
     }
 
