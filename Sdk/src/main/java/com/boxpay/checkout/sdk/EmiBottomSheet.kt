@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -239,6 +240,9 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 },
                                 onClickFilter = {
                                     emiViewModel.getNoCostBanks(it)
+                                },
+                                onClickProceedButton = {
+                                    postRequest(context!!)
                                 }
                             )
                         }
@@ -402,19 +406,20 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 name = bankName,
                                 percent = "@$bankInterestRate% p.a.",
                                 noCostApplied = noApplicableOffer,
-                                emiList = emptyList()
+                                emiList = emptyList(),
+                                cardLessEmiValue = emiMethod.optString("cardlessEmiProviderValue")
                             )
                             val emi = Emi(
-                                duration = emiMethod.getInt("duration"),
-                                percent = emiMethod.getInt("interestRate"),
-                                amount = emiMethod.getString("emiAmountLocaleFull"),
-                                totalAmount = emiMethod.getString("totalAmountLocaleFull"),
+                                duration = emiMethod.optInt("duration"),
+                                percent = emiMethod.optInt("interestRate"),
+                                amount = emiMethod.optString("emiAmountLocaleFull"),
+                                totalAmount = emiMethod.optString("totalAmountLocaleFull"),
                                 discount = null,
-                                interestCharged = emiMethod.getString("interestChargedAmountLocaleFull"),
+                                interestCharged = emiMethod.optString("bankChargedInterestAmountLocaleFull"),
                                 noCostApplied = noApplicableOffer,
-                                processingFee = if (emiMethod.optJSONObject("processingFee") == null) "0" else emiMethod.getJSONObject(
+                                processingFee = if (emiMethod.optJSONObject("processingFee") == null) "0" else emiMethod.optJSONObject(
                                     "processingFee"
-                                ).getString("amountLocale") ?: ""
+                                )?.getString("amountLocale") ?: ""
                             )
                             addBankDetails(cardType = emiCardName, bank = bank, emi = emi)
                         }
@@ -468,9 +473,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     fun postRequest(context: Context) {
         showLoadingState()
         val requestQueue = Volley.newRequestQueue(context)
-        val cardNumber = emiViewModel.cardNumber.value!!.text.filter { it.isDigit() }
-        val expiry = emiViewModel.addDashInsteadOfSlash(emiViewModel.expiry.value!!.text)
-
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
@@ -496,28 +498,41 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             put("browserData", browserData)
 
             val instrumentDetailsObject = JSONObject().apply {
-                put(
-                    "type",
-                    if (emiViewModel.selectedCard.value.contains(
-                            "credit",
-                            true
-                        )
-                    ) "emi/cc" else "emi/dc"
-                )
+               if(emiViewModel.selectedOthersOption.value.isEmpty()) {
+                   put(
+                       "type",
+                       if (emiViewModel.selectedCard.value.contains(
+                               "credit",
+                               true
+                           )
+                       ) "emi/cc" else "emi/dc"
+                   )
+                   val cardNumber = emiViewModel.cardNumber.value!!.text.filter { it.isDigit() }
+                   val expiry = emiViewModel.addDashInsteadOfSlash(emiViewModel.expiry.value!!.text)
+                   val cardObject = JSONObject().apply {
+                       put("number", cardNumber)
+                       put("expiry", expiry)
+                       put("cvc", emiViewModel.cvv.value)
+                       put("holderName", emiViewModel.cardName.value)
 
-                val cardObject = JSONObject().apply {
-                    put("number", cardNumber)
-                    put("expiry", expiry)
-                    put("cvc", emiViewModel.cvv.value)
-                    put("holderName", emiViewModel.cardName.value)
-
-                    // Replace with the actual shopper VPA value
-                }
-                put("card", cardObject)
-                val emiObject = JSONObject().apply {
-                    put("duration", emiViewModel.selectedEmi.value.first)
-                }
-                put("emi", emiObject)
+                       // Replace with the actual shopper VPA value
+                   }
+                   put("card", cardObject)
+                   val emiObject = JSONObject().apply {
+                       put("duration", emiViewModel.selectedEmi.value.first)
+                   }
+                   put("emi", emiObject)
+               } else {
+                   put(
+                       "type",
+                       "emi/cardless"
+                   )
+                   val emiObject = JSONObject().apply {
+                       put("provider", emiViewModel.selectedOthersOption.value)
+                       // Replace with the actual shopper VPA value
+                   }
+                   put("emi", emiObject)
+               }
             }
             put("instrumentDetails", instrumentDetailsObject)
 
@@ -627,7 +642,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                             intent.putExtra("url", url)
                             intent.putExtra("type", type)
                             startFunctionCalls()
-                            startActivity(intent)
+                            startActivityForResult(intent, 333)
                         }
                     }
                     editor.apply()
@@ -821,6 +836,19 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             while (isActive) {
                 delay(3000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 333) {
+            if (resultCode == Activity.RESULT_OK) {
+                hideLoader()
+                job?.cancel()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
             }
         }
     }

@@ -26,7 +26,7 @@ class EmiViewModel : ViewModel() {
     val selectedEmi = mutableStateOf<Pair<Int, String>>(Pair(0, ""))
     val selectedPercent = mutableStateOf<Int?>(null)
     val addCardScreen = mutableStateOf(false)
-    val cardNumber =mutableStateOf<TextFieldValue?>(null)
+    val cardNumber = mutableStateOf<TextFieldValue?>(null)
     val cardName = mutableStateOf<String?>(null)
     val expiry = mutableStateOf<TextFieldValue?>(null)
     val filterList = mutableStateOf(listOf(Pair("No Cost EMI", false)))
@@ -59,14 +59,17 @@ class EmiViewModel : ViewModel() {
         _emiBankList.update {
             if (existingCardType != null) {
                 // Check if the bank already exists in the banks list
-                val existingBank = existingCardType.banks.find { it.name == bank.name && it.iconUrl == bank.iconUrl }
+                val existingBank =
+                    existingCardType.banks.find { it.name == bank.name && it.iconUrl == bank.iconUrl }
 
                 if (existingBank != null) {
                     // Check if the EMI already exists in the emiList
-                    val emiExists = existingBank.emiList.any { it.duration == emi.duration && it.amount == emi.amount }
+                    val emiExists =
+                        existingBank.emiList.any { it.duration == emi.duration && it.amount == emi.amount }
 
                     // Check if any existing EMI has noCostApplied as true
-                    val noCostApplied = existingBank.emiList.any { it.noCostApplied } || emi.noCostApplied
+                    val noCostApplied =
+                        existingBank.emiList.any { it.noCostApplied } || emi.noCostApplied
 
                     if (!emiExists) {
                         // Append the new EMI to the existing EMI list
@@ -74,10 +77,15 @@ class EmiViewModel : ViewModel() {
                             emiList = existingBank.emiList + emi,
                             noCostApplied = noCostApplied // Update noCostApplied based on EMI list
                         )
-                        val updatedCardType = existingCardType.copy(banks = (existingCardType.banks.map {
-                            if (it.name == bank.name && it.iconUrl == bank.iconUrl) updatedBank else it
-                        }).sortedWith(compareBy({ !it.noCostApplied }, { it.name })) // Sort by noCostApplied (false first) then by name
-                        )
+                        val updatedCardType =
+                            existingCardType.copy(banks = (existingCardType.banks.map {
+                                if (it.name == bank.name && it.iconUrl == bank.iconUrl) updatedBank else it
+                            }).sortedWith(
+                                compareBy(
+                                    { !it.noCostApplied },
+                                    { it.name })
+                            ) // Sort by noCostApplied (false first) then by name
+                            )
                         it.copy(cards = it.cards.map { card ->
                             if (card.cardType == cardType) updatedCardType else card
                         })
@@ -87,9 +95,15 @@ class EmiViewModel : ViewModel() {
                     }
                 } else {
                     // Add the bank with the new EMI if it doesn't exist in the list
-                    val newBankWithEmi = bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
-                    val updatedCardType = existingCardType.copy(banks = (existingCardType.banks + newBankWithEmi)
-                        .sortedWith(compareBy({ !it.noCostApplied }, { it.name })) // Sort by noCostApplied (false first) then by name
+                    val newBankWithEmi =
+                        bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
+                    val updatedCardType = existingCardType.copy(
+                        banks = (existingCardType.banks + newBankWithEmi)
+                            .sortedWith(
+                                compareBy(
+                                    { !it.noCostApplied },
+                                    { it.name })
+                            ) // Sort by noCostApplied (false first) then by name
                     )
                     it.copy(cards = it.cards.map { card ->
                         if (card.cardType == cardType) updatedCardType else card
@@ -97,7 +111,8 @@ class EmiViewModel : ViewModel() {
                 }
             } else {
                 // Add the new card type with the bank and EMI if the card type doesn't exist
-                val newBankWithEmi = bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
+                val newBankWithEmi =
+                    bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
                 it.copy(
                     cards = it.cards + CardType(
                         cardType = cardType,
@@ -109,7 +124,6 @@ class EmiViewModel : ViewModel() {
 
         originalEmiBankList.value = emiBankList.value
     }
-
 
 
     // Function to filter banks based on the search query
@@ -149,7 +163,17 @@ class EmiViewModel : ViewModel() {
     fun onCardClick(cardName: String) {
         selectedCard.value = cardName
         selectedOthersOption.value = ""
+        searchQuery.value = ""
+
+        // Find the selected card and check if any bank has `noCostApplied`
+        val selectedCardType = _emiBankList.value.cards.find { it.cardType == cardName }
+        val hasNoCostApplied = selectedCardType?.banks?.any { it.noCostApplied } ?: false
+
+        // You can now use `hasNoCostApplied` for further logic or UI updates
+        isFilterExisted.value = hasNoCostApplied
+        _emiBankList.value = originalEmiBankList.value
     }
+
 
     fun onClickRadio(name: String) {
         selectedOthersOption.value = name
@@ -166,6 +190,7 @@ class EmiViewModel : ViewModel() {
         val sortedBank = bank.copy(emiList = sortedEmiList)
 
         selectedBank.value = sortedBank
+        selectedOthersOption.value = ""
         selectTenureScreen.value = true
     }
 
@@ -189,7 +214,7 @@ class EmiViewModel : ViewModel() {
         cardName.value = null
         cardIcon.value = (R.drawable.default_card_icon)
         cardNumber.value = null
-        expiry.value  =null
+        expiry.value = null
         cvv.value = null
         addCardScreen.value = false
         selectedPercent.value = null
@@ -215,7 +240,8 @@ class EmiViewModel : ViewModel() {
 
         // Calculate the new cursor position
         val cursorPosition = text.selection.start
-        val newCursorPosition = newFormattedNumber.length.coerceAtMost(cursorPosition + (newFormattedNumber.length - text.text.length))
+        val newCursorPosition =
+            newFormattedNumber.length.coerceAtMost(cursorPosition + (newFormattedNumber.length - text.text.length))
 
         // Update the card number and text field value
         cardNumber.value = TextFieldValue(newFormattedNumber, TextRange(newCursorPosition))
@@ -245,6 +271,7 @@ class EmiViewModel : ViewModel() {
                 val year = limitedDigits.drop(2)
                 "$month/$year"
             }
+
             else -> limitedDigits
         }
 
@@ -257,6 +284,7 @@ class EmiViewModel : ViewModel() {
                 val positionAdjustment = if (newFormattedExpiry.length == 3) 2 else 0
                 text.selection.start + positionAdjustment
             }
+
             else -> {
                 // If a character was removed, keep the cursor in place
                 text.selection.start
@@ -365,7 +393,7 @@ class EmiViewModel : ViewModel() {
         }
     }
 
-    fun isCardValid() : Boolean {
+    fun isCardValid(): Boolean {
         val cardNumber = cardNumber.value?.text?.filter { it.isDigit() }
         val expiry = expiry.value?.text?.filter { it.isDigit() }
         val cvv = cvv.value
@@ -396,4 +424,5 @@ class EmiViewModel : ViewModel() {
     fun updateAddCardVisibility(visible: Boolean) {
         contentLoaded.value = visible
     }
+
 }
