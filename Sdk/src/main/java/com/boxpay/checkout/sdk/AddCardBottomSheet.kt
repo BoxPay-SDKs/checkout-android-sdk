@@ -63,6 +63,7 @@ import com.boxpay.checkout.sdk.dataclasses.Money
 import com.boxpay.checkout.sdk.dataclasses.SessionResponse
 import com.boxpay.checkout.sdk.dataclasses.Shopper
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -1367,7 +1368,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
                 }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
-                    put("dateOfBirth", formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null){
@@ -1527,22 +1528,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         requestQueue.add(jsonObjectRequest)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun formatToISO8601WithCurrentTime(dateString: String): String {
-        // Check if dateString is already in ISO 8601 format with "Z" suffix
-        val iso8601Pattern = Regex("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z")
-        if (iso8601Pattern.matches(dateString)) {
-            return dateString
-        }
-
-        val date = LocalDate.parse(dateString)
-        val dateTime = LocalDateTime.of(date, LocalDateTime.now().toLocalTime())
-        // Convert LocalDateTime to ZonedDateTime in UTC
-        val zonedDateTime = dateTime.atZone(ZoneOffset.UTC)
-        // Format to ISO 8601 with seconds precision and Z suffix
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
-        return zonedDateTime.format(formatter)
-    }
 
     private fun handleDccEvents() {
         if (isDCCFetched && isQuotationRequired) {
