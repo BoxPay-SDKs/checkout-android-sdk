@@ -190,6 +190,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         dismiss()
     }
 
+    @SuppressLint("NewApi")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
