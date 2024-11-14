@@ -945,8 +945,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 }
                 binding.dobErrorText.visibility = View.INVISIBLE
                 convertedDate = convertDateFormat(formattedDate)
-                val (hour, minute, seconds) = getCurrentTime()
-                editor.putString("dateOfBirthChosen", convertToISO8601(formattedDate,hour, minute, seconds))
+                editor.putString("dateOfBirthChosen", convertToISO8601(formattedDate,0, 0, 0))
                 editor.apply()
             }, year, month, day)
         datePickerDialog.datePicker.maxDate = System.currentTimeMillis()

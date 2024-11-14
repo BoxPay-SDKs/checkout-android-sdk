@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.widget.FrameLayout
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
@@ -47,6 +48,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.random.Random
 
@@ -459,6 +464,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         requestQueue.add(jsonArrayRequest)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context, instrumentTypeValue: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -496,10 +502,10 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null){
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else{
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null){
@@ -651,6 +657,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
     fun dismissCurrentBottomSheet() {
         dismiss()
     }
+
 
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true

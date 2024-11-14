@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -18,6 +19,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebSettings
 import android.widget.FrameLayout
+import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -39,6 +41,7 @@ import com.boxpay.checkout.sdk.composeScreens.screen.EmiShimmerScreen
 import com.boxpay.checkout.sdk.composeScreens.screen.SelectTenureEmi
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -51,6 +54,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.random.Random
 
@@ -465,6 +472,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         dismissAndMakeButtonsOfMainBottomSheetEnabled()
     }
 
+    @SuppressLint("NewApi")
+    @RequiresApi(Build.VERSION_CODES.O)
     fun postRequest(context: Context) {
         showLoadingState()
         val requestQueue = Volley.newRequestQueue(context)
@@ -529,10 +538,10 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null) {

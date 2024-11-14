@@ -2,6 +2,7 @@ package com.boxpay.checkout.sdk
 
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
@@ -38,6 +39,7 @@ import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
@@ -88,6 +90,10 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import java.util.Objects
@@ -447,11 +453,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun launchUPIIntent(url: String) {
-        val intent = Intent(Intent.ACTION_VIEW)
-        val uri = Uri.parse(url)
-        intent.data = uri
 
         try {
+
+            val intent = Intent(Intent.ACTION_VIEW)
+            val uri = Uri.parse(url)
+            intent.data = uri
+
             val resultCode = when {
                 url.startsWith("tez") -> 121
                 url.startsWith("paytm") -> 122
@@ -460,18 +468,23 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             startFunctionCalls()
             startActivityForResult(intent, resultCode)
+
         } catch (e: ActivityNotFoundException) {
             // Log specific error if the app is not found
             upiIntentError = e.message
             callUIAnalytics(requireActivity(),"UPI_APP_NOT_FOUND","","UPI")
             Log.e("UPIError", "UPI app not found: ${e.message}")
+            PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(parentFragmentManager, "FailureScreen")
             removeLoadingState()
+
         } catch (e: Exception) {
             // Log any other error that occurs
             upiIntentError = e.message
             callUIAnalytics(requireActivity(),"FAILED_TO_LAUNCH_UPI_INTENT","","UPI")
             Log.e("UPIError", "Failed to launch UPI intent: ${e.message}", e)
+            PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(parentFragmentManager, "FailureScreen")
             removeLoadingState()
+
         }
     }
 
@@ -632,6 +645,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         queue?.add(jsonObjectRequest)
     }
 
+    @SuppressLint("NewApi")
     private fun getUrlForUPIIntent(appName: String) {
 
         val requestQueue = Volley.newRequestQueue(context)
@@ -672,10 +686,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null) {
@@ -1358,6 +1372,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequestForQRCode(context: Context) {
 
         val requestQueue = Volley.newRequestQueue(context)
@@ -1399,10 +1414,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null) {
@@ -1755,6 +1770,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun getUrlForDefaultUPIIntent() {
 
         val requestQueue = Volley.newRequestQueue(context)
@@ -1791,10 +1807,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null) {
@@ -3062,6 +3078,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         return sorted.toTypedArray()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun postRecommendedInstruments(type: String, instrumentationRef: String, displayName: String) {
         showLoadingInButton()
         val requestQueue = Volley.newRequestQueue(context)
@@ -3106,10 +3123,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null) {
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null) {

@@ -33,11 +33,16 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.FragmentAddUPIIDBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.random.Random
 
@@ -408,6 +413,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -453,10 +459,10 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", null) != null){
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else{
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null){

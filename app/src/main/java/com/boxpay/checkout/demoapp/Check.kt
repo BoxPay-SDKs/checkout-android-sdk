@@ -1,16 +1,15 @@
+
 package com.boxpay.checkout.demoapp
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.BoxPayCheckout
@@ -100,50 +99,41 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context) {
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/oh3mnorsME/sessions"
         val jsonData = JSONObject(
             """ {
   "context" : {
-    "countryCode" : "IN",
+    "countryCode" : "US",
     "legalEntity" : {
-      "code" : "razorpay"
+      "code" : "dcc_usd"
     },
     "orderId" : "test12"
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "100000",
-    "currencyCode" : "INR"
+    "amount" : "1000",
+    "currencyCode" : "USD"
   },
   "descriptor" : {
     "line1" : "Some descriptor"
   },
-  "shopper": {
-            "firstName": "Ankush",
-            "lastName": "Kashyap",
-            "gender": null,
-            "phoneNumber": "917777777777",
-            "email": "ankush.kashyap@boxpay.tech",
-            "uniqueReference": "x123y",
-            "deliveryAddress": {
-                "address1": "first line",
-                "address2": "second line",
-                "address3": null,
-                "city": "Chandigarh",
-                "state": "Chandigarh",
-                "countryCode": "IN",
-                "postalCode": "160002",
-                "shopperRef": null,
-                "addressRef": null,
-                "labelType": "Other",
-                "labelName": null,
-                "name": null,
-                "email": null,
-                "phoneNumber": null
-            },
-            "dateOfBirth": "2023-07-17T12:34:56Z",
-            "panNumber": "CTGPA2222D"
-        },
+  "shopper" : {
+    "firstName" : "Ankush",
+    "lastName" : "Kashyap",
+    "email" : "ankush.kashyap@boxpay.tech",
+    "uniqueReference" : "x123y",
+    "phoneNumber" : "917986361129",
+    "deliveryAddress" : {
+      "address1" : "first line",
+      "address2" : "second line",
+      "city" : "Chandigarh",
+      "state" : "Chandigarh",
+      "countryCode" : "IN",
+      "postalCode" : "160002"  
+    },
+    "dateOfBirth": "2023-07-17T12:34:56Z",
+    "panNumber": "CTGPA0009K"
+  },
   "order" : {
     "originalAmount" : 423.73,
     "shippingAmount" : 50,
@@ -276,34 +266,19 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("CheckError", "" + errorResponse)
-                }
+            Response.ErrorListener {
+                /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =
-                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
+                    "Bearer i8zuZD3mR9SYvT29z3p4DHRigXBcL5Cu5H2Lpl5M9w1LP7BVqj79YE09vhrskbXTbJjtZ5HsLFfivNjtdCZZZk"
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }
         queue.add(request)
-    }
-
-    fun extractMessageFromErrorResponse(response: String): String? {
-        try {
-            // Parse the JSON string
-            val jsonObject = JSONObject(response)
-            // Retrieve the value associated with the "message" key
-            return jsonObject.getString("message")
-        } catch (e: Exception) {
-            // Handle JSON parsing exception
-        }
-        return null
     }
 }
