@@ -91,7 +91,8 @@ fun ChooseEmiScreen(
     searchQuery: String,
     onValueChange: (String) -> Unit,
     onClickBank: (Bank) -> Unit,
-    onClickFilter: (text: String) -> Unit
+    onClickFilter: (text: String) -> Unit,
+    onClickProceedButton: () -> Unit
 ) {
     val focusRequester = FocusRequester()
     val focusManager = LocalFocusManager.current
@@ -139,12 +140,17 @@ fun ChooseEmiScreen(
 
                 width = Dimension.fillToConstraints
             },
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             cardList.cards.map {
                 Column(modifier = Modifier
-                    .clickable { onClickCard(it.cardType) }
-                    .padding(end = 24.dp)) {
+                    .clickable {
+                        onClickCard(it.cardType)
+                        focusManager.clearFocus()
+                    }
+                    .padding(end = 24.dp)
+                ) {
                     Text(
                         text = it.cardType,
                         style = TextStyle(
@@ -165,7 +171,7 @@ fun ChooseEmiScreen(
                                 )
                             )
                         ) else Color(0xFF010102).copy(0.45f),
-                        modifier = Modifier.padding(bottom = 8.dp, start = 6.dp)
+                        modifier = Modifier.padding(bottom = 8.dp).align(Alignment.CenterHorizontally)
                     )
                     if (it.cardType.equals(isSelectedCard, true)) {
                         Divider(
@@ -223,7 +229,7 @@ fun ChooseEmiScreen(
             },
             placeholder = {
                 Text(
-                    text = "Search for bank",
+                    text = if (isSelectedCard.equals("others", true)) "Search for other EMI options" else "Search for bank",
                     style = TextStyle(
                         fontFamily = defaultFontFamily,
                         fontSize = 16.sp,
@@ -298,8 +304,8 @@ fun ChooseEmiScreen(
                     start.linkTo(parent.start, 16.dp)
                     end.linkTo(parent.end, 16.dp)
                     top.linkTo(allBanksText.bottom, 8.dp)
-                    if (selectedRadioButton.isNotEmpty()) {
-                        bottom.linkTo(cta.top, 30.dp)
+                    if (isSelectedCard.equals("others", true)) {
+                        bottom.linkTo(cta.top, 20.dp)
                     } else {
                         bottom.linkTo(parent.bottom, 30.dp)
                     }
@@ -358,31 +364,52 @@ fun ChooseEmiScreen(
                         true
                     )
                 ) {
-                    it.banks.map { bank ->
-                        OthersEmiRow(
-                            modifier = Modifier.fillParentMaxWidth(),
-                            iconUrl = bank.iconUrl,
-                            isSelected = selectedRadioButton.equals(bank.name, true),
-                            otherName = bank.name,
-                            onClickRadio = {
-                                onClickRadio(bank.name)
-                            },
-                            selectedColor = Color(
-                                android.graphics.Color.parseColor(
-                                    sharedPreferences.getString(
-                                        "primaryButtonColor",
-                                        "#000000"
+                    if (it.banks.isNotEmpty()) {
+                        it.banks.map { bank ->
+                            OthersEmiRow(
+                                modifier = Modifier.fillParentMaxWidth(),
+                                iconUrl = bank.iconUrl,
+                                isSelected = selectedRadioButton.equals(bank.cardLessEmiValue, true),
+                                otherName = bank.name,
+                                onClickRadio = {
+                                    onClickRadio(bank.cardLessEmiValue)
+                                },
+                                selectedColor = Color(
+                                    android.graphics.Color.parseColor(
+                                        sharedPreferences.getString(
+                                            "primaryButtonColor",
+                                            "#000000"
+                                        )
                                     )
                                 )
                             )
-                        )
+                        }
+                    } else {
+                        Column(
+                            modifier = Modifier
+                                .fillParentMaxSize()
+                                .padding(top = 20.dp, start = 16.dp, end = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "No Results Found for $searchQuery",
+                                style = TextStyle(
+                                    fontFamily = defaultFontFamily,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight(600)
+                                ),
+                                color = Color(0xFF7F7D83),
+                                modifier = Modifier
+                            )
+                        }
                     }
                 }
             }
         }
-        if (selectedRadioButton.isNotEmpty()) {
+        if (isSelectedCard.equals("others", true)) {
             Button(
-                onClick = { /*TODO*/ },
+                enabled = selectedRadioButton.isNotEmpty(),
+                onClick = { onClickProceedButton() },
                 modifier = Modifier
                     .constrainAs(cta) {
                         start.linkTo(parent.start, 16.dp)
@@ -413,7 +440,7 @@ fun ChooseEmiScreen(
                     color = Color.White,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 12.dp),
+                        .padding(vertical = 8.dp),
                     textAlign = TextAlign.Center
                 )
             }
@@ -621,6 +648,7 @@ fun AddCardDetailsScreen(
             override fun originalToTransformed(offset: Int): Int {
                 return offset
             }
+
             override fun transformedToOriginal(offset: Int): Int {
                 return offset
             }
