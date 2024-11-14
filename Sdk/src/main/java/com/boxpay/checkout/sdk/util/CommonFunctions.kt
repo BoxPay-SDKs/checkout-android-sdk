@@ -12,14 +12,17 @@ object CommonFunctions {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun formatToISO8601WithCurrentTime(dateString: String): String {
-        // Check if the dateString is already in the desired ISO 8601 format with "T00:00:00Z"
-        val iso8601Pattern = Regex("\\d{4}-\\d{2}-\\d{2}T00:00:00Z")
-        if (iso8601Pattern.matches(dateString)) {
-            return dateString
-        }
+        // Define a formatter to parse the input date string with time
+        val dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
+        val dateFormatter = DateTimeFormatter.ISO_DATE
 
-        // Parse the input date string as a LocalDate
-        val date = LocalDate.parse(dateString)
+        // Try to parse the input as LocalDateTime
+        val date = try {
+            LocalDateTime.parse(dateString, dateTimeFormatter).toLocalDate()
+        } catch (e: Exception) {
+            // If parsing as LocalDateTime fails, try parsing as LocalDate
+            LocalDate.parse(dateString, dateFormatter)
+        }
 
         // Create a LocalDateTime with the fixed time set to "00:00:00"
         val dateTime = LocalDateTime.of(date, LocalTime.MIDNIGHT)
@@ -31,5 +34,6 @@ object CommonFunctions {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
         return zonedDateTime.format(formatter)
     }
+
 
 }
