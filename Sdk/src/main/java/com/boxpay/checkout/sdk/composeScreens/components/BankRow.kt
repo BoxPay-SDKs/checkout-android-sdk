@@ -60,6 +60,7 @@ fun BankRow(
     bankName: String,
     percentText: String,
     isNoCostApplied: Boolean,
+    isLowCostAppleied: Boolean,
     modifier: Modifier = Modifier
 ) {
     val imageLoader = ImageLoader.Builder(LocalContext.current)
@@ -95,7 +96,7 @@ fun BankRow(
             color = Color(0xFF4F4D55),
             modifier = Modifier.constrainAs(name) {
                 start.linkTo(icon.end, 8.dp)
-                if (isNoCostApplied) {
+                if (isNoCostApplied || isLowCostAppleied) {
                     top.linkTo(parent.top, 16.dp)
                 } else {
                     centerVerticallyTo(icon)
@@ -103,13 +104,13 @@ fun BankRow(
             }
         )
         FilterTag(
-            text = "NO COST EMI",
+            text = if (isNoCostApplied) "NO COST EMI" else "LOW COST EMI",
             modifier = Modifier
                 .constrainAs(noCostTag) {
                     start.linkTo(icon.end, 8.dp)
                     top.linkTo(name.bottom, 4.dp)
 
-                    visibility = if (isNoCostApplied) Visibility.Visible else Visibility.Gone
+                    visibility = if (isNoCostApplied || isLowCostAppleied) Visibility.Visible else Visibility.Gone
                 }
         )
         Image(
@@ -169,8 +170,9 @@ fun OthersEmiRow(
                     bottom.linkTo(parent.bottom, 16.dp)
                 }
                 .size(34.dp)
-                .border(1.dp, Color(0xFFDCDEE3), RoundedCornerShape(4.dp))
-                .padding(4.dp)
+                .clickable {
+                    onClickRadio()
+                }
         )
         Text(
             text = otherName,
@@ -220,7 +222,8 @@ fun EmiAmountDetails(
     bankName: String,
     onProceed: () -> Unit,
     isNoCostApplied: Boolean,
-    currencySymbol: String
+    currencySymbol: String,
+    isLowCostApplied: Boolean
 ) {
     ConstraintLayout(
         modifier
@@ -279,12 +282,15 @@ fun EmiAmountDetails(
                 centerVerticallyTo(radioButton)
             }
         )
-        if (isNoCostApplied) {
-            FilterTag(text = "NO COST EMI", modifier = Modifier.constrainAs(noCost) {
-                start.linkTo(heading.end, 8.dp)
-
-                centerVerticallyTo(radioButton)
-            })
+        if (isNoCostApplied || isLowCostApplied) {
+            FilterTag(
+                text = if (isNoCostApplied) "NO COST EMI" else "LOW COST EMI",
+                modifier = Modifier
+                    .constrainAs(noCost) {
+                        start.linkTo(heading.end, 8.dp)
+                        centerVerticallyTo(radioButton)
+                    }
+            )
         }
         if (isSelected) {
             TableDetails(
@@ -636,15 +642,14 @@ fun CvvBottomSheet(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF04000B).copy(0.68f))
-            .clickable { onClickBack() },
+            .background(Color(0xFF000000).copy(0.8f)),
         contentAlignment = Alignment.BottomCenter
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .background(Color.White, RoundedCornerShape(topEnd = 20.dp, topStart = 20.dp))
+                .background(Color.White)
         ) {
             Text(
                 text = "Where to find CVV?",
@@ -674,7 +679,7 @@ fun CvvBottomSheet(
                     .padding(start = 16.dp, top = 16.dp)
             )
             Text(
-                text = "3 digit numeric code on the back side of card",
+                text = "3-digit numeric code on the back side of card",
                 style = TextStyle(
                     fontFamily = defaultFontFamily,
                     fontSize = 14.sp,
@@ -707,7 +712,7 @@ fun CvvBottomSheet(
                     .padding(start = 16.dp, top = 16.dp)
             )
             Text(
-                text = "4 digit numeric code on the front side of the card, just above the card number",
+                text = "4-digit numeric code on the front side of the card, just above the card number",
                 style = TextStyle(
                     fontFamily = defaultFontFamily,
                     fontSize = 14.sp,

@@ -34,7 +34,7 @@ fun TopBar(
                     top.linkTo(parent.top, 12.dp)
                     bottom.linkTo(parent.bottom, 12.dp)
                 }
-                .size(28.dp)
+                .size(24.dp)
                 .clickable { onClickBack() },
             colorFilter = ColorFilter.tint(Color(0xFF7F7D83))
         )
@@ -42,7 +42,7 @@ fun TopBar(
             text = text,
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 20.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight(600)
             ),
             color = Color(0xFF02040E).copy(0.7f),

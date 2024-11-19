@@ -29,7 +29,7 @@ class EmiViewModel : ViewModel() {
     val cardNumber = mutableStateOf<TextFieldValue?>(null)
     val cardName = mutableStateOf<String?>(null)
     val expiry = mutableStateOf<TextFieldValue?>(null)
-    val filterList = mutableStateOf(listOf(Pair("No Cost EMI", false)))
+    val filterList = mutableStateOf<List<Pair<String, Boolean>>>(emptyList())
     val isFilterExisted = mutableStateOf(false)
     val cardIcon = mutableStateOf(R.drawable.default_card_icon)
     val cvv = mutableStateOf<String?>(null)
@@ -38,6 +38,7 @@ class EmiViewModel : ViewModel() {
     val contentLoaded = mutableStateOf(false)
     val firstTimeLoaded = mutableStateOf(true)
     val isCardNumberEnabled = mutableStateOf<Boolean?>(null)
+    val showLoaderInButton = mutableStateOf(false)
 
     // To store the original list of banks
     private val originalEmiBankList = mutableStateOf(ChooseEmiModel(emptyList()))
@@ -48,82 +49,83 @@ class EmiViewModel : ViewModel() {
     // Function to add/update bank details
     fun addBankDetails(cardType: String, bank: Bank, emi: Emi) {
         val currentList = _emiBankList.value
-        val existingCardType = currentList.cards.find { it.cardType == cardType }
-        if (selectedCard.value.isEmpty()) {
-            selectedCard.value = cardType
+        val existingCardType = currentList.cards.find { it.cardType.equals(cardType, ignoreCase = true) }
+        _emiBankList.value.cards.find { it.cardType.equals("credit card", ignoreCase = true) }?.let {
+            selectedCard.value = "Credit Card"
+        } ?: _emiBankList.value.cards.find { it.cardType.equals("debit card", ignoreCase = true) }?.let {
+            selectedCard.value = "Debit Card"
+        } ?: _emiBankList.value.cards.find { it.cardType.equals("others", ignoreCase = true) }?.let {
+            selectedCard.value = "Others"
         }
-        if (!isFilterExisted.value && emi.noCostApplied) {
+        if ((bank.noCostApplied || bank.lowCostApplied)) {
             isFilterExisted.value = true
+            if (bank.noCostApplied && !filterList.value.contains(Pair("No Cost EMI", false))) {
+                filterList.value += Pair("No Cost EMI", false)
+            }
+            if (bank.lowCostApplied && !filterList.value.contains(Pair("Low Cost EMI", false))) {
+                filterList.value += Pair("Low Cost EMI", false)
+            }
         }
 
         _emiBankList.update {
-            if (existingCardType != null) {
-                // Check if the bank already exists in the banks list
-                val existingBank =
-                    existingCardType.banks.find { it.name == bank.name && it.iconUrl == bank.iconUrl }
+            val updatedList = if (existingCardType != null) {
+                val existingBank = existingCardType.banks.find { it.name == bank.name && it.iconUrl == bank.iconUrl }
 
-                if (existingBank != null) {
-                    // Check if the EMI already exists in the emiList
-                    val emiExists =
-                        existingBank.emiList.any { it.duration == emi.duration && it.amount == emi.amount }
-
-                    // Check if any existing EMI has noCostApplied as true
-                    val noCostApplied =
-                        existingBank.emiList.any { it.noCostApplied } || emi.noCostApplied
+                val updatedCardType = if (existingBank != null) {
+                    val emiExists = existingBank.emiList.any { it.duration == emi.duration && it.amount == emi.amount }
+                    val noCostApplied = existingBank.emiList.any { it.noCostApplied } || emi.noCostApplied
 
                     if (!emiExists) {
-                        // Append the new EMI to the existing EMI list
                         val updatedBank = existingBank.copy(
                             emiList = existingBank.emiList + emi,
-                            noCostApplied = noCostApplied // Update noCostApplied based on EMI list
+                            noCostApplied = noCostApplied
                         )
-                        val updatedCardType =
-                            existingCardType.copy(banks = (existingCardType.banks.map {
+                        existingCardType.copy(
+                            banks = (existingCardType.banks.map {
                                 if (it.name == bank.name && it.iconUrl == bank.iconUrl) updatedBank else it
-                            }).sortedWith(
-                                compareBy(
-                                    { !it.noCostApplied },
-                                    { it.name })
-                            ) // Sort by noCostApplied (false first) then by name
-                            )
-                        it.copy(cards = it.cards.map { card ->
-                            if (card.cardType == cardType) updatedCardType else card
-                        })
+                            }).sortedWith(compareBy({ !it.noCostApplied }, { it.percent }))
+                        )
                     } else {
-                        // No changes if the EMI already exists
-                        it
+                        existingCardType
                     }
                 } else {
-                    // Add the bank with the new EMI if it doesn't exist in the list
-                    val newBankWithEmi =
-                        bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
-                    val updatedCardType = existingCardType.copy(
+                    val newBankWithEmi = bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
+                    existingCardType.copy(
                         banks = (existingCardType.banks + newBankWithEmi)
-                            .sortedWith(
-                                compareBy(
-                                    { !it.noCostApplied },
-                                    { it.name })
-                            ) // Sort by noCostApplied (false first) then by name
+                            .sortedWith(compareBy({ !it.noCostApplied }, { it.percent }))
                     )
-                    it.copy(cards = it.cards.map { card ->
-                        if (card.cardType == cardType) updatedCardType else card
-                    })
                 }
+
+                it.copy(cards = it.cards.map { card ->
+                    if (card.cardType.equals(cardType, ignoreCase = true)) updatedCardType else card
+                })
             } else {
-                // Add the new card type with the bank and EMI if the card type doesn't exist
-                val newBankWithEmi =
-                    bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
+                val newBankWithEmi = bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
                 it.copy(
                     cards = it.cards + CardType(
                         cardType = cardType,
                         banks = listOf(newBankWithEmi)
+                            .sortedWith(compareBy({ !it.noCostApplied }, { it.percent }))
                     )
                 )
             }
+
+            // Enforce the fixed order of card types: credit -> debit -> others
+            updatedList.copy(
+                cards = updatedList.cards.sortedBy { card ->
+                    when (card.cardType.lowercase()) {
+                        "credit card" -> 0
+                        "debit card" -> 1
+                        "others" -> 2
+                        else -> Int.MAX_VALUE // Any unexpected card types will appear last
+                    }
+                }
+            )
         }
 
         originalEmiBankList.value = emiBankList.value
     }
+
 
 
     // Function to filter banks based on the search query
@@ -157,7 +159,7 @@ class EmiViewModel : ViewModel() {
         addCardScreen.value = false
         contentLoaded.value = false
         firstTimeLoaded.value = true
-        filterList.value = listOf(Pair("No Cost EMI", false))
+        filterList.value = emptyList()
     }
 
     fun onCardClick(cardName: String) {
@@ -192,6 +194,9 @@ class EmiViewModel : ViewModel() {
         selectedBank.value = sortedBank
         selectedOthersOption.value = ""
         selectTenureScreen.value = true
+        filterList.value = filterList.value.map {
+            it.copy(it.first, false)
+        }
     }
 
 
@@ -350,27 +355,42 @@ class EmiViewModel : ViewModel() {
         }
     }
 
-    fun getNoCostBanks(cardType: String) {
+    fun getBanksByFilter(cardType: String, filterApplied: String) {
+        // Toggle the clicked filter
+        val isFilterCurrentlyActive = filterList.value.find { it.first == filterApplied }?.second ?: false
+
         filterList.value = filterList.value.map { filter ->
-            Pair(filter.first, !filter.second)
+            if (filter.first == filterApplied) {
+                Pair(filter.first, !isFilterCurrentlyActive) // Toggle the selected filter
+            } else {
+                Pair(filter.first, false) // Disable other filters
+            }
         }
-        if (filterList.value[0].second) {
-            _emiBankList.update { currentList ->
-                val updatedCards = currentList.cards.map { card ->
-                    if (card.cardType == cardType) {
-                        // Filter and sort banks for the specified card type
-                        card.copy(
-                            banks = card.banks
-                                .filter { it.noCostApplied }
-                                .sortedBy { it.name } // Sort by bank name if needed
-                        )
+
+        // Check if any filter is active
+        val activeFilter = filterList.value.find { it.second }?.first
+
+        if (activeFilter != null) {
+            // Always start filtering from the original list
+            _emiBankList.update { originalList ->
+                val updatedCards = originalEmiBankList.value.cards.map { card ->
+                    if (card.cardType.equals(cardType, true)) {
+                        // Apply the active filter to banks
+                        val filteredBanks = when {
+                            activeFilter.contains("no", true) -> card.banks.filter { it.noCostApplied }
+                            activeFilter.contains("low", true) -> card.banks.filter { it.lowCostApplied }
+                            else -> card.banks
+                        }
+                        // Update and sort banks
+                        card.copy(banks = filteredBanks.sortedBy { it.percent })
                     } else {
                         card
                     }
                 }
-                currentList.copy(cards = updatedCards)
+                originalList.copy(cards = updatedCards)
             }
         } else {
+            // Reset to original bank list if no filter is active
             _emiBankList.update {
                 originalEmiBankList.value
             }

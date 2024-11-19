@@ -392,7 +392,7 @@
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:hint="MM/YY"
-                                android:inputType="number"
+                                android:inputType="numberPassword"
                                 android:maxLength="4"
                                 android:paddingStart="12dp"
                                 android:paddingTop="8dp"
@@ -454,6 +454,7 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="CVV"
+                                android:paddingStart="2dp"
                                 android:textColor="#2D2B32" />
 
                             <EditText
@@ -583,7 +584,7 @@
                                     android:layout_marginStart="2dp"
                                     android:layout_marginEnd="2dp"
                                     android:hint="Enter card number"
-                                    android:inputType="number"
+                                    android:inputType="numberPassword"
                                     android:maxLength="19"
                                     android:paddingStart="12dp"
                                     android:paddingTop="8dp"
@@ -667,7 +668,6 @@
                             </androidx.constraintlayout.widget.ConstraintLayout>
                         </LinearLayout>
 
-
                         <LinearLayout
                             android:id="@+id/saveCardLinearLayout"
                             android:layout_width="wrap_content"
@@ -698,6 +698,45 @@
                                 android:textColor="#2D2B32"
                                 android:textSize="12sp" />
                         </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/card_secure_row"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/rounded_drawable"
+                            android:orientation="horizontal"
+                            android:paddingStart="4dp"
+                            android:paddingTop="2dp"
+                            android:layout_marginEnd="2dp"
+                            android:layout_marginTop="14dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/ll_loader_dcc_and_info">
+
+                            <!-- Lock Icon Image -->
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:layout_gravity="center_vertical"
+                                android:layout_marginStart="4dp"
+                                android:contentDescription=""
+                                android:src="@drawable/ic_lock" />
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:layout_marginEnd="4dp"
+                                android:fontFamily="@font/poppins"
+                                android:fontWeight="600"
+                                android:gravity="center_vertical"
+                                android:text="100% SECURE"
+                                android:textColor="#7F7D83"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
 
 
                     </androidx.constraintlayout.widget.ConstraintLayout>

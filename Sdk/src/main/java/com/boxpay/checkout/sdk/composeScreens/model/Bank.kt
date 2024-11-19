@@ -10,6 +10,7 @@ data class Bank(
     val name: String,
     val percent: String,
     val noCostApplied: Boolean,
+    val lowCostApplied: Boolean,
     val emiList: List<Emi>,
     val cardLessEmiValue: String
 )
@@ -26,5 +27,6 @@ data class Emi(
     val discount: String?,
     val interestCharged: String?,
     val noCostApplied: Boolean,
+    val lowCostApplied: Boolean,
     val processingFee: String
 )

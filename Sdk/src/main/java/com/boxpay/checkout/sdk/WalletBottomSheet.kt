@@ -67,10 +67,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.random.Random
 
@@ -89,6 +85,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private var successScreenFullReferencePath: String? = null
     private var transactionId: String? = null
     private var shippingEnabled: Boolean = false
+    private var searchQuery: String = ""
     var liveDataPopularWalletSelectedOrNot: MutableLiveData<Boolean> =
         MutableLiveData<Boolean>().apply {
             value = false
@@ -445,31 +442,56 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
            else
                callPaymentMethodRules(requireContext())
 
-           binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
-               SearchView.OnQueryTextListener {
-               override fun onQueryTextSubmit(query: String): Boolean {
-                   if (query.isEmpty()) {
-                       removeRecyclerViewFromBelowEditText()
-                   } else {
-                       makeRecyclerViewJustBelowEditText()
-                   }
-                   filterWallets(query)
-                   disableProceedButton()
-                   return true
-               }
+        binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
+            SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                if (query.isEmpty()) {
+                    removeRecyclerViewFromBelowEditText()
+                } else {
+                    makeRecyclerViewJustBelowEditText()
+                }
+                searchQuery = query
+                filterWallets(query)
+                disableProceedButton()
+                return true
+            }
 
-               override fun onQueryTextChange(newText: String): Boolean {
-                   if (newText.isEmpty()) {
-                       removeRecyclerViewFromBelowEditText()
-                   } else {
-                       makeRecyclerViewJustBelowEditText()
-                   }
-                   filterWallets(newText)
-                   disableProceedButton()
-                   return true
-               }
-           })
-
+            override fun onQueryTextChange(newText: String): Boolean {
+                if (newText.isEmpty()) {
+                    removeRecyclerViewFromBelowEditText()
+                } else {
+                    makeRecyclerViewJustBelowEditText()
+                }
+                searchQuery = newText
+                filterWallets(newText)
+                disableProceedButton()
+                return true
+            }
+        })
+        val focusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        val unfocusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        binding.searchView.setOnFocusChangeListener { view, b ->
+            if (b) {
+                binding.searchView.background = focusedDrawable
+            } else {
+                binding.searchView.background = unfocusedDrawable
+            }
+        }
 
            binding.backButton.setOnClickListener() {
                if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
@@ -736,6 +758,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
         if (walletDetailsFiltered.size == 0) {
             binding.noResultsFoundTextView.visibility = View.VISIBLE
+            binding.noResultsFoundTextView.text = "No Results Found for $searchQuery"
         } else {
             binding.noResultsFoundTextView.visibility = View.GONE
         }

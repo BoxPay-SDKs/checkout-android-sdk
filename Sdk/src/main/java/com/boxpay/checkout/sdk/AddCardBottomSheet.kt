@@ -12,6 +12,7 @@ import android.content.pm.ActivityInfo
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -82,11 +83,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.text.NumberFormat
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 import kotlin.random.Random
@@ -427,8 +423,52 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-            binding.editTextCardNumber.filters = arrayOf(InputFilter.LengthFilter(19))
-
+        binding.editTextCardNumber.filters = arrayOf(InputFilter.LengthFilter(19))
+        val focusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        val unfocusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        binding.editTextCardCVV.setOnFocusChangeListener { view, b ->
+            if (b) {
+                binding.editTextCardCVV.background = focusedDrawable
+            } else {
+                binding.editTextCardCVV.background = unfocusedDrawable
+            }
+        }
+        binding.editTextCardValidity.setOnFocusChangeListener { view, b ->
+            if (b) {
+                binding.editTextCardValidity.background = focusedDrawable
+            } else {
+                binding.editTextCardValidity.background = unfocusedDrawable
+            }
+        }
+        binding.editTextCardNumber.setOnFocusChangeListener { view, b ->
+            if (b) {
+                binding.editTextCardNumber.background = focusedDrawable
+            } else {
+                binding.editTextCardNumber.background = unfocusedDrawable
+            }
+        }
+        binding.editTextNameOnCard.setOnFocusChangeListener { view, b ->
+            if (b) {
+                binding.editTextNameOnCard.background = focusedDrawable
+            } else {
+                binding.editTextNameOnCard.background = unfocusedDrawable
+            }
+        }
 
             binding.editTextCardNumber.addTextChangedListener(object : TextWatcher {
 
