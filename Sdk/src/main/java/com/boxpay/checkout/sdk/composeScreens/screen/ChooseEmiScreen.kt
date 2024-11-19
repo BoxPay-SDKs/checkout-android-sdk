@@ -637,7 +637,15 @@ fun SelectTenureEmi(
                         onProceed(it.percent)
                     },
                     isNoCostApplied = it.noCostApplied,
-                    isLowCostApplied = it.lowCostApplied
+                    isLowCostApplied = it.lowCostApplied,
+                    selectedTextColor = Color(
+                        android.graphics.Color.parseColor(
+                            sharedPreferences.getString(
+                                "buttonTextColor",
+                                "#ffffff"
+                            )
+                        )
+                    )
                 )
                 if (it.amount != selectedBank.emiList.last().amount) {
                     Divider(modifier = Modifier.fillMaxWidth())
