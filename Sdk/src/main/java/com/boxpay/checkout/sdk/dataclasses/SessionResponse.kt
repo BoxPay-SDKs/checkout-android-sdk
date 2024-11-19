@@ -63,7 +63,7 @@ data class LegalEntitySession(
 
 data class MoneySession(
 
-    @SerializedName("amount") var amount: Int? = null,
+    @SerializedName("amount") var amount: Double? = null,
     @SerializedName("currencyCode") var currencyCode: String? = null,
     @SerializedName("amountLocale") var amountLocale: String? = null,
     @SerializedName("amountLocaleFull") var amountLocaleFull: String? = null,
@@ -125,7 +125,7 @@ data class ShopperSession(
 data class ProcessingFee (
 
     @SerializedName("feeType"          ) var feeType          : String? = null,
-    @SerializedName("amount"           ) var amount           : Int?    = null,
+    @SerializedName("amount"           ) var amount           : Double?    = null,
     @SerializedName("amountLocale"     ) var amountLocale     : String? = null,
     @SerializedName("amountLocaleFull" ) var amountLocaleFull : String? = null
 
@@ -160,7 +160,7 @@ data class Items(
 data class Order(
 
     @SerializedName("voucherCode") var voucherCode: String? = null,
-    @SerializedName("shippingAmount") var shippingAmount: Int? = null,
+    @SerializedName("shippingAmount") var shippingAmount: Double? = null,
     @SerializedName("taxAmount") var taxAmount: Double? = null,
     @SerializedName("originalAmount") var originalAmount: Double? = null,
     @SerializedName("totalDiscountedAmount") var totalDiscountedAmount: String? = null,

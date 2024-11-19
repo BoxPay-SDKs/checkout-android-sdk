@@ -58,7 +58,6 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         binding.apply {
-            textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
             transactionAmountTextView.text = amount
             transactionIDTextView.text = transactionID
             proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
@@ -73,12 +72,12 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                     )
                 )
             )
-            textView6.setTextColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    android.R.color.white
+            textView6.setTextColor(Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
                 )
-            )
+            ))
             tvMerchantSite.setTextColor(Color.parseColor(
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             ))
@@ -139,7 +138,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                     val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
                     val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
                     if (amount.isNotEmpty() && currencyType.isNotEmpty()){
-                        transactionAmountTextView.text = "$currencyType $amount"
+                        transactionAmountTextView.text = "$currencyType " + formatToINR(amount.toDouble())
                     }
             }
         }
