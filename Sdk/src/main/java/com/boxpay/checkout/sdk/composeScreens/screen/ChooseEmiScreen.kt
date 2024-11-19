@@ -498,8 +498,12 @@ fun ChooseEmiScreen(
                             fontWeight = FontWeight(600)
                         ),
                         color = if (selectedRadioButton.isNotEmpty()) Color.White else Color(
-                            0xFFADACB0
-                        ),
+                            android.graphics.Color.parseColor(
+                                sharedPreferences.getString(
+                                    "buttonTextColor",
+                                    "#ffffff"
+                                )
+                            ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
@@ -1237,7 +1241,13 @@ fun AddCardDetailsScreen(
                         fontSize = 16.sp,
                         fontWeight = FontWeight(600)
                     ),
-                    color = if (allDetailsValid) Color.White else Color(0xFFADACB0),
+                    color = if (allDetailsValid) Color.White else  Color(
+                        android.graphics.Color.parseColor(
+                            sharedPreferences.getString(
+                                "buttonTextColor",
+                                "#ffffff"
+                            )
+                        ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),

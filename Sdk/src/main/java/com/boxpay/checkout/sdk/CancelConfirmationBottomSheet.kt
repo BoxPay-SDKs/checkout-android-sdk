@@ -51,6 +51,18 @@ class CancelConfirmationBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
+        binding.textView66.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
         binding.yesButton.isEnabled = true
         binding.yesButton.setOnClickListener {
             sharedViewModel.dismissBottomSheet()

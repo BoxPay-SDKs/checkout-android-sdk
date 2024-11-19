@@ -937,6 +937,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                         )
                     )
+                    binding.proceedtext.setTextColor(Color.parseColor(
+                        sharedPreferences.getString(
+                            "buttonTextColor",
+                            "#ffffff"
+                        )
+                    ))
                     binding.recommendedProceedButton.isEnabled = true
                 }
             }
@@ -1539,6 +1545,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     )
                                 )
                             )
+                            binding.proceedtext.setTextColor(Color.parseColor(
+                                sharedPreferences.getString(
+                                    "buttonTextColor",
+                                    "#ffffff"
+                                )
+                            ))
                             binding.recommendedProceedButton.isEnabled = true
                             recommendedCheckedPosition = 0
                             showRecommendedOptions()
@@ -2193,14 +2205,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     orderObject = paymentDetailsObject.getJSONObject("order")
                 }
                 if (orderObject == null){
-                    binding.textView9.visibility = View.GONE
-                    binding.numberOfItems.visibility = View.GONE
-                    binding.unopenedTotalValue.visibility = View.GONE
+                    binding.itemsInOrderRecyclerView.visibility = View.GONE
+                    binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
+                    binding.totalValueRelativeLayout.visibility = View.GONE
                 }else{
-                    binding.textView9.visibility = View.VISIBLE
-                    binding.numberOfItems.visibility = View.VISIBLE
-                    binding.unopenedTotalValue.visibility = View.VISIBLE
+                    binding.orderSummaryConstraintLayout.setPadding(0,16,0,16)
                 }
+
                 val subscriptionDetails = paymentDetailsObject.optJSONObject("subscriptionDetails")
                 val toShowSubscription =
                     subscriptionDetails != null && subscriptionDetails.optJSONObject("billingCycle")
@@ -2384,6 +2395,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                         )
                     )
+                    binding.textView6.setTextColor(Color.parseColor(
+                        sharedPreferences.getString(
+                            "buttonTextColor",
+                            "#ffffff"
+                        )
+                    ))
                 } else {
                     binding.textView6.text = "Continue to Add Personal Details"
                     binding.proceedButtonRelativeLayout.setBackgroundColor(
@@ -2394,6 +2411,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                         )
                     )
+                    binding.textView6.setTextColor(Color.parseColor(
+                        sharedPreferences.getString(
+                            "buttonTextColor",
+                            "#ffffff"
+                        )
+                    ))
                 }
 
                 if (taxes != null && taxes != "null" && taxes != "0") {
@@ -2950,6 +2973,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     override fun updateBottomSheet() {
+        binding.orderSummaryConstraintLayout.setPadding(0,16,0,16)
         binding.nameAndMobileTextViewMain.text = if ((showPhone && showName) || showShipping) {
             sharedPreferences.getString(
                 "firstName",

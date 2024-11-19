@@ -32,7 +32,7 @@ data class Context(
 
 data class Money(
 
-    @SerializedName("amount") var amount: Int? = null,
+    @SerializedName("amount") var amount: Double? = null,
     @SerializedName("currencyCode") var currencyCode: String? = null
 
 )
