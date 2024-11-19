@@ -437,7 +437,14 @@ fun ChooseEmiScreen(
                         fontSize = 16.sp,
                         fontWeight = FontWeight(600)
                     ),
-                    color = Color.White,
+                    color = Color(
+                        android.graphics.Color.parseColor(
+                            sharedPreferences.getString(
+                                "buttonTextColor",
+                                "#ffffff"
+                            )
+                        )
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
@@ -1163,7 +1170,14 @@ fun AddCardDetailsScreen(
                     fontSize = 16.sp,
                     fontWeight = FontWeight(600)
                 ),
-                color = Color.White,
+                color = Color(
+                    android.graphics.Color.parseColor(
+                        sharedPreferences.getString(
+                            "buttonTextColor",
+                            "#ffffff"
+                        )
+                    )
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),

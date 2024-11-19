@@ -195,12 +195,12 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             )
         )
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
             )
-        )
+        ))
     }
 
     private fun disableProceedButton() {

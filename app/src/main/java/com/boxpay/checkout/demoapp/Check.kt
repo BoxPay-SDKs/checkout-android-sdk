@@ -3,14 +3,12 @@ package com.boxpay.checkout.demoapp
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.BoxPayCheckout
@@ -112,7 +110,7 @@ class Check : AppCompatActivity() {
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "100000",
+    "amount" : "1000.50",
     "currencyCode" : "INR"
   },
   "descriptor" : {
@@ -141,8 +139,8 @@ class Check : AppCompatActivity() {
                 "email": null,
                 "phoneNumber": null
             },
-            "dateOfBirth": "2023-07-17T12:34:56Z",
-            "panNumber": "CTGPA2222D"
+            "dateOfBirth": null,
+            "panNumber": null
         },
   "order" : {
     "originalAmount" : 423.73,
@@ -276,11 +274,8 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("CheckError", "" + errorResponse)
-                }
+            Response.ErrorListener {
+                /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
@@ -293,17 +288,5 @@ class Check : AppCompatActivity() {
             }
         }
         queue.add(request)
-    }
-
-    fun extractMessageFromErrorResponse(response: String): String? {
-        try {
-            // Parse the JSON string
-            val jsonObject = JSONObject(response)
-            // Retrieve the value associated with the "message" key
-            return jsonObject.getString("message")
-        } catch (e: Exception) {
-            // Handle JSON parsing exception
-        }
-        return null
     }
 }
