@@ -223,7 +223,8 @@ fun EmiAmountDetails(
     onProceed: () -> Unit,
     isNoCostApplied: Boolean,
     currencySymbol: String,
-    isLowCostApplied: Boolean
+    isLowCostApplied: Boolean,
+    selectedTextColor: Color
 ) {
     ConstraintLayout(
         modifier
@@ -422,7 +423,7 @@ fun EmiAmountDetails(
                         fontSize = 16.sp,
                         fontWeight = FontWeight(600)
                     ),
-                    color = Color.White,
+                    color = selectedTextColor,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
