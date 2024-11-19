@@ -69,10 +69,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.random.Random
 
@@ -86,6 +82,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private var checkedPosition: Int? = null
+    private var searchQuery: String = ""
     private var successScreenFullReferencePath: String? = null
     var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> =
         MutableLiveData<Boolean>().apply {
@@ -386,6 +383,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     makeRecyclerViewJustBelowEditText()
                 }
+                searchQuery = query
                 filterBanks(query)
                 disableProceedButton()
                 return true
@@ -397,11 +395,37 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     makeRecyclerViewJustBelowEditText()
                 }
+                searchQuery = newText
                 filterBanks(newText)
                 disableProceedButton()
                 return true
             }
         })
+
+        val focusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        val unfocusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        binding.searchView.setOnFocusChangeListener { view, b ->
+            if (b) {
+                binding.searchView.background = focusedDrawable
+            } else {
+                binding.searchView.background = unfocusedDrawable
+            }
+        }
 
         binding.backButton.setOnClickListener() {
             if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
@@ -516,6 +540,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
         if (banksDetailsFiltered.size == 0) {
             binding.noResultsFoundTextView.visibility = View.VISIBLE
+            binding.noResultsFoundTextView.text = "No Results Found for $searchQuery"
         } else {
             binding.noResultsFoundTextView.visibility = View.GONE
         }

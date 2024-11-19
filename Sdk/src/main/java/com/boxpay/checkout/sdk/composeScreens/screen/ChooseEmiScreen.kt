@@ -1,7 +1,14 @@
 package com.boxpay.checkout.sdk.composeScreens.screen
 
 import android.content.SharedPreferences
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,6 +16,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -18,28 +27,35 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -56,6 +72,7 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -91,19 +108,19 @@ fun ChooseEmiScreen(
     searchQuery: String,
     onValueChange: (String) -> Unit,
     onClickBank: (Bank) -> Unit,
-    onClickFilter: (text: String) -> Unit,
-    onClickProceedButton: () -> Unit
+    onClickFilter: (text: String, filter: String) -> Unit,
+    onClickProceedButton: () -> Unit,
+    showLoadingInButton: Boolean
 ) {
     val focusRequester = FocusRequester()
     val focusManager = LocalFocusManager.current
-    val lazyListState = rememberLazyListState()
+    val scrollState = rememberScrollState()
     val isFocused = remember {
         mutableStateOf(false)
     }
     ConstraintLayout(
         modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+            .fillMaxSize()
             .background(Color(0xFFF1F1F1))
     ) {
         val (topBar, filterBackground, cardRow, searchField, filterRow, allBanksText, list, divider, cta) = createRefs()
@@ -117,7 +134,9 @@ fun ChooseEmiScreen(
 
                     width = Dimension.fillToConstraints
                 },
-            onClickBack = onClickBack
+            onClickBack = {
+                if (!showLoadingInButton) onClickBack()
+            }
         )
         Box(
             modifier = Modifier
@@ -146,8 +165,10 @@ fun ChooseEmiScreen(
             cardList.cards.map {
                 Column(modifier = Modifier
                     .clickable {
-                        onClickCard(it.cardType)
-                        focusManager.clearFocus()
+                        if (!showLoadingInButton) {
+                            onClickCard(it.cardType)
+                            focusManager.clearFocus()
+                        }
                     }
                     .padding(end = 24.dp)
                 ) {
@@ -171,7 +192,9 @@ fun ChooseEmiScreen(
                                 )
                             )
                         ) else Color(0xFF010102).copy(0.45f),
-                        modifier = Modifier.padding(bottom = 8.dp).align(Alignment.CenterHorizontally)
+                        modifier = Modifier
+                            .padding(bottom = 8.dp)
+                            .align(Alignment.CenterHorizontally)
                     )
                     if (it.cardType.equals(isSelectedCard, true)) {
                         Divider(
@@ -229,7 +252,11 @@ fun ChooseEmiScreen(
             },
             placeholder = {
                 Text(
-                    text = if (isSelectedCard.equals("others", true)) "Search for other EMI options" else "Search for bank",
+                    text = if (isSelectedCard.equals(
+                            "others",
+                            true
+                        )
+                    ) "Search for other EMI options" else "Search for bank",
                     style = TextStyle(
                         fontFamily = defaultFontFamily,
                         fontSize = 16.sp,
@@ -250,7 +277,20 @@ fun ChooseEmiScreen(
                         )
                     )
                 )
-            )
+            ),
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    Image(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable { onValueChange("") },
+                        colorFilter = ColorFilter.tint(Color(0xFF7F7D83))
+                    )
+                }
+            },
+            enabled = !showLoadingInButton
         )
         Row(modifier = Modifier
             .constrainAs(filterRow) {
@@ -268,7 +308,7 @@ fun ChooseEmiScreen(
                     text = it.first,
                     modifier = Modifier
                         .padding(end = 8.dp)
-                        .clickable { onClickFilter(isSelectedCard) },
+                        .clickable { onClickFilter(isSelectedCard, it.first) },
                     isSelected = it.second,
                     selectedColor = Color(
                         android.graphics.Color.parseColor(
@@ -297,8 +337,7 @@ fun ChooseEmiScreen(
                 width = Dimension.fillToConstraints
             }
         )
-        LazyColumn(
-            state = lazyListState,
+        Column(
             modifier = Modifier
                 .constrainAs(list) {
                     start.linkTo(parent.start, 16.dp)
@@ -311,14 +350,15 @@ fun ChooseEmiScreen(
                     }
 
                     width = Dimension.fillToConstraints
+                    height = Dimension.fillToConstraints
                 }
-                .heightIn(
-                    min = 300.dp,
-                    max = 400.dp
-                ) // This ensures the LazyColumn takes only as much height as needed by the items
+                // This ensures the LazyColumn takes only as much height as needed by the items
                 .background(Color.White, RoundedCornerShape(12.dp))
+                .verticalScrollbar(scrollState)
+                .verticalScroll(scrollState)
+
         ) {
-            items(cardList.cards) {
+            cardList.cards.map {
                 if (it.cardType.equals(isSelectedCard, true) && !isSelectedCard.equals(
                         "others",
                         true
@@ -331,18 +371,23 @@ fun ChooseEmiScreen(
                                 bankName = bank.name,
                                 percentText = bank.percent,
                                 isNoCostApplied = bank.noCostApplied,
+                                isLowCostAppleied = bank.lowCostApplied,
                                 modifier = Modifier
-                                    .fillParentMaxWidth()
-                                    .clickable { onClickBank(bank) }
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (!showLoadingInButton) {
+                                            onClickBank(bank)
+                                        }
+                                    }
                             )
                             if (bank.name != it.banks.last().name) {
-                                Divider(modifier = Modifier.fillParentMaxWidth())
+                                Divider(modifier = Modifier.fillMaxWidth())
                             }
                         }
                     } else {
                         Column(
                             modifier = Modifier
-                                .fillParentMaxSize()
+                                .fillMaxSize()
                                 .padding(top = 20.dp, start = 16.dp, end = 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -367,12 +412,17 @@ fun ChooseEmiScreen(
                     if (it.banks.isNotEmpty()) {
                         it.banks.map { bank ->
                             OthersEmiRow(
-                                modifier = Modifier.fillParentMaxWidth(),
+                                modifier = Modifier.fillMaxWidth(),
                                 iconUrl = bank.iconUrl,
-                                isSelected = selectedRadioButton.equals(bank.cardLessEmiValue, true),
+                                isSelected = selectedRadioButton.equals(
+                                    bank.cardLessEmiValue,
+                                    true
+                                ),
                                 otherName = bank.name,
                                 onClickRadio = {
-                                    onClickRadio(bank.cardLessEmiValue)
+                                    if (!showLoadingInButton) {
+                                        onClickRadio(bank.cardLessEmiValue)
+                                    }
                                 },
                                 selectedColor = Color(
                                     android.graphics.Color.parseColor(
@@ -383,11 +433,14 @@ fun ChooseEmiScreen(
                                     )
                                 )
                             )
+                            if (bank.name != it.banks.last().name) {
+                                Divider(modifier = Modifier.fillMaxWidth())
+                            }
                         }
                     } else {
                         Column(
                             modifier = Modifier
-                                .fillParentMaxSize()
+                                .fillMaxSize()
                                 .padding(top = 20.dp, start = 16.dp, end = 16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -409,7 +462,7 @@ fun ChooseEmiScreen(
         if (isSelectedCard.equals("others", true)) {
             Button(
                 enabled = selectedRadioButton.isNotEmpty(),
-                onClick = { onClickProceedButton() },
+                onClick = { if (!showLoadingInButton) onClickProceedButton() },
                 modifier = Modifier
                     .constrainAs(cta) {
                         start.linkTo(parent.start, 16.dp)
@@ -430,24 +483,34 @@ fun ChooseEmiScreen(
                     )
                 )
             ) {
-                Text(
-                    text = "Proceed",
-                    style = TextStyle(
-                        fontFamily = defaultFontFamily,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight(600)
-                    ),
-                    color = Color.White,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    textAlign = TextAlign.Center
-                )
+                if (showLoadingInButton) {
+                    AnimatedCircularProgressIndicator(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .size(20.dp)
+                    )
+                } else {
+                    Text(
+                        text = "Proceed",
+                        style = TextStyle(
+                            fontFamily = defaultFontFamily,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight(600)
+                        ),
+                        color = if (selectedRadioButton.isNotEmpty()) Color.White else Color(
+                            0xFFADACB0
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }
 
-    LaunchedEffect(lazyListState.isScrollInProgress) {
+    LaunchedEffect(scrollState.isScrollInProgress) {
         if (isFocused.value) {
             // Handle the scrolling state here, e.g., hide keyboard or clear focus
             focusManager.clearFocus()
@@ -455,6 +518,7 @@ fun ChooseEmiScreen(
         }
     }
 }
+
 
 @Composable
 fun SelectTenureEmi(
@@ -466,8 +530,9 @@ fun SelectTenureEmi(
     sharedPreferences: SharedPreferences,
     onClickRadio: (duration: Int, amount: String) -> Unit,
     onProceed: (Int) -> Unit,
-    currencySymbol: String
+    currencySymbol: String,
 ) {
+    val scrollState = rememberScrollState()
     val imageLoader = ImageLoader.Builder(LocalContext.current)
         .components {
             add(SvgDecoder.Factory())
@@ -475,8 +540,7 @@ fun SelectTenureEmi(
         .build()
     ConstraintLayout(
         modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+            .fillMaxHeight()
             .background(Color(0xFFF1F1F1))
     ) {
         val (topBar, list) = createRefs()
@@ -492,7 +556,7 @@ fun SelectTenureEmi(
                 },
             onClickBack = onClickBack
         )
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .constrainAs(list) {
                     start.linkTo(parent.start, 16.dp)
@@ -501,50 +565,50 @@ fun SelectTenureEmi(
                     bottom.linkTo(parent.bottom, 30.dp)
 
                     width = Dimension.fillToConstraints
+                    height = Dimension.fillToConstraints
                 }
-                .heightIn(min = 300.dp, max = 400.dp)
                 .background(Color.White, RoundedCornerShape(12.dp))
                 .border(1.dp, Color(0xFFE6E6E6), RoundedCornerShape(12.dp))
                 .clip(RoundedCornerShape(12.dp))
+                .verticalScrollbar(scrollState)
+                .verticalScroll(scrollState)
         ) {
-            item {
-                Row(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        selectedBank.iconUrl,
+                        imageLoader = imageLoader,
+                        error = painterResource(id = R.drawable.netbanking_logo)
+                    ),
+                    contentDescription = "",
                     modifier = Modifier
-                        .fillParentMaxWidth()
-                        .padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            selectedBank.iconUrl,
-                            imageLoader = imageLoader,
-                            error = painterResource(id = R.drawable.netbanking_logo)
-                        ),
-                        contentDescription = "",
-                        modifier = Modifier
-                            .size(34.dp)
-                    )
-                    Text(
-                        text = "${selectedBank.name} | $cardType EMI",
-                        style = TextStyle(
-                            fontFamily = defaultFontFamily,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight(600)
-                        ),
-                        color = Color(0xFF2D2B32),
-                        modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-                Divider(
-                    modifier = Modifier.fillParentMaxWidth()
+                        .size(34.dp)
+                )
+                Text(
+                    text = "${selectedBank.name} | $cardType EMI",
+                    style = TextStyle(
+                        fontFamily = defaultFontFamily,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight(600)
+                    ),
+                    color = Color(0xFF2D2B32),
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
-            items(selectedBank.emiList) {
+            Divider(
+                modifier = Modifier.fillMaxWidth()
+            )
+            selectedBank.emiList.map {
                 EmiAmountDetails(
                     modifier = Modifier
-                        .fillParentMaxWidth()
+                        .fillMaxWidth()
                         .clickable { onClickRadio(it.duration, it.amount) },
                     isSelected = selectedEmi.first == it.duration && selectedEmi.second == it.amount,
                     onClickRadio = { onClickRadio(it.duration, it.amount) },
@@ -568,10 +632,11 @@ fun SelectTenureEmi(
                     onProceed = {
                         onProceed(it.percent)
                     },
-                    isNoCostApplied = it.noCostApplied
+                    isNoCostApplied = it.noCostApplied,
+                    isLowCostApplied = it.lowCostApplied
                 )
                 if (it.amount != selectedBank.emiList.last().amount) {
-                    Divider(modifier = Modifier.fillParentMaxWidth())
+                    Divider(modifier = Modifier.fillMaxWidth())
                 }
             }
         }
@@ -600,7 +665,8 @@ fun AddCardDetailsScreen(
     currencySymbol: String,
     allDetailsValid: Boolean,
     isCardNumberEnabled: Boolean?,
-    isAmexCard: Boolean
+    isAmexCard: Boolean,
+    showLoadingInButton: Boolean
 ) {
     val cardNumberFocusRequester = FocusRequester()
     val cardNameFocusRequester = FocusRequester()
@@ -658,8 +724,7 @@ fun AddCardDetailsScreen(
 
     ConstraintLayout(
         modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+            .fillMaxHeight()
             .background(Color.White)
             .imePadding()
     ) {
@@ -676,7 +741,9 @@ fun AddCardDetailsScreen(
                     width = Dimension.fillToConstraints
                 }
                 .background(Color(0xFFF1F1F1)),
-            onClickBack = onClickBack
+            onClickBack = {
+                if (!showLoadingInButton) onClickBack()
+            }
         )
         Box(
             modifier = Modifier
@@ -793,7 +860,7 @@ fun AddCardDetailsScreen(
             text = "Card Number",
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -808,7 +875,7 @@ fun AddCardDetailsScreen(
         OutlinedTextField(
             value = cardNumber ?: TextFieldValue(""),
             onValueChange = {
-                onCardNumberChange(it)
+                if (!showLoadingInButton) onCardNumberChange(it)
             },
             modifier = Modifier
                 .constrainAs(cardNumberInput) {
@@ -839,7 +906,7 @@ fun AddCardDetailsScreen(
                         fontSize = 14.sp,
                         fontWeight = FontWeight(400)
                     ),
-                    color = Color(0xFFADACB0)
+                    color = Color(0xFF7F7D83)
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -850,13 +917,13 @@ fun AddCardDetailsScreen(
                 Image(
                     painter = painterResource(id = cardIcon),
                     contentDescription = "",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(32.dp)
                 )
             },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = selectedColor
             ),
-            enabled = !showCvvDetails.value
+            enabled = !showCvvDetails.value || !showLoadingInButton
         )
         if (cardNumber?.text?.isEmpty() == true || isCardNumberEnabled == false) {
             ErrorRow(
@@ -885,7 +952,7 @@ fun AddCardDetailsScreen(
             text = "Name on card",
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -900,7 +967,7 @@ fun AddCardDetailsScreen(
         OutlinedTextField(
             value = cardName ?: "",
             onValueChange = {
-                onCardNameChange(it)
+                if (!showLoadingInButton) onCardNameChange(it)
             },
             modifier = Modifier
                 .constrainAs(cardNameInput) {
@@ -926,7 +993,7 @@ fun AddCardDetailsScreen(
                         fontSize = 14.sp,
                         fontWeight = FontWeight(400)
                     ),
-                    color = Color(0xFFADACB0)
+                    color = Color(0xFF7F7D83)
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -935,7 +1002,7 @@ fun AddCardDetailsScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = selectedColor
             ),
-            enabled = !showCvvDetails.value
+            enabled = !showCvvDetails.value || !showLoadingInButton
         )
         if (cardName?.isEmpty() == true) {
             ErrorRow(
@@ -953,7 +1020,7 @@ fun AddCardDetailsScreen(
             text = "Expiry",
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -968,12 +1035,12 @@ fun AddCardDetailsScreen(
         OutlinedTextField(
             value = expiry ?: TextFieldValue(""),
             onValueChange = {
-                onCardExpiryChange(it)
+                if (!showLoadingInButton) onCardExpiryChange(it)
             },
             modifier = Modifier
                 .constrainAs(expiryInput) {
                     start.linkTo(parent.start, 16.dp)
-                    end.linkTo(cvvInput.start, 16.dp)
+                    end.linkTo(cvvInput.start, 30.dp)
                     top.linkTo(expiryTitle.bottom, 4.dp)
 
                     width = Dimension.fillToConstraints
@@ -997,7 +1064,7 @@ fun AddCardDetailsScreen(
                         fontSize = 14.sp,
                         fontWeight = FontWeight(400)
                     ),
-                    color = Color(0xFFADACB0)
+                    color = Color(0xFF7F7D83)
                 )
             },
             keyboardOptions = KeyboardOptions(
@@ -1007,7 +1074,7 @@ fun AddCardDetailsScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = selectedColor
             ),
-            enabled = !showCvvDetails.value
+            enabled = !showCvvDetails.value || !showLoadingInButton
         )
         if (expiry?.text?.isEmpty() == true) {
             ErrorRow(
@@ -1036,7 +1103,7 @@ fun AddCardDetailsScreen(
             text = "CVV",
             style = TextStyle(
                 fontFamily = defaultFontFamily,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight(400)
             ),
             color = Color(0xFF2D2B32),
@@ -1050,11 +1117,11 @@ fun AddCardDetailsScreen(
         OutlinedTextField(
             value = cvv ?: "",
             onValueChange = {
-                onCardCvvChange(it)
+                if (!showLoadingInButton) onCardCvvChange(it)
             },
             modifier = Modifier
                 .constrainAs(cvvInput) {
-                    start.linkTo(expiryInput.end, 16.dp)
+                    start.linkTo(expiryInput.end, 30.dp)
                     end.linkTo(parent.end, 16.dp)
                     centerVerticallyTo(expiryInput)
 
@@ -1079,7 +1146,7 @@ fun AddCardDetailsScreen(
                         fontSize = 14.sp,
                         fontWeight = FontWeight(400)
                     ),
-                    color = Color(0xFFADACB0)
+                    color = Color(0xFF7F7D83)
                 )
             },
             trailingIcon = {
@@ -1101,7 +1168,7 @@ fun AddCardDetailsScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = selectedColor
             ),
-            enabled = !showCvvDetails.value
+            enabled = !showCvvDetails.value || !showLoadingInButton
         )
         if (cvv?.isEmpty() == true) {
             ErrorRow(
@@ -1134,12 +1201,12 @@ fun AddCardDetailsScreen(
         )
         Button(
             enabled = allDetailsValid,
-            onClick = onProceedClick,
+            onClick = { if (!showLoadingInButton) onProceedClick() },
             modifier = Modifier
                 .constrainAs(cta) {
                     start.linkTo(parent.start, 16.dp)
                     end.linkTo(parent.end, 16.dp)
-                    top.linkTo(footerEnd.bottom, 40.dp)
+                    bottom.linkTo(parent.bottom, 20.dp)
 
                     width = Dimension.fillToConstraints
                 }
@@ -1156,19 +1223,27 @@ fun AddCardDetailsScreen(
                 )
             )
         ) {
-            Text(
-                text = "Pay Now",
-                style = TextStyle(
-                    fontFamily = defaultFontFamily,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight(600)
-                ),
-                color = Color.White,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                textAlign = TextAlign.Center
-            )
+            if (showLoadingInButton) {
+                AnimatedCircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .size(20.dp)
+                )
+            } else {
+                Text(
+                    text = "Pay Now",
+                    style = TextStyle(
+                        fontFamily = defaultFontFamily,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight(600)
+                    ),
+                    color = if (allDetailsValid) Color.White else Color(0xFFADACB0),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
         if (showCvvDetails.value) {
             CvvBottomSheet(
@@ -1217,7 +1292,7 @@ fun EmiShimmerScreen() {
             .wrapContentHeight()
             .background(Color(0xFFF1F1F1))
     ) {
-        val (topBar, filterBackground, cardRow, searchField, filterRow, allBanksText, list, divider, cta) = createRefs()
+        val (topBar, filterBackground, cardRow, filterRow, allBanksText, list) = createRefs()
         TopBar(
             text = "Choose EMI Option",
             modifier = Modifier
@@ -1318,6 +1393,74 @@ fun EmiShimmerScreen() {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun AnimatedCircularProgressIndicator(
+    modifier: Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ), label = ""
+    )
+
+    CustomCircularProgressIndicator(
+        modifier = modifier,
+        drawableRes = R.drawable.loader_01,
+        rotationAngle = rotation
+    )
+}
+
+@Composable
+fun CustomCircularProgressIndicator(
+    modifier: Modifier = Modifier.size(40.dp),
+    drawableRes: Int,
+    rotationAngle: Float = 0f
+) {
+    Box(
+        modifier = modifier
+            .graphicsLayer(rotationZ = rotationAngle) // Optional rotation for animation
+            .background(Color.Transparent)
+    ) {
+        Image(
+            painter = painterResource(id = drawableRes),
+            contentDescription = null, // Accessibility description
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+fun Modifier.verticalScrollbar(
+    state: ScrollState,
+    scrollbarWidth: Dp = 4.dp,
+    color: Color = Color.LightGray
+): Modifier {
+    return this then Modifier.drawWithContent {
+        drawContent()
+
+        // Calculate dimensions for the scrollbar
+        val viewHeight = state.viewportSize.toFloat()
+        val contentHeight = state.maxValue + viewHeight
+
+        val scrollbarHeight =
+            (viewHeight * (viewHeight / contentHeight)).coerceIn(10.dp.toPx()..viewHeight)
+        val variableZone = viewHeight - scrollbarHeight
+        val scrollbarYoffset = (state.value.toFloat() / state.maxValue) * variableZone
+
+        // Draw the scrollbar
+        drawRoundRect(
+            color = color,
+            topLeft = Offset(this.size.width - scrollbarWidth.toPx(), scrollbarYoffset),
+            size = Size(scrollbarWidth.toPx(), scrollbarHeight),
+            alpha = 1f // Always visible
+        )
     }
 }
 
