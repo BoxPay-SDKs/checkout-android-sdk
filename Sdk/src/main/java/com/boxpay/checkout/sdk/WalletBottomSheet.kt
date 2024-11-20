@@ -30,7 +30,6 @@ import android.widget.SearchView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -485,7 +484,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
             setColor(Color.TRANSPARENT) // Background color inside the border
         }
-        binding.searchView.setOnFocusChangeListener { view, b ->
+        binding.searchView.setOnQueryTextFocusChangeListener { view, b ->
             if (b) {
                 binding.searchView.background = focusedDrawable
             } else {
