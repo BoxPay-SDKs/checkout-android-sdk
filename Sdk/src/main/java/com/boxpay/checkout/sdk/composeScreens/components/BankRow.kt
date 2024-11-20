@@ -91,8 +91,7 @@ fun BankRow(
             style = TextStyle(
                 fontFamily = defaultFontFamily,
                 fontSize = 16.sp,
-                fontWeight = FontWeight(600),
-                lineHeight = 0.04.sp
+                fontWeight = FontWeight(600)
             ),
             color = Color(0xFF4F4D55),
             modifier = Modifier.constrainAs(name) {
