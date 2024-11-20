@@ -42,6 +42,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -60,7 +61,6 @@ fun BankRow(
     bankName: String,
     percentText: String,
     isNoCostApplied: Boolean,
-    isLowCostAppleied: Boolean,
     modifier: Modifier = Modifier
 ) {
     val imageLoader = ImageLoader.Builder(LocalContext.current)
@@ -91,27 +91,34 @@ fun BankRow(
             style = TextStyle(
                 fontFamily = defaultFontFamily,
                 fontSize = 16.sp,
-                fontWeight = FontWeight(600)
+                fontWeight = FontWeight(600),
+                lineHeight = 0.04.sp
             ),
             color = Color(0xFF4F4D55),
             modifier = Modifier.constrainAs(name) {
                 start.linkTo(icon.end, 8.dp)
-                if (isNoCostApplied || isLowCostAppleied) {
+                end.linkTo(percent.start, 4.dp)
+                if (isNoCostApplied) {
                     top.linkTo(parent.top, 16.dp)
                 } else {
                     centerVerticallyTo(icon)
                 }
-            }
+
+                width = Dimension.fillToConstraints
+            },
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 2
         )
         FilterTag(
-            text = if (isNoCostApplied) "NO COST EMI" else "LOW COST EMI",
+            text = "NO COST EMI",
             modifier = Modifier
                 .constrainAs(noCostTag) {
                     start.linkTo(icon.end, 8.dp)
                     top.linkTo(name.bottom, 4.dp)
 
-                    visibility = if (isNoCostApplied || isLowCostAppleied) Visibility.Visible else Visibility.Gone
+                    visibility = if (isNoCostApplied) Visibility.Visible else Visibility.Gone
                 }
+                .padding(bottom = 10.dp)
         )
         Image(
             painter = painterResource(id = R.drawable.ic_keyboard_left_arrow),
@@ -182,13 +189,14 @@ fun OthersEmiRow(
                 fontWeight = FontWeight(600)
             ),
             color = Color(0xFF4F4D55),
-            modifier = Modifier.constrainAs(name) {
-                start.linkTo(icon.end, 8.dp)
-                end.linkTo(radioButton.start, 16.dp)
+            modifier = Modifier
+                .constrainAs(name) {
+                    start.linkTo(icon.end, 8.dp)
+                    end.linkTo(radioButton.start, 16.dp)
 
-                width = Dimension.fillToConstraints
-                centerVerticallyTo(icon)
-            }
+                    width = Dimension.fillToConstraints
+                    centerVerticallyTo(icon)
+                }
                 .clickable { onClickRadio() }
         )
         RadioButton(
@@ -223,7 +231,6 @@ fun EmiAmountDetails(
     onProceed: () -> Unit,
     isNoCostApplied: Boolean,
     currencySymbol: String,
-    isLowCostApplied: Boolean,
     selectedTextColor: Color
 ) {
     ConstraintLayout(
@@ -283,9 +290,9 @@ fun EmiAmountDetails(
                 centerVerticallyTo(radioButton)
             }
         )
-        if (isNoCostApplied || isLowCostApplied) {
+        if (isNoCostApplied) {
             FilterTag(
-                text = if (isNoCostApplied) "NO COST EMI" else "LOW COST EMI",
+                text = "NO COST EMI",
                 modifier = Modifier
                     .constrainAs(noCost) {
                         start.linkTo(heading.end, 8.dp)
@@ -643,7 +650,7 @@ fun CvvBottomSheet(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF000000).copy(0.8f)),
+            .background(Color(0xFF000000).copy(0.8f)).clickable { onClickBack() },
         contentAlignment = Alignment.BottomCenter
     ) {
         Column(
@@ -651,6 +658,9 @@ fun CvvBottomSheet(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .background(Color.White)
+                .clickable(enabled = false) {
+                    // no op
+                }
         ) {
             Text(
                 text = "Where to find CVV?",
@@ -842,7 +852,11 @@ fun ShimmerEffect(
 @Composable
 fun ErrorRow(modifier: Modifier, errorText: String) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically) {
-        Image(painter = painterResource(id = R.drawable.error_outline), contentDescription = "", modifier = Modifier.size(12.dp))
+        Image(
+            painter = painterResource(id = R.drawable.error_outline),
+            contentDescription = "",
+            modifier = Modifier.size(12.dp)
+        )
         Text(
             text = errorText,
             style = TextStyle(

@@ -44,6 +44,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +57,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
@@ -153,50 +156,58 @@ fun ChooseEmiScreen(
         )
         Row(
             modifier = Modifier.constrainAs(cardRow) {
-                start.linkTo(parent.start, 20.dp)
-                end.linkTo(parent.end, 20.dp)
+                start.linkTo(parent.start, 30.dp)
+                end.linkTo(parent.end, 30.dp)
                 top.linkTo(filterBackground.top, 14.dp)
 
                 width = Dimension.fillToConstraints
             },
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.Center
         ) {
-            cardList.cards.map {
-                Column(modifier = Modifier
-                    .clickable {
-                        if (!showLoadingInButton) {
-                            onClickCard(it.cardType)
-                            focusManager.clearFocus()
+            cardList.cards.map { card ->
+                var textWidthPx by remember { mutableStateOf(0) }
+                var textWidthDp by remember { mutableStateOf(0.dp) }
+                val density = LocalDensity.current
+
+                Column(
+                    modifier = Modifier
+                        .clickable {
+                            if (!showLoadingInButton) {
+                                onClickCard(card.cardType)
+                                focusManager.clearFocus()
+                            }
                         }
-                    }
-                    .padding(end = 24.dp)
                 ) {
                     Text(
-                        text = it.cardType,
+                        text = card.cardType,
                         style = TextStyle(
                             fontFamily = defaultFontFamily,
                             fontSize = 14.sp,
                             fontWeight = FontWeight(600)
                         ),
                         textAlign = TextAlign.Center,
-                        color = if (it.cardType.equals(
-                                isSelectedCard,
-                                true
-                            )
-                        ) Color(
-                            android.graphics.Color.parseColor(
-                                sharedPreferences.getString(
-                                    "primaryButtonColor",
-                                    "#000000"
+                        color = if (card.cardType.equals(isSelectedCard, true)) {
+                            Color(
+                                android.graphics.Color.parseColor(
+                                    sharedPreferences.getString(
+                                        "primaryButtonColor",
+                                        "#000000"
+                                    )
                                 )
                             )
-                        ) else Color(0xFF010102).copy(0.45f),
+                        } else {
+                            Color(0xFF010102).copy(0.45f)
+                        },
                         modifier = Modifier
-                            .padding(bottom = 8.dp)
+                            .padding(bottom = 8.dp, end = 30.dp)
                             .align(Alignment.CenterHorizontally)
+                            .onGloballyPositioned { coordinates ->
+                                textWidthPx = coordinates.size.width
+                                textWidthDp = with(density) { textWidthPx.toDp() }
+                            }
                     )
-                    if (it.cardType.equals(isSelectedCard, true)) {
+                    if (card.cardType.equals(isSelectedCard, true)) {
                         Divider(
                             color = Color(
                                 android.graphics.Color.parseColor(
@@ -207,13 +218,14 @@ fun ChooseEmiScreen(
                                 )
                             ),
                             modifier = Modifier
-                                .width(90.dp)
+                                .width(textWidthDp)
                                 .height(2.dp)
                         )
                     }
                 }
             }
         }
+
         Divider(
             modifier = Modifier.constrainAs(divider) {
                 start.linkTo(filterBackground.start)
@@ -371,7 +383,6 @@ fun ChooseEmiScreen(
                                 bankName = bank.name,
                                 percentText = bank.percent,
                                 isNoCostApplied = bank.noCostApplied,
-                                isLowCostAppleied = bank.lowCostApplied,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
@@ -640,7 +651,6 @@ fun SelectTenureEmi(
                         onProceed(it.percent)
                     },
                     isNoCostApplied = it.noCostApplied,
-                    isLowCostApplied = it.lowCostApplied,
                     selectedTextColor = Color(
                         android.graphics.Color.parseColor(
                             sharedPreferences.getString(
@@ -890,7 +900,7 @@ fun AddCardDetailsScreen(
         OutlinedTextField(
             value = cardNumber ?: TextFieldValue(""),
             onValueChange = {
-                if (!showLoadingInButton) onCardNumberChange(it)
+                onCardNumberChange(it)
             },
             modifier = Modifier
                 .constrainAs(cardNumberInput) {
@@ -938,7 +948,7 @@ fun AddCardDetailsScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = selectedColor
             ),
-            enabled = !showCvvDetails.value || !showLoadingInButton
+            enabled = !showCvvDetails.value && !showLoadingInButton
         )
         if (cardNumber?.text?.isEmpty() == true || isCardNumberEnabled == false) {
             ErrorRow(
@@ -982,7 +992,7 @@ fun AddCardDetailsScreen(
         OutlinedTextField(
             value = cardName ?: "",
             onValueChange = {
-                if (!showLoadingInButton) onCardNameChange(it)
+                onCardNameChange(it)
             },
             modifier = Modifier
                 .constrainAs(cardNameInput) {
@@ -1017,7 +1027,7 @@ fun AddCardDetailsScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = selectedColor
             ),
-            enabled = !showCvvDetails.value || !showLoadingInButton
+            enabled = !showCvvDetails.value && !showLoadingInButton
         )
         if (cardName?.isEmpty() == true) {
             ErrorRow(
@@ -1050,7 +1060,7 @@ fun AddCardDetailsScreen(
         OutlinedTextField(
             value = expiry ?: TextFieldValue(""),
             onValueChange = {
-                if (!showLoadingInButton) onCardExpiryChange(it)
+                onCardExpiryChange(it)
             },
             modifier = Modifier
                 .constrainAs(expiryInput) {
@@ -1089,7 +1099,7 @@ fun AddCardDetailsScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = selectedColor
             ),
-            enabled = !showCvvDetails.value || !showLoadingInButton
+            enabled = !showCvvDetails.value && !showLoadingInButton
         )
         if (expiry?.text?.isEmpty() == true) {
             ErrorRow(
@@ -1132,7 +1142,7 @@ fun AddCardDetailsScreen(
         OutlinedTextField(
             value = cvv ?: "",
             onValueChange = {
-                if (!showLoadingInButton) onCardCvvChange(it)
+                onCardCvvChange(it)
             },
             modifier = Modifier
                 .constrainAs(cvvInput) {
@@ -1183,7 +1193,7 @@ fun AddCardDetailsScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = selectedColor
             ),
-            enabled = !showCvvDetails.value || !showLoadingInButton
+            enabled = !showCvvDetails.value && !showLoadingInButton
         )
         if (cvv?.isEmpty() == true) {
             ErrorRow(
@@ -1252,7 +1262,7 @@ fun AddCardDetailsScreen(
                         fontSize = 16.sp,
                         fontWeight = FontWeight(600)
                     ),
-                    color = if (allDetailsValid)Color(
+                    color = if (allDetailsValid) Color(
                         android.graphics.Color.parseColor(
                             sharedPreferences.getString(
                                 "buttonTextColor",

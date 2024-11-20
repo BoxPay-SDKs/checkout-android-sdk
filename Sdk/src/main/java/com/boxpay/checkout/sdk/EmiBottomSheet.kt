@@ -21,6 +21,7 @@ import android.view.WindowManager
 import android.webkit.WebSettings
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.collectAsState
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -227,6 +228,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         lifecycleScope.launchWhenStarted {
             emiViewModel.emiBankList.collectLatest { emiBankList ->
                 binding.composeView.setContent {
+                    val showLoader = emiViewModel.showLoaderInButton.collectAsState()
                     if (emiViewModel.contentLoaded.value) {
                         if (!emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
                             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
@@ -256,9 +258,10 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     emiViewModel.getBanksByFilter(card, filter)
                                 },
                                 onClickProceedButton = {
+                                    emiViewModel.showLoaderInButton.value = true
                                     postRequest(context!!)
                                 },
-                                showLoadingInButton = emiViewModel.showLoaderInButton.value
+                                showLoadingInButton = showLoader.value
                             )
                         }
                         if (emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
@@ -316,6 +319,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     emiViewModel.onCardCvvChange(it)
                                 },
                                 onProceedClick = {
+                                    emiViewModel.showLoaderInButton.value = true
                                     postRequest(context!!)
                                 },
                                 cardIcon = emiViewModel.cardIcon.value,
@@ -326,7 +330,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 allDetailsValid = emiViewModel.isCardValid.value,
                                 isCardNumberEnabled = emiViewModel.isCardNumberEnabled.value,
                                 isAmexCard = emiViewModel.isAmexCard.value,
-                                showLoadingInButton = emiViewModel.showLoaderInButton.value
+                                showLoadingInButton = showLoader.value
                             )
                         }
                     }
@@ -500,7 +504,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     @SuppressLint("NewApi")
     @RequiresApi(Build.VERSION_CODES.O)
     fun postRequest(context: Context) {
-        emiViewModel.showLoaderInButton.value = true
         val requestQueue = Volley.newRequestQueue(context)
 
         // Constructing the request body
@@ -630,7 +633,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             Response.Listener { response ->
                 // Handle response
                 try {
-                    emiViewModel.showLoaderInButton.value = false
                     val status = response.getJSONObject("status").getString("status")
                     val reasonCode = response.getJSONObject("status").getString("reasonCode")
                     val reason = response.getJSONObject("status").getString("reason")
@@ -645,10 +647,12 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                             cleanedMessage =
                                 "Please retry using other payment method or try again in sometime"
                         }
-                        PaymentFailureScreen(errorMessage = cleanedMessage).show(
+                        PaymentFailureScreen({
+                        },errorMessage = cleanedMessage).show(
                             parentFragmentManager,
                             "FailureScreen"
                         )
+                        emiViewModel.showLoaderInButton.value = false
                     } else {
                         val type =
                             response.getJSONArray("actions").getJSONObject(0).getString("type")
@@ -673,8 +677,10 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 parentFragmentManager,
                                 "PaymentStatusBottomSheetWithDetails"
                             )
+                            emiViewModel.showLoaderInButton.value = false
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
+                            emiViewModel.showLoaderInButton.value = false
                             showLoadingState()
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
@@ -692,10 +698,10 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             Response.ErrorListener { error ->
                 // Handle error
                 hideLoader()
+                emiViewModel.showLoaderInButton.value = false
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
-                    println("======errormessage $errorMessage")
 
                     if (errorMessage?.contains("expired", true) == true) {
                         val callback = SingletonClass.getInstance().getYourObject()

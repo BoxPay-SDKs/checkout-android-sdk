@@ -38,7 +38,7 @@ class EmiViewModel : ViewModel() {
     val contentLoaded = mutableStateOf(false)
     val firstTimeLoaded = mutableStateOf(true)
     val isCardNumberEnabled = mutableStateOf<Boolean?>(null)
-    val showLoaderInButton = mutableStateOf(false)
+    val showLoaderInButton = MutableStateFlow(false)
 
     // To store the original list of banks
     private val originalEmiBankList = mutableStateOf(ChooseEmiModel(emptyList()))
@@ -57,13 +57,10 @@ class EmiViewModel : ViewModel() {
         } ?: _emiBankList.value.cards.find { it.cardType.equals("others", ignoreCase = true) }?.let {
             selectedCard.value = "Others"
         }
-        if ((bank.noCostApplied || bank.lowCostApplied)) {
+        if (bank.noCostApplied) {
             isFilterExisted.value = true
             if (bank.noCostApplied && !filterList.value.contains(Pair("No Cost EMI", false))) {
                 filterList.value += Pair("No Cost EMI", false)
-            }
-            if (bank.lowCostApplied && !filterList.value.contains(Pair("Low Cost EMI", false))) {
-                filterList.value += Pair("Low Cost EMI", false)
             }
         }
 

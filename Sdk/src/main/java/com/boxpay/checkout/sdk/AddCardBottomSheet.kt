@@ -33,7 +33,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -443,29 +442,29 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
             setColor(Color.TRANSPARENT) // Background color inside the border
         }
-        binding.editTextCardCVV.setOnFocusChangeListener { view, b ->
-            if (b) {
+        binding.editTextCardCVV.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
                 binding.editTextCardCVV.background = focusedDrawable
             } else {
                 binding.editTextCardCVV.background = unfocusedDrawable
             }
         }
-        binding.editTextCardValidity.setOnFocusChangeListener { view, b ->
-            if (b) {
+        binding.editTextCardValidity.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
                 binding.editTextCardValidity.background = focusedDrawable
             } else {
                 binding.editTextCardValidity.background = unfocusedDrawable
             }
         }
-        binding.editTextCardNumber.setOnFocusChangeListener { view, b ->
-            if (b) {
+        binding.editTextCardNumber.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
                 binding.editTextCardNumber.background = focusedDrawable
             } else {
                 binding.editTextCardNumber.background = unfocusedDrawable
             }
         }
-        binding.editTextNameOnCard.setOnFocusChangeListener { view, b ->
-            if (b) {
+        binding.editTextNameOnCard.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
                 binding.editTextNameOnCard.background = focusedDrawable
             } else {
                 binding.editTextNameOnCard.background = unfocusedDrawable
