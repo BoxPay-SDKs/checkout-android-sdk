@@ -936,7 +936,7 @@ fun AddCardDetailsScreen(
             },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next,
-                keyboardType = KeyboardType.NumberPassword
+                keyboardType = KeyboardType.Number
             ),
             trailingIcon = {
                 Image(
@@ -1094,7 +1094,7 @@ fun AddCardDetailsScreen(
             },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next,
-                keyboardType = KeyboardType.NumberPassword
+                keyboardType = KeyboardType.Number
             ),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = selectedColor
@@ -1187,7 +1187,7 @@ fun AddCardDetailsScreen(
             },
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.NumberPassword
+                keyboardType = KeyboardType.Number
             ),
             visualTransformation = AsteriskVisualTransformation,
             colors = OutlinedTextFieldDefaults.colors(
