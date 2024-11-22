@@ -23,7 +23,6 @@ import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.util.Base64
-import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -89,10 +88,6 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import java.util.Objects
@@ -467,7 +462,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             // Log specific error if the app is not found
             upiIntentError = e.message
             callUIAnalytics(requireActivity(),"UPI_APP_NOT_FOUND","","UPI")
-            Log.e("UPIError", "UPI app not found: ${e.message}")
             PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(parentFragmentManager, "FailureScreen")
             removeLoadingState()
 
@@ -475,7 +469,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             // Log any other error that occurs
             upiIntentError = e.message
             callUIAnalytics(requireActivity(),"FAILED_TO_LAUNCH_UPI_INTENT","","UPI")
-            Log.e("UPIError", "Failed to launch UPI intent: ${e.message}", e)
             PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(parentFragmentManager, "FailureScreen")
             removeLoadingState()
 
@@ -3669,11 +3662,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 sessionTimer = object : CountDownTimer(timeDifference, 1000) {
 
                     override fun onTick(millisUntilFinished: Long) {
-                        val hours = (millisUntilFinished / (1000 * 60 * 60)) % 24
-                        val minutes = (millisUntilFinished / (1000 * 60)) % 60
-                        val seconds = (millisUntilFinished / 1000) % 60
-                        println(String.format("%02d:%02d:%02d", hours, minutes, seconds))
-                        // no op
+
                     }
 
                     override fun onFinish() {

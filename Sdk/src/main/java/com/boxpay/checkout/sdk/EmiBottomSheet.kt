@@ -454,8 +454,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                             addBankDetails(cardType = emiCardName, bank = bank, emi = emi)
                         }
                         hideLoader()
-                    } catch (e: Exception) {
-                        println("Exception at index $i: ${e.message}")
+                    } catch (_: Exception) {
                     }
                 }
             } catch (_: Exception) {

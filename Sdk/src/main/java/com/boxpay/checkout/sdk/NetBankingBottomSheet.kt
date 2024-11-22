@@ -17,7 +17,6 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -245,8 +244,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 removeLoadingScreenState()
                 fetchAndUpdateApiInPopularBanks()
 
-            } catch (e: Exception) {
-                Log.e("NetBankingSheet 245", "fetchBanksDetails: ", e)
+            } catch (_: Exception) {
             }
 
         }, { _ ->

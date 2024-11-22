@@ -3,14 +3,12 @@ package com.boxpay.checkout.demoapp
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.Response
-import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.BoxPayCheckout
@@ -276,11 +274,7 @@ class Check : AppCompatActivity() {
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
-                    Log.e("CheckError", "" + errorResponse)
-                }
+            Response.ErrorListener {
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
