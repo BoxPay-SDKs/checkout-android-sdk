@@ -12,6 +12,9 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -58,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -75,7 +80,9 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -97,6 +104,7 @@ import com.boxpay.checkout.sdk.composeScreens.model.Bank
 import com.boxpay.checkout.sdk.composeScreens.model.ChooseEmiModel
 import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
 import com.boxpay.checkout.sdk.composeScreens.model.interFontFamily
+import kotlin.math.roundToInt
 
 @Composable
 fun ChooseEmiScreen(
@@ -1496,3 +1504,204 @@ fun Modifier.verticalScrollbar(
     }
 }
 
+@Composable
+fun SwipeToPayButton(
+    onSwipeComplete: () -> Unit,
+    modifier: Modifier,
+    buttonColor: Color,
+    buttontextColor: Color,
+    height: Dp = 44.dp,
+) {
+    val swipePosition = remember { mutableStateOf(0f) }
+    val complete = remember { mutableStateOf(false) }
+    val buttonWidth = remember { mutableStateOf(0) }
+    val heightPx = with(LocalDensity.current) { height.toPx() }
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(buttonColor, shape = RoundedCornerShape(10.dp))
+            .onSizeChanged { size ->
+                buttonWidth.value = size.width
+            }
+    ) {
+        // Center Text
+        Text(
+            text = "Swipe to Pay ₹36,770",
+            color = buttontextColor,
+            style = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = defaultFontFamily
+            ),
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+        // Swipe Indicator
+        Box(
+            modifier = Modifier
+                .offset { IntOffset(swipePosition.value.roundToInt(), 0) }
+                .size(height)
+                .padding(vertical = 3.dp, horizontal = 4.dp)
+                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                .draggable(
+                    orientation = Orientation.Horizontal,
+                    state = rememberDraggableState { delta ->
+                        if (!complete.value) {
+                            val newPosition = (swipePosition.value + delta)
+                                .coerceIn(0f, buttonWidth.value - heightPx)
+                            swipePosition.value = newPosition
+                        }
+                    },
+                    onDragStopped = {
+                        // Update to check the actual end
+                        if (swipePosition.value >= (buttonWidth.value - heightPx)) {
+                            complete.value = true
+                            onSwipeComplete()
+                        } else {
+                            swipePosition.value = 0f // Reset if not swiped far enough
+                        }
+                    }
+                )
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_keyboard_double_arrow),
+                contentDescription = "",
+                colorFilter = ColorFilter.tint(buttonColor),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(40.dp)
+            )
+        }
+    }
+}
+
+
+@Preview
+@Composable
+private fun SwipeToPayButtonPreview() {
+//    SwipeToPayButton(
+//        onSwipeComplete = { /*TODO*/ }, modifier = Modifier
+//            .fillMaxWidth()
+//            .background(Color.White)
+//            .padding(horizontal = 16.dp),
+//        buttonColor = Color.LightGray,
+//        buttontextColor = Color.White
+//    )
+    RecommendedScreen(
+        modifier = Modifier.fillMaxSize(),
+        buttonColor = Color(0xFF1CA672),
+        buttontextColor = Color.White
+    )
+}
+
+@Composable
+fun RecommendedScreen(
+    modifier: Modifier,
+    buttonColor: Color,
+    buttontextColor: Color
+) {
+    Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
+        ConstraintLayout(
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .background(
+                    Color.White,
+                    RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                )
+        ) {
+            val (paymentTitle, paymentDesc, moreOptionsCta, moreOptionsArrow, selectedBackground, selectedUpi, radioButton, cta) = createRefs()
+            Text(
+                text = "Payment ₹36,770",
+                color = Color(0xFF2D2B32),
+                style = TextStyle(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = defaultFontFamily
+                ),
+                modifier = Modifier.constrainAs(paymentTitle) {
+                    start.linkTo(parent.start, 16.dp)
+                    top.linkTo(parent.top, 16.dp)
+                    end.linkTo(moreOptionsCta.start, 4.dp)
+
+                    width = Dimension.fillToConstraints
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = "Last Used Payment Option",
+                color = Color(0xFF7F7D83),
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = defaultFontFamily
+                ),
+                modifier = Modifier.constrainAs(paymentDesc) {
+                    start.linkTo(parent.start, 16.dp)
+                    top.linkTo(paymentTitle.bottom, 2.dp)
+                    end.linkTo(moreOptionsCta.start, 4.dp)
+
+                    width = Dimension.fillToConstraints
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = "More Options",
+                color = buttonColor,
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = defaultFontFamily
+                ),
+                modifier = Modifier.constrainAs(moreOptionsCta) {
+                    end.linkTo(moreOptionsArrow.start, 2.dp)
+                    top.linkTo(parent.top, 4.dp)
+                    bottom.linkTo(paymentDesc.bottom)
+
+                    width = Dimension.fillToConstraints
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Image(
+                painter = painterResource(id = R.drawable.ic_keyboard_left_arrow),
+                contentDescription = "",
+                modifier = Modifier
+                    .constrainAs(moreOptionsArrow) {
+                        end.linkTo(parent.end, 16.dp)
+                        centerVerticallyTo(moreOptionsCta)
+                    }
+                    .size(16.dp),
+                colorFilter = ColorFilter.tint(buttonColor)
+            )
+            Box(
+                modifier = Modifier
+                    .constrainAs(selectedBackground) {
+                        start.linkTo(parent.start, 16.dp)
+                        end.linkTo(parent.end, 16.dp)
+                        top.linkTo(paymentDesc.bottom, 12.dp)
+
+                        width = Dimension.fillToConstraints
+                    }
+                    .height(56.dp)
+                    .background(Color(0xFFEDF8F4), RoundedCornerShape(8.dp))
+                    .border(1.dp, Color(0xFFEFEFEF), RoundedCornerShape(8.dp))
+            )
+            SwipeToPayButton(
+                onSwipeComplete = { /*TODO*/ },
+                buttonColor = buttonColor,
+                buttontextColor = buttontextColor,
+                modifier = Modifier.constrainAs(cta) {
+                    start.linkTo(parent.start, 16.dp)
+                    end.linkTo(parent.end, 16.dp)
+                    top.linkTo(selectedBackground.bottom, 12.dp)
+                    
+                    width = Dimension.fillToConstraints
+                }.padding(bottom = 16.dp)
+            )
+        }
+    }
+}
