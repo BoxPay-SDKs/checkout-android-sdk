@@ -19,7 +19,6 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
-import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -70,7 +69,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -173,7 +171,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 //we get the card type from the API and call the DCC API
                 dccRequest!!.instrument!!.brand = cardNetworkName
                 dccRequest!!.instrument!!.accountNumber = completeCardNumber
-                Log.d("DCC_REQUEST", "" + GsonBuilder().setPrettyPrinting().create().toJson(dccRequest!!))
                 if (!isDCCFetched && completeCardNumber.length >= 10) {
                     dccViewModel.getDCC(dccRequest!!, token!!).distinctUntilChanged()
                         .observe(this) { dccResponse ->
@@ -1531,8 +1528,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     }
                     editor.apply()
-                } catch (e: JSONException) {
-                    Log.e("TAG", "postRequest: ",e)
+                } catch (_: JSONException) {
                 }
 
             },
@@ -1575,7 +1571,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 return headers
             }
         }.apply {
-            // Set retry policy
+            // Set retry policy`
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
             val backoffMultiplier = 1.0f // Backoff multiplier
@@ -1735,9 +1731,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
     fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-        Log.d("RESPONSE", jsonStr)
     }
 
     fun getMessageForFieldErrorItems(errorString: String) {
@@ -1895,8 +1888,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         }
                     }
 
-                } catch (e: JSONException) {
-                    Log.e("TAG", "fetchStatusAndReason: ", e)
+                } catch (_: JSONException) {
                 }
             },
             Response.ErrorListener {

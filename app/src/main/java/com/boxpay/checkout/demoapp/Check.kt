@@ -110,7 +110,7 @@ class Check : AppCompatActivity() {
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "1000.50",
+    "amount" : "50000",
     "currencyCode" : "INR"
   },
   "descriptor" : {
@@ -139,8 +139,8 @@ class Check : AppCompatActivity() {
                 "email": null,
                 "phoneNumber": null
             },
-            "dateOfBirth": null,
-            "panNumber": null
+            "dateOfBirth": "2023-07-17T12:34:56Z",
+            "panNumber": "CTGPA2222D"
         },
   "order" : {
     "originalAmount" : 423.73,
@@ -275,7 +275,6 @@ class Check : AppCompatActivity() {
                 // Call a function that depends on the token
             },
             Response.ErrorListener {
-                /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
@@ -288,5 +287,17 @@ class Check : AppCompatActivity() {
             }
         }
         queue.add(request)
+    }
+
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+        }
+        return null
     }
 }
