@@ -97,7 +97,6 @@
                             android:layout_height="match_parent"
                             android:background="@drawable/cardview_bg"
                             android:paddingTop="8dp"
-                            android:paddingBottom="8dp"
                             android:visibility="visible">
 
                             <TextView
@@ -1870,6 +1869,18 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:src="@drawable/boxpay_copyright" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/swipeCtaScreen"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/composeView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
         </LinearLayout>
 

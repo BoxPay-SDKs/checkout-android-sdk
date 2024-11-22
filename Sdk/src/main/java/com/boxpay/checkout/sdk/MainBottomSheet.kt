@@ -466,15 +466,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (e: ActivityNotFoundException) {
             // Log specific error if the app is not found
             upiIntentError = e.message
-            callUIAnalytics(requireActivity(),"UPI_APP_NOT_FOUND","","UPI")
-            PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(parentFragmentManager, "FailureScreen")
+            callUIAnalytics(requireActivity(), "UPI_APP_NOT_FOUND", "", "UPI")
+            PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(
+                parentFragmentManager,
+                "FailureScreen"
+            )
             removeLoadingState()
 
         } catch (e: Exception) {
             // Log any other error that occurs
             upiIntentError = e.message
-            callUIAnalytics(requireActivity(),"FAILED_TO_LAUNCH_UPI_INTENT","","UPI")
-            PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(parentFragmentManager, "FailureScreen")
+            callUIAnalytics(requireActivity(), "FAILED_TO_LAUNCH_UPI_INTENT", "", "UPI")
+            PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(
+                parentFragmentManager,
+                "FailureScreen"
+            )
             removeLoadingState()
 
         }
@@ -678,10 +684,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
-                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
+                    put(
+                        "dateOfBirth",
+                        CommonFunctions.formatToISO8601WithCurrentTime(
+                            sharedPreferences.getString(
+                                "dateOfBirth",
+                                null
+                            )!!
+                        )
+                    )
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null) {
@@ -754,7 +768,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     launchUPIIntent(urlInBase64)
                 } catch (e: JSONException) {
                     removeLoadingState()
-                    callUIAnalytics(requireActivity(),"ERROR_GETTING_UPI_URL ${e.message}","","UPI")
+                    callUIAnalytics(
+                        requireActivity(),
+                        "ERROR_GETTING_UPI_URL ${e.message}",
+                        "",
+                        "UPI"
+                    )
                     PaymentFailureScreen().show(parentFragmentManager, "FailureScreenFromUPIIntent")
                 }
             },
@@ -763,7 +782,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
-                    callUIAnalytics(requireActivity(),"ERROR_GETTING_UPI_URL $errorMessage","","UPI")
+                    callUIAnalytics(
+                        requireActivity(),
+                        "ERROR_GETTING_UPI_URL $errorMessage",
+                        "",
+                        "UPI"
+                    )
 
                     if (errorMessage?.contains("expired", true) == true) {
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
@@ -934,12 +958,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                         )
                     )
-                    binding.proceedtext.setTextColor(Color.parseColor(
-                        sharedPreferences.getString(
-                            "buttonTextColor",
-                            "#ffffff"
+                    binding.proceedtext.setTextColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "buttonTextColor",
+                                "#ffffff"
+                            )
                         )
-                    ))
+                    )
                     binding.recommendedProceedButton.isEnabled = true
                 }
             }
@@ -1135,7 +1161,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     isPANEditable,
                     isDOBEditable
                 )
-                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")            }
+                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+            }
         }
 
             binding.root
@@ -1413,10 +1440,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
-                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
+                    put(
+                        "dateOfBirth",
+                        CommonFunctions.formatToISO8601WithCurrentTime(
+                            sharedPreferences.getString(
+                                "dateOfBirth",
+                                null
+                            )!!
+                        )
+                    )
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null) {
@@ -1542,12 +1577,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     )
                                 )
                             )
-                            binding.proceedtext.setTextColor(Color.parseColor(
-                                sharedPreferences.getString(
-                                    "buttonTextColor",
-                                    "#ffffff"
+                            binding.proceedtext.setTextColor(
+                                Color.parseColor(
+                                    sharedPreferences.getString(
+                                        "buttonTextColor",
+                                        "#ffffff"
+                                    )
                                 )
-                            ))
+                            )
                             binding.recommendedProceedButton.isEnabled = true
                             recommendedCheckedPosition = 0
                             showRecommendedOptions()
@@ -1812,10 +1849,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
-                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
+                    put(
+                        "dateOfBirth",
+                        CommonFunctions.formatToISO8601WithCurrentTime(
+                            sharedPreferences.getString(
+                                "dateOfBirth",
+                                null
+                            )!!
+                        )
+                    )
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null) {
@@ -2201,12 +2246,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!paymentDetailsObject.isNull("order")) {
                     orderObject = paymentDetailsObject.getJSONObject("order")
                 }
-                if (orderObject == null){
+                if (orderObject == null) {
                     binding.itemsInOrderRecyclerView.visibility = View.GONE
                     binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
                     binding.totalValueRelativeLayout.visibility = View.GONE
-                }else{
-                    binding.orderSummaryConstraintLayout.setPadding(0,16,0,16)
+                } else {
+                    binding.orderSummaryConstraintLayout.setPadding(0, 16, 0, 16)
                 }
 
                 val subscriptionDetails: JSONObject? = paymentDetailsObject.optJSONObject("subscriptionDetails")
@@ -2377,9 +2422,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.apply()
 
                 transactionAmount = totalAmount
-                updateTransactionAmountInSharedPreferences(transactionAmount.toString(),currencyCode ?: "")
+                updateTransactionAmountInSharedPreferences(
+                    transactionAmount.toString(),
+                    currencyCode ?: ""
+                )
 
-                updateTransactionAmountInSharedPreferences(transactionAmount.toString(),currencyCode ?: "")
+                updateTransactionAmountInSharedPreferences(
+                    transactionAmount.toString(),
+                    currencyCode ?: ""
+                )
                 val itemsArray =
                     if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
 
@@ -2464,12 +2515,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                         )
                     )
-                    binding.textView6.setTextColor(Color.parseColor(
-                        sharedPreferences.getString(
-                            "buttonTextColor",
-                            "#ffffff"
+                    binding.textView6.setTextColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "buttonTextColor",
+                                "#ffffff"
+                            )
                         )
-                    ))
+                    )
                 } else {
                     binding.textView6.text = "Continue to Add Personal Details"
                     binding.proceedButtonRelativeLayout.setBackgroundColor(
@@ -2480,12 +2533,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                         )
                     )
-                    binding.textView6.setTextColor(Color.parseColor(
-                        sharedPreferences.getString(
-                            "buttonTextColor",
-                            "#ffffff"
+                    binding.textView6.setTextColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "buttonTextColor",
+                                "#ffffff"
+                            )
                         )
-                    ))
+                    )
                 }
 
                 if (taxes != null && taxes != "null" && taxes != "0") {
@@ -2987,6 +3042,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
             } catch (e: Exception) {
+                println("========exception $e")
                 Toast.makeText(
                     requireContext(),
                     "Invalid token/selected environment.\nPlease press back button and try again",
@@ -3042,6 +3098,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     override fun updateBottomSheet() {
+        binding.orderSummaryConstraintLayout.setPadding(0, 16, 0, 16)
         binding.nameAndMobileTextViewMain.text = if ((showPhone && showName) || showShipping) {
             sharedPreferences.getString(
                 "firstName",
@@ -3209,10 +3266,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
-                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
+                    put(
+                        "dateOfBirth",
+                        CommonFunctions.formatToISO8601WithCurrentTime(
+                            sharedPreferences.getString(
+                                "dateOfBirth",
+                                null
+                            )!!
+                        )
+                    )
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null) {
