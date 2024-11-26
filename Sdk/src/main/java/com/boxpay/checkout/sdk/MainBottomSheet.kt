@@ -2290,23 +2290,28 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
                 val checkoutThemeObject = merchantDetailsObject.getJSONObject("checkoutTheme")
-                val customFields =
-                    response.getJSONObject("merchantDetails").getJSONArray("customFields")
 
-                if (customFields.length() > 0) {
-                    for (i in 0 until customFields.length()) {
-                        val fieldObject = customFields.getJSONObject(i)
-                        if (fieldObject.getString("fieldName").contains("PAN", true)) {
-                            showPAN = true
-                        }
+                if (response.has("merchantDetails")) {
+                    val merchantDetails = response.getJSONObject("merchantDetails")
 
-                        if (fieldObject.getString("fieldName").contains("DATE_OF_BIRTH", true)) {
-                            showDOB = true
+                    // Check if "customFields" exists and is not null
+                    if (merchantDetails.has("customFields") && !merchantDetails.isNull("customFields")) {
+                        val customFields = merchantDetails.getJSONArray("customFields")
+                        // Process the customFields array
+                        if (customFields.length() > 0) {
+                            for (i in 0 until customFields.length()) {
+                                val fieldObject = customFields.getJSONObject(i)
+                                if (fieldObject.getString("fieldName").contains("PAN", true)) {
+                                    showPAN = true
+                                }
+
+                                if (fieldObject.getString("fieldName").contains("DATE_OF_BIRTH", true)) {
+                                    showDOB = true
+                                }
+                            }
                         }
                     }
-                } else {
                 }
-
                 val sharedPreferences = requireContext().getSharedPreferences(
                     "TransactionDetails",
                     Context.MODE_PRIVATE
