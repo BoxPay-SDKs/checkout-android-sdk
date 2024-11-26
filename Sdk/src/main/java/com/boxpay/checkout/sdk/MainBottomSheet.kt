@@ -41,6 +41,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
@@ -63,6 +64,7 @@ import com.boxpay.checkout.sdk.ViewModels.SingletonClassForLoadingState
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.OrderSummaryItemsAdapter
 import com.boxpay.checkout.sdk.adapters.RecommendedItemsAdapter
+import com.boxpay.checkout.sdk.composeScreens.screen.RecommendedScreen
 import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
@@ -1587,6 +1589,57 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             )
                             binding.recommendedProceedButton.isEnabled = true
                             recommendedCheckedPosition = 0
+                            binding.swipeCtaScreen.visibility = View.VISIBLE
+                            binding.linearLayoutMain.visibility = View.GONE
+                            if (!binding.itemsInOrderRecyclerView.isVisible) {
+                                binding.composeView.setContent {
+                                    RecommendedScreen(
+                                        modifier = Modifier,
+                                        buttonColor = androidx.compose.ui.graphics.Color(
+                                            Color.parseColor(
+                                                sharedPreferences.getString(
+                                                    "primaryButtonColor",
+                                                    "#000000"
+                                                )
+                                            )
+                                        ),
+                                        buttontextColor = androidx.compose.ui.graphics.Color(
+                                            Color.parseColor(
+                                                sharedPreferences.getString(
+                                                    "buttonTextColor",
+                                                    "#000000"
+                                                )
+                                            )
+                                        ),
+                                        amount = "${
+                                            sharedPreferences.getString(
+                                                "currencySymbol",
+                                                "₹"
+                                            ) ?: ""
+                                        }${
+                                            sharedPreferences.getString("amount", "empty")
+                                                ?: ""
+                                        }",
+                                        lastUsedUpi = recommendedInstrumentationList[0].second,
+                                        onClickMoreOptions = {
+                                            binding.linearLayoutMain.visibility = View.VISIBLE
+                                            binding.swipeCtaScreen.visibility = View.GONE
+                                        },
+                                        onSwipeComplete = {
+                                            binding.swipeScreenAnimation.apply {
+                                                playAnimation()
+                                                repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+                                            }
+                                            binding.swipeLoader.visibility = View.VISIBLE
+                                            postRecommendedInstruments(
+                                                "upi/collect",
+                                                recommendedInstrumentationList[0].first,
+                                                recommendedInstrumentationList[0].second
+                                            )
+                                        }
+                                    )
+                                }
+                            }
                             showRecommendedOptions()
                         } else {
                             upiOptionsShown = true
@@ -1600,7 +1653,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             },
             Response.ErrorListener {
                 removeLoadingState()
-                // no op
             }) {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
@@ -2012,7 +2064,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun showPriceBreakUp() {
-        binding.itemsInOrderRecyclerView.visibility = View.VISIBLE
+        binding.`itemsInOrderRecyclerView`.visibility = View.VISIBLE
         binding.textView18.visibility = View.VISIBLE
         binding.ItemsPrice.visibility = View.VISIBLE
         binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
@@ -3170,6 +3222,58 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             showUPIOptions()
         }
 
+        if (recommendedInstrumentationList.isNotEmpty()) {
+            binding.swipeCtaScreen.visibility = View.VISIBLE
+            binding.linearLayoutMain.visibility = View.GONE
+            binding.composeView.setContent {
+                RecommendedScreen(
+                    modifier = Modifier,
+                    buttonColor = androidx.compose.ui.graphics.Color(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "primaryButtonColor",
+                                "#000000"
+                            )
+                        )
+                    ),
+                    buttontextColor = androidx.compose.ui.graphics.Color(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "buttonTextColor",
+                                "#000000"
+                            )
+                        )
+                    ),
+                    amount = "${
+                        sharedPreferences.getString(
+                            "currencySymbol",
+                            "₹"
+                        ) ?: ""
+                    }${
+                        sharedPreferences.getString("amount", "empty")
+                            ?: ""
+                    }",
+                    lastUsedUpi = recommendedInstrumentationList[0].second,
+                    onClickMoreOptions = {
+                        binding.linearLayoutMain.visibility = View.VISIBLE
+                        binding.swipeCtaScreen.visibility = View.GONE
+                    },
+                    onSwipeComplete = {
+                        binding.swipeScreenAnimation.apply {
+                            playAnimation()
+                            repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+                        }
+                        binding.swipeLoader.visibility = View.VISIBLE
+                        postRecommendedInstruments(
+                            "upi/collect",
+                            recommendedInstrumentationList[0].first,
+                            recommendedInstrumentationList[0].second
+                        )
+                    }
+                )
+            }
+        }
+
         callPaymentMethodRules(requireContext())
 
     }
@@ -3321,6 +3425,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
 
+                binding.swipeLoader.visibility = View.GONE
+                binding.swipeScreenAnimation.cancelAnimation()
                 val status = response.getJSONObject("status").getString("status")
                 val reason = response.getJSONObject("status").getString("reason")
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
@@ -3362,6 +3468,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             Response.ErrorListener { error ->
                 // Handle error
                 hideLoadingInButton()
+                binding.swipeLoader.visibility = View.GONE
+                binding.swipeScreenAnimation.cancelAnimation()
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)

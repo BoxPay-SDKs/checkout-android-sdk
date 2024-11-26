@@ -12,7 +12,8 @@
         android:id="@+id/linearLayoutMain"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="visible">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/topConstraint"
@@ -1872,17 +1873,34 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/swipeCtaScreen"
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/swipeCtaScreen"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:layout_height="wrap_content">
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/composeView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <androidx.compose.ui.platform.ComposeView
-                android:id="@+id/composeView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-        </LinearLayout>
+            android:layout_height="match_parent" />
 
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/swipeLoader"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="#FFFFFF"
+        android:visibility="gone">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/swipeScreenAnimation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="32dp"
+            app:lottie_fileName="boxpayLogo.json" />
+
+    </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

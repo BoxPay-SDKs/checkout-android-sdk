@@ -38,9 +38,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
+import androidx.compose.material.RadioButton
+import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -1506,24 +1511,24 @@ fun SwipeToPayButton(
     modifier: Modifier,
     buttonColor: Color,
     buttontextColor: Color,
-    height: Dp = 44.dp,
+    height: Dp = 48.dp,
+    amount: String
 ) {
     val swipePosition = remember { mutableStateOf(0f) }
-    val complete = remember { mutableStateOf(false) }
     val buttonWidth = remember { mutableStateOf(0) }
     val heightPx = with(LocalDensity.current) { height.toPx() }
     Box(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .background(buttonColor, shape = RoundedCornerShape(10.dp))
+            .background(buttonColor, shape = RoundedCornerShape(22.dp))
             .onSizeChanged { size ->
                 buttonWidth.value = size.width
             }
     ) {
         // Center Text
         Text(
-            text = "Swipe to Pay ₹36,770",
+            text = "Swipe to Pay $amount",
             color = buttontextColor,
             style = TextStyle(
                 fontSize = 16.sp,
@@ -1539,21 +1544,19 @@ fun SwipeToPayButton(
                 .offset { IntOffset(swipePosition.value.roundToInt(), 0) }
                 .size(height)
                 .padding(vertical = 3.dp, horizontal = 4.dp)
-                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                .background(Color.White, shape = RoundedCornerShape(20.dp))
                 .draggable(
                     orientation = Orientation.Horizontal,
                     state = rememberDraggableState { delta ->
-                        if (!complete.value) {
-                            val newPosition = (swipePosition.value + delta)
-                                .coerceIn(0f, buttonWidth.value - heightPx)
-                            swipePosition.value = newPosition
-                        }
+                        val newPosition = (swipePosition.value + delta)
+                            .coerceIn(0f, buttonWidth.value - heightPx)
+                        swipePosition.value = newPosition
                     },
                     onDragStopped = {
                         // Update to check the actual end
                         if (swipePosition.value >= (buttonWidth.value - heightPx)) {
-                            complete.value = true
                             onSwipeComplete()
+                            swipePosition.value = 0f
                         } else {
                             swipePosition.value = 0f // Reset if not swiped far enough
                         }
@@ -1585,9 +1588,15 @@ private fun SwipeToPayButtonPreview() {
 //        buttontextColor = Color.White
 //    )
     RecommendedScreen(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
         buttonColor = Color(0xFF1CA672),
-        buttontextColor = Color.White
+        buttontextColor = Color.White,
+        amount = "₹36,770",
+        lastUsedUpi = "",
+        onClickMoreOptions = {},
+        onSwipeComplete = {}
     )
 }
 
@@ -1595,109 +1604,166 @@ private fun SwipeToPayButtonPreview() {
 fun RecommendedScreen(
     modifier: Modifier,
     buttonColor: Color,
-    buttontextColor: Color
+    buttontextColor: Color,
+    amount: String,
+    lastUsedUpi: String,
+    onClickMoreOptions:()-> Unit,
+    onSwipeComplete: () -> Unit
 ) {
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
-        ConstraintLayout(
-            modifier = Modifier
-                .wrapContentHeight()
-                .fillMaxWidth()
-                .background(
-                    Color.White,
-                    RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
-                )
-        ) {
-            val (paymentTitle, paymentDesc, moreOptionsCta, moreOptionsArrow, selectedBackground, selectedUpi, radioButton, cta) = createRefs()
-            Text(
-                text = "Payment ₹36,770",
-                color = Color(0xFF2D2B32),
-                style = TextStyle(
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = defaultFontFamily
-                ),
-                modifier = Modifier.constrainAs(paymentTitle) {
-                    start.linkTo(parent.start, 16.dp)
-                    top.linkTo(parent.top, 16.dp)
-                    end.linkTo(moreOptionsCta.start, 4.dp)
-
-                    width = Dimension.fillToConstraints
-                },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+        Card (modifier = Modifier
+            .wrapContentHeight()
+            .fillMaxWidth(),
+            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 20.dp
             )
-            Text(
-                text = "Last Used Payment Option",
-                color = Color(0xFF7F7D83),
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    fontFamily = defaultFontFamily
-                ),
-                modifier = Modifier.constrainAs(paymentDesc) {
-                    start.linkTo(parent.start, 16.dp)
-                    top.linkTo(paymentTitle.bottom, 2.dp)
-                    end.linkTo(moreOptionsCta.start, 4.dp)
-
-                    width = Dimension.fillToConstraints
-                },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = "More Options",
-                color = buttonColor,
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = defaultFontFamily
-                ),
-                modifier = Modifier.constrainAs(moreOptionsCta) {
-                    end.linkTo(moreOptionsArrow.start, 2.dp)
-                    top.linkTo(parent.top, 4.dp)
-                    bottom.linkTo(paymentDesc.bottom)
-
-                    width = Dimension.fillToConstraints
-                },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Image(
-                painter = painterResource(id = R.drawable.ic_keyboard_left_arrow),
-                contentDescription = "",
+        ){
+            ConstraintLayout(
                 modifier = Modifier
-                    .constrainAs(moreOptionsArrow) {
-                        end.linkTo(parent.end, 16.dp)
-                        centerVerticallyTo(moreOptionsCta)
-                    }
-                    .size(16.dp),
-                colorFilter = ColorFilter.tint(buttonColor)
-            )
-            Box(
-                modifier = Modifier
-                    .constrainAs(selectedBackground) {
+                    .fillMaxWidth()
+                    .background(
+                        Color.White,
+                    )
+            ) {
+                val (paymentTitle, paymentDesc, moreOptionsCta, moreOptionsArrow, selectedBackground, selectedUpi, radioButton, cta, selectedImage) = createRefs()
+                Text(
+                    text = "Payment $amount",
+                    color = Color(0xFF2D2B32),
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = defaultFontFamily
+                    ),
+                    modifier = Modifier.constrainAs(paymentTitle) {
                         start.linkTo(parent.start, 16.dp)
-                        end.linkTo(parent.end, 16.dp)
-                        top.linkTo(paymentDesc.bottom, 12.dp)
+                        top.linkTo(parent.top, 16.dp)
+                        end.linkTo(moreOptionsCta.start, 4.dp)
 
                         width = Dimension.fillToConstraints
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "Last Used Payment Option",
+                    color = Color(0xFF7F7D83),
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        fontFamily = defaultFontFamily
+                    ),
+                    modifier = Modifier.constrainAs(paymentDesc) {
+                        start.linkTo(parent.start, 16.dp)
+                        top.linkTo(paymentTitle.bottom, 4.dp)
+                        end.linkTo(moreOptionsCta.start, 4.dp)
+
+                        width = Dimension.fillToConstraints
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "More Options",
+                    color = buttonColor,
+                    style = TextStyle(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = defaultFontFamily
+                    ),
+                    modifier = Modifier.constrainAs(moreOptionsCta) {
+                        end.linkTo(moreOptionsArrow.start, 2.dp)
+                        top.linkTo(parent.top, 4.dp)
+                        bottom.linkTo(paymentDesc.bottom)
+
+                        width = Dimension.fillToConstraints
+                    }.clickable { onClickMoreOptions() },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Image(
+                    imageVector = Icons.Filled.KeyboardArrowRight,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .constrainAs(moreOptionsArrow) {
+                            end.linkTo(parent.end, 16.dp)
+                            centerVerticallyTo(moreOptionsCta)
+                        }
+                        .size(18.dp)
+                        .clickable { onClickMoreOptions() },
+                    colorFilter = ColorFilter.tint(buttonColor)
+                )
+                Box(
+                    modifier = Modifier
+                        .constrainAs(selectedBackground) {
+                            start.linkTo(parent.start, 16.dp)
+                            end.linkTo(parent.end, 16.dp)
+                            top.linkTo(paymentDesc.bottom, 16.dp)
+
+                            width = Dimension.fillToConstraints
+                        }
+                        .height(56.dp)
+                        .background(Color(0xFFEDF8F4), RoundedCornerShape(8.dp))
+                        .border(1.dp, Color(0xFFEFEFEF), RoundedCornerShape(8.dp))
+                )
+                Box(modifier = Modifier
+                    .constrainAs(selectedImage) {
+                        start.linkTo(selectedBackground.start, 12.dp)
+                        top.linkTo(selectedBackground.top, 12.dp)
                     }
-                    .height(56.dp)
-                    .background(Color(0xFFEDF8F4), RoundedCornerShape(8.dp))
-                    .border(1.dp, Color(0xFFEFEFEF), RoundedCornerShape(8.dp))
-            )
-            SwipeToPayButton(
-                onSwipeComplete = { /*TODO*/ },
-                buttonColor = buttonColor,
-                buttontextColor = buttontextColor,
-                modifier = Modifier.constrainAs(cta) {
-                    start.linkTo(parent.start, 16.dp)
-                    end.linkTo(parent.end, 16.dp)
-                    top.linkTo(selectedBackground.bottom, 12.dp)
-                    
-                    width = Dimension.fillToConstraints
-                }.padding(bottom = 16.dp)
-            )
+                    .size(32.dp)
+                    .background(Color.White, RoundedCornerShape(4.dp))) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_upi),
+                        contentDescription = "",
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(horizontal = 4.dp)
+                    )
+                }
+                Text(
+                    text = lastUsedUpi,
+                    color = Color(0xFF4F4D55),
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = defaultFontFamily
+                    ),
+                    modifier = Modifier.constrainAs(selectedUpi) {
+                        start.linkTo(selectedImage.end, 12.dp)
+                        centerVerticallyTo(selectedImage)
+                    },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                RadioButton(
+                    selected = true,
+                    onClick = { },
+                    modifier = Modifier.constrainAs(radioButton) {
+                        end.linkTo(parent.end, 16.dp)
+
+                        centerVerticallyTo(selectedImage)
+                    },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = buttonColor
+                    )
+                )
+                SwipeToPayButton(
+                    onSwipeComplete = {onSwipeComplete() },
+                    buttonColor = buttonColor,
+                    buttontextColor = buttontextColor,
+                    modifier = Modifier
+                        .constrainAs(cta) {
+                            start.linkTo(parent.start, 16.dp)
+                            end.linkTo(parent.end, 16.dp)
+                            top.linkTo(selectedBackground.bottom, 18.dp)
+
+                            width = Dimension.fillToConstraints
+                        }
+                        .padding(bottom = 18.dp),
+                    amount = amount
+                )
+            }
         }
     }
 }

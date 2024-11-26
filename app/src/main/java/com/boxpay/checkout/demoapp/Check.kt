@@ -1,4 +1,3 @@
-
 package com.boxpay.checkout.demoapp
 
 import android.content.Context
@@ -85,8 +84,7 @@ class Check : AppCompatActivity() {
                 tokenLiveData.value ?: "",
                 ::onPaymentResultCallback,
                 false,
-                customerShopperToken = customerShopperToken ?: "",
-                isSuccessScreenVisible = true
+                customerShopperToken = customerShopperToken ?: ""
             )
         boxPayCheckout.testEnv = true
         boxPayCheckout.display()
@@ -112,7 +110,7 @@ class Check : AppCompatActivity() {
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "1000.50",
+    "amount" : "650",
     "currencyCode" : "INR"
   },
   "descriptor" : {
@@ -145,119 +143,34 @@ class Check : AppCompatActivity() {
             "panNumber": "CTGPA2222D"
         },
   "order" : {
-    "originalAmount" : 423.73,
+    "originalAmount" : 500,
     "shippingAmount" : 50,
     "voucherCode" : "VOUCHER",
-    "taxAmount" : 76.27,
-    "totalAmountWithoutTax" : 423.73,
+    "taxAmount" :100,
+    "totalAmountWithoutTax" : 550,
     "items" : [ {
       "id" : "test",
-      "itemName" : "Sample Item",
+      "itemName" : "La Fille Regular Solid Handheld Bag Blue",
       "description" : "testProduct",
       "quantity" : 1,
       "manufacturer" : null,
       "brand" : null,
       "color" : null,
       "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
+      "imageUrl" : "https://assetscdn1.paytm.com/images/catalog/product/B/BA/BAGLAFILLE-BLUEINTO887307A255D05/1563381583133_0..jpg",
       "categories" : null,
-      "amountWithoutTax" : 423.73,
+      "amountWithoutTax" : 500,
       "taxAmount" : 76.27,
       "taxPercentage" : null,
       "discountedAmount" : null,
       "amountWithoutTaxLocale" : "10",
       "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }, {
-      "id" : "test",
-      "itemName" : "Sample Item",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-      "categories" : null,
-      "amountWithoutTax" : 423.73,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    } ]
+    }]
   },
   "statusNotifyUrl" : "https://www.boxpay.tech",
   "frontendReturnUrl" : "https://www.boxpay.tech",
   "frontendBackUrl" : "https://www.boxpay.tech",
-  "createShopperToken" : false,
+  "createShopperToken" : true,
   "expiryDurationSec" : 900
 }"""
         )
@@ -277,7 +190,6 @@ class Check : AppCompatActivity() {
                 // Call a function that depends on the token
             },
             Response.ErrorListener {
-                /* no response handling */
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
@@ -290,5 +202,17 @@ class Check : AppCompatActivity() {
             }
         }
         queue.add(request)
+    }
+
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+        }
+        return null
     }
 }
