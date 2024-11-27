@@ -1521,7 +1521,7 @@ fun SwipeToPayButton(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .background(buttonColor, shape = RoundedCornerShape(22.dp))
+            .background(buttonColor, shape = RoundedCornerShape(12.dp))
             .onSizeChanged { size ->
                 buttonWidth.value = size.width
             }
@@ -1544,7 +1544,7 @@ fun SwipeToPayButton(
                 .offset { IntOffset(swipePosition.value.roundToInt(), 0) }
                 .size(height)
                 .padding(vertical = 3.dp, horizontal = 4.dp)
-                .background(Color.White, shape = RoundedCornerShape(20.dp))
+                .background(Color.White, shape = RoundedCornerShape(10.dp))
                 .draggable(
                     orientation = Orientation.Horizontal,
                     state = rememberDraggableState { delta ->
