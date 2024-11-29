@@ -1552,6 +1552,39 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             binding.swipeCtaScreen.visibility = View.VISIBLE
                             binding.linearLayoutMain.visibility = View.GONE
                             if (!binding.itemsInOrderRecyclerView.isVisible) {
+                                val address = buildString {
+                                    if ((showPhone && showName) || showShipping) {
+                                        append(sharedPreferences.getString("firstName", ""))
+                                        append(" ")
+                                        append(sharedPreferences.getString("lastName", ""))
+                                        append(" (${sharedPreferences.getString("phoneNumber", "")})")
+                                    } else if (showName) {
+                                        append(sharedPreferences.getString("firstName", ""))
+                                        append(" ")
+                                        append(sharedPreferences.getString("lastName", ""))
+                                    } else {
+                                        append("(${sharedPreferences.getString("phoneNumber", "")})")
+                                    }
+
+                                    // Add email
+                                    append(", ")
+                                    append(sharedPreferences.getString("email", ""))
+
+                                    // Add address
+                                    append(", ")
+                                    val address1 = sharedPreferences.getString("address1", "")
+                                    val address2 = sharedPreferences.getString("address2", null)
+                                    val city = sharedPreferences.getString("city", "")
+                                    val state = sharedPreferences.getString("state", "null")
+                                    val postalCode = sharedPreferences.getString("postalCode", "null")
+
+                                    if (!address2.isNullOrEmpty()) {
+                                        append("$address1\n$address2\n$city, $state, $postalCode")
+                                    } else {
+                                        append("$address1\n$city, $state, $postalCode")
+                                    }
+                                }
+
                                 binding.composeView.setContent {
                                     RecommendedScreen(
                                         modifier = Modifier,
@@ -1596,7 +1629,36 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                                 recommendedInstrumentationList[0].first,
                                                 recommendedInstrumentationList[0].second
                                             )
-                                        }
+                                        },
+                                        address = address,
+                                        toShowOnChangeAddressClick = isEmailEditable || isPhoneEditable || isNameEditable || showShipping,
+                                        onClickChangeAddress = {
+                                            if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                                                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                                                    ?.removePrefix(countryCode?.second ?: "")
+                                                editor.putString("phoneNumber", confirmPhoneNumber)
+                                                editor.putString("phoneCode", countryCode?.second)
+                                                editor.putString("countryName", countryCode?.first)
+                                                editor.apply()
+                                            }
+                                            val bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                                                this,
+                                                false,
+                                                showName,
+                                                showPhone,
+                                                showEmail,
+                                                showPAN,
+                                                showDOB,
+                                                showShipping,
+                                                isNameEditable,
+                                                isPhoneEditable,
+                                                isEmailEditable,
+                                                isPANEditable,
+                                                isDOBEditable
+                                            )
+                                            bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+                                        },
+                                        toShowAddress = showEmail || showShipping || showPhone || showName
                                     )
                                 }
                             }
@@ -3118,6 +3180,38 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         if (recommendedInstrumentationList.isNotEmpty()) {
             binding.swipeCtaScreen.visibility = View.VISIBLE
             binding.linearLayoutMain.visibility = View.GONE
+            val address = buildString {
+                if ((showPhone && showName) || showShipping) {
+                    append(sharedPreferences.getString("firstName", ""))
+                    append(" ")
+                    append(sharedPreferences.getString("lastName", ""))
+                    append(" (${sharedPreferences.getString("phoneNumber", "")})")
+                } else if (showName) {
+                    append(sharedPreferences.getString("firstName", ""))
+                    append(" ")
+                    append(sharedPreferences.getString("lastName", ""))
+                } else {
+                    append("(${sharedPreferences.getString("phoneNumber", "")})")
+                }
+
+                // Add email
+                append(", ")
+                append(sharedPreferences.getString("email", ""))
+
+                // Add address
+                append(", ")
+                val address1 = sharedPreferences.getString("address1", "")
+                val address2 = sharedPreferences.getString("address2", null)
+                val city = sharedPreferences.getString("city", "")
+                val state = sharedPreferences.getString("state", "null")
+                val postalCode = sharedPreferences.getString("postalCode", "null")
+
+                if (!address2.isNullOrEmpty()) {
+                    append("$address1, $address2, $city, $state, $postalCode")
+                } else {
+                    append("$address1, $city, $state, $postalCode")
+                }
+            }
             binding.composeView.setContent {
                 RecommendedScreen(
                     modifier = Modifier,
@@ -3162,7 +3256,36 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             recommendedInstrumentationList[0].first,
                             recommendedInstrumentationList[0].second
                         )
-                    }
+                    },
+                    address = address,
+                    onClickChangeAddress = {
+                        if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                            val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                                ?.removePrefix(countryCode?.second ?: "")
+                            editor.putString("phoneNumber", confirmPhoneNumber)
+                            editor.putString("phoneCode", countryCode?.second)
+                            editor.putString("countryName", countryCode?.first)
+                            editor.apply()
+                        }
+                        val bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                            this,
+                            false,
+                            showName,
+                            showPhone,
+                            showEmail,
+                            showPAN,
+                            showDOB,
+                            showShipping,
+                            isNameEditable,
+                            isPhoneEditable,
+                            isEmailEditable,
+                            isPANEditable,
+                            isDOBEditable
+                        )
+                        bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+                    },
+                    toShowOnChangeAddressClick = isEmailEditable || isPhoneEditable || isNameEditable || showShipping,
+                    toShowAddress = showEmail || showShipping || showPhone || showName
                 )
             }
         }

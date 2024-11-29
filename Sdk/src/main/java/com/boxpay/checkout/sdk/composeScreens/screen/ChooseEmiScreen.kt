@@ -1600,7 +1600,11 @@ private fun SwipeToPayButtonPreview() {
         amount = "₹36,770",
         lastUsedUpi = "",
         onClickMoreOptions = {},
-        onSwipeComplete = {}
+        onSwipeComplete = {},
+        address = "1538 vyapar kendra road, Sushant lok phase 1 sector 43, gurugram, haryana, 12001,+91-8231245318",
+        onClickChangeAddress = {},
+        toShowOnChangeAddressClick = true,
+        toShowAddress = true
     )
 }
 
@@ -1612,7 +1616,11 @@ fun RecommendedScreen(
     amount: String,
     lastUsedUpi: String,
     onClickMoreOptions:()-> Unit,
-    onSwipeComplete: () -> Unit
+    onSwipeComplete: () -> Unit,
+    address: String,
+    onClickChangeAddress:()-> Unit,
+    toShowOnChangeAddressClick:Boolean,
+    toShowAddress:Boolean
 ) {
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
         Card (modifier = Modifier
@@ -1630,7 +1638,74 @@ fun RecommendedScreen(
                         Color.White,
                     )
             ) {
-                val (paymentTitle, paymentDesc, moreOptionsCta, moreOptionsArrow, selectedBackground, selectedUpi, radioButton, cta, selectedImage) = createRefs()
+                val (shippingTitle, shippingAddress, changeCta, divider, paymentTitle, paymentDesc, moreOptionsCta, moreOptionsArrow, selectedBackground, selectedUpi, radioButton, cta, selectedImage) = createRefs()
+                if (toShowAddress) {
+                    Text(
+                        text = "Shipping Address",
+                        color = Color(0xFF2D2B32),
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = defaultFontFamily
+                        ),
+                        modifier = Modifier.constrainAs(shippingTitle) {
+                            start.linkTo(parent.start, 16.dp)
+                            top.linkTo(parent.top, 16.dp)
+                            if (toShowOnChangeAddressClick) {
+                                end.linkTo(changeCta.start, 4.dp)
+                            } else {
+                                end.linkTo(parent.end, 16.dp)
+                            }
+
+                            width = Dimension.fillToConstraints
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (toShowOnChangeAddressClick) {
+                        Text(
+                            text = "Change",
+                            color = buttonColor,
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                fontFamily = defaultFontFamily
+                            ),
+                            modifier = Modifier.constrainAs(changeCta) {
+                                end.linkTo(parent.end, 16.dp)
+                                centerVerticallyTo(shippingTitle)
+
+                            }.clickable { onClickChangeAddress() },
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    Text(
+                        text = address,
+                        color = Color(0xFF7F7D83),
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Normal,
+                            fontFamily = defaultFontFamily
+                        ),
+                        modifier = Modifier.constrainAs(shippingAddress) {
+                            start.linkTo(parent.start, 16.dp)
+                            top.linkTo(shippingTitle.bottom, 4.dp)
+                            end.linkTo(parent.end, 16.dp)
+
+                            width = Dimension.fillToConstraints
+                        }
+                    )
+                    Divider(
+                        modifier = Modifier.constrainAs(divider) {
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            top.linkTo(shippingAddress.bottom, 16.dp)
+
+                            width = Dimension.fillToConstraints
+                        }
+                    )
+                }
                 Text(
                     text = "Payment $amount",
                     color = Color(0xFF2D2B32),
@@ -1641,7 +1716,11 @@ fun RecommendedScreen(
                     ),
                     modifier = Modifier.constrainAs(paymentTitle) {
                         start.linkTo(parent.start, 16.dp)
-                        top.linkTo(parent.top, 16.dp)
+                        if (toShowAddress) {
+                            top.linkTo(divider.bottom, 16.dp)
+                        } else {
+                            top.linkTo(parent.top, 16.dp)
+                        }
                         end.linkTo(moreOptionsCta.start, 4.dp)
 
                         width = Dimension.fillToConstraints
@@ -1677,7 +1756,11 @@ fun RecommendedScreen(
                     ),
                     modifier = Modifier.constrainAs(moreOptionsCta) {
                         end.linkTo(moreOptionsArrow.start, 2.dp)
-                        top.linkTo(parent.top, 4.dp)
+                        if (toShowAddress) {
+                            top.linkTo(divider.bottom, 16.dp)
+                        } else {
+                            top.linkTo(parent.top, 16.dp)
+                        }
                         bottom.linkTo(paymentDesc.bottom)
 
                         width = Dimension.fillToConstraints
