@@ -11,6 +11,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.CallBackFunctions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.handleException
 import org.json.JSONObject
 import java.util.Locale
 
@@ -40,7 +41,6 @@ class BoxPayCheckout(
     private var BASE_URL: String? = null
 
     fun display() {
-
         if (sandboxEnabled) {
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
@@ -52,9 +52,17 @@ class BoxPayCheckout(
             this.BASE_URL = "apis.boxpay.in"
         }
         editor.apply()
-        callUIAnalytics(context, "CHECKOUT_LOADED")
-        putTransactionDetailsInSharedPreferences()
-        openBottomSheet()
+        try {
+            if (!token.isNullOrEmpty()) {
+                callUIAnalytics(context, "CHECKOUT_LOADED")
+                putTransactionDetailsInSharedPreferences()
+                openBottomSheet()
+            } else {
+                handleException(context, "Token added is either null or empty", token, this.BASE_URL ?: "")
+            }
+        } catch (e: Exception) {
+            handleException(context, e.message ?: "", token, this.BASE_URL ?: "")
+        }
     }
 
     private fun callUIAnalytics(context: Context, event: String) {
@@ -78,7 +86,7 @@ class BoxPayCheckout(
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "${BASE_URL}/v0/ui-analytics", requestBody,
+            Method.POST, "https://${BASE_URL}/v0/ui-analytics", requestBody,
             Response.Listener { /*no response handling */ },
             Response.ErrorListener { /*no response handling */ }) {}.apply {
             // Set retry policy
@@ -95,16 +103,20 @@ class BoxPayCheckout(
 
 
     private fun openBottomSheet() {
-        initializingCallBackFunctions()
+        try {
+            initializingCallBackFunctions()
 
-        if (context is Activity) {
-            val activity =
-                context as AppCompatActivity // or FragmentActivity, depending on your activity type
-            val fragmentManager = activity.supportFragmentManager
-            // Now you can use fragmentManager
-            val bottomSheet = MainBottomSheet()
-            bottomSheet.setContext(activity.applicationContext)
-            bottomSheet.show(fragmentManager, "MainBottomSheet")
+            if (context is Activity) {
+                val activity =
+                    context as AppCompatActivity // or FragmentActivity, depending on your activity type
+                val fragmentManager = activity.supportFragmentManager
+                // Now you can use fragmentManager
+                val bottomSheet = MainBottomSheet()
+                bottomSheet.setContext(activity.applicationContext)
+                bottomSheet.show(fragmentManager, "MainBottomSheet")
+            }
+        } catch (e: Exception) {
+            handleException(context, e.message ?: "", token, this.BASE_URL ?: "")
         }
     }
 

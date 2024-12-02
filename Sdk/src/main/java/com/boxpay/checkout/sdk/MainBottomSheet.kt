@@ -63,6 +63,7 @@ import com.boxpay.checkout.sdk.adapters.RecommendedItemsAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.handleException
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -70,6 +71,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.microsoft.clarity.Clarity
 import com.microsoft.clarity.ClarityConfig
+import com.mixpanel.android.mpmetrics.MixpanelAPI
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -743,270 +745,293 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
-        binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
-
-        val imm =
-            requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        view?.let {
-            imm.hideSoftInputFromWindow(it.windowToken, 0)
-        }
-        binding.boxpayLogoLottie.playAnimation()
-
-
+        fetchTransactionDetailsFromSharedPreferences()
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        queue = Volley.newRequestQueue(requireContext())
-        editor = sharedPreferences.edit()
-
-
-        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        bottomSheet = DeliveryAddressBottomSheet.newInstance(
-            this,
-            false,
-            showName,
-            showPhone,
-            showEmail,
-            showShipping
-        )
-
-        if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
-            isTablet = false
-
-            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        } else {
-            isTablet = true
-        }
-
-        val callback = SingletonClassForLoadingState.getInstance().getYourObject()
-
-        callback?.onBottomSheetOpened?.invoke()
-
         val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
 
         Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
+        val mp =
+            MixpanelAPI.getInstance(requireActivity(), "76ea8537c5f272d43cd09d1756b189f8", true)
+        mp.identify(token ?: "12345678", true)
+        mp.people.set("name", token ?: "")
+        val props = JSONObject()
+        props.put("Initialized", ":MainBottomSheet")
+        mp.track("MainScreen", props)
+        return try {
+            binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
 
-        fetchTransactionDetailsFromSharedPreferences()
-        overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
-            if (showOverlay) {
-                addOverlayToActivity()
-            } else {
-                removeOverlayFromActivity()
+            val imm =
+                requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            view?.let {
+                imm.hideSoftInputFromWindow(it.windowToken, 0)
             }
-        })
-        overlayViewModel.setShowOverlay(true)
-
-        hidePriceBreakUp()
-
-        val callBackFunctionsForDismissing = CallbackForDismissMainSheet(::dismissMainSheet)
-        SingletonForDismissMainSheet.getInstance().callBackFunctions =
-            callBackFunctionsForDismissing
-
-        val orderSummaryAdapter =
-            OrderSummaryItemsAdapter(imagesUrls, items, prices, itemQty, requireContext())
-        binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
-
-        val recommendedInstrumentsAdapter = RecommendedItemsAdapter(
-            recommendedInstrumentationList, binding.recomendedRecyclerView, requireContext()
-        )
-        binding.recomendedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
-        var currencySymbol = sharedPreferences.getString("currencySymbol", "")
-        updateTransactionAmountInSharedPreferences(currencySymbol + transactionAmount.toString())
-        if (currencySymbol == "")
-            currencySymbol = "₹"
+            binding.boxpayLogoLottie.playAnimation()
+            queue = Volley.newRequestQueue(requireContext())
+            editor = sharedPreferences.edit()
 
 
-        // Set click listeners
+            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+            bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                this,
+                false,
+                showName,
+                showPhone,
+                showEmail,
+                showShipping
+            )
 
-        binding.orderSummaryConstraintLayout.setOnClickListener { // Toggle visibility of the price break-up card
-            if (!binding.loadingRelativeLayout.isVisible) {
-                if (!priceBreakUpVisible) {
-                    showPriceBreakUp()
-                    priceBreakUpVisible = true
+            if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
+                isTablet = false
+
+                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            } else {
+                isTablet = true
+            }
+
+            val callback = SingletonClassForLoadingState.getInstance().getYourObject()
+
+            callback?.onBottomSheetOpened?.invoke()
+
+            overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
+                if (showOverlay) {
+                    addOverlayToActivity()
                 } else {
-                    hidePriceBreakUp()
-                    priceBreakUpVisible = false
+                    removeOverlayFromActivity()
+                }
+            })
+            overlayViewModel.setShowOverlay(true)
+
+            hidePriceBreakUp()
+
+            val callBackFunctionsForDismissing = CallbackForDismissMainSheet(::dismissMainSheet)
+            SingletonForDismissMainSheet.getInstance().callBackFunctions =
+                callBackFunctionsForDismissing
+
+            val orderSummaryAdapter =
+                OrderSummaryItemsAdapter(imagesUrls, items, prices, itemQty, requireContext())
+            binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
+
+            val recommendedInstrumentsAdapter = RecommendedItemsAdapter(
+                recommendedInstrumentationList, binding.recomendedRecyclerView, requireContext()
+            )
+            binding.recomendedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
+            var currencySymbol = sharedPreferences.getString("currencySymbol", "")
+            updateTransactionAmountInSharedPreferences(currencySymbol + transactionAmount.toString())
+            if (currencySymbol == "")
+                currencySymbol = "₹"
+
+
+            // Set click listeners
+
+            binding.orderSummaryConstraintLayout.setOnClickListener { // Toggle visibility of the price break-up card
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    if (!priceBreakUpVisible) {
+                        showPriceBreakUp()
+                        priceBreakUpVisible = true
+                    } else {
+                        hidePriceBreakUp()
+                        priceBreakUpVisible = false
+                    }
                 }
             }
-        }
 
-        binding.recommendedLinearLayout.setOnClickListener {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                upiOptionsShown = false
-                hideUPIOptions()
-                if (binding.recomendedOptionsLinearLayout.isVisible) {
+            binding.recommendedLinearLayout.setOnClickListener {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    upiOptionsShown = false
+                    hideUPIOptions()
+                    if (binding.recomendedOptionsLinearLayout.isVisible) {
+                        recommendedInstrumentsAdapter.checkPositionLiveData.value =
+                            RecyclerView.NO_POSITION
+                        hideRecommendedOptions()
+                    } else {
+                        showRecommendedOptions()
+                    }
+                }
+            }
+
+            recommendedInstrumentsAdapter.checkPositionLiveData.observe(viewLifecycleOwner) { checkedPositon ->
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedCheckedPosition = checkedPositon
+                    if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
+                        binding.recommendedProceedButton.visibility = View.VISIBLE
+                    }
+                }
+            }
+
+            binding.recommendedProceedButton.setOnClickListener {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    postRecommendedInstruments(
+                        "upi/collect",
+                        recommendedInstrumentationList[recommendedCheckedPosition!!].first,
+                        recommendedInstrumentationList[recommendedCheckedPosition!!].second
+                    )
+                }
+            }
+            binding.itemsInOrderRecyclerView.setOnClickListener() {
+                //Just to preventing user from clicking here and closing the order summary
+            }
+
+            binding.totalValueRelativeLayout.setOnClickListener() {
+                //Just to preventing user from clicking here and closing the order summary
+            }
+
+            binding.backButton.setOnClickListener() {
+                removeOverlayFromActivity()
+                dismiss()
+            }
+            binding.upiLinearLayout.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
                     recommendedInstrumentsAdapter.checkPositionLiveData.value =
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
-                } else {
-                    showRecommendedOptions()
+                    if (!upiOptionsShown) {
+                        upiOptionsShown = true
+                        showUPIOptions()
+                    } else {
+                        upiOptionsShown = false
+                        hideUPIOptions()
+                    }
                 }
             }
-        }
 
-        recommendedInstrumentsAdapter.checkPositionLiveData.observe(viewLifecycleOwner) { checkedPositon ->
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedCheckedPosition = checkedPositon
-                if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
-                    binding.recommendedProceedButton.visibility = View.VISIBLE
+            binding.addNewUPIIDConstraint.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    binding.addNewUPIIDConstraint.isEnabled = false
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        "UpiCollect",
+                        "Upi"
+                    )
+                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Upi")
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_METHOD_SELECTED",
+                        "UpiCollect",
+                        "Upi"
+                    )
+                    job?.cancel()
+                    openAddUPIIDBottomSheet()
                 }
             }
-        }
 
-        binding.recommendedProceedButton.setOnClickListener {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                postRecommendedInstruments(
-                    "upi/collect",
-                    recommendedInstrumentationList[recommendedCheckedPosition!!].first,
-                    recommendedInstrumentationList[recommendedCheckedPosition!!].second
-                )
-            }
-        }
-        binding.itemsInOrderRecyclerView.setOnClickListener() {
-            //Just to preventing user from clicking here and closing the order summary
-        }
-
-        binding.totalValueRelativeLayout.setOnClickListener() {
-            //Just to preventing user from clicking here and closing the order summary
-        }
-
-        binding.backButton.setOnClickListener() {
-            removeOverlayFromActivity()
-            dismiss()
-        }
-        binding.upiLinearLayout.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
-                hideRecommendedOptions()
-                if (!upiOptionsShown) {
-                    upiOptionsShown = true
-                    showUPIOptions()
-                } else {
-                    upiOptionsShown = false
-                    hideUPIOptions()
+            binding.UPIQRConstraint.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    if (qrCodeShown) {
+                        qrCodeShown = false
+                        binding.UPIQRConstraint.isEnabled = true
+                        hideQRCode()
+                    } else {
+                        qrCodeShown = true
+                        showQRCode()
+                    }
                 }
             }
-        }
 
-        binding.addNewUPIIDConstraint.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                binding.addNewUPIIDConstraint.isEnabled = false
-                callUIAnalytics(
-                    requireContext(),
-                    "PAYMENT_INSTRUMENT_PROVIDED",
-                    "UpiCollect",
-                    "Upi"
-                )
-                callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Upi")
-                callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiCollect", "Upi")
-                job?.cancel()
-                openAddUPIIDBottomSheet()
+            binding.qrCodeOpenConstraint.setOnClickListener() {
+                // for the sake that it does not open or closes the options
             }
-        }
 
-        binding.UPIQRConstraint.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                if (qrCodeShown) {
-                    qrCodeShown = false
-                    binding.UPIQRConstraint.isEnabled = true
-                    hideQRCode()
-                } else {
-                    qrCodeShown = true
+            binding.cardConstraint.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
+                        RecyclerView.NO_POSITION
+                    hideRecommendedOptions()
+                    binding.cardConstraint.isEnabled = false
+                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Card")
+                    callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "", "Card")
+                    openAddCardBottomSheet()
+                }
+            }
+
+
+            binding.walletConstraint.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
+                        RecyclerView.NO_POSITION
+                    hideRecommendedOptions()
+                    binding.walletConstraint.isEnabled = false
+                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Wallet")
+                    openWalletBottomSheet()
+                }
+            }
+
+            binding.bnplConstraint.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
+                        RecyclerView.NO_POSITION
+                    hideRecommendedOptions()
+                    binding.bnplConstraint.isEnabled = false
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_CATEGORY_SELECTED",
+                        "",
+                        "BuyNowPayLater"
+                    )
+                    openBNPLBottomSheet()
+                }
+            }
+
+
+            binding.netBankingConstraint.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
+                        RecyclerView.NO_POSITION
+                    hideRecommendedOptions()
+                    binding.netBankingConstraint.isEnabled = false
+                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "NetBanking")
+                    openNetBankingBottomSheet()
+                }
+            }
+
+            binding.refreshButton.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
                     showQRCode()
                 }
             }
-        }
 
-        binding.qrCodeOpenConstraint.setOnClickListener() {
-            // for the sake that it does not open or closes the options
-        }
-
-        binding.cardConstraint.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
-                hideRecommendedOptions()
-                binding.cardConstraint.isEnabled = false
-                callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Card")
-                callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "", "Card")
-                openAddCardBottomSheet()
-            }
-        }
-
-
-        binding.walletConstraint.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
-                hideRecommendedOptions()
-                binding.walletConstraint.isEnabled = false
-                callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Wallet")
-                openWalletBottomSheet()
-            }
-        }
-
-        binding.bnplConstraint.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
-                hideRecommendedOptions()
-                binding.bnplConstraint.isEnabled = false
-                callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "BuyNowPayLater")
-                openBNPLBottomSheet()
-            }
-        }
-
-
-        binding.netBankingConstraint.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
-                hideRecommendedOptions()
-                binding.netBankingConstraint.isEnabled = false
-                callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "NetBanking")
-                openNetBankingBottomSheet()
-            }
-        }
-
-        binding.refreshButton.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                showQRCode()
-            }
-        }
-
-        binding.deliveryAddressConstraintLayout.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                    val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                        ?.removePrefix(countryCode?.second ?: "")
-                    editor.putString("phoneNumber", confirmPhoneNumber)
-                    editor.putString("phoneCode", countryCode?.second)
-                    editor.apply()
+            binding.deliveryAddressConstraintLayout.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                            ?.removePrefix(countryCode?.second ?: "")
+                        editor.putString("phoneNumber", confirmPhoneNumber)
+                        editor.putString("phoneCode", countryCode?.second)
+                        editor.apply()
+                    }
+                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                        this,
+                        false,
+                        showName,
+                        showPhone,
+                        showEmail,
+                        showShipping
+                    )
+                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
                 }
-                bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                    this,
-                    false,
-                    showName,
-                    showPhone,
-                    showEmail,
-                    showShipping
-                )
-                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
             }
-        }
 
-        binding.proceedButton.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                    val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                        ?.removePrefix(countryCode?.second ?: "")
-                    editor.putString("phoneNumber", confirmPhoneNumber)
-                    editor.putString("phoneCode", countryCode?.second)
-                    editor.apply()
+            binding.proceedButton.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                            ?.removePrefix(countryCode?.second ?: "")
+                        editor.putString("phoneNumber", confirmPhoneNumber)
+                        editor.putString("phoneCode", countryCode?.second)
+                        editor.apply()
+                    }
+                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
                 }
-                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
             }
-        }
 
-        return binding.root
+            binding.root
+        } catch (e: Exception) {
+            handleException(context, e.message ?: "", token ?: "", this.Base_Session_API_URL)
+            null
+        }
     }
 
     fun dismissMainSheet() {
@@ -1521,6 +1546,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             // Create eventAttrs JSON object
             val eventAttrs = JSONObject().apply {
                 put("paymentType", paymentType)
+                put("errorMessage", "")
 
                 if (paymentSubType.isBlank())
                     put("paymentSubType", paymentSubType)

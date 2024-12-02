@@ -34,6 +34,7 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.FragmentAddUPIIDBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -65,120 +66,123 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentAddUPIIDBinding.inflate(inflater, container, false)
-//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
+        return try {
+            binding = FragmentAddUPIIDBinding.inflate(inflater, container, false)
+//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO
 
 
-        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
 
-        if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
-            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
-
-
-        var checked = false
-        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        binding.progressBar.visibility = View.INVISIBLE
-        binding.imageView3.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
-                if (!checked) {
-                    binding.imageView3.setImageResource(R.drawable.checkbox)
-                    checked = true
-                } else {
-                    binding.imageView3.setImageResource(0)
-                    checked = false
-                }
-            }
-        }
-
-
-
-
-
-
-        fetchTransactionDetailsFromSharedPreferences()
-
-
-        //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        //testing purpose
-
-        //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-        binding.backButton.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
-                dismissAndMakeButtonsOfMainBottomSheetEnabled()
-            }
-        }
-        binding.proceedButton.isEnabled = false
-
-        binding.editText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
+            if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
+                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            var checked = false
+            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            binding.progressBar.visibility = View.INVISIBLE
+            binding.imageView3.setOnClickListener() {
                 if (!binding.progressBar.isVisible) {
-                    callUIAnalytics(
-                        requireContext(),
-                        "PAYMENT_INSTRUMENT_PROVIDED",
-                        "UpiCollect",
-                        "Upi"
-                    )
-                    val textNow = s.toString()
-                    if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}"))) {
-                        enableProceedButton()
-                        bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                    if (!checked) {
+                        binding.imageView3.setImageResource(R.drawable.checkbox)
+                        checked = true
                     } else {
-                        disableProceedButton()
-                        if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
-                                ?: 0) >= 2
-                        ) {
-                            binding.ll1InvalidUPI.visibility = View.VISIBLE // Show specific error
-                        } else {
-                            binding.ll1InvalidUPI.visibility =
-                                View.INVISIBLE // Hide error if not matching condition
-                        }
+                        binding.imageView3.setImageResource(0)
+                        checked = false
                     }
                 }
             }
 
-            override fun afterTextChanged(s: Editable?) {
-                val textNow = s.toString()
-                if (textNow.isBlank()) {
-                    binding.proceedButtonRelativeLayout.isEnabled = false
-                    binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
+
+
+
+
+
+            fetchTransactionDetailsFromSharedPreferences()
+
+
+            //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            //testing purpose
+
+            //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+            binding.backButton.setOnClickListener() {
+                if (!binding.progressBar.isVisible) {
+                    dismissAndMakeButtonsOfMainBottomSheetEnabled()
                 }
             }
-        })
-        binding.ll1InvalidUPI.visibility = View.INVISIBLE
+            binding.proceedButton.isEnabled = false
 
-        binding.proceedButton.setOnClickListener() {
-            userVPA = binding.editText.text.toString()
-            closeKeyboard(this)
+            binding.editText.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+                }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    if (!binding.progressBar.isVisible) {
+                        callUIAnalytics(
+                            requireContext(),
+                            "PAYMENT_INSTRUMENT_PROVIDED",
+                            "UpiCollect",
+                            "Upi"
+                        )
+                        val textNow = s.toString()
+                        if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}"))) {
+                            enableProceedButton()
+                            bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        } else {
+                            disableProceedButton()
+                            if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
+                                    ?: 0) >= 2
+                            ) {
+                                binding.ll1InvalidUPI.visibility = View.VISIBLE // Show specific error
+                            } else {
+                                binding.ll1InvalidUPI.visibility =
+                                    View.INVISIBLE // Hide error if not matching condition
+                            }
+                        }
+                    }
+                }
+
+                override fun afterTextChanged(s: Editable?) {
+                    val textNow = s.toString()
+                    if (textNow.isBlank()) {
+                        binding.proceedButtonRelativeLayout.isEnabled = false
+                        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
+                        binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                    }
+                }
+            })
+            binding.ll1InvalidUPI.visibility = View.INVISIBLE
+
+            binding.proceedButton.setOnClickListener() {
+                userVPA = binding.editText.text.toString()
+                closeKeyboard(this)
 
 
-            callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiCollect", "Upi")
+                callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiCollect", "Upi")
 
-            if (checkString(userVPA!!)) {
-                binding.ll1InvalidUPI.visibility = View.INVISIBLE
-                validateAPICall(requireContext(), userVPA!!)
-                showLoadingInButton()
-            } else {
-                binding.ll1InvalidUPI.visibility = View.VISIBLE
+                if (checkString(userVPA!!)) {
+                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                    validateAPICall(requireContext(), userVPA!!)
+                    showLoadingInButton()
+                } else {
+                    binding.ll1InvalidUPI.visibility = View.VISIBLE
+                }
             }
+
+            binding.root
+        } catch (e: Exception) {
+            handleException(requireContext(), e.message ?: "", token ?: "", this.Base_Session_API_URL)
+            null
         }
-
-
-
-        return binding.root
     }
 
     fun checkString(input: String): Boolean {

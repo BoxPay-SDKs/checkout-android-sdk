@@ -49,6 +49,7 @@ import com.boxpay.checkout.sdk.adapters.WalletAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentWalletBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.WalletDataClass
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -374,169 +375,166 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        requestQueue = Volley.newRequestQueue(context)
-        binding = FragmentWalletBottomSheetBinding.inflate(layoutInflater, container, false)
-
-
-        val failureScreenSharedViewModelCallback =
-            FailureScreenSharedViewModel(::failurePaymentFunction)
-        FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
-            failureScreenSharedViewModelCallback
-
-        requestQueue = Volley.newRequestQueue(context)
-
-
-        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
-            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
-
-        val screenHeight = requireContext().resources.displayMetrics.heightPixels
-        val percentageOfScreenHeight = 0.45 // 70%
-        val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-
-
-        val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
-        layoutParams.height = desiredHeight
-        binding.nestedScrollView.layoutParams = layoutParams
-
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-
-
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
 
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
-
-        fetchTransactionDetailsFromSharedPreferences()
-        walletDetailsOriginal = arrayListOf()
-
-
-        allWalletAdapter = WalletAdapter(
-            walletDetailsFiltered,
-            binding.walletsRecyclerView,
-            liveDataPopularWalletSelectedOrNot,
-            requireContext(),
-            binding.searchView,
-            token.toString(),
-            progressBarVisible
-        )
-        binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.walletsRecyclerView.adapter = allWalletAdapter
-
-        disableProceedButton()
-
-        if (!shippingEnabled)
-            fetchWalletDetails()
-        else
-            callPaymentMethodRules(requireContext())
-
-        binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
-            SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                if (query.isEmpty()) {
-                    removeRecyclerViewFromBelowEditText()
-                } else {
-                    makeRecyclerViewJustBelowEditText()
-                }
-                filterWallets(query)
-                disableProceedButton()
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String): Boolean {
-                if (newText.isEmpty()) {
-                    removeRecyclerViewFromBelowEditText()
-                } else {
-                    makeRecyclerViewJustBelowEditText()
-                }
-                filterWallets(newText)
-                disableProceedButton()
-                return true
-            }
-        })
+        // Inflate the layout for this fragment
+       return try {
+           requestQueue = Volley.newRequestQueue(context)
+           binding = FragmentWalletBottomSheetBinding.inflate(layoutInflater, container, false)
 
 
-        binding.backButton.setOnClickListener() {
-            if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
-                dismissAndMakeButtonsOfMainBottomSheetEnabled()
-            }
-        }
+           val failureScreenSharedViewModelCallback =
+               FailureScreenSharedViewModel(::failurePaymentFunction)
+           FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
+               failureScreenSharedViewModelCallback
 
-        binding.proceedButton.isEnabled = false
-
-        proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
-            if (enableProceedButton) {
-                enableProceedButton()
-            } else {
-                disableProceedButton()
-            }
-        })
-
-        allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
-            if (checkPositionObserved == null) {
-                disableProceedButton()
-            } else {
-                enableProceedButton()
-                checkedPosition = checkPositionObserved
-            }
-        })
-
-        binding.proceedButton.setOnClickListener() {
-            showLoadingInButton()
-            var walletInstrumentTypeValue = ""
-            if (!!liveDataPopularWalletSelectedOrNot.value!!) {
-                walletInstrumentTypeValue =
-                    walletDetailsOriginal[popularWalletsSelectedIndex].instrumentTypeValue
-                callUIAnalytics(
-                    requireContext(),
-                    "PAYMENT_INITIATED",
-                    walletDetailsOriginal[popularWalletsSelectedIndex].walletBrand,
-                    "Wallet"
-                )
-                checkedPosition = null
-            } else {
-                walletInstrumentTypeValue =
-                    walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
-                callUIAnalytics(
-                    requireContext(),
-                    "PAYMENT_INITIATED",
-                    walletDetailsOriginal[checkedPosition!!].walletBrand,
-                    "Wallet"
-                )
-                popularWalletsSelectedIndex = -1
-            }
-
-            binding.errorField.visibility = View.GONE
-
-            postRequest(requireContext(), walletInstrumentTypeValue)
-        }
-
-        liveDataPopularWalletSelectedOrNot.observe(this, Observer {
-            if (it) {
-                allWalletAdapter.deselectSelectedItem()
-            } else {
-                unselectItemsInPopularLayout()
-            }
-        })
-        binding.textView19.setOnClickListener() {
-            if (!binding.progressBar.isVisible) {
-                val imm =
-                    requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
-            }
-        }
+           requestQueue = Volley.newRequestQueue(context)
 
 
-        binding.searchView.setOnCloseListener() {
-            true
-        }
+           val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+           if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
+               requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+           }
+
+           val screenHeight = requireContext().resources.displayMetrics.heightPixels
+           val percentageOfScreenHeight = 0.45 // 70%
+           val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
 
+           val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
+           layoutParams.height = desiredHeight
+           binding.nestedScrollView.layoutParams = layoutParams
 
-        return binding.root
+           fetchTransactionDetailsFromSharedPreferences()
+           walletDetailsOriginal = arrayListOf()
+
+
+           allWalletAdapter = WalletAdapter(
+               walletDetailsFiltered,
+               binding.walletsRecyclerView,
+               liveDataPopularWalletSelectedOrNot,
+               requireContext(),
+               binding.searchView,
+               token.toString(),
+               progressBarVisible
+           )
+           binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+           binding.walletsRecyclerView.adapter = allWalletAdapter
+
+           disableProceedButton()
+
+           if (!shippingEnabled)
+               fetchWalletDetails()
+           else
+               callPaymentMethodRules(requireContext())
+
+           binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
+               SearchView.OnQueryTextListener {
+               override fun onQueryTextSubmit(query: String): Boolean {
+                   if (query.isEmpty()) {
+                       removeRecyclerViewFromBelowEditText()
+                   } else {
+                       makeRecyclerViewJustBelowEditText()
+                   }
+                   filterWallets(query)
+                   disableProceedButton()
+                   return true
+               }
+
+               override fun onQueryTextChange(newText: String): Boolean {
+                   if (newText.isEmpty()) {
+                       removeRecyclerViewFromBelowEditText()
+                   } else {
+                       makeRecyclerViewJustBelowEditText()
+                   }
+                   filterWallets(newText)
+                   disableProceedButton()
+                   return true
+               }
+           })
+
+
+           binding.backButton.setOnClickListener() {
+               if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
+                   dismissAndMakeButtonsOfMainBottomSheetEnabled()
+               }
+           }
+
+           binding.proceedButton.isEnabled = false
+
+           proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
+               if (enableProceedButton) {
+                   enableProceedButton()
+               } else {
+                   disableProceedButton()
+               }
+           })
+
+           allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
+               if (checkPositionObserved == null) {
+                   disableProceedButton()
+               } else {
+                   enableProceedButton()
+                   checkedPosition = checkPositionObserved
+               }
+           })
+
+           binding.proceedButton.setOnClickListener() {
+               showLoadingInButton()
+               var walletInstrumentTypeValue = ""
+               if (!!liveDataPopularWalletSelectedOrNot.value!!) {
+                   walletInstrumentTypeValue =
+                       walletDetailsOriginal[popularWalletsSelectedIndex].instrumentTypeValue
+                   callUIAnalytics(
+                       requireContext(),
+                       "PAYMENT_INITIATED",
+                       walletDetailsOriginal[popularWalletsSelectedIndex].walletBrand,
+                       "Wallet"
+                   )
+                   checkedPosition = null
+               } else {
+                   walletInstrumentTypeValue =
+                       walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
+                   callUIAnalytics(
+                       requireContext(),
+                       "PAYMENT_INITIATED",
+                       walletDetailsOriginal[checkedPosition!!].walletBrand,
+                       "Wallet"
+                   )
+                   popularWalletsSelectedIndex = -1
+               }
+
+               binding.errorField.visibility = View.GONE
+
+               postRequest(requireContext(), walletInstrumentTypeValue)
+           }
+
+           liveDataPopularWalletSelectedOrNot.observe(this, Observer {
+               if (it) {
+                   allWalletAdapter.deselectSelectedItem()
+               } else {
+                   unselectItemsInPopularLayout()
+               }
+           })
+           binding.textView19.setOnClickListener() {
+               if (!binding.progressBar.isVisible) {
+                   val imm =
+                       requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                   imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
+               }
+           }
+           binding.searchView.setOnCloseListener() {
+               true
+           }
+           binding.root
+       } catch (e: Exception) {
+           handleException(requireContext(), e.message ?: "", token ?: "", this.Base_Session_API_URL)
+           null
+       }
     }
 
     private fun callUIAnalytics(

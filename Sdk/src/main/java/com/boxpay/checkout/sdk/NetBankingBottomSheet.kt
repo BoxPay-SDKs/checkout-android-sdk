@@ -50,6 +50,7 @@ import com.boxpay.checkout.sdk.adapters.NetbankingBanksAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentNetBankingBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.NetbankingDataClass
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -287,146 +288,149 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentNetBankingBottomSheetBinding.inflate(layoutInflater, container, false)
-
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-
-        requestQueue = Volley.newRequestQueue(context)
-
-        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
-            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
-
-        val screenHeight = requireContext().resources.displayMetrics.heightPixels
-        val percentageOfScreenHeight = 0.45 // 70%
-        val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-
-
-        val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
-        layoutParams.height = desiredHeight
-        binding.nestedScrollView.layoutParams = layoutParams
-
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
+        return try {
+            binding = FragmentNetBankingBottomSheetBinding.inflate(layoutInflater, container, false)
 
-        fetchTransactionDetailsFromSharedPreferences()
+            requestQueue = Volley.newRequestQueue(context)
 
-        banksDetailsOriginal = arrayListOf()
-        allBanksAdapter = NetbankingBanksAdapter(
-            banksDetailsFiltered,
-            binding.banksRecyclerView,
-            liveDataPopularBankSelectedOrNot,
-            requireContext(),
-            binding.searchView,
-            token.toString(),
-            progressBarVisible
-        )
-        binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.banksRecyclerView.adapter = allBanksAdapter
-
-        if (!shippingEnabled)
-            fetchBanksDetails()
-        else
-            callPaymentMethodRules(requireContext())
-
-
-        var enabled = false
-
-        val failureScreenSharedViewModelCallback =
-            FailureScreenSharedViewModel(::failurePaymentFunction)
-        FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
-            failureScreenSharedViewModelCallback
-        proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
-            if (enableProceedButton) {
-                enableProceedButton()
-            } else {
-                disableProceedButton()
+            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+            if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
+                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
-        })
 
-        liveDataPopularBankSelectedOrNot.observe(this, Observer {
-            if (it) {
-                allBanksAdapter.deselectSelectedItem()
-            } else {
-                unselectItemsInPopularLayout()
-            }
-        })
+            val screenHeight = requireContext().resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.45 // 70%
+            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
 
-        allBanksAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
-            if (checkPositionObserved == null) {
-                disableProceedButton()
-            } else {
-                enableProceedButton()
-                checkedPosition = checkPositionObserved
-            }
-        })
+            val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
+            layoutParams.height = desiredHeight
+            binding.nestedScrollView.layoutParams = layoutParams
 
-        binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
-            SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                if (query.isEmpty()) {
-                    removeRecyclerViewFromBelowEditText()
+            fetchTransactionDetailsFromSharedPreferences()
+
+            banksDetailsOriginal = arrayListOf()
+            allBanksAdapter = NetbankingBanksAdapter(
+                banksDetailsFiltered,
+                binding.banksRecyclerView,
+                liveDataPopularBankSelectedOrNot,
+                requireContext(),
+                binding.searchView,
+                token.toString(),
+                progressBarVisible
+            )
+            binding.banksRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            binding.banksRecyclerView.adapter = allBanksAdapter
+
+            if (!shippingEnabled)
+                fetchBanksDetails()
+            else
+                callPaymentMethodRules(requireContext())
+
+
+            var enabled = false
+
+            val failureScreenSharedViewModelCallback =
+                FailureScreenSharedViewModel(::failurePaymentFunction)
+            FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
+                failureScreenSharedViewModelCallback
+            proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
+                if (enableProceedButton) {
+                    enableProceedButton()
                 } else {
-                    makeRecyclerViewJustBelowEditText()
+                    disableProceedButton()
                 }
-                filterBanks(query)
-                disableProceedButton()
-                return true
-            }
+            })
 
-            override fun onQueryTextChange(newText: String): Boolean {
-                if (newText.isEmpty()) {
-                    removeRecyclerViewFromBelowEditText()
+            liveDataPopularBankSelectedOrNot.observe(this, Observer {
+                if (it) {
+                    allBanksAdapter.deselectSelectedItem()
                 } else {
-                    makeRecyclerViewJustBelowEditText()
+                    unselectItemsInPopularLayout()
                 }
-                filterBanks(newText)
-                disableProceedButton()
-                return true
-            }
-        })
+            })
 
-        binding.backButton.setOnClickListener() {
-            if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
-                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+
+            allBanksAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
+                if (checkPositionObserved == null) {
+                    disableProceedButton()
+                } else {
+                    enableProceedButton()
+                    checkedPosition = checkPositionObserved
+                }
+            })
+
+            binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
+                SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    if (query.isEmpty()) {
+                        removeRecyclerViewFromBelowEditText()
+                    } else {
+                        makeRecyclerViewJustBelowEditText()
+                    }
+                    filterBanks(query)
+                    disableProceedButton()
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String): Boolean {
+                    if (newText.isEmpty()) {
+                        removeRecyclerViewFromBelowEditText()
+                    } else {
+                        makeRecyclerViewJustBelowEditText()
+                    }
+                    filterBanks(newText)
+                    disableProceedButton()
+                    return true
+                }
+            })
+
+            binding.backButton.setOnClickListener() {
+                if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
+                    dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                }
             }
+            binding.proceedButton.setOnClickListener() {
+                showLoadingInButton()
+                var bankInstrumentTypeValue = ""
+                if (!!liveDataPopularBankSelectedOrNot.value!!) {
+                    bankInstrumentTypeValue =
+                        banksDetailsOriginal[popularBanksSelectedIndex].bankInstrumentTypeValue
+
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_INITIATED",
+                        banksDetailsOriginal[popularBanksSelectedIndex].bankBrand,
+                        "NetBanking"
+                    )
+                    checkedPosition = null
+                } else {
+                    bankInstrumentTypeValue =
+                        banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_INITIATED",
+                        banksDetailsFiltered[checkedPosition!!].bankBrand,
+                        "NetBanking"
+                    )
+                    popularBanksSelectedIndex = -1
+                }
+
+                binding.errorField.visibility = View.GONE
+
+                postRequest(requireContext(), bankInstrumentTypeValue)
+            }
+
+            binding.root
+        } catch (e: Exception) {
+            handleException(requireContext(), e.message ?: "", token ?: "", this.Base_Session_API_URL)
+            null
         }
-        binding.proceedButton.setOnClickListener() {
-            showLoadingInButton()
-            var bankInstrumentTypeValue = ""
-            if (!!liveDataPopularBankSelectedOrNot.value!!) {
-                bankInstrumentTypeValue =
-                    banksDetailsOriginal[popularBanksSelectedIndex].bankInstrumentTypeValue
-
-                callUIAnalytics(
-                    requireContext(),
-                    "PAYMENT_INITIATED",
-                    banksDetailsOriginal[popularBanksSelectedIndex].bankBrand,
-                    "NetBanking"
-                )
-                checkedPosition = null
-            } else {
-                bankInstrumentTypeValue =
-                    banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
-                callUIAnalytics(
-                    requireContext(),
-                    "PAYMENT_INITIATED",
-                    banksDetailsFiltered[checkedPosition!!].bankBrand,
-                    "NetBanking"
-                )
-                popularBanksSelectedIndex = -1
-            }
-
-            binding.errorField.visibility = View.GONE
-
-            postRequest(requireContext(), bankInstrumentTypeValue)
-        }
-
-        return binding.root
     }
 
     private fun callUIAnalytics(

@@ -76,6 +76,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
     implementation("com.microsoft.clarity:clarity:2.5.1")
+    implementation ("com.mixpanel.android:mixpanel-android:7.5.4")
     testImplementation("org.mockito:mockito-core:5.7.0") // Replace with the latest version
 }
 
