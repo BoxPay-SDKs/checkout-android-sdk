@@ -1571,7 +1571,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     append(sharedPreferences.getString("email", ""))
 
                                     // Add address
-                                    append(", ")
+                                    append("\n")
                                     val address1 = sharedPreferences.getString("address1", "")
                                     val address2 = sharedPreferences.getString("address2", null)
                                     val city = sharedPreferences.getString("city", "")
@@ -1579,9 +1579,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     val postalCode = sharedPreferences.getString("postalCode", "null")
 
                                     if (!address2.isNullOrEmpty()) {
-                                        append("$address1\n$address2\n$city, $state, $postalCode")
+                                        append("$address1, $address2, $city, $state, $postalCode")
                                     } else {
-                                        append("$address1\n$city, $state, $postalCode")
+                                        append("$address1, $city, $state, $postalCode")
                                     }
                                 }
 
@@ -3199,7 +3199,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 append(sharedPreferences.getString("email", ""))
 
                 // Add address
-                append(", ")
+                append("\n")
                 val address1 = sharedPreferences.getString("address1", "")
                 val address2 = sharedPreferences.getString("address2", null)
                 val city = sharedPreferences.getString("city", "")
