@@ -1029,7 +1029,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.root
         } catch (e: Exception) {
-            handleException(context, e.message ?: "", token ?: "", this.Base_Session_API_URL)
+            handleException(
+                requireContext(),
+                e.message ?: "",
+                token ?: "",
+                baseUrlFetched ?: "",
+                "Main Bottom Sheet"
+            )
             null
         }
     }

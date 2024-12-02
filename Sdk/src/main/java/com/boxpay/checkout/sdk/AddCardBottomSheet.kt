@@ -750,7 +750,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 requireContext(),
                 e.message ?: "",
                 token ?: "",
-                this.Base_Session_API_URL
+                baseUrl ?: "",
+                "Add Card Bottom Sheet"
             )
             null
         }

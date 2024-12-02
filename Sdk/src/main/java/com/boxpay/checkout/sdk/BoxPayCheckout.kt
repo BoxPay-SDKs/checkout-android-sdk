@@ -58,10 +58,10 @@ class BoxPayCheckout(
                 putTransactionDetailsInSharedPreferences()
                 openBottomSheet()
             } else {
-                handleException(context, "Token added is either null or empty", token, this.BASE_URL ?: "")
+                handleException(context, "Token added is either null or empty", token, this.BASE_URL ?: "", "BoxPayCheckout")
             }
         } catch (e: Exception) {
-            handleException(context, e.message ?: "", token, this.BASE_URL ?: "")
+            handleException(context, e.message ?: "", token, this.BASE_URL ?: "", "BoxPayCheckout")
         }
     }
 
@@ -116,7 +116,7 @@ class BoxPayCheckout(
                 bottomSheet.show(fragmentManager, "MainBottomSheet")
             }
         } catch (e: Exception) {
-            handleException(context, e.message ?: "", token, this.BASE_URL ?: "")
+            handleException(context, e.message ?: "", token, this.BASE_URL ?: "", "BoxpayCheckout")
         }
     }
 

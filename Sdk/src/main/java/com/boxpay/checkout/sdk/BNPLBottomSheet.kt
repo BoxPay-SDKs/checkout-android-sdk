@@ -167,7 +167,13 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
             binding.root
         } catch (e: Exception) {
-            handleException(requireContext(), e.message ?: "", token ?: "", this.Base_Session_API_URL ?: "")
+            handleException(
+                requireContext(),
+                e.message ?: "",
+                token ?: "",
+                baseUrl ?: "",
+                "Bnpl Bottom Sheet"
+            )
             null
         }
     }

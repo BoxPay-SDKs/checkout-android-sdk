@@ -180,7 +180,13 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             binding.root
         } catch (e: Exception) {
-            handleException(requireContext(), e.message ?: "", token ?: "", this.Base_Session_API_URL)
+            handleException(
+                requireContext(),
+                e.message ?: "",
+                token ?: "",
+                baseUrl ?: "",
+                "Add Upi ID Bottom Sheet"
+            )
             null
         }
     }
