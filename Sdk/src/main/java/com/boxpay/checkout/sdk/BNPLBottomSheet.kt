@@ -708,6 +708,27 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.isEnabled = true
     }
 
+    private fun handleSuccess() {
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
+            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+            bottomSheet.show(
+                parentFragmentManager,
+                "PaymentStatusBottomSheetWithDetails"
+            )
+            dismiss()
+        } else {
+            val callback = SingletonClass.getInstance().getYourObject()
+            if (callback != null) {
+                val transactionId = sharedPreferences.getString("transactionId", "").toString()
+                val operationId = sharedPreferences.getString("operationId", "").toString()
+                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
+                dismiss()
+            }
+        }
+    }
+
     fun showLoadingInButton() {
         binding.textView6.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.VISIBLE
@@ -769,11 +790,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
                             job?.cancel()
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
+                            handleSuccess()
                             if (callback != null) {
                                 callback.onPaymentResult(
                                     PaymentResultObject(

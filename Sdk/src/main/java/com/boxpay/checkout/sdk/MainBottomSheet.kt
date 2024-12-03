@@ -22,7 +22,9 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
+import android.text.Html
 import android.util.Base64
+import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -62,6 +64,7 @@ import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.OrderSummaryItemsAdapter
 import com.boxpay.checkout.sdk.adapters.RecommendedItemsAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
+import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.handleException
@@ -70,6 +73,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.Gson
 import com.microsoft.clarity.Clarity
 import com.microsoft.clarity.ClarityConfig
 import com.microsoft.clarity.models.LogLevel
@@ -2205,7 +2209,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.orderSummaryConstraintLayout.setPadding(0,16,0,16)
                 }
 
-                val subscriptionDetails = paymentDetailsObject.optJSONObject("subscriptionDetails")
+                val subscriptionDetails: JSONObject? = paymentDetailsObject.optJSONObject("subscriptionDetails")
                 val toShowSubscription =
                     subscriptionDetails != null && subscriptionDetails.optJSONObject("billingCycle")
                         ?.optString("billingTimeUnit")
@@ -2221,6 +2225,73 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 } else {
                     binding.belowTextImage.visibility = View.GONE
+                }
+
+                @SuppressLint("SetTextI18n")
+                if (subscriptionDetails != null && orderObject != null) {
+                    val gson = Gson()
+                    val subscriptionDetailsJson = subscriptionDetails.toString()
+                    val subscriptionDetailsModel = gson.fromJson(subscriptionDetailsJson, SubscriptionDetails::class.java)
+                    binding.apply {
+                        recurringDuration.text = subscriptionDetailsModel.billingCycle!!.billingTimeUnit
+                        recurringNextPay.text = subscriptionDetailsModel.nextBillingDateLocale!!.substring(0,10)
+                        recurringPlanExpiry.text = subscriptionDetailsModel.expiryDateLocale!!.substring(0,10)
+                        recurringTotal.text = "₹" + paymentDetailsObject.getJSONObject("money").getDouble("amount")
+
+                        val totalAmount = paymentDetailsObject.getJSONObject("money").getDouble("amount")
+                        val sourceString = "· You will be charged ₹" + ("<b>$totalAmount").toString() + "</b> " + " on the next payment date"
+                        recurringAmount.text = Html.fromHtml(sourceString)
+
+                        if (orderObject.getString("originalAmount") != "null"){
+                            recurringSubTotal.text = "₹" + orderObject.getString("originalAmount")
+                        }else{
+                            recurringLlSubTotal.visibility = View.GONE
+                        }
+                        if (orderObject.getString("taxAmount") != "" && orderObject.getString("taxAmount") != "null"){
+                            recurringTax.text = "₹" + orderObject.getString("taxAmount")
+                        }else{
+                            recurringLlTax.visibility = View.GONE
+                        }
+                        if (orderObject.getString("totalDiscountedAmount") != "" && orderObject.getString("totalDiscountedAmount") != "null"){
+                            recurringDiscount.text = "-₹" + orderObject.getString("totalDiscountedAmount")
+                        }else{
+                            recurringLlDiscount.visibility = View.GONE
+                        }
+
+                        if (orderObject.getString("shippingAmount") != "" && orderObject.getString("shippingAmount") != "null"){
+                            recurringShipping.text = "₹" + orderObject.getString("shippingAmount")
+                        }else{
+                            recurringLlShipping.visibility = View.GONE
+                        }
+                        recurringMainCard.visibility = View.VISIBLE
+                        binding.arrowIconRecurring.animate()
+                            .rotation(180f)
+                            .setDuration(50) // Set the duration of the animation in milliseconds
+                            .withEndAction {}
+                            .start()
+                    }
+                } else {
+                    Log.e("", "subscriptionDetails is null")
+                    binding.recurringMainCard.visibility = View.GONE
+                }
+
+                binding.arrowIconRecurring.setOnClickListener {
+                    if (binding.recurringDetailsLinearLayout.visibility == View.VISIBLE){
+                        binding.recurringDetailsLinearLayout.visibility = View.GONE
+                        binding.arrowIconRecurring.animate()
+                            .rotation(0f)
+                            .setDuration(250)
+                            .withEndAction {}
+                            .start()
+
+                    }else{
+                        binding.recurringDetailsLinearLayout.visibility = View.VISIBLE
+                        binding.arrowIconRecurring.animate()
+                            .rotation(180f)
+                            .setDuration(250)
+                            .withEndAction {}
+                            .start()
+                    }
                 }
 
                 val originalAmount = orderObject?.getString("originalAmount")
@@ -2971,7 +3042,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     override fun updateBottomSheet() {
-        binding.orderSummaryConstraintLayout.setPadding(0,16,0,16)
         binding.nameAndMobileTextViewMain.text = if ((showPhone && showName) || showShipping) {
             sharedPreferences.getString(
                 "firstName",

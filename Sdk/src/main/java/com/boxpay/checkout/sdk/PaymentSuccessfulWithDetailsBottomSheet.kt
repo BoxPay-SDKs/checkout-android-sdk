@@ -38,6 +38,11 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var savedDccResponse : DCCResponse? = null
     private var isDccEnabled : Boolean = false
+    override fun onResume() {
+        super.onResume()
+        handleSuccess()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         savedDccResponse = getDCCResponse(requireContext())
@@ -167,6 +172,28 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         } else {
             // Log an error or handle the case where the context is not an AppCompatActivity
         }
+    }
+
+    private fun handleSuccess() {
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        if (!sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
+            val callback = SingletonClass.getInstance().getYourObject()
+            if (callback != null) {
+                val transactionId = sharedPreferences.getString("transactionId", "").toString()
+                val operationId = sharedPreferences.getString("operationId", "").toString()
+                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
+                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                dismiss()
+            }
+        }
+    }
+
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment =
+            parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
     }
 
     fun formatToINR(amount: Double): String {

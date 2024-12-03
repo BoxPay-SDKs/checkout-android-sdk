@@ -85,7 +85,8 @@ class Check : AppCompatActivity() {
                 tokenLiveData.value ?: "",
                 ::onPaymentResultCallback,
                 false,
-                customerShopperToken = customerShopperToken ?: ""
+                customerShopperToken = customerShopperToken ?: "",
+                isSuccessScreenVisible = true
             )
         boxPayCheckout.testEnv = true
         boxPayCheckout.display()
@@ -99,41 +100,50 @@ class Check : AppCompatActivity() {
 
     private fun makePaymentRequest(context: Context) {
         val queue = Volley.newRequestQueue(context)
-        val url = "https://test-apis.boxpay.tech/v0/merchants/oh3mnorsME/sessions"
+        val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
         val jsonData = JSONObject(
             """ {
   "context" : {
     "countryCode" : "IN",
     "legalEntity" : {
-      "code" : "easebuzz"
+      "code" : "razorpay"
     },
     "orderId" : "test12"
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "1000",
+    "amount" : "1000.50",
     "currencyCode" : "INR"
   },
   "descriptor" : {
     "line1" : "Some descriptor"
   },
-  "shopper" : {
-    "firstName" : "Ankush",
-    "lastName" : "Kashyap",
-    "email" : "ankush.kashyap@boxpay.tech",
-    "uniqueReference" : "x123y",
-    "phoneNumber" : "917986361129",
-    "deliveryAddress" : {
-      "address1" : "first line",
-      "address2" : "second line",
-      "city" : "Chandigarh",
-      "state" : "Chandigarh",
-      "countryCode" : "IN",
-      "postalCode" : "160002"  
-    },
-    "dateOfBirth": "2023-07-17T12:34:56Z",
-    "panNumber": "CTGPA0009K"
-  },
+  "shopper": {
+            "firstName": "Ankush",
+            "lastName": "Kashyap",
+            "gender": null,
+            "phoneNumber": "917777777777",
+            "email": "ankush.kashyap@boxpay.tech",
+            "uniqueReference": "x123y",
+            "deliveryAddress": {
+                "address1": "first line",
+                "address2": "second line",
+                "address3": null,
+                "city": "Chandigarh",
+                "state": "Chandigarh",
+                "countryCode": "IN",
+                "postalCode": "160002",
+                "shopperRef": null,
+                "addressRef": null,
+                "labelType": "Other",
+                "labelName": null,
+                "name": null,
+                "email": null,
+                "phoneNumber": null
+            },
+            "dateOfBirth": "2023-07-17T12:34:56Z",
+            "panNumber": "CTGPA2222D"
+        },
   "order" : {
     "originalAmount" : 423.73,
     "shippingAmount" : 50,
@@ -273,7 +283,7 @@ class Check : AppCompatActivity() {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"
                 headers["Authorization"] =
-                    "Bearer i8zuZD3mR9SYvT29z3p4DHRigXBcL5Cu5H2Lpl5M9w1LP7BVqj79YE09vhrskbXTbJjtZ5HsLFfivNjtdCZZZk"
+                    "Bearer 3z3G6PT8vDhxQCKRQzmRsujsO5xtsQAYLUR3zcKrPwVrphfAqfyS20bvvCg2X95APJsT5UeeS5YdD41aHbz6mg"
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers

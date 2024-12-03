@@ -671,11 +671,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                         }
 
                         if (status.contains("Approved", ignoreCase = true)) {
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
+                            handleSuccess()
                             emiViewModel.showLoaderInButton.value = false
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
@@ -819,11 +815,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
                             job?.cancel()
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
+                            handleSuccess()
                             if (callback != null) {
                                 callback.onPaymentResult(
                                     PaymentResultObject(
@@ -879,6 +871,29 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             while (isActive) {
                 delay(3000)
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+            }
+        }
+    }
+
+    private fun handleSuccess() {
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
+            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+            bottomSheet.show(
+                parentFragmentManager,
+                "PaymentStatusBottomSheetWithDetails"
+            )
+        } else {
+            val callback = SingletonClass.getInstance().getYourObject()
+            if (callback != null) {
+                val transactionId = sharedPreferences.getString("transactionId", "").toString()
+                val operationId = sharedPreferences.getString("operationId", "").toString()
+                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
+                val mainBottomSheetFragment =
+                    parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                dismiss()
             }
         }
     }

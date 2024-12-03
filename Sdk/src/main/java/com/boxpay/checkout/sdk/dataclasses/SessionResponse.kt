@@ -177,7 +177,7 @@ data class Order(
 data class PaymentDetails(
 
     @SerializedName("context") var context: Context? = Context(),
-    @SerializedName("money") var money: Money? = Money(),
+    @SerializedName("money") var money: MoneySession? = MoneySession(),
     @SerializedName("onDemandAmount") var onDemandAmount: Boolean? = null,
     @SerializedName("frontendReturnUrl") var frontendReturnUrl: String? = null,
     @SerializedName("frontendBackUrl") var frontendBackUrl: String? = null,
@@ -185,7 +185,39 @@ data class PaymentDetails(
     @SerializedName("shopper") var shopper: Shopper? = Shopper(),
     @SerializedName("order") var order: Order? = Order(),
     @SerializedName("product") var product: String? = null,
-    @SerializedName("subscriptionDetails") var subscriptionDetails: String? = null
+    @SerializedName("subscriptionDetails" ) var subscriptionDetails : SubscriptionDetails? = SubscriptionDetails()
+
+)
+
+data class SubscriptionDetails (
+
+    @SerializedName("type"                      ) var type                      : String?          = null,
+    @SerializedName("billingCycle"              ) var billingCycle              : BillingCycle?    = BillingCycle(),
+    @SerializedName("billingDuration"           ) var billingDuration           : BillingDuration? = BillingDuration(),
+    @SerializedName("nextBillingDate"           ) var nextBillingDate           : String?          = null,
+    @SerializedName("expiryDate"                ) var expiryDate                : String?          = null,
+    @SerializedName("recurringExpiryDate"       ) var recurringExpiryDate       : String?          = null,
+    @SerializedName("maxAmount"                 ) var maxAmount                 : Int?             = null,
+    @SerializedName("nextBillingDateLocale"     ) var nextBillingDateLocale     : String?          = null,
+    @SerializedName("expiryDateLocale"          ) var expiryDateLocale          : String?          = null,
+    @SerializedName("recurringExpiryDateLocale" ) var recurringExpiryDateLocale : String?          = null,
+    @SerializedName("maxAmountLocale"           ) var maxAmountLocale           : String?          = null,
+    @SerializedName("maxAmountLocaleFull"       ) var maxAmountLocaleFull       : String?          = null
+
+)
+
+data class BillingCycle (
+
+    @SerializedName("billingTimeUnit"   ) var billingTimeUnit   : String? = null,
+    @SerializedName("count"             ) var count             : Int?    = null,
+    @SerializedName("billingCycleValue" ) var billingCycleValue : String? = null
+
+)
+
+data class BillingDuration (
+
+    @SerializedName("type"       ) var type       : String? = null,
+    @SerializedName("noOfCycles" ) var noOfCycles : Int?    = null
 
 )
 
