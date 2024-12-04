@@ -33,6 +33,7 @@ import com.boxpay.checkout.sdk.adapters.BnplAdapters
 import com.boxpay.checkout.sdk.databinding.FragmentBnplBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.BnplDataClass
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -74,101 +75,107 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        requestQueue = Volley.newRequestQueue(context)
-        binding = FragmentBnplBottomSheetBinding.inflate(layoutInflater, container, false)
-        val failureScreenSharedViewModelCallback =
-            FailureScreenSharedViewModel(::failurePaymentFunction)
-        FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
-            failureScreenSharedViewModelCallback
-
-
-        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
-            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
-
-        val screenHeight = requireContext().resources.displayMetrics.heightPixels
-        val percentageOfScreenHeight = 0.45 // 70%
-        val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-
-
-        val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
-        layoutParams.height = desiredHeight
-        binding.nestedScrollView.layoutParams = layoutParams
-
-
-        val layoutParamsLoading =
-            binding.loadingRelativeLayout.layoutParams as ConstraintLayout.LayoutParams
-        layoutParamsLoading.height = desiredHeight
-        binding.loadingRelativeLayout.layoutParams = layoutParamsLoading
-
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-
-
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
-
-        fetchTransactionDetailsFromSharedPreferences()
-        bnplDetailOriginal = arrayListOf()
-
-        allWalletAdapter = BnplAdapters(
-            walletDetailsFiltered,
-            binding.walletsRecyclerView,
-            requireContext(),
-            token.toString()
-        )
-        binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.walletsRecyclerView.adapter = allWalletAdapter
-
-        binding.boxPayLogoLottieAnimation.playAnimation()
-        disableProceedButton()
+        return try {
+            requestQueue = Volley.newRequestQueue(context)
+            binding = FragmentBnplBottomSheetBinding.inflate(layoutInflater, container, false)
+            val failureScreenSharedViewModelCallback =
+                FailureScreenSharedViewModel(::failurePaymentFunction)
+            FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
+                failureScreenSharedViewModelCallback
 
 
-        if (!shippingEnabled)
-            fetchBnplDetails()
-        else
-            callPaymentMethodRules(requireContext())
-
-        binding.backButton.setOnClickListener() {
-            dismissAndMakeButtonsOfMainBottomSheetEnabled()
-        }
-        binding.proceedButton.isEnabled = false
-
-        binding.checkingTextView.setOnClickListener() {
-            var enabled = false
-            if (!enabled)
-                enableProceedButton()
-            else
-                disableProceedButton()
-
-            enabled = !enabled
-        }
-
-        allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
-            if (checkPositionObserved == null) {
-                disableProceedButton()
-            } else {
-                enableProceedButton()
-                checkedPosition = checkPositionObserved
+            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+            if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
+                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
-        })
 
-        binding.proceedButton.setOnClickListener() {
-            showLoadingInButton()
-            var walletInstrumentTypeValue = ""
-            walletInstrumentTypeValue =
-                walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
-            callUIAnalytics(requireContext(),"PAYMENT_INITIATED",bnplDetailOriginal[checkedPosition!!].bnplBrand,"BNPL")
+            val screenHeight = requireContext().resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.45 // 70%
+            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
 
-            postRequest(requireContext(), walletInstrumentTypeValue)
+            val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
+            layoutParams.height = desiredHeight
+            binding.nestedScrollView.layoutParams = layoutParams
+
+
+            val layoutParamsLoading =
+                binding.loadingRelativeLayout.layoutParams as ConstraintLayout.LayoutParams
+            layoutParamsLoading.height = desiredHeight
+            binding.loadingRelativeLayout.layoutParams = layoutParamsLoading
+
+            fetchTransactionDetailsFromSharedPreferences()
+            bnplDetailOriginal = arrayListOf()
+
+            allWalletAdapter = BnplAdapters(
+                walletDetailsFiltered,
+                binding.walletsRecyclerView,
+                requireContext(),
+                token.toString()
+            )
+            binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            binding.walletsRecyclerView.adapter = allWalletAdapter
+
+            binding.boxPayLogoLottieAnimation.playAnimation()
+            disableProceedButton()
+
+            if (!shippingEnabled)
+                fetchBnplDetails()
+            else
+                callPaymentMethodRules(requireContext())
+
+            binding.backButton.setOnClickListener() {
+                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+            }
+            binding.proceedButton.isEnabled = false
+
+            binding.checkingTextView.setOnClickListener() {
+                var enabled = false
+                if (!enabled)
+                    enableProceedButton()
+                else
+                    disableProceedButton()
+
+                enabled = !enabled
+            }
+
+            allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
+                if (checkPositionObserved == null) {
+                    disableProceedButton()
+                } else {
+                    enableProceedButton()
+                    checkedPosition = checkPositionObserved
+                }
+            })
+
+            binding.proceedButton.setOnClickListener() {
+                showLoadingInButton()
+                var walletInstrumentTypeValue = ""
+                walletInstrumentTypeValue =
+                    walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
+                callUIAnalytics(requireContext(),"PAYMENT_INITIATED",bnplDetailOriginal[checkedPosition!!].bnplBrand,"BNPL")
+
+
+                postRequest(requireContext(), walletInstrumentTypeValue)
+            }
+
+
+            binding.root
+        } catch (e: Exception) {
+            handleException(
+                requireContext(),
+                e.message ?: "",
+                token ?: "",
+                baseUrl ?: "",
+                "Bnpl Bottom Sheet"
+            )
+            null
         }
-
-
-        return binding.root
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

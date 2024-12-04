@@ -1075,7 +1075,7 @@
                                 android:layout_marginTop="2dp"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toTopOf="parent"
-                                app:srcCompat="@drawable/wallet" />
+                                app:srcCompat="@drawable/ic_boxpay_wallet" />
 
                             <TextView
                                 android:id="@+id/textView30"

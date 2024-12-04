@@ -1,5 +1,5 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/mastercard" />
-    <item android:drawable="@drawable/visa" />
-    <item android:drawable="@drawable/discover" />
+    <item android:drawable="@drawable/ic_boxpay_mastercard" />
+    <item android:drawable="@drawable/ic_boxpay_visa" />
+    <item android:drawable="@drawable/ic_boxpay_discover" />
 </layer-list>
