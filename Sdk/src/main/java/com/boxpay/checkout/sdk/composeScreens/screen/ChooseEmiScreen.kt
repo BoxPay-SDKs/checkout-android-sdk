@@ -1517,6 +1517,10 @@ fun SwipeToPayButton(
     val swipePosition = remember { mutableStateOf(0f) }
     val buttonWidth = remember { mutableStateOf(0) }
     val heightPx = with(LocalDensity.current) { height.toPx() }
+
+// Calculate the 70% threshold
+    val seventyPercentThreshold = buttonWidth.value * 0.7f
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -1526,10 +1530,13 @@ fun SwipeToPayButton(
                 buttonWidth.value = size.width
             }
     ) {
-        // Center Text
+        // Calculate text alpha based on swipe progress
+        val textAlpha = 1f - (swipePosition.value / buttonWidth.value).coerceIn(0f, 1f)
+
+        // Center Text with fading effect
         Text(
             text = "Swipe to Pay $amount",
-            color = buttontextColor,
+            color = buttontextColor.copy(alpha = textAlpha), // Apply fading effect
             style = TextStyle(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -1553,8 +1560,7 @@ fun SwipeToPayButton(
                         swipePosition.value = newPosition
                     },
                     onDragStopped = {
-                        // Update to check the actual end
-                        if (swipePosition.value >= (buttonWidth.value - heightPx)) {
+                        if ((swipePosition.value >= (buttonWidth.value - heightPx)) || (swipePosition.value >= seventyPercentThreshold)) {
                             onSwipeComplete()
                             swipePosition.value = 0f
                         } else {
@@ -1563,9 +1569,16 @@ fun SwipeToPayButton(
                     }
                 )
         ) {
+            // Change the icon based on swipe progress
+            val iconResId = if (swipePosition.value >= seventyPercentThreshold) {
+                R.drawable.ic_boxpay_tick_arrow // Tick arrow icon
+            } else {
+                R.drawable.ic_keyboard_double_arrow // Default icon
+            }
+
             Image(
-                painter = painterResource(id = R.drawable.ic_keyboard_double_arrow),
-                contentDescription = "",
+                painter = painterResource(id = iconResId),
+                contentDescription = null,
                 colorFilter = ColorFilter.tint(buttonColor),
                 modifier = Modifier
                     .align(Alignment.Center)
@@ -1573,6 +1586,7 @@ fun SwipeToPayButton(
             )
         }
     }
+
 }
 
 
