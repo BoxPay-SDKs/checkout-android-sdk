@@ -319,16 +319,16 @@ class EmiViewModel : ViewModel() {
     fun getImageDrawableForItem(item: String): Int {
 
         return when (item) {
-            "VISA" -> R.drawable.visa
-            "Mastercard" -> R.drawable.mastercard
+            "VISA" -> R.drawable.ic_boxpay_visa
+            "Mastercard" -> R.drawable.ic_boxpay_mastercard
             "Maestro" -> R.drawable.maestro
             "Cirrus" -> R.drawable.cirrus
-            "AmericanExpress" -> R.drawable.american_express
+            "AmericanExpress" -> R.drawable.ic_boxpay_american_express
             "Diners" -> R.drawable.diners
-            "Discover" -> R.drawable.discover
+            "Discover" -> R.drawable.ic_boxpay_discover
             "Electron" -> R.drawable.electron
             "JCB" -> R.drawable.jcb
-            "RUPAY" -> R.drawable.rupay
+            "RUPAY" -> R.drawable.ic_boxpay_rupay
             "BancontactCard" -> R.drawable.bancontact
             "CARNET" -> R.drawable.carnet
             "CartesBancaires" -> R.drawable.cartesbancaires

@@ -69,6 +69,7 @@ import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -912,13 +913,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             )
             binding.recomendedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
             binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
-            var currencySymbol = sharedPreferences.getString("currencySymbol", "")
-            updateTransactionAmountInSharedPreferences(currencySymbol + transactionAmount.toString())
-            if (currencySymbol == "")
-                currencySymbol = "₹"
-
-
-            // Set click listeners
 
             binding.orderSummaryConstraintLayout.setOnClickListener { // Toggle visibility of the price break-up card
                 if (!binding.loadingRelativeLayout.isVisible) {
