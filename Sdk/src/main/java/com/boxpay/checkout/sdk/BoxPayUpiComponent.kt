@@ -124,6 +124,14 @@ class BoxPayUpiComponent(
             onProceedPayment()
         }
 
+//        if (showProceedButton) {
+//            binding.proceedButton.visibility = View.GONE
+//            binding.addUpiIdProceedButton.visibility = View.GONE
+//        } else {
+//            binding.proceedButton.visibility = View.VISIBLE
+//            binding.addUpiIdProceedButton.visibility = View.VISIBLE
+//        }
+
         binding.addNewUpiTextInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
 
@@ -989,6 +997,14 @@ class BoxPayUpiComponent(
         showProceedButton = visible
     }
 
+    fun onClickProceed() {
+        if (selectedUpiIntent.isNotEmpty()) {
+            getUrlForUPIIntent(selectedUpiIntent)
+        } else {
+            postRequest()
+        }
+    }
+
     private fun postRequest() {
         showLoadingState()
         val requestQueue = Volley.newRequestQueue(context)
@@ -1202,5 +1218,10 @@ class BoxPayUpiComponent(
         } catch (_: Exception) {
             // no op
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        sessionTimer?.cancel()
     }
 }

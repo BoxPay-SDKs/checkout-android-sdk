@@ -247,14 +247,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         var i = 0
         val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
 
-        for (app in apps) {
-            val appName = packageManager.getApplicationLabel(app).toString()
+        try {
+            for (app in apps) {
 
-            // Check if the app's package is in the known UPI apps list
-            if (upiAppPackages.contains(app.packageName)) {
-                i++
-                UPIAppsAndPackageMap[appName] = app.packageName
+                val appName = packageManager.getApplicationLabel(app).toString()
+
+                // Check if the app's package is in the known UPI apps list
+                if (upiAppPackages.contains(app.packageName)) {
+                    i++
+                    UPIAppsAndPackageMap[appName] = app.packageName
+                }
             }
+        } catch (e: Exception) {
+            // Handle the exception if application resources cannot be loaded
+            handleException(context,e.message.toString(), token ?: "", baseUrl = Base_Session_API_URL, "fetchInstalledPackageDetails")
         }
 
         populatePopularUPIApps()
@@ -530,44 +536,52 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
                     if (status.equals("Pending", ignoreCase = true) && isGpayReturned) {
-                        removeLoadingState()
-                        job?.cancel()
-                        isGpayReturned = false
-                        editor.putString("status", "Failed")
-                        editor.apply()
-                        PaymentFailureScreen(
-                            errorMessage = "Payment failed with GPay. Please retry payment with a different UPI app"
-                        ).show(parentFragmentManager, "FailureScreen")
+                        if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
+                            job?.cancel()
+                            isGpayReturned = false
+                            editor.putString("status", "Failed")
+                            editor.apply()
+                            PaymentFailureScreen(
+                                errorMessage = "Payment failed with GPay. Please retry payment with a different UPI app"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
                     }
                     if (status.equals("Pending", ignoreCase = true) && isPhonePe) {
-                        removeLoadingState()
-                        job?.cancel()
-                        isPhonePe = false
-                        editor.putString("status", "Failed")
-                        editor.apply()
-                        PaymentFailureScreen(
-                            errorMessage = "Payment failed with PhonePe. Please retry payment with a different UPI app"
-                        ).show(parentFragmentManager, "FailureScreen")
+                        if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
+                            job?.cancel()
+                            isPhonePe = false
+                            editor.putString("status", "Failed")
+                            editor.apply()
+                            PaymentFailureScreen(
+                                errorMessage = "Payment failed with PhonePe. Please retry payment with a different UPI app"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
                     }
                     if (status.equals("Pending", ignoreCase = true) && isOthersReturned) {
-                        removeLoadingState()
-                        job?.cancel()
-                        isOthersReturned = false
-                        editor.putString("status", "Failed")
-                        editor.apply()
-                        PaymentFailureScreen(
-                            errorMessage = "Please retry using other payment method or try again in sometime"
-                        ).show(parentFragmentManager, "FailureScreen")
+                        if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
+                            job?.cancel()
+                            isOthersReturned = false
+                            editor.putString("status", "Failed")
+                            editor.apply()
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
                     }
                     if (status.equals("Pending", ignoreCase = true) && isPaytmReturned) {
-                        removeLoadingState()
-                        job?.cancel()
-                        isPaytmReturned = false
-                        editor.putString("status", "Failed")
-                        editor.apply()
-                        PaymentFailureScreen(
-                            errorMessage = "Payment failed with Paytm. Please retry payment with a different UPI app"
-                        ).show(parentFragmentManager, "FailureScreen")
+                        if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
+                            job?.cancel()
+                            isPaytmReturned = false
+                            editor.putString("status", "Failed")
+                            editor.apply()
+                            PaymentFailureScreen(
+                                errorMessage = "Payment failed with Paytm. Please retry payment with a different UPI app"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
                     }
 
                     if (status.equals("Rejected", ignoreCase = true) || status.equals(
@@ -837,8 +851,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         props.put("Initialized", ":MainBottomSheet")
         mp.track("MainScreen", props)
         return try {
-        binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
-        showLoadingState("")
+            binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
+            showLoadingState("")
 
             val imm =
                 requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -850,22 +864,22 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             editor = sharedPreferences.edit()
 
 
-        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        bottomSheet = DeliveryAddressBottomSheet.newInstance(
-            this,
-            false,
-            showName,
-            showPhone,
-            showEmail,
-            showPAN,
-            showDOB,
-            showShipping,
-            isNameEditable,
-            isPhoneEditable,
-            isEmailEditable,
-            isPANEditable,
-            isDOBEditable
-        )
+            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+            bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                this,
+                false,
+                showName,
+                showPhone,
+                showEmail,
+                showPAN,
+                showDOB,
+                showShipping,
+                isNameEditable,
+                isPhoneEditable,
+                isEmailEditable,
+                isPANEditable,
+                isDOBEditable
+            )
 
             if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
                 isTablet = false
@@ -879,23 +893,23 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             callback?.onBottomSheetOpened?.invoke()
 
-        val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
+            val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
 
-        Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
+            Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
 
-        fetchTransactionDetailsFromSharedPreferences()
-        overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
-            if (showOverlay) {
-                addOverlayToActivity()
-            } else {
-                removeOverlayFromActivity()
+            fetchTransactionDetailsFromSharedPreferences()
+            overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
+                if (showOverlay) {
+                    addOverlayToActivity()
+                } else {
+                    removeOverlayFromActivity()
+                }
+            })
+            overlayViewModel.setShowOverlay(true)
+            if (::context.isInitialized) {
+                val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
+                Clarity.initialize(context.applicationContext, config)
             }
-        })
-        overlayViewModel.setShowOverlay(true)
-        if (::context.isInitialized) {
-            val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
-            Clarity.initialize(context.applicationContext, config)
-        }
 
             hidePriceBreakUp()
 
@@ -940,32 +954,32 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             }
 
-        recommendedInstrumentsAdapter.checkPositionLiveData.observe(viewLifecycleOwner) { checkedPositon ->
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedCheckedPosition = checkedPositon
-                if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
-                    binding.recommendedProceedButton.visibility = View.VISIBLE
-                    binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-                    binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
-                        Color.parseColor(
-                            sharedPreferences.getString(
-                                "primaryButtonColor",
-                                "#000000"
+            recommendedInstrumentsAdapter.checkPositionLiveData.observe(viewLifecycleOwner) { checkedPositon ->
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedCheckedPosition = checkedPositon
+                    if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
+                        binding.recommendedProceedButton.visibility = View.VISIBLE
+                        binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+                        binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
+                            Color.parseColor(
+                                sharedPreferences.getString(
+                                    "primaryButtonColor",
+                                    "#000000"
+                                )
                             )
                         )
-                    )
-                    binding.proceedtext.setTextColor(
-                        Color.parseColor(
-                            sharedPreferences.getString(
-                                "buttonTextColor",
-                                "#ffffff"
+                        binding.proceedtext.setTextColor(
+                            Color.parseColor(
+                                sharedPreferences.getString(
+                                    "buttonTextColor",
+                                    "#ffffff"
+                                )
                             )
                         )
-                    )
-                    binding.recommendedProceedButton.isEnabled = true
+                        binding.recommendedProceedButton.isEnabled = true
+                    }
                 }
             }
-        }
 
             binding.recommendedProceedButton.setOnClickListener {
                 if (!binding.loadingRelativeLayout.isVisible) {
@@ -984,24 +998,25 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 //Just to preventing user from clicking here and closing the order summary
             }
 
-        binding.backButton.setOnClickListener() {
-            removeOverlayFromActivity()
+            binding.backButton.setOnClickListener() {
+                removeOverlayFromActivity()
 
-            dismiss()
-        }
-        binding.upiLinearLayout.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
-                hideRecommendedOptions()
-                if (!upiOptionsShown) {
-                    upiOptionsShown = true
-                    showUPIOptions()
-                } else {
-                    upiOptionsShown = false
-                    hideUPIOptions()
+                dismiss()
+            }
+            binding.upiLinearLayout.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
+                        RecyclerView.NO_POSITION
+                    hideRecommendedOptions()
+                    if (!upiOptionsShown) {
+                        upiOptionsShown = true
+                        showUPIOptions()
+                    } else {
+                        upiOptionsShown = false
+                        hideUPIOptions()
+                    }
                 }
             }
-        }
 
             binding.addNewUPIIDConstraint.setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
@@ -1065,25 +1080,32 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             }
 
-        binding.emiConstraint.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
-                hideRecommendedOptions()
-                binding.emiConstraint.isEnabled = false
-                callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Emi")
-                openEmiBottomSheet()
+            binding.emiConstraint.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
+                        RecyclerView.NO_POSITION
+                    hideRecommendedOptions()
+                    binding.emiConstraint.isEnabled = false
+                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Emi")
+                    openEmiBottomSheet()
+                }
             }
-        }
 
-        binding.bnplConstraint.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                recommendedInstrumentsAdapter.checkPositionLiveData.value = RecyclerView.NO_POSITION
-                hideRecommendedOptions()
-                binding.bnplConstraint.isEnabled = false
-                callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "BuyNowPayLater")
-                openBNPLBottomSheet()
+            binding.bnplConstraint.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
+                        RecyclerView.NO_POSITION
+                    hideRecommendedOptions()
+                    binding.bnplConstraint.isEnabled = false
+                    callUIAnalytics(
+                        requireContext(),
+                        "PAYMENT_CATEGORY_SELECTED",
+                        "",
+                        "BuyNowPayLater"
+                    )
+                    openBNPLBottomSheet()
+                }
             }
-        }
 
 
             binding.netBankingConstraint.setOnClickListener() {
@@ -1103,63 +1125,63 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             }
 
-        binding.deliveryAddressConstraintLayout.setOnClickListener() {
-            if ((!binding.loadingRelativeLayout.isVisible) && (isEmailEditable || isPhoneEditable || isNameEditable || showShipping)) {
-                if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                    val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                        ?.removePrefix(countryCode?.second ?: "")
-                    editor.putString("phoneNumber", confirmPhoneNumber)
-                    editor.putString("phoneCode", countryCode?.second)
-                    editor.putString("countryName", countryCode?.first)
-                    editor.apply()
+            binding.deliveryAddressConstraintLayout.setOnClickListener() {
+                if ((!binding.loadingRelativeLayout.isVisible) && (isEmailEditable || isPhoneEditable || isNameEditable || showShipping)) {
+                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                            ?.removePrefix(countryCode?.second ?: "")
+                        editor.putString("phoneNumber", confirmPhoneNumber)
+                        editor.putString("phoneCode", countryCode?.second)
+                        editor.putString("countryName", countryCode?.first)
+                        editor.apply()
+                    }
+                    val bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                        this,
+                        false,
+                        showName,
+                        showPhone,
+                        showEmail,
+                        showPAN,
+                        showDOB,
+                        showShipping,
+                        isNameEditable,
+                        isPhoneEditable,
+                        isEmailEditable,
+                        isPANEditable,
+                        isDOBEditable
+                    )
+                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
                 }
-                val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                    this,
-                    false,
-                    showName,
-                    showPhone,
-                    showEmail,
-                    showPAN,
-                    showDOB,
-                    showShipping,
-                    isNameEditable,
-                    isPhoneEditable,
-                    isEmailEditable,
-                    isPANEditable,
-                    isDOBEditable
-                )
-                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
             }
-        }
 
-        binding.proceedButton.setOnClickListener() {
-            if (!binding.loadingRelativeLayout.isVisible) {
-                if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                    val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                        ?.removePrefix(countryCode?.second ?: "")
-                    editor.putString("phoneNumber", confirmPhoneNumber)
-                    editor.putString("countryName", countryCode?.first)
-                    editor.putString("phoneCode", countryCode?.second)
-                    editor.apply()
+            binding.proceedButton.setOnClickListener() {
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                            ?.removePrefix(countryCode?.second ?: "")
+                        editor.putString("phoneNumber", confirmPhoneNumber)
+                        editor.putString("countryName", countryCode?.first)
+                        editor.putString("phoneCode", countryCode?.second)
+                        editor.apply()
+                    }
+                    val bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                        this,
+                        true,
+                        showName,
+                        showPhone,
+                        showEmail,
+                        showPAN,
+                        showDOB,
+                        showShipping,
+                        isNameEditable,
+                        isPhoneEditable,
+                        isEmailEditable,
+                        isPANEditable,
+                        isDOBEditable
+                    )
+                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
                 }
-                val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                    this,
-                    true,
-                    showName,
-                    showPhone,
-                    showEmail,
-                    showPAN,
-                    showDOB,
-                    showShipping,
-                    isNameEditable,
-                    isPhoneEditable,
-                    isEmailEditable,
-                    isPANEditable,
-                    isDOBEditable
-                )
-                bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
             }
-        }
 
             binding.root
         } catch (e: Exception) {
@@ -1591,13 +1613,27 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                         append(sharedPreferences.getString("firstName", ""))
                                         append(" ")
                                         append(sharedPreferences.getString("lastName", ""))
-                                        append(" (${sharedPreferences.getString("phoneNumber", "")})")
+                                        append(
+                                            " (${
+                                                sharedPreferences.getString(
+                                                    "phoneNumber",
+                                                    ""
+                                                )
+                                            })"
+                                        )
                                     } else if (showName) {
                                         append(sharedPreferences.getString("firstName", ""))
                                         append(" ")
                                         append(sharedPreferences.getString("lastName", ""))
                                     } else {
-                                        append("(${sharedPreferences.getString("phoneNumber", "")})")
+                                        append(
+                                            "(${
+                                                sharedPreferences.getString(
+                                                    "phoneNumber",
+                                                    ""
+                                                )
+                                            })"
+                                        )
                                     }
 
                                     // Add email
@@ -1610,7 +1646,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     val address2 = sharedPreferences.getString("address2", null)
                                     val city = sharedPreferences.getString("city", "")
                                     val state = sharedPreferences.getString("state", "null")
-                                    val postalCode = sharedPreferences.getString("postalCode", "null")
+                                    val postalCode =
+                                        sharedPreferences.getString("postalCode", "null")
 
                                     if (!address2.isNullOrEmpty()) {
                                         append("$address1, $address2, $city, $state, $postalCode")
@@ -1655,7 +1692,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                         onSwipeComplete = {
                                             binding.swipeScreenAnimation.apply {
                                                 playAnimation()
-                                                repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+                                                repeatCount =
+                                                    LottieDrawable.INFINITE // This makes the animation repeat infinitely
                                             }
                                             binding.swipeLoader.visibility = View.VISIBLE
                                             postRecommendedInstruments(
@@ -1667,30 +1705,37 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                         address = address,
                                         toShowOnChangeAddressClick = isEmailEditable || isPhoneEditable || isNameEditable || showShipping,
                                         onClickChangeAddress = {
-                                            if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                                                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                                                    ?.removePrefix(countryCode?.second ?: "")
+                                            if (!sharedPreferences.getString("phoneNumber", "")
+                                                    .isNullOrEmpty()
+                                            ) {
+                                                val confirmPhoneNumber =
+                                                    sharedPreferences.getString("phoneNumber", "")
+                                                        ?.removePrefix(countryCode?.second ?: "")
                                                 editor.putString("phoneNumber", confirmPhoneNumber)
                                                 editor.putString("phoneCode", countryCode?.second)
                                                 editor.putString("countryName", countryCode?.first)
                                                 editor.apply()
                                             }
-                                            val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                                                this,
-                                                false,
-                                                showName,
-                                                showPhone,
-                                                showEmail,
-                                                showPAN,
-                                                showDOB,
-                                                showShipping,
-                                                isNameEditable,
-                                                isPhoneEditable,
-                                                isEmailEditable,
-                                                isPANEditable,
-                                                isDOBEditable
+                                            val bottomSheet =
+                                                DeliveryAddressBottomSheet.newInstance(
+                                                    this,
+                                                    false,
+                                                    showName,
+                                                    showPhone,
+                                                    showEmail,
+                                                    showPAN,
+                                                    showDOB,
+                                                    showShipping,
+                                                    isNameEditable,
+                                                    isPhoneEditable,
+                                                    isEmailEditable,
+                                                    isPANEditable,
+                                                    isDOBEditable
+                                                )
+                                            bottomSheet.show(
+                                                parentFragmentManager,
+                                                "DeliveryAddressBottomSheetOnClick"
                                             )
-                                            bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
                                         },
                                         toShowAddress = showEmail || showShipping || showPhone || showName
                                     )
@@ -2362,7 +2407,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.orderSummaryConstraintLayout.setPadding(0, 16, 0, 16)
                 }
 
-                val subscriptionDetails: JSONObject? = paymentDetailsObject.optJSONObject("subscriptionDetails")
+                val subscriptionDetails: JSONObject? =
+                    paymentDetailsObject.optJSONObject("subscriptionDetails")
                 val toShowSubscription =
                     subscriptionDetails != null && subscriptionDetails.optJSONObject("billingCycle")
                         ?.optString("billingTimeUnit")
@@ -2384,36 +2430,47 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (subscriptionDetails != null && orderObject != null) {
                     val gson = Gson()
                     val subscriptionDetailsJson = subscriptionDetails.toString()
-                    val subscriptionDetailsModel = gson.fromJson(subscriptionDetailsJson, SubscriptionDetails::class.java)
+                    val subscriptionDetailsModel =
+                        gson.fromJson(subscriptionDetailsJson, SubscriptionDetails::class.java)
                     binding.apply {
-                        recurringDuration.text = subscriptionDetailsModel.billingCycle!!.billingTimeUnit
-                        recurringNextPay.text = subscriptionDetailsModel.nextBillingDateLocale!!.substring(0,10)
-                        recurringPlanExpiry.text = subscriptionDetailsModel.expiryDateLocale!!.substring(0,10)
-                        recurringTotal.text = "₹" + paymentDetailsObject.getJSONObject("money").getDouble("amount")
+                        recurringDuration.text =
+                            subscriptionDetailsModel.billingCycle!!.billingTimeUnit
+                        recurringNextPay.text =
+                            subscriptionDetailsModel.nextBillingDateLocale!!.substring(0, 10)
+                        recurringPlanExpiry.text =
+                            subscriptionDetailsModel.expiryDateLocale!!.substring(0, 10)
+                        recurringTotal.text =
+                            "₹" + paymentDetailsObject.getJSONObject("money").getDouble("amount")
 
-                        val totalAmount = paymentDetailsObject.getJSONObject("money").getDouble("amount")
-                        val sourceString = "· You will be charged ₹" + ("<b>$totalAmount").toString() + "</b> " + " on the next payment date"
+                        val totalAmount =
+                            paymentDetailsObject.getJSONObject("money").getDouble("amount")
+                        val sourceString =
+                            "· You will be charged ₹" + ("<b>$totalAmount").toString() + "</b> " + " on the next payment date"
                         recurringAmount.text = Html.fromHtml(sourceString)
 
-                        if (orderObject.getString("originalAmount") != "null"){
+                        if (orderObject.getString("originalAmount") != "null") {
                             recurringSubTotal.text = "₹" + orderObject.getString("originalAmount")
-                        }else{
+                        } else {
                             recurringLlSubTotal.visibility = View.GONE
                         }
-                        if (orderObject.getString("taxAmount") != "" && orderObject.getString("taxAmount") != "null"){
+                        if (orderObject.getString("taxAmount") != "" && orderObject.getString("taxAmount") != "null") {
                             recurringTax.text = "₹" + orderObject.getString("taxAmount")
-                        }else{
+                        } else {
                             recurringLlTax.visibility = View.GONE
                         }
-                        if (orderObject.getString("totalDiscountedAmount") != "" && orderObject.getString("totalDiscountedAmount") != "null"){
-                            recurringDiscount.text = "-₹" + orderObject.getString("totalDiscountedAmount")
-                        }else{
+                        if (orderObject.getString("totalDiscountedAmount") != "" && orderObject.getString(
+                                "totalDiscountedAmount"
+                            ) != "null"
+                        ) {
+                            recurringDiscount.text =
+                                "-₹" + orderObject.getString("totalDiscountedAmount")
+                        } else {
                             recurringLlDiscount.visibility = View.GONE
                         }
 
-                        if (orderObject.getString("shippingAmount") != "" && orderObject.getString("shippingAmount") != "null"){
+                        if (orderObject.getString("shippingAmount") != "" && orderObject.getString("shippingAmount") != "null") {
                             recurringShipping.text = "₹" + orderObject.getString("shippingAmount")
-                        }else{
+                        } else {
                             recurringLlShipping.visibility = View.GONE
                         }
                         recurringMainCard.visibility = View.VISIBLE
@@ -2429,7 +2486,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 binding.arrowIconRecurring.setOnClickListener {
-                    if (binding.recurringDetailsLinearLayout.visibility == View.VISIBLE){
+                    if (binding.recurringDetailsLinearLayout.visibility == View.VISIBLE) {
                         binding.recurringDetailsLinearLayout.visibility = View.GONE
                         binding.arrowIconRecurring.animate()
                             .rotation(0f)
@@ -2437,7 +2494,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             .withEndAction {}
                             .start()
 
-                    }else{
+                    } else {
                         binding.recurringDetailsLinearLayout.visibility = View.VISIBLE
                         binding.arrowIconRecurring.animate()
                             .rotation(180f)
@@ -2571,7 +2628,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                     showPAN = true
                                 }
 
-                                if (fieldObject.getString("fieldName").contains("DATE_OF_BIRTH", true)) {
+                                if (fieldObject.getString("fieldName")
+                                        .contains("DATE_OF_BIRTH", true)
+                                ) {
                                     showDOB = true
                                 }
                             }
@@ -3349,7 +3408,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     onSwipeComplete = {
                         binding.swipeScreenAnimation.apply {
                             playAnimation()
-                            repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
+                            repeatCount =
+                                LottieDrawable.INFINITE // This makes the animation repeat infinitely
                         }
                         binding.swipeLoader.visibility = View.VISIBLE
                         postRecommendedInstruments(

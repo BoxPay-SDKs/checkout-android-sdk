@@ -85,12 +85,18 @@ class Check : AppCompatActivity() {
             val boxPayUpiComponent = BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
             boxPayUpiComponent.setTestEnv(true)
             boxPayUpiComponent.setContext(this)
+//            binding.proceedButtonBottom.visibility = View.VISIBLE
+//            boxPayUpiComponent.setProceedButtonVisibility(false)
 
             // Replace a container in your activity's layout
             binding.mainContainer.removeAllViews()
             supportFragmentManager.beginTransaction()
                 .replace(R.id.main_container,boxPayUpiComponent)
                 .commit()
+
+            binding.proceedButtonBottom.setOnClickListener {
+                boxPayUpiComponent.onClickProceed()
+            }
         } else {
             val boxPayCheckout =
                 BoxPayCheckout(
