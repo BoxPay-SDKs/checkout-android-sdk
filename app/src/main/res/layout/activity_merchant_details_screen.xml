@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/main_container"
     tools:context=".MerchantDetailsScreen">
 
     <EditText
@@ -42,6 +43,17 @@
         app:layout_constraintTop_toBottomOf="@+id/shopperTokenEditText"
         tools:ignore="TouchTargetSizeCheck" />
 
+    <RadioButton
+        android:id="@+id/upiRadioButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Enable UPI alone"
+        app:layout_constraintEnd_toEndOf="@+id/environmentSpinner"
+        app:layout_constraintStart_toStartOf="@+id/environmentSpinner"
+        app:layout_constraintTop_toBottomOf="@+id/environmentSpinner" />
+
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button"
         android:layout_width="wrap_content"
@@ -53,5 +65,5 @@
         android:background="@drawable/button_bg"
         android:textColor="#FFFFFF"
         android:fontFamily="@font/poppins_semibold"
-        app:layout_constraintTop_toBottomOf="@+id/environmentSpinner" />
+        app:layout_constraintTop_toBottomOf="@+id/upiRadioButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

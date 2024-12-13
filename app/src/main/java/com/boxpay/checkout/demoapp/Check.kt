@@ -11,9 +11,10 @@ import androidx.lifecycle.Observer
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.boxpay.checkout.demoapp.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.BoxPayCheckout
+import com.boxpay.checkout.sdk.BoxPayUpiComponent
 import com.boxpay.checkout.sdk.BuildConfig
-import com.boxpay.checkout.sdk.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import org.json.JSONObject
 
@@ -22,6 +23,7 @@ class Check : AppCompatActivity() {
     var customerShopperToken: String? = null
     private var successScreenFullReferencePath: String? = null
     private var tokenFetchedAndOpen = false
+    private var isUpiAlone: Boolean = false
 
 
     private val binding: ActivityCheckBinding by lazy {
@@ -34,6 +36,8 @@ class Check : AppCompatActivity() {
 
 
         makePaymentRequest(this)
+        val bundle = intent.extras
+        isUpiAlone = bundle?.getBoolean("isUpiAlone",false) ?: false
 
         binding.textView6.text = "Generating Token Please wait..."
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
@@ -60,7 +64,6 @@ class Check : AppCompatActivity() {
             // Disable the button
             binding.openButton.isEnabled = false
             binding.openButton.visibility = View.GONE
-            binding.pleaseWaitTextView.visibility = View.VISIBLE
 
             if (!(tokenLiveData.value.isNullOrEmpty())) {
                 showBottomSheetWithOverlay()
@@ -78,16 +81,28 @@ class Check : AppCompatActivity() {
     }
 
     private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout =
-            BoxPayCheckout(
-                this,
-                tokenLiveData.value ?: "",
-                ::onPaymentResultCallback,
-                false,
-                customerShopperToken = customerShopperToken ?: ""
-            )
-        boxPayCheckout.testEnv = true
-        boxPayCheckout.display()
+        if (isUpiAlone) {
+            val boxPayUpiComponent = BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
+            boxPayUpiComponent.setTestEnv(true)
+            boxPayUpiComponent.setContext(this)
+
+            // Replace a container in your activity's layout
+            binding.mainContainer.removeAllViews()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.main_container,boxPayUpiComponent)
+                .commit()
+        } else {
+            val boxPayCheckout =
+                BoxPayCheckout(
+                    this,
+                    tokenLiveData.value ?: "",
+                    ::onPaymentResultCallback,
+                    false,
+                    customerShopperToken = customerShopperToken ?: ""
+                )
+            boxPayCheckout.testEnv = true
+            boxPayCheckout.display()
+        }
     }
 
 
