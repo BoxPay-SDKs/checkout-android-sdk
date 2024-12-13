@@ -47,6 +47,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieDrawable
@@ -856,8 +857,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             val imm =
                 requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            view?.let {
-                imm.hideSoftInputFromWindow(it.windowToken, 0)
+            binding.root.post {
+                imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
             }
             binding.boxpayLogoLottie.playAnimation()
             queue = Volley.newRequestQueue(requireContext())
@@ -1179,7 +1180,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         isPANEditable,
                         isDOBEditable
                     )
-                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+                    viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                        bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+                    }
                 }
             }
 
