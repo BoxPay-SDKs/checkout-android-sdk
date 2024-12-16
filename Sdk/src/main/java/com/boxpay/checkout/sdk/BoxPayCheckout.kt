@@ -20,16 +20,18 @@ class BoxPayCheckout(
     private val token: String,
     val onPaymentResult: ((PaymentResultObject) -> Unit)?,
     private val sandboxEnabled: Boolean = false,
-    private val customerShopperToken: String = ""
+    private val customerShopperToken: String = "",
+    private val isSuccessScreenVisible: Boolean = true
 ) {
     constructor(
         context: Context,
         token: String,
         onPaymentResult: ((PaymentResultObject) -> Unit)?,
         customerShopperToken: String = "",
-        sandboxEnabled: Boolean = false
+        sandboxEnabled: Boolean = false,
+        isSuccessScreenVisible : Boolean = true
     ) : this(
-        context, token, onPaymentResult, sandboxEnabled, customerShopperToken
+        context, token, onPaymentResult, sandboxEnabled, customerShopperToken,isSuccessScreenVisible
     )
 
     private var sharedPreferences: SharedPreferences =
@@ -51,6 +53,7 @@ class BoxPayCheckout(
             editor.putString("baseUrl", "apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
         }
+        editor.putBoolean("isSuccessScreenVisible", isSuccessScreenVisible)
         editor.apply()
         try {
             if (!token.isNullOrEmpty()) {

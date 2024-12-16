@@ -2,19 +2,24 @@ package com.boxpay.checkout.sdk
 
 import DismissViewModel
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -22,16 +27,21 @@ import android.view.View.OnFocusChangeListener
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.WebSettings
-import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.core.content.ContextCompat
+import androidx.annotation.RequiresApi
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.distinctUntilChanged
+import coil.decode.SvgDecoder
+import coil.load
+import coil.size.Scale
 import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.RequestQueue
@@ -39,15 +49,27 @@ import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.boxpay.checkout.sdk.ViewModels.DCCViewModel
+import com.boxpay.checkout.sdk.ViewModels.SessionViewModel
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.FragmentAddCardBottomSheetBinding
-import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
+import com.boxpay.checkout.sdk.dataclasses.CurrencyData
+import com.boxpay.checkout.sdk.dataclasses.DCCRequest
+import com.boxpay.checkout.sdk.dataclasses.DCCResponse
+import com.boxpay.checkout.sdk.dataclasses.Instrument
+import com.boxpay.checkout.sdk.dataclasses.LegalEntity
+import com.boxpay.checkout.sdk.dataclasses.Money
+import com.boxpay.checkout.sdk.dataclasses.SessionResponse
+import com.boxpay.checkout.sdk.dataclasses.Shopper
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -56,18 +78,18 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
+import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
 import kotlin.random.Random
 
-
+@SuppressLint("SetTextI18n")
 internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
-    private var callback: UpdateMainBottomSheetInterface? = null
     private lateinit var binding: FragmentAddCardBottomSheetBinding
     private lateinit var viewModel: DismissViewModel
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
-    private var bottomSheet: FrameLayout? = null
     private lateinit var Base_Session_API_URL: String
     private lateinit var requestQueue: RequestQueue
     private var token: String? = null
@@ -86,12 +108,32 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var transactionId: String? = null
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
-    private var cardNetworkFound = false
     private var cardNetworkName: String = ""
     private var shippingEnabled: Boolean = false
+    private val dccViewModel: DCCViewModel by viewModels()
+    private val sessionViewModel: SessionViewModel by viewModels()
+    private var sessionData: SessionResponse? = null
+    private var isCurrencySelected = true
+    private var dccRequest: DCCRequest? = null
+    private var isDCCFetched = false
+    private var isDCCEnabled = false
+    private var quotationID: String? = ""
+    private var isQuotationRequired = false
+    private var isFirstTimeFillingCardNumber = true
+    private var dccResponseUniversal : DCCResponse? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        dialog?.window?.setGravity(Gravity.BOTTOM)
+        dialog?.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
     }
 
     override fun onCancel(dialog: DialogInterface) {
@@ -101,37 +143,54 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         dismissAndMakeButtonsOfMainBottomSheetEnabled()
     }
 
-    fun makeCardNetworkIdentificationCall(context: Context, cardNumber: String) {
+    fun makeCardNetworkIdentificationCall(
+        context: Context, cardNumber: String, completeCardNumber: String
+    ) {
         val queue = Volley.newRequestQueue(context)
         val url = Base_Session_API_URL + "${token}/bank-identification-numbers/${cardNumber}"
         val jsonData = JSONObject()
         val brands = mutableListOf<String>()
-        val request = object : JsonObjectRequest(Method.POST, url, jsonData,
-            { response ->
-                logJsonObject(response)
-                try {
-                    val currBrand =
-                        response.getJSONObject("paymentMethod").getString("brand")
-                    brands.add(currBrand)
-                    cardNetworkName = currBrand
-                    val methodEnabled = response.getBoolean("methodEnabled")
+        val request = object : JsonObjectRequest(Method.POST, url, jsonData, { response ->
+            logJsonObject(response)
+            try {
+                val currBrand = response.getJSONObject("paymentMethod").getString("brand")
+                brands.add(currBrand)
+                cardNetworkName = currBrand
+                val methodEnabled = response.getBoolean("methodEnabled")
 
-                    if (!methodEnabled) {
-                        isCardNumberValid = false
-                        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
-                        binding.textView4.text = "This card is not supported for the payment"
-                        proceedButtonIsEnabled.value = false
-                    }
-
-                    updateCardNetwork(brands)
-                } catch (e: Exception) {
-
+                if (!methodEnabled) {
+                    isCardNumberValid = false
+                    binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                    binding.textView4.text = "This card is not supported for the payment"
+                    proceedButtonIsEnabled.value = false
                 }
-            },
-            Response.ErrorListener { _ ->
 
-            }) {
-        }
+                updateCardNetwork(brands)
+
+
+                //we get the card type from the API and call the DCC API
+                dccRequest!!.instrument!!.brand = cardNetworkName
+                dccRequest!!.instrument!!.accountNumber = completeCardNumber
+                if (!isDCCFetched && completeCardNumber.length >= 10) {
+                    dccViewModel.getDCC(dccRequest!!, token!!).distinctUntilChanged()
+                        .observe(this) { dccResponse ->
+                            if (dccResponse != null) {
+                                //successful
+                                //self explanatory
+                                callAndSetDCCData(dccResponse)
+                                dccResponseUniversal = dccResponse
+                            } else {
+                                binding.flLoaderAndDcc.visibility = View.GONE
+                            }
+                        }
+                }
+
+            } catch (e: Exception) {
+                binding.flLoaderAndDcc.visibility = View.GONE
+            }
+        }, Response.ErrorListener { _ ->
+
+        }) {}
         queue.add(request)
     }
 
@@ -178,8 +237,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.defaultCardNetworkLinearLayout.visibility = View.GONE
         val imageView = ImageView(requireContext())
         val layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT
+            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
         )
         imageView.layoutParams = layoutParams
         val imageDrawable = getImageDrawableForItem(cardNetworkName)
@@ -215,23 +273,17 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         dismiss()
     }
 
-    private fun dismissMainBottomSheet() {
 
-    }
-
-
+    @RequiresApi(Build.VERSION_CODES.O)
+    @SuppressLint("SetTextI18n", "SourceLockedOrientationActivity")
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
-        return try {
-            binding = FragmentAddCardBottomSheetBinding.inflate(inflater, container, false)
-            requestQueue = Volley.newRequestQueue(context)
+        clearAllDCCData(requireActivity())
+
 
             val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
             if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
@@ -240,7 +292,73 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             viewModel = ViewModelProvider(this).get(DismissViewModel::class.java)
 
-            fetchTransactionDetailsFromSharedPreferences()
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
+        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
+
+
+        fetchTransactionDetailsFromSharedPreferences()
+        sessionViewModel.createCheckoutSession(token!!).observe(this) { response ->
+            if (response != null) {
+                sessionData = response
+                dccRequest = DCCRequest(
+                    context = com.boxpay.checkout.sdk.dataclasses.Context(
+                        countryCode = sessionData!!.paymentDetails!!.context!!.countryCode,
+                        legalEntity = LegalEntity(
+                            code = sessionData!!.paymentDetails!!.context!!.legalEntity!!.code
+                        ),
+                        clientPosId = null,
+                        orderId = null,
+                        localCode = sessionData!!.paymentDetails!!.context!!.localCode
+                    ), money = Money(
+                        amount = sessionData!!.paymentDetails!!.money!!.amount,
+                        currencyCode = sessionData!!.paymentDetails!!.money!!.currencyCode
+                    ), shopper = Shopper(
+                        firstName = sessionData!!.paymentDetails!!.shopper!!.firstName,
+                        email = sessionData!!.paymentDetails!!.shopper!!.email,
+                        uniqueReference = sessionData!!.paymentDetails!!.shopper!!.uniqueReference,
+                        phoneNumber = sessionData!!.paymentDetails!!.shopper!!.phoneNumber
+                    ), instrument = Instrument(
+                        brand = "", accountNumber = ""
+                    )
+                )
+            } else {
+                binding.flLoaderAndDcc.visibility = View.GONE
+            }
+        }
+
+
+        binding.radioButton1.buttonTintList = ColorStateList.valueOf(
+            Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            )
+        )
+        binding.radioButton2.buttonTintList = ColorStateList.valueOf(
+            Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            )
+        )
+        binding.radioButton1.setOnClickListener {
+            if (binding.radioButton1.isChecked) {
+                binding.radioButton2.isChecked = false
+                isCurrencySelected = true
+                proceedButtonIsEnabled.value = true
+                enableProceedButton()
+                binding.textView6.text = "Pay " + dccResponseUniversal!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponseUniversal!!.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
+                isQuotationRequired = true
+            }
+        }
+
+        binding.radioButton2.setOnClickListener {
+            if (binding.radioButton2.isChecked) {
+                binding.radioButton1.isChecked = false
+                isCurrencySelected = true
+                proceedButtonIsEnabled.value = true
+                enableProceedButton()
+                binding.textView6.text = "Pay " +  dccResponseUniversal!!.baseMoney!!.currencyCode + " " + formatToINR((dccResponseUniversal!!.baseMoney!!.amount)!!.toDouble())
+                isQuotationRequired = false
+            }
+        }
+
 
             val allowedCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890. "
@@ -252,46 +370,101 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            ViewCompat.setOnApplyWindowInsetsListener(requireDialog().window?.decorView!!) { _, insets ->
+                val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                val navigationBarHeight =
+                    insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+                binding.root.setPadding(0, 0, 0, imeHeight - navigationBarHeight)
+                insets
+            }
+        } else {
+            @Suppress("DEPRECATION")
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-            binding.progressBar.visibility = View.INVISIBLE
-            proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
-                if (enableProceedButton) {
-                    if (isCardNumberValid && isCardValidityValid && isCardCVVValid && isNameOnCardValid) {
-                        enableProceedButton()
-                    }
+        }
+        binding.progressBar.visibility = View.INVISIBLE
+        proceedButtonIsEnabled.observe(this) { enableProceedButton ->
+            if (enableProceedButton) {
+                if (isCardNumberValid && isCardValidityValid && isCardCVVValid && isNameOnCardValid && isCurrencySelected) {
+                    enableProceedButton()
+                }
+            } else {
+
+                disableProceedButton()
+            }
+        }
+        proceedButtonIsEnabled.value = false
+
+        var checked = false
+        binding.progressBar.visibility = View.INVISIBLE
+        binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
+        binding.invalidCardValidity.visibility = View.INVISIBLE
+        binding.invalidCVV.visibility = View.INVISIBLE
+        binding.saveCardLinearLayout.setOnClickListener {
+            if (!binding.progressBar.isVisible) {
+                if (!checked) {
+                    binding.imageView3.setImageResource(R.drawable.checkbox)
+                    checked = true
                 } else {
-
-                    disableProceedButton()
-                }
-            })
-            proceedButtonIsEnabled.value = false
-
-            var checked = false
-            binding.progressBar.visibility = View.INVISIBLE
-            binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
-            binding.invalidCardValidity.visibility = View.INVISIBLE
-            binding.invalidCVV.visibility = View.INVISIBLE
-            binding.saveCardLinearLayout.setOnClickListener() {
-                if (!binding.progressBar.isVisible) {
-                    if (!checked) {
-                        binding.imageView3.setImageResource(R.drawable.checkbox)
-                        checked = true
-                    } else {
-                        binding.imageView3.setImageResource(0)
-                        checked = false
-                    }
+                    binding.imageView3.setImageResource(0)
+                    checked = false
                 }
             }
+        }
 
 
-            binding.backButton.setOnClickListener() {
-                if (!binding.progressBar.isVisible && !binding.loadingLayout.isVisible) {
-                    dismissAndMakeButtonsOfMainBottomSheetEnabled()
-                }
+        binding.backButton.setOnClickListener {
+            if (!binding.progressBar.isVisible && !binding.loadingLayout.isVisible) {
+                dismissAndMakeButtonsOfMainBottomSheetEnabled()
             }
+        }
 
-            binding.editTextCardNumber.filters = arrayOf(InputFilter.LengthFilter(19))
-
+        binding.editTextCardNumber.filters = arrayOf(InputFilter.LengthFilter(19))
+        val focusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        val unfocusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        binding.editTextCardCVV.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.editTextCardCVV.background = focusedDrawable
+            } else {
+                binding.editTextCardCVV.background = unfocusedDrawable
+            }
+        }
+        binding.editTextCardValidity.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.editTextCardValidity.background = focusedDrawable
+            } else {
+                binding.editTextCardValidity.background = unfocusedDrawable
+            }
+        }
+        binding.editTextCardNumber.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.editTextCardNumber.background = focusedDrawable
+            } else {
+                binding.editTextCardNumber.background = unfocusedDrawable
+            }
+        }
+        binding.editTextNameOnCard.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                binding.editTextNameOnCard.background = focusedDrawable
+            } else {
+                binding.editTextNameOnCard.background = unfocusedDrawable
+            }
+        }
 
             binding.editTextCardNumber.addTextChangedListener(object : TextWatcher {
 
@@ -315,28 +488,28 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
-                    if (s.toString().isNullOrBlank()) {
-                        isCardNumberValid = false
-                        proceedButtonIsEnabled.value = false
-                    } else {
-                        isCardNumberValid = true
-                        proceedButtonIsEnabled.value = true
-                    }
-                    s.let {
-                        if (s?.length == 19) {
-                            val text = s.toString().replace("\\s".toRegex(), "")
-                            if (isValidCardNumberByLuhn(removeSpaces(text))) {
-                                binding.editTextCardValidity.requestFocus()
-                                isCardNumberValid = true
-                                binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
-                                proceedButtonIsEnabled.value = true
-                            } else {
-                                isCardNumberValid = false
-                                proceedButtonIsEnabled.value = false
-                            }
+                if (s.toString().isBlank()) {
+                    isCardNumberValid = false
+                    proceedButtonIsEnabled.value = false
+                }
+                s.let {
+                    if (s?.length == 19) {
+                        val text = s.toString().replace("\\s".toRegex(), "")
+                        if (isValidCardNumberByLuhn(removeSpaces(text))) {
+                            binding.editTextCardValidity.requestFocus()
+                            isCardNumberValid = true
+                            binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
+                            proceedButtonIsEnabled.value = true
+                            enableProceedButton()
+
+                        } else {
+                            isCardNumberValid = false
+                            proceedButtonIsEnabled.value = false
+                            disableProceedButton()
                         }
-                        enableProceedButton()
+                        isFirstTimeFillingCardNumber = false
                     }
+                }
 
                     callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "", "Card")
                 }
@@ -360,38 +533,82 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                             isFormatting = false // Reset the flag
 
-                            if (text.isBlank()) {
-                                isCardNumberValid = false
-                                proceedButtonIsEnabled.value = false
-                            } else if (text.length == 19) {
-                                if (isValidCardNumberByLuhn(removeSpaces(text))) {
-                                    binding.editTextCardValidity.requestFocus()
-                                    isCardNumberValid = true
-                                    binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
-                                    proceedButtonIsEnabled.value = true
-                                } else {
-                                    isCardNumberValid = false
-                                    binding.ll1InvalidCardNumber.visibility = View.VISIBLE
-                                    proceedButtonIsEnabled.value = false
-                                }
-                            }
-
-                            if (text.length >= 9)
-                                makeCardNetworkIdentificationCall(
-                                    requireContext(),
-                                    text.substring(0, 9)
-                                )
-                            else {
+                        if (text.isBlank()) {
+                            isCardNumberValid = false
+                            proceedButtonIsEnabled.value = false
+                        } else if (text.length == 19) {
+                            if (isValidCardNumberByLuhn(removeSpaces(text))) {
+                                binding.editTextCardValidity.requestFocus()
+                                isCardNumberValid = true
                                 binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
+                                proceedButtonIsEnabled.value = true
+                            } else {
+                                isCardNumberValid = false
+                                binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                                proceedButtonIsEnabled.value = false
                             }
+                        }
+
+                        if (text.length >= 9) {
+                            makeCardNetworkIdentificationCall(
+                                requireContext(), text.substring(0, 9), text
+                            )
+
+                        } else {
+                            binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
+                            isCardNumberValid = false
+                            disableProceedButton()
+                        }
+
+                        //DCC call
+                        if (text.length >= 10) {
+                            //make this call for card network identification and add that to DCC request to get DCC quotation
+                            makeCardNetworkIdentificationCall(
+                                requireContext(), text.substring(0, 9), text
+                            )
+                        } else {
+                            if (isDCCFetched){
+                                hideViewWithAnimation(binding.ll1InvalidCardNumber,View.INVISIBLE)
+                                hideViewWithAnimation(binding.llLoaderDccAndInfo,View.GONE)
+                                hideViewWithAnimation(binding.llDccOptions,View.GONE)
+                                hideViewWithAnimation(binding.tvInfoDcc,View.INVISIBLE)
+                                binding.tvInfoDcc.text = ""
+                                binding.textView6.text = "Pay Now"
+                                isDCCFetched = false
+                                isCardNumberValid = false
+                            }
+                            disableProceedButton()
                         }
                     }
                 }
-            })
+                if(s.toString().isEmpty()){
+                    isCardNumberValid = false
+                    proceedButtonIsEnabled.value = false
+                    if(!isFirstTimeFillingCardNumber){
+                        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                    }
+                    binding.textView4.text = "Required"
+                    disableProceedButton()
+                }else if(s.toString().length < 19){
+                    isCardNumberValid = false
+                    proceedButtonIsEnabled.value = false
+                    if(!isFirstTimeFillingCardNumber){
+                        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                    }
+                    binding.textView4.text = "Invalid Card Number"
+                    disableProceedButton()
+                }else{
+                    isCardNumberValid = true
+                    binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
+                    proceedButtonIsEnabled.value = true
+                    enableProceedButton()
+                }
+            }
+        })
 
 
-            // Set InputFilter to limit the length and add a slash after every 2 digits
-            binding.editTextCardValidity.filters = arrayOf(InputFilter.LengthFilter(7))
+        // Set InputFilter to limit the length and add a slash after every 2 digits
+        binding.editTextCardValidity.filters = arrayOf(InputFilter.LengthFilter(5))
 
             // Set TextWatcher to add slashes dynamically as the user types
             binding.editTextCardValidity.addTextChangedListener(object : TextWatcher {
@@ -413,13 +630,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
-                    if (s.toString().isNullOrBlank()) {
-                        isCardValidityValid = true
-                        proceedButtonIsEnabled.value = true
-                    } else {
-                        isCardValidityValid = false
-                        proceedButtonIsEnabled.value = false
-                    }
+                if (s.toString().isBlank()) {
+                    isCardValidityValid = true
+                    proceedButtonIsEnabled.value = true
+                } else {
+                    isCardValidityValid = false
+                    proceedButtonIsEnabled.value = false
+                }
 
                     callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "", "Card")
                     enableProceedButton()
@@ -441,11 +658,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             proceedButtonIsEnabled.value = false
                         }
 
-                        if (text.length == 1) {
-                            if (text != "0" && text != "1") {
-                                text = "0" + text
-                            }
+                    if (text.length == 1) {
+                        if (text != "0" && text != "1") {
+                            text = "0$text"
                         }
+                    }
 
                         val formattedText = formatMMYY(text)
 
@@ -462,30 +679,30 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             s?.delete(s.toString().length - 1, s.toString().length)
                         }
 
-                        // Set isFormatting back to false after modifying the text
-                        isFormatting = false
-                        if (textNow.isNotBlank()) {
-                            if (textNow.length == 5) {
-                                val cardValidity = binding.editTextCardValidity.text.toString()
-                                if (!(isValidExpirationDate(
-                                        cardValidity.substring(0, 2),
-                                        cardValidity.substring(3, 5)
-                                    ))
-                                ) {
-                                    isCardValidityValid = false
-                                    proceedButtonIsEnabled.value = false
-                                    binding.invalidCardValidity.visibility = View.VISIBLE
-                                    binding.textView7.text = "Invalid card validity"
-                                } else {
-                                    isCardValidityValid = true
-                                    proceedButtonIsEnabled.value = true
-                                    binding.invalidCardValidity.visibility = View.INVISIBLE
-                                }
-                            } else {
+                    // Set isFormatting back to false after modifying the text
+                    isFormatting = false
+                    if (textNow.isNotBlank()) {
+                        if (textNow.length == 5) {
+                            val cardValidity = binding.editTextCardValidity.text.toString()
+                            if (!(isValidExpirationDate(
+                                    cardValidity.substring(0, 2),
+                                    cardValidity.substring(3, 5)
+                                ))
+                            ) {
                                 isCardValidityValid = false
                                 proceedButtonIsEnabled.value = false
+                                binding.invalidCardValidity.visibility = View.VISIBLE
+                                binding.textView7.text = "Invalid card validity"
+                            } else {
+                                isCardValidityValid = true
+                                proceedButtonIsEnabled.value = true
+                                binding.invalidCardValidity.visibility = View.INVISIBLE
                             }
+                        } else {
+                            isCardValidityValid = false
+                            proceedButtonIsEnabled.value = false
                         }
+                    }
 
                         if (textNow.isBlank()) {
                             isCardValidityValid = false
@@ -609,18 +826,17 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             binding.editTextCardCVV.setTransformationMethod(AsteriskPasswordTransformationMethod())
 
-            binding.proceedButton.setOnClickListener() {
-                callUIAnalytics(requireContext(), "PAYMENT_INITIATED", cardNetworkName, "Card")
-                removeErrors()
-                cardNumber = deformatCardNumber(binding.editTextCardNumber.text.toString())
-                cardExpiryYYYY_MM =
-                    addDashInsteadOfSlash(binding.editTextCardValidity.text.toString())
-                if (cardExpiryYYYY_MM.isNullOrEmpty()) {
-                    return@setOnClickListener
-                }
-                cvv = binding.editTextCardCVV.text.toString()
-                cardHolderName = binding.editTextNameOnCard.text.toString()
-                var anyFieldEmpty = false
+        binding.proceedButton.setOnClickListener {
+            callUIAnalytics(requireContext(), "PAYMENT_INITIATED", cardNetworkName, "Card")
+            removeErrors()
+            cardNumber = deformatCardNumber(binding.editTextCardNumber.text.toString())
+            cardExpiryYYYY_MM = addDashInsteadOfSlash(binding.editTextCardValidity.text.toString())
+            if (cardExpiryYYYY_MM.isNullOrEmpty()) {
+                return@setOnClickListener
+            }
+            cvv = binding.editTextCardCVV.text.toString()
+            cardHolderName = binding.editTextNameOnCard.text.toString()
+            var anyFieldEmpty = false
 
                 if (cardNumber.isNullOrEmpty()) {
                     binding.ll1InvalidCardNumber.visibility = View.VISIBLE
@@ -655,107 +871,204 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
 
-            binding.editTextCardNumber.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
-
-                } else {
-                    val cardNumber = removeSpaces(binding.editTextCardNumber.text.toString())
-                    if (!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))) {
-                        binding.ll1InvalidCardNumber.visibility = View.VISIBLE
-                        if (binding.editTextCardNumber.text.isNullOrEmpty()) {
-                            binding.textView4.text = "Enter Card Number"
-                        } else {
-                            binding.textView4.text = "Invalid card number"
-                        }
+        binding.editTextCardNumber.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val cardNumber = removeSpaces(binding.editTextCardNumber.text.toString())
+                if (!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))) {
+                    binding.ll1InvalidCardNumber.visibility = View.VISIBLE
+                    if (binding.editTextCardNumber.text.isNullOrEmpty()) {
+                        binding.textView4.text = "Enter Card Number"
                     } else {
-                        binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
+                        binding.textView4.text = "Invalid card number"
                     }
-//                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
-                }
-            })
-
-            binding.editTextCardValidity.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
-
                 } else {
-                    val cardValidity = binding.editTextCardValidity.text.toString()
-                    try {
-                        if (!(isValidExpirationDate(
-                                cardValidity.substring(0, 2),
-                                cardValidity.substring(3, 5)
-                            ))
-                        ) {
-                            binding.invalidCardValidity.visibility = View.VISIBLE
-                            if (binding.editTextCardValidity.text.isNullOrEmpty()) {
-                                binding.textView7.text = "Enter Card Validity"
-                            } else {
-                                binding.textView7.text = "Invalid card Validity"
-                            }
-                        } else {
-                            binding.invalidCardValidity.visibility = View.INVISIBLE
-                        }
-                    } catch (e: Exception) {
+                    binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
+                }
+            }
+        }
+
+        binding.editTextCardValidity.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val cardValidity = binding.editTextCardValidity.text.toString()
+                try {
+                    if (!(isValidExpirationDate(
+                            cardValidity.substring(0, 2),
+                            cardValidity.substring(3, 5)
+                        ))
+                    ) {
                         binding.invalidCardValidity.visibility = View.VISIBLE
                         if (binding.editTextCardValidity.text.isNullOrEmpty()) {
                             binding.textView7.text = "Enter Card Validity"
                         } else {
                             binding.textView7.text = "Invalid card Validity"
                         }
+                    } else {
+                        binding.invalidCardValidity.visibility = View.INVISIBLE
                     }
-//                Toast.makeText(requireContext(), "Lost the focus", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    binding.invalidCardValidity.visibility = View.VISIBLE
+                    if (binding.editTextCardValidity.text.isNullOrEmpty()) {
+                        binding.textView7.text = "Enter Card Validity"
+                    } else {
+                        binding.textView7.text = "Invalid card Validity"
+                    }
                 }
-            })
-            binding.editTextCardCVV.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
-
-                } else {
-                    try {
-                        val cardCVV = binding.editTextCardCVV.text.toString()
-                        if (!isValidCVC(cardCVV.toInt())) {
-                            binding.invalidCVV.visibility = View.VISIBLE
-                            if (binding.editTextCardCVV.text.isNullOrEmpty()) {
-                                binding.textView8.text = "Enter CVV"
-                            } else {
-                                binding.textView8.text = "Invalid CVV"
-                            }
-                        } else {
-                            binding.invalidCVV.visibility = View.INVISIBLE
-                        }
-                    } catch (e: Exception) {
+            }
+        }
+        binding.editTextCardCVV.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                try {
+                    val cardCVV = binding.editTextCardCVV.text.toString()
+                    if (!isValidCVC(cardCVV.toInt())) {
                         binding.invalidCVV.visibility = View.VISIBLE
                         if (binding.editTextCardCVV.text.isNullOrEmpty()) {
                             binding.textView8.text = "Enter CVV"
                         } else {
                             binding.textView8.text = "Invalid CVV"
                         }
-                    }
-                }
-            })
-            binding.editTextNameOnCard.setOnFocusChangeListener(OnFocusChangeListener { view, hasFocus ->
-                if (hasFocus) {
-
-                } else {
-                    if (binding.editTextNameOnCard.text.isNullOrEmpty()) {
-                        isNameOnCardValid = false
-                        binding.nameOnCardErrorLayout.visibility = View.VISIBLE
                     } else {
-                        isNameOnCardValid = true
-                        binding.nameOnCardErrorLayout.visibility = View.INVISIBLE
+                        binding.invalidCVV.visibility = View.INVISIBLE
+                    }
+                } catch (e: Exception) {
+                    binding.invalidCVV.visibility = View.VISIBLE
+                    if (binding.editTextCardCVV.text.isNullOrEmpty()) {
+                        binding.textView8.text = "Enter CVV"
+                    } else {
+                        binding.textView8.text = "Invalid CVV"
                     }
                 }
-            })
-            binding.root
-        } catch (e: Exception) {
-            handleException(
-                requireContext(),
-                e.message ?: "",
-                token ?: "",
-                baseUrl ?: "",
-                "Add Card Bottom Sheet"
-            )
-            null
+            }
+        }
+        binding.editTextNameOnCard.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                if (binding.editTextNameOnCard.text.isNullOrEmpty()) {
+                    isNameOnCardValid = false
+                    binding.nameOnCardErrorLayout.visibility = View.VISIBLE
+                } else {
+                    isNameOnCardValid = true
+                    binding.nameOnCardErrorLayout.visibility = View.INVISIBLE
+                }
+            }
+        }
+        return binding.root
+    }
+
+    private fun getCurrencyData(context: Context): List<CurrencyData>? {
+        val json: String?
+        try {
+            json = context.assets.open("currency_data.json").bufferedReader().use { it.readText() }
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+            return null
+        }
+
+        val gson = Gson()
+        val type = object : TypeToken<List<CurrencyData>>() {}.type
+        return gson.fromJson(json, type)
+    }
+
+    // Function to get the flag for a specific currency code
+    private fun getFlagForCurrencyCode(context: Context, currencyCode: String): String? {
+        val currencyDataList = getCurrencyData(context)
+        val currency = currencyDataList?.find { it.currencyCode == currencyCode }
+        return currency?.flag
+    }
+
+    fun hideViewWithAnimation(view: View,type:Int) {
+        view.animate()
+            .alpha(0f)
+            .setDuration(350)
+            .withEndAction {
+                if (type == View.GONE){
+                    view.visibility = View.GONE
+                }else if (type == View.INVISIBLE){
+                    view.visibility = View.INVISIBLE
+                }
+            }
+            .start()
+    }
+
+    private fun showViewWithAnimation(view: View) {
+        view.animate()
+            .alpha(1.0f)
+            .setDuration(350)
+            .withEndAction {
+                view.visibility = View.VISIBLE
+            }.start()
+    }
+
+    private fun formatToINR(amount: Double): String {
+        val format = NumberFormat.getNumberInstance(Locale("en", "IN"))
+        return format.format(amount)
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun callAndSetDCCData(dccResponse: DCCResponse) {
+        //check if the user typed some other card before if YES we don't update anything
+        if (dccResponse.baseMoney!!.amount != null){
+            if (quotationID != dccResponse.dccQuotationId) {
+                if (!isDCCFetched) {
+                    showViewWithAnimation(binding.llLoaderDccAndInfo)
+                    showViewWithAnimation(binding.llLoader)
+                }
+
+                binding.countryCode1.text = dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode
+                binding.countryCode2.text = dccResponse.baseMoney!!.currencyCode
+                binding.detailsText2.text =
+                    "Exchange rate will be determined by the card issuer.\n" + dccResponse.baseMoney!!.currencyCode + " " + formatToINR((dccResponse.baseMoney!!.amount)!!.toDouble())
+                quotationID = dccResponse.dccQuotationId
+
+
+                //two types of card VISA and MASTERCARD
+                if (dccResponse.brand.equals("visa", true)) {
+                    binding.tvInfoDcc.text = ""
+
+                    showViewWithAnimation(binding.llDccOptions)
+                    isCurrencySelected = false
+                    hideViewWithAnimation(binding.tvInfoDcc,View.GONE)
+                    hideViewWithAnimation(binding.llLoader,View.INVISIBLE)
+                    binding.tvSelectCurrency.text = "Please select currency."
+                    binding.detailsText1.text =
+                        "1 " + dccResponse.baseMoney!!.currencyCode + " = " + formatToTwoDecimalPlaces(dccResponse.dccQuotationDetails!!.fxRate!!) + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + "\n" + "Includes Margin: " + dccResponse.dccQuotationDetails!!.marginPercent + "%\n" + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
+                } else {
+                    binding.tvInfoDcc.text =
+                        "Make sure you understand the costs of currency conversion as they may be different depending on whether you select your home currency or the transaction currency."
+                    showViewWithAnimation(binding.llDccOptions)
+                    showViewWithAnimation(binding.tvInfoDcc)
+                    hideViewWithAnimation(binding.llLoader,View.INVISIBLE)
+                    binding.tvSelectCurrency.text = "Please choose the currency to be charged to your account."
+                    binding.detailsText1.text =
+                        "1 " + dccResponse.baseMoney!!.currencyCode + " = " + formatToTwoDecimalPlaces(dccResponse.dccQuotationDetails!!.fxRate!!) + " " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + "\n" + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
+
+                    binding.radioButton2.isChecked = false
+                    binding.radioButton1.isChecked = true
+                    isCurrencySelected = true
+                    proceedButtonIsEnabled.value = true
+                    enableProceedButton()
+                    isQuotationRequired = true
+                    binding.textView6.text = "Pay " + dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR((dccResponse.dccQuotationDetails!!.dccMoney!!.amount)!!.toDouble())
+
+                }
+
+                binding.countryFlag1.load(getFlagForCurrencyCode(requireActivity(),dccResponse.dccQuotationDetails!!.dccMoney!!.currencyCode!!)) {
+                    decoderFactory { result, options, _ -> SvgDecoder(result.source, options) }
+                    scale(Scale.FIT)
+                }
+
+                binding.countryFlag2.load(getFlagForCurrencyCode(requireActivity(), dccResponse.baseMoney!!.currencyCode!!)) {
+                    decoderFactory { result, options, _ -> SvgDecoder(result.source, options) }
+                    scale(Scale.FIT) // Ensures the image fits within the ImageView
+                }
+                isDCCFetched = true
+            }
+
+        }else{
+            binding.tvInfoDcc.text = ""
+            isDCCFetched = false
+            isDCCEnabled = true
         }
     }
+
 
     fun isValidExpirationDate(inputExpMonth: String, inputExpYear: String): Boolean {
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
@@ -767,7 +1080,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         val isMonthValid = (inputExpMonth.toInt() in 1..12)
 
-        val isFutureYear = (("20" + inputExpYear).toInt() >= currentYear)
+        val isFutureYear = (("20$inputExpYear").toInt() >= currentYear)
 
         val isValidMonthRange =
             ((inputExpMonth.toInt() >= currentMonth) || isFutureYear)
@@ -783,7 +1096,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         return result
     }
 
-    fun isValidCVC(inputCVC: Int): Boolean {
+    private fun isValidCVC(inputCVC: Int): Boolean {
         val stringInputCVC = inputCVC.toString()
         val result: Boolean = ((stringInputCVC.length >= 3) &&
                 (stringInputCVC.length <= 4))
@@ -794,7 +1107,20 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         return result
     }
 
+    private fun formatToTwoDecimalPlaces(value: Double): String {
+        return String.format(Locale.getDefault(),"%.2f", value)
+    }
+
     private fun isValidCardNumberByLuhn(stringInputCardNumber: String): Boolean {
+        // Define the minimum length for a valid card number
+        val minCardLength = 13
+
+        // Check if the card number meets the minimum length requirement
+        if (stringInputCardNumber.length < minCardLength) {
+            proceedButtonIsEnabled.value = false
+            return false
+        }
+
         var sum = 0
         var isSecondDigit = false
 
@@ -802,7 +1128,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             var d = stringInputCardNumber[i] - '0'
 
             if (isSecondDigit) {
-                d = d * 2
+                d *= 2
             }
 
             sum += d / 10
@@ -811,12 +1137,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             isSecondDigit = !isSecondDigit
         }
 
-        val result: Boolean = ((sum % 10) == 0)
+        val result: Boolean = (sum % 10 == 0)
 
-        if (!result)
+        if (!result) {
             proceedButtonIsEnabled.value = false
-
-
+        }
 
         return result
     }
@@ -904,6 +1229,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        }
+
+                        BottomSheetBehavior.STATE_HALF_EXPANDED -> {
+                           //
                         }
                     }
                 }
@@ -1039,7 +1368,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     }
 
-    fun postRequest(context: Context) {
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun postRequest(context: Context) {
         job?.cancel()
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -1049,9 +1379,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
-
-                val webView = WebView(requireContext())
-
                 // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
 
@@ -1069,6 +1396,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("packageId", requireActivity().packageName)
             }
             put("browserData", browserData)
+
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", "card/plain")
 
@@ -1082,10 +1410,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 }
                 put("card", cardObject)
             }
-
-            // Instrument Details
             put("instrumentDetails", instrumentDetailsObject)
-
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email", null))
@@ -1095,6 +1420,17 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                }
+
+                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
+                }else if (sharedPreferences.getString("panNumber", null) != null){
+                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -1114,8 +1450,16 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     put("deliveryAddress", deliveryAddressObject)
                 }
             }
-
             put("shopper", shopperObject)
+
+            val deviceDetails = JSONObject().apply {
+                put("browser", Build.BRAND)
+                put("platformVersion", Build.VERSION.RELEASE)
+                put("deviceType", Build.MANUFACTURER)
+                put("deviceName", Build.MANUFACTURER)
+                put("deviceBrandName", Build.MODEL)
+            }
+            put("deviceDetails", deviceDetails)
         }
 
         // Request a JSONObject response from the provided URL
@@ -1153,24 +1497,21 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         if (status.contains("RequiresAction", ignoreCase = true)) {
                             editor.putString("status", "RequiresAction")
                         }
-                        if (type.contains("html", true)) {
-                            url = response
+                        url = if (type.contains("html", true)) {
+                            response
                                 .getJSONArray("actions")
                                 .getJSONObject(0)
                                 .getString("htmlPageString")
                         } else {
-                            url = response
+                            response
                                 .getJSONArray("actions")
                                 .getJSONObject(0)
                                 .getString("url")
                         }
 
                         if (status.contains("Approved", ignoreCase = true)) {
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
+                            handleDccEvents()
+                            handleSuccess()
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
                             showLoadingState()
@@ -1183,8 +1524,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     }
                     editor.apply()
-                } catch (e: JSONException) {
-
+                } catch (_: JSONException) {
                 }
 
             },
@@ -1227,7 +1567,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 return headers
             }
         }.apply {
-            // Set retry policy
+            // Set retry policy`
             val timeoutMs = 100000 // Timeout in milliseconds
             val maxRetries = 0 // Max retry attempts
             val backoffMultiplier = 1.0f // Backoff multiplier
@@ -1236,6 +1576,56 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
+    }
+
+
+    private fun handleDccEvents() {
+        if (isDCCFetched && isQuotationRequired) {
+
+            val sharedPreferences: SharedPreferences =
+                requireActivity().getSharedPreferences("DCC_PREF", Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+
+            // Convert DCCResponse object to JSON string
+            val gson = Gson()
+            val json = gson.toJson(dccResponseUniversal!!)
+
+            // Save JSON string in SharedPreferences
+            editor.putString("DCC_RESPONSE_KEY", json)
+            editor.putString("CARD_HOLDER_NAME", binding.editTextNameOnCard.text.toString())
+            editor.putString("MERCHANT_NAME_SESSION", sessionData!!.merchantDetails!!.merchantName)
+            editor.putString("MERCHANT_NAME", dccResponseUniversal!!.dccQuotationDetails!!.dspCode)
+            editor.apply()  // Apply changes asynchronously
+        } else if (isDCCFetched && !isQuotationRequired) {
+            val sharedPreferences: SharedPreferences =
+                requireActivity().getSharedPreferences("NON_DCC_PREF", Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            editor.putString("CURRENCY_TYPE", dccResponseUniversal!!.baseMoney!!.currencyCode)
+            editor.putString(
+                "AMOUNT",
+                dccResponseUniversal!!.baseMoney!!.amount.toString()
+            )
+            editor.apply()
+        } else {
+            val sharedPreferences: SharedPreferences =
+                requireActivity().getSharedPreferences("NON_DCC_PREF", Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            editor.putString("CURRENCY_TYPE", sessionData!!.paymentDetails!!.money!!.currencyCode)
+            editor.putString(
+                "AMOUNT",
+                sessionData!!.paymentDetails!!.money!!.amount.toString()
+            )
+            editor.apply()
+        }
+    }
+
+    private fun clearAllDCCData(context: Context) {
+        val sharedPreferences = context.getSharedPreferences("DCC_PREF", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+
+        // Clear all data from the SharedPreferences
+        editor.clear()
+        editor.apply() // Apply changes asynchronously
     }
 
     private fun removeSpaces(stringWithSpaces: String): String {
@@ -1260,13 +1650,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
             )
-        )
+        ))
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -1275,11 +1666,16 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
         binding.proceedButton.isEnabled = true
     }
 
-    fun showLoadingInButton() {
+    private fun showLoadingInButton() {
         binding.textView6.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.VISIBLE
         val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
@@ -1292,6 +1688,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private fun enableProceedButton() {
         if (allFieldsAreValid()) {
             binding.proceedButton.isEnabled = true
+            binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
             binding.proceedButtonRelativeLayout.setBackgroundColor(
                 Color.parseColor(
                     sharedPreferences.getString(
@@ -1300,13 +1697,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     )
                 )
             )
-            binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-            binding.textView6.setTextColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    android.R.color.white
+            binding.textView6.setTextColor(Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
                 )
-            )
+            ))
         }
     }
 
@@ -1331,8 +1727,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
     fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
     }
 
     fun getMessageForFieldErrorItems(errorString: String) {
@@ -1414,25 +1808,15 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             .joinToString("")
     }
 
-    fun allFieldsAreValid(): Boolean {
-        return (binding.nameOnCardErrorLayout.visibility == View.INVISIBLE || binding.nameOnCardErrorLayout.visibility == View.GONE) &&
-                (binding.ll1InvalidCardNumber.visibility == View.INVISIBLE || binding.ll1InvalidCardNumber.visibility == View.GONE) &&
-                (binding.invalidCardValidity.visibility == View.INVISIBLE || binding.invalidCardValidity.visibility == View.GONE) &&
-                (binding.invalidCVV.visibility == View.INVISIBLE || binding.invalidCVV.visibility == View.GONE) &&
-                binding.editTextCardCVV.text.isNotEmpty() &&
-                binding.editTextCardValidity.text.isNotEmpty() &&
-                binding.editTextNameOnCard.text.isNotEmpty() &&
-                binding.editTextCardNumber.text.isNotEmpty() &&
-                isValidCardNumberByLuhn(
-                    binding.editTextCardNumber.text.toString().replace("\\s".toRegex(), "")
-                ) &&
-                isValidCVC(binding.editTextCardCVV.text.toString().toInt()) &&
-                binding.editTextCardValidity.text.length == 5 &&
-                isValidExpirationDate(
-                    binding.editTextCardValidity.text.toString().substring(0, 2),
-                    binding.editTextCardValidity.text.toString().substring(3, 5)
-                ) &&
-                isNameOnCardValid
+    private fun allFieldsAreValid(): Boolean {
+        return (binding.nameOnCardErrorLayout.visibility == View.INVISIBLE || binding.nameOnCardErrorLayout.visibility == View.GONE) && (binding.ll1InvalidCardNumber.visibility == View.INVISIBLE || binding.ll1InvalidCardNumber.visibility == View.GONE) && (binding.invalidCardValidity.visibility == View.INVISIBLE || binding.invalidCardValidity.visibility == View.GONE) && (binding.invalidCVV.visibility == View.INVISIBLE || binding.invalidCVV.visibility == View.GONE) && binding.editTextCardCVV.text.isNotEmpty() && binding.editTextCardValidity.text.isNotEmpty() && binding.editTextNameOnCard.text.isNotEmpty() && binding.editTextCardNumber.text.isNotEmpty() && isValidCardNumberByLuhn(
+            binding.editTextCardNumber.text.toString().replace("\\s".toRegex(), "")
+        ) && isValidCVC(
+            binding.editTextCardCVV.text.toString().toInt()
+        ) && binding.editTextCardValidity.text.length == 5 && isValidExpirationDate(
+            binding.editTextCardValidity.text.toString().substring(0, 2),
+            binding.editTextCardValidity.text.toString().substring(3, 5)
+        ) && isNameOnCardValid && (isCurrencySelected || isDCCEnabled)
     }
 
     private fun fetchStatusAndReason(url: String) {
@@ -1461,11 +1845,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
                             job?.cancel()
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
+                            handleSuccess()
+
                             if (callback != null) {
                                 callback.onPaymentResult(
                                     PaymentResultObject(
@@ -1500,8 +1881,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         }
                     }
 
-                } catch (e: JSONException) {
-
+                } catch (_: JSONException) {
                 }
             },
             Response.ErrorListener {
@@ -1514,6 +1894,29 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
         }
         requestQueue.add(jsonObjectRequest)
+    }
+
+    private fun handleSuccess() {
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
+            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+            bottomSheet.show(
+                parentFragmentManager,
+                "PaymentStatusBottomSheetWithDetails"
+            )
+        } else {
+            val callback = SingletonClass.getInstance().getYourObject()
+            if (callback != null) {
+                val transactionId = sharedPreferences.getString("transactionId", "").toString()
+                val operationId = sharedPreferences.getString("operationId", "").toString()
+                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
+                val mainBottomSheetFragment =
+                    parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                dismiss()
+            }
+        }
     }
 
     private fun startFunctionCalls() {

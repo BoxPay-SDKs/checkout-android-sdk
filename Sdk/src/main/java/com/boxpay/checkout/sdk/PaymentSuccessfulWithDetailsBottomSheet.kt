@@ -1,9 +1,12 @@
 package com.boxpay.checkout.sdk
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,12 +17,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.boxpay.checkout.sdk.databinding.FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
+import com.boxpay.checkout.sdk.dataclasses.DCCResponse
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.Gson
+import com.microsoft.clarity.Clarity
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
+
 
 internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
@@ -27,9 +36,21 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private var transactionID: String? = null
     private var amount: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
+    private var savedDccResponse : DCCResponse? = null
+    private var isDccEnabled : Boolean = false
+    override fun onResume() {
+        super.onResume()
+        handleSuccess()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        savedDccResponse = getDCCResponse(requireContext())
+        if (savedDccResponse != null) {
+            isDccEnabled = true
+        }
     }
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -41,37 +62,89 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         fetchTransactionDetailsFromSharedPreferences()
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        binding.textView6.setTextColor(Color.parseColor(sharedPreferences.getString("buttonTextColor","#000000")))
-        binding.transactionAmountTextView.text = amount
-        binding.transactionIDTextView.text = transactionID
-        binding.proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
-        binding.transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
-        binding.proceedButton.isEnabled = true
-        binding.proceedButtonRelativeLayout.setBackgroundColor(
-            Color.parseColor(
-                sharedPreferences.getString(
-                    "primaryButtonColor",
-                    "#000000"
+        binding.apply {
+            transactionAmountTextView.text = amount
+            transactionIDTextView.text = transactionID
+            proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
+            transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
+            proceedButton.isEnabled = true
+            proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+            proceedButtonRelativeLayout.setBackgroundColor(
+                Color.parseColor(
+                    sharedPreferences.getString(
+                        "primaryButtonColor",
+                        "#000000"
+                    )
                 )
             )
-        )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
-            )
-        )
-        binding. proceedButton.setOnClickListener(){
-            val callback =  SingletonClass.getInstance().getYourObject()
-            if(callback != null){
-                val transactionId = sharedPreferences.getString("transactionId","").toString()
-                val operationId = sharedPreferences.getString("operationId","").toString()
-                callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
+            textView6.setTextColor(Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
+            ))
+            tvMerchantSite.setTextColor(Color.parseColor(
+                sharedPreferences.getString("primaryButtonColor", "#000000")
+            ))
+            tvMerchantSite.setOnClickListener(){
+                val callback =  SingletonClass.getInstance().getYourObject()
+                if(callback != null){
+                    val transactionId = sharedPreferences.getString("transactionId","").toString()
+                    val operationId = sharedPreferences.getString("operationId","").toString()
+                    callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
+                    val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                    mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                    dismiss()
+                }
+            }
+             proceedButton.setOnClickListener(){
+                val callback =  SingletonClass.getInstance().getYourObject()
+                if(callback != null){
+                    val transactionId = sharedPreferences.getString("transactionId","").toString()
+                    val operationId = sharedPreferences.getString("operationId","").toString()
+                    callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
+                    val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                    mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                    Clarity.pause()
+                    dismiss()
+                }
+            }
+            if (isDccEnabled){
+                tvCardType.text = savedDccResponse!!.brand
+                transTotalDCC.text = "Transaction Total " + savedDccResponse!!.baseMoney!!.currencyCode
+                tvTransTotal.text =  savedDccResponse!!.baseMoney!!.currencyCode + " " +  formatToINR(savedDccResponse!!.baseMoney!!.amount!!.toDouble())
+                tvExchangeRate.text = "1 " + savedDccResponse!!.baseMoney!!.currencyCode + " = " + formatToTwoDecimalPlaces(savedDccResponse!!.dccQuotationDetails!!.fxRate!!) + " " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
+                tvTransCurrency.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode
+                transactionAmountTextView.text = savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR(savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount!!.toDouble())
+                tvPaymentSuccess.text = "Payment Successful\n" + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + " " + formatToINR(savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.amount!!.toDouble())
+                tvCardHolderName.text = getDCCResponse(requireActivity(),"CARD_HOLDER_NAME")
+                tvMerchantName.text = getDCCResponse(requireActivity(),"MERCHANT_NAME_SESSION")
+                tvMerchantSite.paintFlags = tvMerchantSite.paintFlags or Paint.UNDERLINE_TEXT_FLAG
 
-                val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
-                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
-                dismiss()
+
+                if (savedDccResponse!!.brand.equals("VISA",true)){
+                    llMargin.visibility = View.VISIBLE
+                    tvMargin.text = savedDccResponse!!.dccQuotationDetails!!.marginPercent.toString() + "%"
+                    tvInfo.text = "I have been offered a choice of currencies and agree to pay in " + savedDccResponse!!.dccQuotationDetails!!.dccMoney!!.currencyCode + ". This currency conversion service is provide by " + getDCCResponse(requireActivity(),"MERCHANT_NAME") +".\n" +
+                            "\n" +
+                            "Please print and retain for your records."
+                }
+                proceedButton.visibility = View.VISIBLE
+            }else{
+                    llMerchantName.visibility = View.GONE
+                    llCardType.visibility = View.GONE
+                    llCardHolderName.visibility = View.GONE
+                    llTransTotal.visibility = View.GONE
+                    llExchangeRate.visibility = View.GONE
+                    llTransCurrency.visibility = View.GONE
+                    tvInfo.visibility = View.GONE
+                    dottedLast.visibility = View.INVISIBLE
+                    proceedButton.visibility = View.VISIBLE
+                    val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
+                    val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
+                    if (amount.isNotEmpty() && currencyType.isNotEmpty()){
+                        transactionAmountTextView.text = "$currencyType " + formatToINR(amount.toDouble())
+                    }
             }
         }
         return binding.root
@@ -101,9 +174,67 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         }
     }
 
+    private fun handleSuccess() {
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        if (!sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
+            val callback = SingletonClass.getInstance().getYourObject()
+            if (callback != null) {
+                val transactionId = sharedPreferences.getString("transactionId", "").toString()
+                val operationId = sharedPreferences.getString("operationId", "").toString()
+                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
+                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                dismiss()
+            }
+        }
+    }
+
+    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
+        val mainBottomSheetFragment =
+            parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
+        dismiss()
+    }
+
+    fun formatToINR(amount: Double): String {
+        val format = NumberFormat.getNumberInstance(Locale("en", "IN"))
+        return format.format(amount)
+    }
+
+    fun formatToTwoDecimalPlaces(value: Double): String {
+        return String.format("%.2f", value)
+    }
+
+    private fun getDCCResponse(context: Context): DCCResponse? {
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("DCC_PREF", Context.MODE_PRIVATE)
+
+        // Get the JSON string from SharedPreferences
+        val json = sharedPreferences.getString("DCC_RESPONSE_KEY", null) ?: return null
+
+        // Convert JSON string back to DCCResponse object
+        val gson = Gson()
+        return gson.fromJson(json, DCCResponse::class.java)
+    }
+
+    private fun getDCCResponse(context: Context, code:String): String {
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("DCC_PREF", Context.MODE_PRIVATE)
+        val value = sharedPreferences.getString(code, null)
+        return value!!
+    }
+
+    private fun getNonDCCResponse(context: Context, code:String): String {
+        val sharedPreferences: SharedPreferences =
+            context.getSharedPreferences("NON_DCC_PREF", Context.MODE_PRIVATE)
+        val value = sharedPreferences.getString(code, "")
+        return value!!
+    }
+
+
     private fun getCurrentDateAndTimeInFormattedString() : String{
         val currentDateTime = Date()
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
         return dateFormat.format(currentDateTime)
     }
 

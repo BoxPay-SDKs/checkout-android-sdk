@@ -5,19 +5,21 @@ import android.animation.ObjectAnimator
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.widget.FrameLayout
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.volley.DefaultRetryPolicy
@@ -33,6 +35,7 @@ import com.boxpay.checkout.sdk.adapters.BnplAdapters
 import com.boxpay.checkout.sdk.databinding.FragmentBnplBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.BnplDataClass
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -153,12 +156,17 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 }
             })
 
-            binding.proceedButton.setOnClickListener() {
-                showLoadingInButton()
-                var walletInstrumentTypeValue = ""
-                walletInstrumentTypeValue =
-                    walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
-                callUIAnalytics(requireContext(),"PAYMENT_INITIATED",bnplDetailOriginal[checkedPosition!!].bnplBrand,"BNPL")
+        binding.proceedButton.setOnClickListener() {
+            showLoadingInButton()
+            var walletInstrumentTypeValue = ""
+            walletInstrumentTypeValue =
+                walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
+            callUIAnalytics(
+                requireContext(),
+                "PAYMENT_INITIATED",
+                bnplDetailOriginal[checkedPosition!!].bnplBrand,
+                "BNPL"
+            )
 
 
                 postRequest(requireContext(), walletInstrumentTypeValue)
@@ -238,6 +246,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         }
 
                         BottomSheetBehavior.STATE_HIDDEN -> {
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
                             //Hidden
                         }
                     }
@@ -249,6 +258,11 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             })
         }
         return dialog
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        dismissAndMakeButtonsOfMainBottomSheetEnabled()
     }
 
     companion object {
@@ -446,6 +460,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         requestQueue.add(jsonArrayRequest)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context, instrumentTypeValue: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -453,11 +468,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
-
-                // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-
-                // Get the screen height and width
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
                 put("screenWidth", displayMetrics.widthPixels.toString())
@@ -472,12 +483,10 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             }
             put("browserData", browserData)
 
-            // Instrument Details
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", instrumentTypeValue)
             }
             put("instrumentDetails", instrumentDetailsObject)
-
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email", null))
@@ -489,6 +498,17 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                }
+
+                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
+                }else{
+                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -508,10 +528,16 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                     put("deliveryAddress", deliveryAddressObject)
                 }
             }
-
             put("shopper", shopperObject)
 
-
+            val deviceDetails = JSONObject().apply {
+                put("browser", Build.BRAND)
+                put("platformVersion", Build.VERSION.RELEASE)
+                put("deviceType", Build.MANUFACTURER)
+                put("deviceName", Build.MANUFACTURER)
+                put("deviceBrandName", Build.MODEL)
+            }
+            put("deviceDetails", deviceDetails)
         }
 
         // Request a JSONObject response from the provided URL
@@ -536,11 +562,13 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-                        if (!response.isNull("actions") && response.getJSONArray("actions").length() != 0) {
+                        if (!response.isNull("actions") && response.getJSONArray("actions")
+                                .length() != 0
+                        ) {
                             val type =
                                 response.getJSONArray("actions").getJSONObject(0).getString("type")
                             if (status.contains("RequiresAction", ignoreCase = true)) {
-                                editor.putString("status","RequiresAction")
+                                editor.putString("status", "RequiresAction")
                             }
                             if (type.contains("html", true)) {
                                 url = response
@@ -555,7 +583,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                             }
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
-                            intent.putExtra("type",type)
+                            intent.putExtra("type", type)
                             startFunctionCalls()
                             startActivityForResult(intent, 333)
                         } else {
@@ -578,7 +606,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         val callback = SingletonClass.getInstance().getYourObject()
                         val callbackForDismissing =
                             SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -606,8 +634,8 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                headers["X-Client-Connector-Name"] =  "Android SDK"
-                headers["X-Client-Connector-Version"] =  BuildConfig.SDK_VERSION
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }.apply {
@@ -626,8 +654,10 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         dismiss()
     }
 
+
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -636,13 +666,12 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
             )
-        )
+        ))
     }
 
 
@@ -656,13 +685,8 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
-            )
-        )
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -671,8 +695,34 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
         binding.proceedButton.isEnabled = true
+    }
+
+    private fun handleSuccess() {
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
+            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+            bottomSheet.show(
+                parentFragmentManager,
+                "PaymentStatusBottomSheetWithDetails"
+            )
+            dismiss()
+        } else {
+            val callback = SingletonClass.getInstance().getYourObject()
+            if (callback != null) {
+                val transactionId = sharedPreferences.getString("transactionId", "").toString()
+                val operationId = sharedPreferences.getString("operationId", "").toString()
+                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
+                dismiss()
+            }
+        }
     }
 
     fun showLoadingInButton() {
@@ -702,7 +752,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
     }
 
     fun generateRandomAlphanumericString(length: Int): String {
-        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length)
             .map { Random.nextInt(0, charPool.size) }
             .map(charPool::get)
@@ -717,7 +767,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
     private fun fetchStatusAndReason(url: String) {
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
-            Response.Listener{ response ->
+            Response.Listener { response ->
                 try {
                     val status = response.getString("status")
                     val transactionId = response.getString("transactionId")
@@ -728,7 +778,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
 
-                        editor.putString("status","Success")
+                        editor.putString("status", "Success")
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
@@ -736,11 +786,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()
                             job?.cancel()
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
+                            handleSuccess()
                             if (callback != null) {
                                 callback.onPaymentResult(
                                     PaymentResultObject(
@@ -756,14 +802,14 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status","RequiresAction")
+                        editor.putString("status", "RequiresAction")
                         editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status","Posted")
+                        editor.putString("status", "Posted")
                         editor.apply()
                     } else if (status.contains("FAILED", ignoreCase = true)) {
 
-                        editor.putString("status","Failed")
+                        editor.putString("status", "Failed")
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
@@ -786,6 +832,8 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }

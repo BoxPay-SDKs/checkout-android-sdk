@@ -4,6 +4,7 @@ import FailureScreenSharedViewModel
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -13,6 +14,8 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -21,13 +24,12 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
-import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.SearchView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -49,6 +51,7 @@ import com.boxpay.checkout.sdk.adapters.WalletAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentWalletBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.WalletDataClass
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -82,6 +85,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private var successScreenFullReferencePath: String? = null
     private var transactionId: String? = null
     private var shippingEnabled: Boolean = false
+    private var searchQuery: String = ""
     var liveDataPopularWalletSelectedOrNot: MutableLiveData<Boolean> =
         MutableLiveData<Boolean>().apply {
             value = false
@@ -212,6 +216,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         return constraintLayout
     }
 
+    @SuppressLint("ResourceType")
     private fun fetchAndUpdateApiInPopularWallets() {
         binding.apply {
             for (index in 0 until 4) {
@@ -262,6 +267,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                                     )
                                 // Set background for the clicked constraint layout
                                 relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                                val primaryButtonColorString = sharedPreferences.getString("primaryButtonColor", "#000000") ?: "#000000"
+                                val strokeColor = Color.parseColor(primaryButtonColorString)
+
+                                val shapeDrawable = relativeLayout.background as? GradientDrawable
+                                shapeDrawable?.setStroke(2, strokeColor)
                                 popularWalletsSelected = true
                                 proceedButtonIsEnabled.value = true
                                 popularWalletsSelectedIndex = index
@@ -432,31 +442,56 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
            else
                callPaymentMethodRules(requireContext())
 
-           binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
-               SearchView.OnQueryTextListener {
-               override fun onQueryTextSubmit(query: String): Boolean {
-                   if (query.isEmpty()) {
-                       removeRecyclerViewFromBelowEditText()
-                   } else {
-                       makeRecyclerViewJustBelowEditText()
-                   }
-                   filterWallets(query)
-                   disableProceedButton()
-                   return true
-               }
+        binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
+            SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                if (query.isEmpty()) {
+                    removeRecyclerViewFromBelowEditText()
+                } else {
+                    makeRecyclerViewJustBelowEditText()
+                }
+                searchQuery = query
+                filterWallets(query)
+                disableProceedButton()
+                return true
+            }
 
-               override fun onQueryTextChange(newText: String): Boolean {
-                   if (newText.isEmpty()) {
-                       removeRecyclerViewFromBelowEditText()
-                   } else {
-                       makeRecyclerViewJustBelowEditText()
-                   }
-                   filterWallets(newText)
-                   disableProceedButton()
-                   return true
-               }
-           })
-
+            override fun onQueryTextChange(newText: String): Boolean {
+                if (newText.isEmpty()) {
+                    removeRecyclerViewFromBelowEditText()
+                } else {
+                    makeRecyclerViewJustBelowEditText()
+                }
+                searchQuery = newText
+                filterWallets(newText)
+                disableProceedButton()
+                return true
+            }
+        })
+        val focusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        val unfocusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        binding.searchView.setOnQueryTextFocusChangeListener { view, b ->
+            if (b) {
+                binding.searchView.background = focusedDrawable
+            } else {
+                binding.searchView.background = unfocusedDrawable
+            }
+        }
 
            binding.backButton.setOnClickListener() {
                if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
@@ -663,6 +698,11 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 walletDetailsOriginal = ArrayList(walletDetailsOriginal.sortedBy { it.walletBrand })
 
                 // Print the filtered wallet payment methods
+                if (walletDetailsOriginal.size < 5){
+                    binding.searchView.visibility = View.GONE
+                }else{
+                    binding.searchView.visibility = View.VISIBLE
+                }
                 showAllWallets()
                 fetchAndUpdateApiInPopularWallets()
                 removeLoadingScreenState()
@@ -718,6 +758,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
         if (walletDetailsFiltered.size == 0) {
             binding.noResultsFoundTextView.visibility = View.VISIBLE
+            binding.noResultsFoundTextView.text = "No Results Found for $searchQuery"
         } else {
             binding.noResultsFoundTextView.visibility = View.GONE
         }
@@ -826,6 +867,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         requestQueue.add(jsonArrayRequest)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context, instrumentTypeValue: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -833,13 +875,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
-
-                val webView = WebView(requireContext())
-
-                // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-
-                // Get the screen height and width
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
                 put("screenWidth", displayMetrics.widthPixels.toString())
@@ -854,7 +890,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             }
             put("browserData", browserData)
 
-            // Instrument Details
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", instrumentTypeValue)
 
@@ -864,7 +899,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 put("wallet", tokenObject)
             }
             put("instrumentDetails", instrumentDetailsObject)
-
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email", null))
@@ -876,6 +910,17 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                }
+
+                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
+                }else{
+                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -895,10 +940,16 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     put("deliveryAddress", deliveryAddressObject)
                 }
             }
-
             put("shopper", shopperObject)
 
-
+            val deviceDetails = JSONObject().apply {
+                put("browser", Build.BRAND)
+                put("platformVersion", Build.VERSION.RELEASE)
+                put("deviceType", Build.MANUFACTURER)
+                put("deviceName", Build.MANUFACTURER)
+                put("deviceBrandName", Build.MODEL)
+            }
+            put("deviceDetails", deviceDetails)
         }
 
         // Request a JSONObject response from the provided URL
@@ -1014,12 +1065,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         requestQueue.add(jsonObjectRequest)
     }
 
+
     fun dismissCurrentBottomSheet() {
         dismiss()
     }
 
     private fun enableProceedButton() {
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -1028,13 +1081,12 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
             )
-        )
+        ))
     }
 
 
@@ -1049,13 +1101,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
         progressBarVisible.value = false
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
             )
-        )
+        ))
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -1064,7 +1117,12 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
         binding.proceedButton.isEnabled = true
     }
 
@@ -1152,7 +1210,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
-                            removeLoadingScreenState()
+                            // removeLoadingScreenState()
                             val callback = SingletonClass.getInstance().getYourObject()
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()

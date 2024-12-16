@@ -1,6 +1,8 @@
 package com.boxpay.checkout.sdk
 
 import android.app.Dialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -8,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentPaymentFailureScreenBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -17,6 +20,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 internal class PaymentFailureScreen(val function: () -> Unit = {}, val errorMessage: String = "") : BottomSheetDialogFragment() {
     private lateinit var binding : FragmentPaymentFailureScreenBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +32,21 @@ internal class PaymentFailureScreen(val function: () -> Unit = {}, val errorMess
         // Inflate the layout for this fragment
         binding = FragmentPaymentFailureScreenBinding.inflate(layoutInflater,container,false)
         binding.textView12.text = errorMessage
+        sharedPreferences = requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
+        binding.proceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )
+        )
         binding.retryButton.setOnClickListener(){
             function()
             dismiss()

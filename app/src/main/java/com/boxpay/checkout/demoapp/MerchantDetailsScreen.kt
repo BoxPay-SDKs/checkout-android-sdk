@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.demoapp.databinding.ActivityMerchantDetailsScreenBinding
 import com.boxpay.checkout.sdk.BoxPayCheckout
+import com.boxpay.checkout.sdk.BoxPayUpiComponent
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 
 class MerchantDetailsScreen : AppCompatActivity() {
@@ -17,7 +18,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
         ActivityMerchantDetailsScreenBinding.inflate(layoutInflater)
     }
     private var selectedEnvironment: String? = null
-
+    private var isUpiEnabled: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +36,15 @@ class MerchantDetailsScreen : AppCompatActivity() {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             // Apply the adapter to the spinner
             binding.environmentSpinner.adapter = adapter
+        }
+
+        val upiRadioButton = binding.upiRadioButton
+        upiRadioButton.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                isUpiEnabled = true
+            } else {
+                isUpiEnabled = false
+            }
         }
 
         binding.environmentSpinner.onItemSelectedListener =
@@ -73,26 +83,57 @@ class MerchantDetailsScreen : AppCompatActivity() {
             binding.button.isEnabled = false
             binding.button.text = "Please Wait"
             if (selectedEnvironment == "prod") {
-                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false, customerShopperToken = shopperToken)
-                checkout.testEnv = false
-                checkout.display()
+                if (isUpiEnabled) {
+                    val boxPayUpiComponent = BoxPayUpiComponent(token, false, ::onPaymentResult)
+                    boxPayUpiComponent.setTestEnv(true)
+                    boxPayUpiComponent.setContext(this)
+
+                    // Replace a container in your activity's layout
+                    binding.mainContainer.removeAllViews()
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container,boxPayUpiComponent)
+                        .commit()
+                } else {
+                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false, customerShopperToken = shopperToken)
+                    checkout.testEnv = false
+                    checkout.display()
+                }
             } else if (selectedEnvironment == "sandbox") {
-                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true, customerShopperToken = shopperToken)
-                checkout.testEnv = false
-                checkout.display()
+                if (isUpiEnabled) {
+                    val boxPayUpiComponent = BoxPayUpiComponent(token, false, ::onPaymentResult)
+                    boxPayUpiComponent.setTestEnv(true)
+                    boxPayUpiComponent.setContext(this)
+
+                    // Replace a container in your activity's layout
+                    binding.mainContainer.removeAllViews()
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container,boxPayUpiComponent)
+                        .commit()
+                } else {
+                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true, customerShopperToken = shopperToken)
+                    checkout.testEnv = false
+                    checkout.display()
+                }
             } else if (selectedEnvironment == "test") {
-                val checkout = BoxPayCheckout(this, token, ::onPaymentResult, shopperToken)
-                checkout.testEnv = true
-                checkout.display()
+                if (isUpiEnabled) {
+                    val boxPayUpiComponent = BoxPayUpiComponent(token, false, ::onPaymentResult)
+                    boxPayUpiComponent.setTestEnv(true)
+                    boxPayUpiComponent.setContext(this)
+
+                    // Replace a container in your activity's layout
+                    binding.mainContainer.removeAllViews()
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container,boxPayUpiComponent)
+                        .commit()
+                } else {
+                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, shopperToken)
+                    checkout.testEnv = true
+                    checkout.display()
+                }
             }
         }
     }
     fun onPaymentResult(result: PaymentResultObject) {
-        if (result.status == "Success") {
-            binding.button.setText("Payment has been Completed. please use another token")
-        } else {
-            binding.button.isEnabled = true
-            binding.button.text = "Proceed"
-        }
+        Toast.makeText(this, result.status, Toast.LENGTH_SHORT).show()
     }
 }

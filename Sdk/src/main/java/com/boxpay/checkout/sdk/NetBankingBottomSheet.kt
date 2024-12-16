@@ -4,6 +4,7 @@ import FailureScreenSharedViewModel
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
@@ -13,6 +14,8 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -21,14 +24,13 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
-import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.RelativeLayout
 import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -50,6 +52,7 @@ import com.boxpay.checkout.sdk.adapters.NetbankingBanksAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentNetBankingBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.NetbankingDataClass
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -79,6 +82,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private var token: String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private var checkedPosition: Int? = null
+    private var searchQuery: String = ""
     private var successScreenFullReferencePath: String? = null
     var liveDataPopularBankSelectedOrNot: MutableLiveData<Boolean> =
         MutableLiveData<Boolean>().apply {
@@ -232,12 +236,16 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             ArrayList(banksDetailsOriginal.sortedBy { it.bankBrand })
                     }
                 }
+                if (banksDetailsOriginal.size < 5){
+                    binding.searchView.visibility = View.GONE
+                }else{
+                    binding.searchView.visibility = View.VISIBLE
+                }
                 showAllBanks()
                 removeLoadingScreenState()
                 fetchAndUpdateApiInPopularBanks()
 
-            } catch (e: Exception) {
-
+            } catch (_: Exception) {
             }
 
         }, { _ ->
@@ -284,6 +292,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         editor.apply()
     }
 
+    @SuppressLint("NewApi")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -365,42 +374,69 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 }
             })
 
-            binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
-                SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String): Boolean {
-                    if (query.isEmpty()) {
-                        removeRecyclerViewFromBelowEditText()
-                    } else {
-                        makeRecyclerViewJustBelowEditText()
-                    }
-                    filterBanks(query)
-                    disableProceedButton()
-                    return true
+        binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
+            SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                if (query.isEmpty()) {
+                    removeRecyclerViewFromBelowEditText()
+                } else {
+                    makeRecyclerViewJustBelowEditText()
                 }
-
-                override fun onQueryTextChange(newText: String): Boolean {
-                    if (newText.isEmpty()) {
-                        removeRecyclerViewFromBelowEditText()
-                    } else {
-                        makeRecyclerViewJustBelowEditText()
-                    }
-                    filterBanks(newText)
-                    disableProceedButton()
-                    return true
-                }
-            })
-
-            binding.backButton.setOnClickListener() {
-                if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
-                    dismissAndMakeButtonsOfMainBottomSheetEnabled()
-                }
+                searchQuery = query
+                filterBanks(query)
+                disableProceedButton()
+                return true
             }
-            binding.proceedButton.setOnClickListener() {
-                showLoadingInButton()
-                var bankInstrumentTypeValue = ""
-                if (!!liveDataPopularBankSelectedOrNot.value!!) {
-                    bankInstrumentTypeValue =
-                        banksDetailsOriginal[popularBanksSelectedIndex].bankInstrumentTypeValue
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                if (newText.isEmpty()) {
+                    removeRecyclerViewFromBelowEditText()
+                } else {
+                    makeRecyclerViewJustBelowEditText()
+                }
+                searchQuery = newText
+                filterBanks(newText)
+                disableProceedButton()
+                return true
+            }
+        })
+
+        val focusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        val unfocusedDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f // Adjust the corner radius
+            setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
+            setColor(Color.TRANSPARENT) // Background color inside the border
+        }
+        binding.searchView.setOnQueryTextFocusChangeListener { view, b ->
+            if (b) {
+                binding.searchView.background = focusedDrawable
+            } else {
+                binding.searchView.background = unfocusedDrawable
+            }
+        }
+
+        binding.backButton.setOnClickListener() {
+            if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
+                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+            }
+        }
+        binding.proceedButton.setOnClickListener() {
+            showLoadingInButton()
+            var bankInstrumentTypeValue = ""
+            if (!!liveDataPopularBankSelectedOrNot.value!!) {
+                bankInstrumentTypeValue =
+                    banksDetailsOriginal[popularBanksSelectedIndex].bankInstrumentTypeValue
 
                     callUIAnalytics(
                         requireContext(),
@@ -513,6 +549,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
         if (banksDetailsFiltered.size == 0) {
             binding.noResultsFoundTextView.visibility = View.VISIBLE
+            binding.noResultsFoundTextView.text = "No Results Found for $searchQuery"
         } else {
             binding.noResultsFoundTextView.visibility = View.GONE
         }
@@ -665,6 +702,11 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                                     )
                                 // Set background for the clicked constraint layout
                                 relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
+                                val primaryButtonColorString = sharedPreferences.getString("primaryButtonColor", "#000000") ?: "#000000"
+                                val strokeColor = Color.parseColor(primaryButtonColorString)
+
+                                val shapeDrawable = relativeLayout.background as? GradientDrawable
+                                shapeDrawable?.setStroke(2, strokeColor)
                                 popularBanksSelected = true
                                 proceedButtonIsEnabled.value = true
                                 popularBanksSelectedIndex = index
@@ -778,6 +820,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         return relativeLayout
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context, bankInstrumentTypeValue: String) {
 
         val requestQueue = Volley.newRequestQueue(context)
@@ -788,13 +831,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
-
-                val webView = WebView(requireContext())
-
-                // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-
-                // Get the screen height and width
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
                 put("screenWidth", displayMetrics.widthPixels.toString())
@@ -807,12 +844,10 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             }
             put("browserData", browserData)
 
-            // Instrument Details
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", bankInstrumentTypeValue)
             }
             put("instrumentDetails", instrumentDetailsObject)
-
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email", null))
@@ -826,6 +861,17 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                }
+
+                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
+                }else{
+                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -844,6 +890,15 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 }
             }
             put("shopper", shopperObject)
+
+            val deviceDetails = JSONObject().apply {
+                put("browser", Build.BRAND)
+                put("platformVersion", Build.VERSION.RELEASE)
+                put("deviceType", Build.MANUFACTURER)
+                put("deviceName", Build.MANUFACTURER)
+                put("deviceBrandName", Build.MODEL)
+            }
+            put("deviceDetails", deviceDetails)
         }
 
         // Request a JSONObject response from the provided URL
@@ -978,18 +1033,18 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private fun enableProceedButton() {
         binding.proceedButtonRelativeLayout.isEnabled = true
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
             )
-        )
+        ))
     }
 
     private fun disableProceedButton() {
@@ -1003,19 +1058,25 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
         progressBarVisible.value = false
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
             )
-        )
+        ))
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
         binding.proceedButton.isEnabled = true
     }
 
@@ -1089,7 +1150,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
-                            removeLoadingScreenState()
                             val callback = SingletonClass.getInstance().getYourObject()
                             val callbackForDismissing =
                                 SingletonForDismissMainSheet.getInstance().getYourObject()

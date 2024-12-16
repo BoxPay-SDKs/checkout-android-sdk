@@ -1,6 +1,8 @@
 package com.boxpay.checkout.sdk
 
 import android.app.Dialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -21,6 +23,7 @@ class CancelConfirmationBottomSheet : BottomSheetDialogFragment() {
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private lateinit var binding : FragmentCancelConfirmationBottomSheetBinding
     val sharedViewModel: SharedViewModel by activityViewModels()
+    private lateinit var sharedPreferences: SharedPreferences
 
     interface ConfirmationListener {
         fun onConfirmation()
@@ -37,6 +40,30 @@ class CancelConfirmationBottomSheet : BottomSheetDialogFragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentCancelConfirmationBottomSheetBinding.inflate(layoutInflater,container,false)
+        sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.proceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )
+        )
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
+        binding.textView66.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
+        binding.yesButton.isEnabled = true
         binding.yesButton.setOnClickListener {
             sharedViewModel.dismissBottomSheet()
             dismiss()

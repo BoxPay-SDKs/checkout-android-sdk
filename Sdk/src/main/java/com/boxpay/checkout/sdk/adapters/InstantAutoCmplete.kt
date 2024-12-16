@@ -7,6 +7,9 @@ import androidx.appcompat.widget.AppCompatAutoCompleteTextView
 
 class InstantAutoComplete : AppCompatAutoCompleteTextView {
 
+    private val dropDownItemMaxCount = 5
+    private val padding = 75
+
     constructor(context: Context?) : super(context!!)
 
     constructor(arg0: Context?, arg1: AttributeSet?) : super(arg0!!, arg1)
@@ -31,6 +34,18 @@ class InstantAutoComplete : AppCompatAutoCompleteTextView {
         } else {
             dismissDropDown()  // Hide dropdown when focus is lost
         }
+    }
+
+    override fun onFilterComplete(count: Int) {
+        val itemCount = if (count > dropDownItemMaxCount) {
+            dropDownItemMaxCount
+        } else {
+            count
+        }
+        val individualItemHeight = (height / 2) + padding
+
+        dropDownHeight = itemCount * individualItemHeight
+        super.onFilterComplete(count)
     }
 }
 

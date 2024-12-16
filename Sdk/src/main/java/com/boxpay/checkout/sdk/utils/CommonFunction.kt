@@ -21,7 +21,7 @@ fun handleException(
     screenName: String
 ) {
     callUIAnalytics(context, token, baseUrl, message, screenName)
-    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    Toast.makeText(context, "Some Error Occurred", Toast.LENGTH_LONG).show()
 }
 
 private fun callUIAnalytics(context: Context, token: String, baseUrl: String, message: String, screenName: String) {

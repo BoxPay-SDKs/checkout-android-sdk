@@ -7,18 +7,18 @@ plugins {
 
 android {
     namespace = "com.boxpay.checkout.demoapp"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.boxpay.checkout.demoapp"
-        minSdk = 24
+        minSdk = 21
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SDK_VERSION", "\"1.1.19\"")
+        buildConfigField("String", "SDK_VERSION", "\"1.1.21-beta\"")
 
         buildFeatures.buildConfig = true
     }

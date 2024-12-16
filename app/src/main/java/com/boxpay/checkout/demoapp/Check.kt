@@ -11,9 +11,10 @@ import androidx.lifecycle.Observer
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
+import com.boxpay.checkout.demoapp.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.BoxPayCheckout
+import com.boxpay.checkout.sdk.BoxPayUpiComponent
 import com.boxpay.checkout.sdk.BuildConfig
-import com.boxpay.checkout.sdk.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import org.json.JSONObject
 
@@ -22,6 +23,7 @@ class Check : AppCompatActivity() {
     var customerShopperToken: String? = null
     private var successScreenFullReferencePath: String? = null
     private var tokenFetchedAndOpen = false
+    private var isUpiAlone: Boolean = false
 
 
     private val binding: ActivityCheckBinding by lazy {
@@ -34,6 +36,8 @@ class Check : AppCompatActivity() {
 
 
         makePaymentRequest(this)
+        val bundle = intent.extras
+        isUpiAlone = bundle?.getBoolean("isUpiAlone",false) ?: false
 
         binding.textView6.text = "Generating Token Please wait..."
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
@@ -60,7 +64,6 @@ class Check : AppCompatActivity() {
             // Disable the button
             binding.openButton.isEnabled = false
             binding.openButton.visibility = View.GONE
-            binding.pleaseWaitTextView.visibility = View.VISIBLE
 
             if (!(tokenLiveData.value.isNullOrEmpty())) {
                 showBottomSheetWithOverlay()
@@ -78,21 +81,41 @@ class Check : AppCompatActivity() {
     }
 
     private fun showBottomSheetWithOverlay() {
-        val boxPayCheckout =
-            BoxPayCheckout(
-                this,
-                tokenLiveData.value ?: "",
-                ::onPaymentResultCallback,
-                false,
-                customerShopperToken = customerShopperToken ?: ""
-            )
-        boxPayCheckout.testEnv = true
-        boxPayCheckout.display()
+        if (isUpiAlone) {
+            val boxPayUpiComponent = BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
+            boxPayUpiComponent.setTestEnv(true)
+            boxPayUpiComponent.setContext(this)
+            binding.proceedButtonBottom.visibility = View.VISIBLE
+            boxPayUpiComponent.setProceedButtonVisibility(false)
+
+            // Replace a container in your activity's layout
+            binding.openButton.removeAllViews()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.openButton,boxPayUpiComponent)
+                .commit()
+
+            binding.proceedButtonBottom.setOnClickListener {
+                boxPayUpiComponent.onClickProceed()
+                binding.proceedButtonBottom.isEnabled = false
+            }
+        } else {
+            val boxPayCheckout =
+                BoxPayCheckout(
+                    this,
+                    tokenLiveData.value ?: "",
+                    ::onPaymentResultCallback,
+                    false,
+                    customerShopperToken = customerShopperToken ?: ""
+                )
+            boxPayCheckout.testEnv = true
+            boxPayCheckout.display()
+        }
     }
 
 
     fun onPaymentResultCallback(result: PaymentResultObject) {
         Toast.makeText(this, result.status, Toast.LENGTH_SHORT).show()
+        binding.proceedButtonBottom.isEnabled = true
     }
 
 
@@ -101,158 +124,77 @@ class Check : AppCompatActivity() {
         val url = "https://test-apis.boxpay.tech/v0/merchants/lGfqzNSKKA/sessions"
         val jsonData = JSONObject(
             """ {
-    "context": {
-        "countryCode": "IN",
-        "legalEntity": {
-            "code": "razorpay"
+  "context" : {
+    "countryCode" : "IN",
+    "legalEntity" : {
+      "code" : "razorpay"
+    },
+    "orderId" : "test12"
+  },
+  "paymentType" : "S",
+  "money" : {
+    "amount" : "650",
+    "currencyCode" : "INR"
+  },
+  "descriptor" : {
+    "line1" : "Some descriptor"
+  },
+  "shopper": {
+            "firstName": "Ankush",
+            "lastName": "Kashyap",
+            "gender": null,
+            "phoneNumber": "917777777777",
+            "email": "ankush.kashyap@boxpay.tech",
+            "uniqueReference": "x123y",
+            "deliveryAddress": {
+                "address1": "first line",
+                "address2": "second line",
+                "address3": null,
+                "city": "Chandigarh",
+                "state": "Chandigarh",
+                "countryCode": "IN",
+                "postalCode": "160002",
+                "shopperRef": null,
+                "addressRef": null,
+                "labelType": "Other",
+                "labelName": null,
+                "name": null,
+                "email": null,
+                "phoneNumber": null
+            },
+            "dateOfBirth": "2023-07-17T12:34:56Z",
+            "panNumber": "CTGPA2222D"
         },
-        "orderId": "test12"
-    },
-    "paymentType": "S",
-    "money": {
-        "amount": "1000",
-        "currencyCode": "INR"
-    },
-    "descriptor": {
-        "line1": "Some descriptor"
-    },
-    "shopper": {
-        "firstName": "Ishika cnsjbc cnbhsbc jbcydsbc bcydbc",
-        "lastName": "Bansal",
-        "email": "ishika.bansal@boxpay.tech",
-        "uniqueReference": "x123y",
-        "phoneNumber": "919876543211",
-        "deliveryAddress": {
-            "address1": "first line",
-            "address2": "second line",
-            "city": "New Delhi",
-            "state": "Delhi",
-            "countryCode": "IN",
-            "postalCode": "147147"
-        }
-    },
-    "order": {
-        "originalAmount": 423.73,
-        "shippingAmount": 50,
-        "voucherCode": "VOUCHER",
-        "taxAmount": 76.27,
-        "totalAmountWithoutTax": 423.73,
-        "items": [
-            {
-                "id": "test",
-                "itemName": "Sample Item",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-                "categories": null,
-                "amountWithoutTax": 423.73,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            },
-            {
-                "id": "test",
-                "itemName": "Sample Item",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-                "categories": null,
-                "amountWithoutTax": 423.73,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            },
-            {
-                "id": "test",
-                "itemName": "Sample Item",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-                "categories": null,
-                "amountWithoutTax": 423.73,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            },
-            {
-                "id": "test",
-                "itemName": "Sample Item",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-                "categories": null,
-                "amountWithoutTax": 423.73,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            },
-            {
-                "id": "test",
-                "itemName": "Sample Item",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-                "categories": null,
-                "amountWithoutTax": 423.73,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            },
-            {
-                "id": "test",
-                "itemName": "Sample Item",
-                "description": "testProduct",
-                "quantity": 1,
-                "manufacturer": null,
-                "brand": null,
-                "color": null,
-                "productUrl": null,
-                "imageUrl": "https://www.kasandbox.org/programming-images/avatars/old-spice-man.png",
-                "categories": null,
-                "amountWithoutTax": 423.73,
-                "taxAmount": 76.27,
-                "taxPercentage": null,
-                "discountedAmount": null,
-                "amountWithoutTaxLocale": "10",
-                "amountWithoutTaxLocaleFull": "10"
-            }
-        ]
-    },
-    "statusNotifyUrl": "https://www.boxpay.tech",
-    "frontendReturnUrl": "https://www.boxpay.tech",
-    "frontendBackUrl": "https://www.boxpay.tech",
-    "createShopperToken":false,
-    "expiryDurationSec":900
+  "order" : {
+    "originalAmount" : 500,
+    "shippingAmount" : 50,
+    "voucherCode" : "VOUCHER",
+    "taxAmount" :100,
+    "totalAmountWithoutTax" : 550,
+    "items" : [ {
+      "id" : "test",
+      "itemName" : "La Fille Regular Solid Handheld Bag Blue",
+      "description" : "testProduct",
+      "quantity" : 1,
+      "manufacturer" : null,
+      "brand" : null,
+      "color" : null,
+      "productUrl" : null,
+      "imageUrl" : "https://assetscdn1.paytm.com/images/catalog/product/B/BA/BAGLAFILLE-BLUEINTO887307A255D05/1563381583133_0..jpg",
+      "categories" : null,
+      "amountWithoutTax" : 500,
+      "taxAmount" : 76.27,
+      "taxPercentage" : null,
+      "discountedAmount" : null,
+      "amountWithoutTaxLocale" : "10",
+      "amountWithoutTaxLocaleFull" : "10"
+    }]
+  },
+  "statusNotifyUrl" : "https://www.boxpay.tech",
+  "frontendReturnUrl" : "https://www.boxpay.tech",
+  "frontendBackUrl" : "https://www.boxpay.tech",
+  "createShopperToken" : true,
+  "expiryDurationSec" : 900
 }"""
         )
 
@@ -264,16 +206,13 @@ class Check : AppCompatActivity() {
                 val tokenFetched = response.getString("token")
                 val payload = response.optJSONObject("payload")
                 customerShopperToken = payload?.optString("shopper_token", "")
-                println("======customerShopperToken $tokenFetched")
                 tokenLiveData.value = tokenFetched
                 editor.putString("baseUrl", "test-apis.boxpay.tech")
                 editor.putString("token", tokenLiveData.value)
                 editor.apply()
                 // Call a function that depends on the token
             },
-            Response.ErrorListener { error ->
-                println("====error $error")
-                /* no response handling */
+            Response.ErrorListener {
             }) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
@@ -286,5 +225,17 @@ class Check : AppCompatActivity() {
             }
         }
         queue.add(request)
+    }
+
+    fun extractMessageFromErrorResponse(response: String): String? {
+        try {
+            // Parse the JSON string
+            val jsonObject = JSONObject(response)
+            // Retrieve the value associated with the "message" key
+            return jsonObject.getString("message")
+        } catch (e: Exception) {
+            // Handle JSON parsing exception
+        }
+        return null
     }
 }

@@ -19,7 +19,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
-import android.webkit.WebView
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -34,11 +33,16 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.FragmentAddUPIIDBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.random.Random
 
@@ -169,14 +173,15 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
                 callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiCollect", "Upi")
 
-                if (checkString(userVPA!!)) {
-                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
-                    validateAPICall(requireContext(), userVPA!!)
-                    showLoadingInButton()
-                } else {
-                    binding.ll1InvalidUPI.visibility = View.VISIBLE
-                }
+            if (checkString(userVPA!!)) {
+                binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                binding.editText.isEnabled = false
+                validateAPICall(requireContext(), userVPA!!)
+                showLoadingInButton()
+            } else {
+                binding.ll1InvalidUPI.visibility = View.VISIBLE
             }
+        }
 
             binding.root
         } catch (e: Exception) {
@@ -408,6 +413,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -418,10 +424,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
-
-                val webView = WebView(requireContext())
-
-                // Get the default User-Agent string
                 val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
 
                 // Get the screen height and width
@@ -437,7 +439,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             }
             put("browserData", browserData)
 
-            // Instrument Details
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", "upi/collect")
 
@@ -447,7 +448,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("upi", upiObject)
             }
             put("instrumentDetails", instrumentDetailsObject)
-
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email", null))
@@ -459,6 +459,17 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
+                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                }
+
+                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
+                }else{
+                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -478,8 +489,16 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     put("deliveryAddress", deliveryAddressObject)
                 }
             }
-
             put("shopper", shopperObject)
+
+            val deviceDetails = JSONObject().apply {
+                put("browser", Build.BRAND)
+                put("platformVersion", Build.VERSION.RELEASE)
+                put("deviceType", Build.MANUFACTURER)
+                put("deviceName", Build.MANUFACTURER)
+                put("deviceBrandName", Build.MODEL)
+            }
+            put("deviceDetails", deviceDetails)
         }
 
         // Request a JSONObject response from the provided URL
@@ -488,6 +507,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Response.Listener { response ->
 
                 val status = response.getJSONObject("status").getString("status")
+                binding.editText.isEnabled = true
                 val reason = response.getJSONObject("status").getString("reason")
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
@@ -590,13 +610,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
             )
-        )
+        ))
         binding.textView6.visibility = View.VISIBLE
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -605,7 +626,12 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
+            )
+        ))
         binding.proceedButton.isEnabled = true
     }
 
@@ -624,19 +650,19 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     private fun enableProceedButton() {
         binding.proceedButtonRelativeLayout.isEnabled = true
         binding.proceedButton.isEnabled = true
+        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             )
         )
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.ll1InvalidUPI.visibility = View.INVISIBLE
-        binding.textView6.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
+        binding.textView6.setTextColor(Color.parseColor(
+            sharedPreferences.getString(
+                "buttonTextColor",
+                "#ffffff"
             )
-        )
+        ))
     }
 
     private fun disableProceedButton() {
