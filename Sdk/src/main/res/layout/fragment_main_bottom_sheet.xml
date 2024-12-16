@@ -1222,10 +1222,9 @@
 
                                         <ImageView
                                             android:id="@+id/qrCodeImageView"
-                                            android:layout_width="150dp"
-                                            android:layout_height="150dp"
+                                            android:layout_width="300dp"
+                                            android:layout_height="300dp"
                                             android:layout_marginStart="12dp"
-                                            android:layout_marginTop="16dp"
                                             app:layout_constraintBottom_toBottomOf="parent"
                                             app:layout_constraintStart_toStartOf="parent"
                                             app:layout_constraintTop_toTopOf="parent" />
@@ -1249,6 +1248,7 @@
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="16dp"
+                                            android:layout_marginTop="16dp"
                                             android:fontFamily="@font/poppins_medium"
                                             android:text="Scan &amp; Pay with UPI application"
                                             android:textColor="#010102"
