@@ -449,8 +449,13 @@ class BoxPayUpiComponent(
                     postalCode = deliveryAddress.optString("postalCode")
                 }
                 panNumber = shopperObject.optString("panNumber")
-                dob =
+
+                dob = if (shopperObject.getString("dateOfBirth") != null) {
                     CommonFunctions.formatToISO8601WithCurrentTime(shopperObject.optString("dateOfBirth"))
+                } else {
+                    null
+                }
+
                 val money = paymentDetailsObject.getJSONObject("money").getString("amount")
                 val amount = money.toDouble()
                 var currencySymbol =
