@@ -450,7 +450,7 @@ class BoxPayUpiComponent(
                 }
                 panNumber = shopperObject.optString("panNumber")
 
-                dob = if (shopperObject.getString("dateOfBirth") != null) {
+                dob = if (shopperObject.getString("dateOfBirth") != null && shopperObject.getString("dateOfBirth") != "null") {
                     CommonFunctions.formatToISO8601WithCurrentTime(shopperObject.optString("dateOfBirth"))
                 } else {
                     null
