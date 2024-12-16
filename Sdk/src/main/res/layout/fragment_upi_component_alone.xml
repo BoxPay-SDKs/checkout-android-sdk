@@ -47,7 +47,8 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/popularUPIAppsConstraint"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:visibility="gone">
 
                 <LinearLayout
                     android:id="@+id/PopularUPILinearLayout1"
@@ -200,13 +201,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginTop="6dp"
-                android:visibility="visible">
+                android:visibility="gone">
 
                 <View
                     android:id="@+id/dashedLine1"
                     android:layout_width="match_parent"
                     android:layout_height="2dp"
                     android:background="@drawable/dashed_line"
+                    android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -402,4 +404,25 @@
         <!--                        app:lottie_autoPlay="true"-->
 
     </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/errorlayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/errorView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins"
+            android:gravity="center_vertical"
+            android:lineSpacingExtra="-1sp"
+            android:text="Please enable UPI Intent or UPI Collect method"
+            android:paddingStart="2dp"
+            android:textColor="#B9232F" />
+
+
+    </LinearLayout>
 </LinearLayout>

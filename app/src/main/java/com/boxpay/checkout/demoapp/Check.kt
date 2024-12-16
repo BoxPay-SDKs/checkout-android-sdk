@@ -85,17 +85,18 @@ class Check : AppCompatActivity() {
             val boxPayUpiComponent = BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
             boxPayUpiComponent.setTestEnv(true)
             boxPayUpiComponent.setContext(this)
-//            binding.proceedButtonBottom.visibility = View.VISIBLE
-//            boxPayUpiComponent.setProceedButtonVisibility(false)
+            binding.proceedButtonBottom.visibility = View.VISIBLE
+            boxPayUpiComponent.setProceedButtonVisibility(false)
 
             // Replace a container in your activity's layout
-            binding.mainContainer.removeAllViews()
+            binding.openButton.removeAllViews()
             supportFragmentManager.beginTransaction()
-                .replace(R.id.main_container,boxPayUpiComponent)
+                .replace(R.id.openButton,boxPayUpiComponent)
                 .commit()
 
             binding.proceedButtonBottom.setOnClickListener {
                 boxPayUpiComponent.onClickProceed()
+                binding.proceedButtonBottom.isEnabled = false
             }
         } else {
             val boxPayCheckout =
@@ -114,6 +115,7 @@ class Check : AppCompatActivity() {
 
     fun onPaymentResultCallback(result: PaymentResultObject) {
         Toast.makeText(this, result.status, Toast.LENGTH_SHORT).show()
+        binding.proceedButtonBottom.isEnabled = true
     }
 
 
