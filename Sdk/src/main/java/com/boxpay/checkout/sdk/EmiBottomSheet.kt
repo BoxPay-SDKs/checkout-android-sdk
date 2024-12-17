@@ -227,116 +227,121 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
 
         lifecycleScope.launchWhenStarted {
             emiViewModel.emiBankList.collectLatest { emiBankList ->
-                binding.composeView.setContent {
-                    val showLoader = emiViewModel.showLoaderInButton.collectAsState()
-                    if (emiViewModel.contentLoaded.value) {
-                        if (!emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
-                            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
-                            ChooseEmiScreen(
-                                cardList = emiBankList,
-                                filterList = if (emiViewModel.isFilterExisted.value) emiViewModel.filterList.value else emptyList(),
-                                isSelectedCard = emiViewModel.selectedCard.value,
-                                onClickCard = {
-                                    emiViewModel.onCardClick(it)
-                                },
-                                onClickBack = {
-                                    dismissAndMakeButtonsOfMainBottomSheetEnabled()
-                                },
-                                onClickRadio = {
-                                    emiViewModel.onClickRadio(it)
-                                },
-                                selectedRadioButton = emiViewModel.selectedOthersOption.value,
-                                sharedPreferences = sharedPreferences,
-                                searchQuery = emiViewModel.searchQuery.value,
-                                onValueChange = {
-                                    emiViewModel.onValueChange(it)
-                                },
-                                onClickBank = {
-                                    emiViewModel.onClickBank(it)
-                                },
-                                onClickFilter = { card, filter ->
-                                    emiViewModel.getBanksByFilter(card, filter)
-                                },
-                                onClickProceedButton = {
-                                    emiViewModel.showLoaderInButton.value = true
-                                    postRequest(context!!)
-                                },
-                                showLoadingInButton = showLoader.value
-                            )
+                try {
+                    binding.composeView.setContent {
+                        val showLoader = emiViewModel.showLoaderInButton.collectAsState()
+                        if (emiViewModel.contentLoaded.value) {
+                            if (!emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
+                                dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+                                ChooseEmiScreen(
+                                    cardList = emiBankList,
+                                    filterList = if (emiViewModel.isFilterExisted.value) emiViewModel.filterList.value else emptyList(),
+                                    isSelectedCard = emiViewModel.selectedCard.value,
+                                    onClickCard = {
+                                        emiViewModel.onCardClick(it)
+                                    },
+                                    onClickBack = {
+                                        dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                                    },
+                                    onClickRadio = {
+                                        emiViewModel.onClickRadio(it)
+                                    },
+                                    selectedRadioButton = emiViewModel.selectedOthersOption.value,
+                                    sharedPreferences = sharedPreferences,
+                                    searchQuery = emiViewModel.searchQuery.value,
+                                    onValueChange = {
+                                        emiViewModel.onValueChange(it)
+                                    },
+                                    onClickBank = {
+                                        emiViewModel.onClickBank(it)
+                                    },
+                                    onClickFilter = { card, filter ->
+                                        emiViewModel.getBanksByFilter(card, filter)
+                                    },
+                                    onClickProceedButton = {
+                                        emiViewModel.showLoaderInButton.value = true
+                                        postRequest(context!!)
+                                    },
+                                    showLoadingInButton = showLoader.value
+                                )
+                            }
+                            if (emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
+                                SelectTenureEmi(
+                                    totalPrice = sharedPreferences.getString("amount", "empty")
+                                        ?: "",
+                                    onClickBack = { emiViewModel.onBackTenure() },
+                                    selectedBank = emiViewModel.selectedBank.value!!,
+                                    cardType = emiViewModel.selectedCard.value,
+                                    selectedEmi = emiViewModel.selectedEmi.value,
+                                    sharedPreferences = sharedPreferences,
+                                    onClickRadio = { duration, amount ->
+                                        emiViewModel.onClickRadio(duration, amount)
+                                    },
+                                    onProceed = {
+                                        emiViewModel.onProceedEmi(it)
+                                    },
+                                    currencySymbol = sharedPreferences.getString(
+                                        "currencySymbol",
+                                        "₹"
+                                    ) ?: ""
+                                )
+                            }
+                            if (emiViewModel.addCardScreen.value) {
+                                dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+                                AddCardDetailsScreen(
+                                    iconUrl = emiViewModel.selectedBank.value?.iconUrl ?: "",
+                                    name = emiViewModel.selectedBank.value?.name ?: "",
+                                    month = emiViewModel.selectedEmi.value.first,
+                                    amount = emiViewModel.selectedEmi.value.second,
+                                    percent = emiViewModel.selectedPercent.value ?: 0,
+                                    onClickBack = {
+                                        emiViewModel.onBackAddCard()
+                                    },
+                                    sharedPreferences = sharedPreferences,
+                                    cardNumber = emiViewModel.cardNumber.value,
+                                    cardName = emiViewModel.cardName.value,
+                                    expiry = emiViewModel.expiry.value,
+                                    cvv = emiViewModel.cvv.value,
+                                    onCardNameChange = {
+                                        emiViewModel.onCardNameChange(it)
+                                    },
+                                    onCardExpiryChange = {
+                                        emiViewModel.onCardExpiryChange(it)
+                                    },
+                                    onCardNumberChange = {
+                                        emiViewModel.onCardNumberChange(it)
+                                        if ((emiViewModel.cardNumber.value?.text?.length ?: 0) >= 9 && emiViewModel.cardIcon.value == R.drawable.default_card_icon) {
+                                            makeCardNetworkIdentificationCall(
+                                                context!!,
+                                                emiViewModel.cardNumber.value!!.text.filter { it.isDigit() })
+                                        }
+                                    },
+                                    onCardCvvChange = {
+                                        emiViewModel.onCardCvvChange(it)
+                                    },
+                                    onProceedClick = {
+                                        emiViewModel.showLoaderInButton.value = true
+                                        postRequest(context!!)
+                                    },
+                                    cardIcon = emiViewModel.cardIcon.value,
+                                    currencySymbol = sharedPreferences.getString(
+                                        "currencySymbol",
+                                        "₹"
+                                    ) ?: "",
+                                    allDetailsValid = emiViewModel.isCardValid.value,
+                                    isCardNumberEnabled = emiViewModel.isCardNumberEnabled.value,
+                                    isAmexCard = emiViewModel.isAmexCard.value,
+                                    showLoadingInButton = showLoader.value,
+                                    isCardExpired = emiViewModel.isCardExpired.value
+                                )
+                            }
                         }
-                        if (emiViewModel.selectTenureScreen.value && !emiViewModel.addCardScreen.value) {
-                            SelectTenureEmi(
-                                totalPrice = sharedPreferences.getString("amount", "empty")
-                                    ?: "",
-                                onClickBack = { emiViewModel.onBackTenure() },
-                                selectedBank = emiViewModel.selectedBank.value!!,
-                                cardType = emiViewModel.selectedCard.value,
-                                selectedEmi = emiViewModel.selectedEmi.value,
-                                sharedPreferences = sharedPreferences,
-                                onClickRadio = { duration, amount ->
-                                    emiViewModel.onClickRadio(duration, amount)
-                                },
-                                onProceed = {
-                                    emiViewModel.onProceedEmi(it)
-                                },
-                                currencySymbol = sharedPreferences.getString(
-                                    "currencySymbol",
-                                    "₹"
-                                ) ?: ""
-                            )
-                        }
-                        if (emiViewModel.addCardScreen.value) {
-                            dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-                            AddCardDetailsScreen(
-                                iconUrl = emiViewModel.selectedBank.value?.iconUrl ?: "",
-                                name = emiViewModel.selectedBank.value?.name ?: "",
-                                month = emiViewModel.selectedEmi.value.first,
-                                amount = emiViewModel.selectedEmi.value.second,
-                                percent = emiViewModel.selectedPercent.value ?: 0,
-                                onClickBack = {
-                                    emiViewModel.onBackAddCard()
-                                },
-                                sharedPreferences = sharedPreferences,
-                                cardNumber = emiViewModel.cardNumber.value,
-                                cardName = emiViewModel.cardName.value,
-                                expiry = emiViewModel.expiry.value,
-                                cvv = emiViewModel.cvv.value,
-                                onCardNameChange = {
-                                    emiViewModel.onCardNameChange(it)
-                                },
-                                onCardExpiryChange = {
-                                    emiViewModel.onCardExpiryChange(it)
-                                },
-                                onCardNumberChange = {
-                                    emiViewModel.onCardNumberChange(it)
-                                    if ((emiViewModel.cardNumber.value?.text?.length ?: 0) >= 9) {
-                                        makeCardNetworkIdentificationCall(
-                                            context!!,
-                                            emiViewModel.cardNumber.value!!.text.filter { it.isDigit() })
-                                    }
-                                },
-                                onCardCvvChange = {
-                                    emiViewModel.onCardCvvChange(it)
-                                },
-                                onProceedClick = {
-                                    emiViewModel.showLoaderInButton.value = true
-                                    postRequest(context!!)
-                                },
-                                cardIcon = emiViewModel.cardIcon.value,
-                                currencySymbol = sharedPreferences.getString(
-                                    "currencySymbol",
-                                    "₹"
-                                ) ?: "",
-                                allDetailsValid = emiViewModel.isCardValid.value,
-                                isCardNumberEnabled = emiViewModel.isCardNumberEnabled.value,
-                                isAmexCard = emiViewModel.isAmexCard.value,
-                                showLoadingInButton = showLoader.value
-                            )
+                        if (emiViewModel.firstTimeLoaded.value) {
+                            EmiShimmerScreen()
                         }
                     }
-                    if (emiViewModel.firstTimeLoaded.value) {
-                        EmiShimmerScreen()
-                    }
+                } catch (e: Exception) {
+                    println("==========excetption in screen $e")
                 }
             }
         }
@@ -454,11 +459,12 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                             addBankDetails(cardType = emiCardName, bank = bank, emi = emi)
                         }
                         hideLoader()
-                    } catch (_: Exception) {
+                    } catch (e: Exception) {
+                        println("=======exception $e")
                     }
                 }
-            } catch (_: Exception) {
-
+            } catch (e: Exception) {
+                println("===ccscs====exception $e")
             }
 
         }, { error ->
@@ -763,6 +769,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             return jsonObject.getString("message")
         } catch (e: Exception) {
             // Handle JSON parsing exception
+            println("=====xxxx==exception $e")
         }
         return null
     }
@@ -780,8 +787,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                 emiViewModel.isCardNumberEnabled.value = methodEnabled
                 emiViewModel.cardIcon.value = emiViewModel.getImageDrawableForItem(currBrand)
                 emiViewModel.isAmexCard.value = currBrand.equals("AmericanExpress", true)
-            } catch (_: Exception) {
-
+            } catch (e: Exception) {
+                println("===sssss====exception $e")
             }
         }, Response.ErrorListener { _ ->
 
@@ -851,7 +858,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                     }
 
                 } catch (e: JSONException) {
-
+                    println("=axsxsxs======exception $e")
                 }
             },
             Response.ErrorListener {

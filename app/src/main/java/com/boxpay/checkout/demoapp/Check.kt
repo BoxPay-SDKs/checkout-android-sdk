@@ -133,7 +133,7 @@ class Check : AppCompatActivity() {
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "650",
+    "amount" : "6500",
     "currencyCode" : "INR"
   },
   "descriptor" : {

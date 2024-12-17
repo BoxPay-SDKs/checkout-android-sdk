@@ -702,6 +702,7 @@ fun AddCardDetailsScreen(
     allDetailsValid: Boolean,
     isCardNumberEnabled: Boolean?,
     isAmexCard: Boolean,
+    isCardExpired: Boolean,
     showLoadingInButton: Boolean
 ) {
     val cardNumberFocusRequester = FocusRequester()
@@ -1123,7 +1124,7 @@ fun AddCardDetailsScreen(
                 },
                 errorText = "Required"
             )
-        } else if (!isCardExpiryFocused.value && expiry != null && expiry.text.length != 5) {
+        } else if ((!isCardExpiryFocused.value && expiry != null && expiry.text.length != 5) || (isCardExpired && expiry != null && expiry.text.length == 5)) {
             ErrorRow(
                 modifier = Modifier.constrainAs(cardExpiryInvalidError) {
                     start.linkTo(parent.start, 16.dp)

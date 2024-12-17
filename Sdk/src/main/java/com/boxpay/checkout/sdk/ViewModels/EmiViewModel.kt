@@ -36,6 +36,7 @@ class EmiViewModel : ViewModel() {
     val isAmexCard = mutableStateOf(false)
     val isCardValid = mutableStateOf(false)
     val contentLoaded = mutableStateOf(false)
+    val isCardExpired = mutableStateOf(true)
     val firstTimeLoaded = mutableStateOf(true)
     val isCardNumberEnabled = mutableStateOf<Boolean?>(null)
     val showLoaderInButton = MutableStateFlow(false)
@@ -259,7 +260,7 @@ class EmiViewModel : ViewModel() {
         // Extract only digits from the input
         var digitsOnly = text.text.filter { it.isDigit() }
 
-        if (digitsOnly.length == 1 && digitsOnly.toIntOrNull() in 3..9) {
+        if (digitsOnly.length == 1 && digitsOnly.toIntOrNull() in 2..9) {
             digitsOnly = "0$digitsOnly"
         }
 
@@ -273,7 +274,6 @@ class EmiViewModel : ViewModel() {
                 val year = limitedDigits.drop(2)
                 "$month/$year"
             }
-
             else -> limitedDigits
         }
 
@@ -286,7 +286,6 @@ class EmiViewModel : ViewModel() {
                 val positionAdjustment = if (newFormattedExpiry.length == 3) 2 else 0
                 text.selection.start + positionAdjustment
             }
-
             else -> {
                 // If a character was removed, keep the cursor in place
                 text.selection.start
@@ -426,7 +425,8 @@ class EmiViewModel : ViewModel() {
 
         val currentYear = Calendar.getInstance().get(Calendar.YEAR) % 100
         val currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
-        if (year < currentYear || (year == currentYear && month < currentMonth)) return false // Expired
+        isCardExpired.value = (year < currentYear || (year == currentYear && month < currentMonth)) // Expired
+        if (isCardExpired.value) return false
 
         // 3. Validate CVV (3 digits for most cards, 4 for Amex)
         val isAmex = cardNumber.length == 15
