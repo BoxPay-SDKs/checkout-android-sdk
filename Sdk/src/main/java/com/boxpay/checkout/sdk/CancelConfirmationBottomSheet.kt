@@ -51,6 +51,14 @@ class CancelConfirmationBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
+        binding.proceedButtonRelativeLayout2.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )
+        )
         binding.textView6.setTextColor(Color.parseColor(
             sharedPreferences.getString(
                 "buttonTextColor",

@@ -1720,7 +1720,7 @@ fun RecommendedScreen(
                     )
                 }
                 Text(
-                    text = "Payment $amount",
+                    text = "Pay $amount",
                     color = Color(0xFF2D2B32),
                     style = TextStyle(
                         fontSize = 18.sp,

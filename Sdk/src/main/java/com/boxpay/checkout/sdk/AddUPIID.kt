@@ -39,10 +39,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.random.Random
 
@@ -531,6 +527,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
                         openUPITimerBottomSheet()
+                        dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()
@@ -540,7 +537,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                             parentFragmentManager,
                             "PaymentStatusBottomSheetWithDetails"
                         )
-                        dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        dismiss()
                     }
                 }
                 hideLoadingInButton()

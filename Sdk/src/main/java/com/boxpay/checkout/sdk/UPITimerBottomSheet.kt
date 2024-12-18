@@ -20,9 +20,7 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
-import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.FragmentUPITimerBottomSheetBinding
-import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -306,24 +304,13 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                         if (isAdded && isResumed && !isStateSaved) {
                             countdownTimer.cancel()
                             countdownTimerForAPI.cancel()
-                            val callback = SingletonClass.getInstance().getYourObject()
-                            val callbackForDismissing =
-                                SingletonForDismissMainSheet.getInstance().getYourObject()
-                            if (callback != null) {
-                                callback.onPaymentResult(
-                                    PaymentResultObject(
-                                        "Success",
-                                        transactionId,
-                                        transactionId
-                                    )
-                                )
-                            }
-                            if (callbackForDismissing != null) {
-                                callbackForDismissing.dismissFunction()
-                            }
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            dismiss()
                         }
-
-                        dismiss()
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()

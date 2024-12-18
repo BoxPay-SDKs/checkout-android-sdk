@@ -122,6 +122,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var showName = false
     private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
+    private var moreOptionsClicked: Boolean? = null
     private var isPANEditable = true
     private var isDOBEditable = true
     private var showPAN = false
@@ -1274,7 +1275,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val bitmap = (binding.qrCodeImageView.drawable as BitmapDrawable).bitmap
 
         // Apply blur transformation using Glide and BlurTransformation
-        Glide.with(requireContext())
+        Glide.with(context)
             .asBitmap()
             .load(bitmap) // Load the bitmap directly
             .apply(
@@ -1612,138 +1613,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             binding.swipeCtaScreen.visibility = View.VISIBLE
                             binding.linearLayoutMain.visibility = View.GONE
                             if (!binding.itemsInOrderRecyclerView.isVisible) {
-                                val address = buildString {
-                                    if ((showPhone && showName) || showShipping) {
-                                        append(sharedPreferences.getString("firstName", ""))
-                                        append(" ")
-                                        append(sharedPreferences.getString("lastName", ""))
-                                        append(
-                                            " (${
-                                                sharedPreferences.getString(
-                                                    "phoneNumber",
-                                                    ""
-                                                )
-                                            })"
-                                        )
-                                    } else if (showName) {
-                                        append(sharedPreferences.getString("firstName", ""))
-                                        append(" ")
-                                        append(sharedPreferences.getString("lastName", ""))
-                                    } else {
-                                        append(
-                                            "(${
-                                                sharedPreferences.getString(
-                                                    "phoneNumber",
-                                                    ""
-                                                )
-                                            })"
-                                        )
-                                    }
-
-                                    // Add email
-                                    append(", ")
-                                    append(sharedPreferences.getString("email", ""))
-
-                                    // Add address
-                                    append("\n")
-                                    val address1 = sharedPreferences.getString("address1", "")
-                                    val address2 = sharedPreferences.getString("address2", null)
-                                    val city = sharedPreferences.getString("city", "")
-                                    val state = sharedPreferences.getString("state", "null")
-                                    val postalCode =
-                                        sharedPreferences.getString("postalCode", "null")
-
-                                    if (!address2.isNullOrEmpty()) {
-                                        append("$address1, $address2, $city, $state, $postalCode")
-                                    } else {
-                                        append("$address1, $city, $state, $postalCode")
-                                    }
-                                }
-
-                                binding.composeView.setContent {
-                                    RecommendedScreen(
-                                        modifier = Modifier,
-                                        buttonColor = androidx.compose.ui.graphics.Color(
-                                            Color.parseColor(
-                                                sharedPreferences.getString(
-                                                    "primaryButtonColor",
-                                                    "#000000"
-                                                )
-                                            )
-                                        ),
-                                        buttontextColor = androidx.compose.ui.graphics.Color(
-                                            Color.parseColor(
-                                                sharedPreferences.getString(
-                                                    "buttonTextColor",
-                                                    "#000000"
-                                                )
-                                            )
-                                        ),
-                                        amount = "${
-                                            sharedPreferences.getString(
-                                                "currencySymbol",
-                                                "₹"
-                                            ) ?: ""
-                                        }${
-                                            sharedPreferences.getString("amount", "empty")
-                                                ?: ""
-                                        }",
-                                        lastUsedUpi = recommendedInstrumentationList[0].second,
-                                        onClickMoreOptions = {
-                                            binding.linearLayoutMain.visibility = View.VISIBLE
-                                            binding.swipeCtaScreen.visibility = View.GONE
-                                        },
-                                        onSwipeComplete = {
-                                            binding.swipeScreenAnimation.apply {
-                                                playAnimation()
-                                                repeatCount =
-                                                    LottieDrawable.INFINITE // This makes the animation repeat infinitely
-                                            }
-                                            binding.swipeLoader.visibility = View.VISIBLE
-                                            postRecommendedInstruments(
-                                                "upi/collect",
-                                                recommendedInstrumentationList[0].first,
-                                                recommendedInstrumentationList[0].second
-                                            )
-                                        },
-                                        address = address,
-                                        toShowOnChangeAddressClick = isEmailEditable || isPhoneEditable || isNameEditable || showShipping,
-                                        onClickChangeAddress = {
-                                            if (!sharedPreferences.getString("phoneNumber", "")
-                                                    .isNullOrEmpty()
-                                            ) {
-                                                val confirmPhoneNumber =
-                                                    sharedPreferences.getString("phoneNumber", "")
-                                                        ?.removePrefix(countryCode?.second ?: "")
-                                                editor.putString("phoneNumber", confirmPhoneNumber)
-                                                editor.putString("phoneCode", countryCode?.second)
-                                                editor.putString("countryName", countryCode?.first)
-                                                editor.apply()
-                                            }
-                                            val bottomSheet =
-                                                DeliveryAddressBottomSheet.newInstance(
-                                                    this,
-                                                    false,
-                                                    showName,
-                                                    showPhone,
-                                                    showEmail,
-                                                    showPAN,
-                                                    showDOB,
-                                                    showShipping,
-                                                    isNameEditable,
-                                                    isPhoneEditable,
-                                                    isEmailEditable,
-                                                    isPANEditable,
-                                                    isDOBEditable
-                                                )
-                                            bottomSheet.show(
-                                                parentFragmentManager,
-                                                "DeliveryAddressBottomSheetOnClick"
-                                            )
-                                        },
-                                        toShowAddress = showEmail || showShipping || showPhone || showName
-                                    )
-                                }
+                                swipeToPayContent()
                             }
                             showRecommendedOptions()
                         } else {
@@ -3209,7 +3079,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     showUPIOptions()
                     removeLoadingState()
                 }
-                if (toLoadQrDirect == true) {
+                if (toLoadQrDirect == true && upiQRMethod) {
                     showQRCode()
                 }
                 val expireTiming = response.getString("sessionExpiryTimestamp")
@@ -3349,118 +3219,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             showUPIOptions()
         }
 
-        if (recommendedInstrumentationList.isNotEmpty()) {
+        if (recommendedInstrumentationList.isNotEmpty() && (moreOptionsClicked == null || moreOptionsClicked == false)) {
             binding.swipeCtaScreen.visibility = View.VISIBLE
             binding.linearLayoutMain.visibility = View.GONE
-            val address = buildString {
-                if ((showPhone && showName) || showShipping) {
-                    append(sharedPreferences.getString("firstName", ""))
-                    append(" ")
-                    append(sharedPreferences.getString("lastName", ""))
-                    append(" (${sharedPreferences.getString("phoneNumber", "")})")
-                } else if (showName) {
-                    append(sharedPreferences.getString("firstName", ""))
-                    append(" ")
-                    append(sharedPreferences.getString("lastName", ""))
-                } else {
-                    append("(${sharedPreferences.getString("phoneNumber", "")})")
-                }
-
-                // Add email
-                append(", ")
-                append(sharedPreferences.getString("email", ""))
-
-                // Add address
-                append("\n")
-                val address1 = sharedPreferences.getString("address1", "")
-                val address2 = sharedPreferences.getString("address2", null)
-                val city = sharedPreferences.getString("city", "")
-                val state = sharedPreferences.getString("state", "null")
-                val postalCode = sharedPreferences.getString("postalCode", "null")
-
-                if (!address2.isNullOrEmpty()) {
-                    append("$address1, $address2, $city, $state, $postalCode")
-                } else {
-                    append("$address1, $city, $state, $postalCode")
-                }
-            }
-            binding.composeView.setContent {
-                RecommendedScreen(
-                    modifier = Modifier,
-                    buttonColor = androidx.compose.ui.graphics.Color(
-                        Color.parseColor(
-                            sharedPreferences.getString(
-                                "primaryButtonColor",
-                                "#000000"
-                            )
-                        )
-                    ),
-                    buttontextColor = androidx.compose.ui.graphics.Color(
-                        Color.parseColor(
-                            sharedPreferences.getString(
-                                "buttonTextColor",
-                                "#000000"
-                            )
-                        )
-                    ),
-                    amount = "${
-                        sharedPreferences.getString(
-                            "currencySymbol",
-                            "₹"
-                        ) ?: ""
-                    }${
-                        sharedPreferences.getString("amount", "empty")
-                            ?: ""
-                    }",
-                    lastUsedUpi = recommendedInstrumentationList[0].second,
-                    onClickMoreOptions = {
-                        binding.linearLayoutMain.visibility = View.VISIBLE
-                        binding.swipeCtaScreen.visibility = View.GONE
-                    },
-                    onSwipeComplete = {
-                        binding.swipeScreenAnimation.apply {
-                            playAnimation()
-                            repeatCount =
-                                LottieDrawable.INFINITE // This makes the animation repeat infinitely
-                        }
-                        binding.swipeLoader.visibility = View.VISIBLE
-                        postRecommendedInstruments(
-                            "upi/collect",
-                            recommendedInstrumentationList[0].first,
-                            recommendedInstrumentationList[0].second
-                        )
-                    },
-                    address = address,
-                    onClickChangeAddress = {
-                        if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                            val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                                ?.removePrefix(countryCode?.second ?: "")
-                            editor.putString("phoneNumber", confirmPhoneNumber)
-                            editor.putString("phoneCode", countryCode?.second)
-                            editor.putString("countryName", countryCode?.first)
-                            editor.apply()
-                        }
-                        val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                            this,
-                            false,
-                            showName,
-                            showPhone,
-                            showEmail,
-                            showPAN,
-                            showDOB,
-                            showShipping,
-                            isNameEditable,
-                            isPhoneEditable,
-                            isEmailEditable,
-                            isPANEditable,
-                            isDOBEditable
-                        )
-                        bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
-                    },
-                    toShowOnChangeAddressClick = isEmailEditable || isPhoneEditable || isNameEditable || showShipping,
-                    toShowAddress = showEmail || showShipping || showPhone || showName
-                )
-            }
+            swipeToPayContent()
         }
 
         callPaymentMethodRules(requireContext())
@@ -4166,5 +3928,138 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     fun loadQrDirect(toLoadQr: Boolean) {
         toLoadQrDirect = toLoadQr
+    }
+
+    private fun swipeToPayContent() {
+        val address = buildString {
+            if ((showPhone && showName) || showShipping) {
+                append(sharedPreferences.getString("firstName", ""))
+                append(" ")
+                append(sharedPreferences.getString("lastName", ""))
+                append(" (${sharedPreferences.getString("phoneNumber", "")})")
+            } else if (showName) {
+                append(sharedPreferences.getString("firstName", ""))
+                append(" ")
+                append(sharedPreferences.getString("lastName", ""))
+            } else {
+                append("(${sharedPreferences.getString("phoneNumber", "")})")
+            }
+
+            if (showEmail || showShipping) {
+                append(", ")
+                append(sharedPreferences.getString("email", ""))
+            }
+
+            // Add address
+            val address1 = sharedPreferences.getString("address1", "")
+            val address2 = sharedPreferences.getString("address2", null)
+            val city = sharedPreferences.getString("city", "")
+            val state = sharedPreferences.getString("state", "null")
+            val postalCode = sharedPreferences.getString("postalCode", "null")
+            if (showShipping) {
+                append("\n")
+                if (!address2.isNullOrEmpty()) {
+                    append("$address1, $address2, $city, $state, $postalCode")
+                } else {
+                    append("$address1, $city, $state, $postalCode")
+                }
+            }
+        }
+        binding.composeView.setContent {
+            RecommendedScreen(
+                modifier = Modifier,
+                buttonColor = androidx.compose.ui.graphics.Color(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "primaryButtonColor",
+                            "#000000"
+                        )
+                    )
+                ),
+                buttontextColor = androidx.compose.ui.graphics.Color(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "buttonTextColor",
+                            "#000000"
+                        )
+                    )
+                ),
+                amount = "${
+                    sharedPreferences.getString(
+                        "currencySymbol",
+                        "₹"
+                    ) ?: ""
+                }${
+                    sharedPreferences.getString("amount", "empty")
+                        ?: ""
+                }",
+                lastUsedUpi = recommendedInstrumentationList[0].second,
+                onClickMoreOptions = {
+                    moreOptionsClicked = true
+                    binding.linearLayoutMain.visibility = View.VISIBLE
+                    binding.recommendedProceedButton.visibility = View.VISIBLE
+                    binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "primaryButtonColor",
+                                "#000000"
+                            )
+                        )
+                    )
+                    binding.proceedtext.setTextColor(
+                        Color.parseColor(
+                            sharedPreferences.getString(
+                                "buttonTextColor",
+                                "#ffffff"
+                            )
+                        )
+                    )
+                    binding.recommendedProceedButton.isEnabled = true
+                    binding.swipeCtaScreen.visibility = View.GONE
+                },
+                onSwipeComplete = {
+                    binding.swipeScreenAnimation.apply {
+                        playAnimation()
+                        repeatCount =
+                            LottieDrawable.INFINITE // This makes the animation repeat infinitely
+                    }
+                    binding.swipeLoader.visibility = View.VISIBLE
+                    postRecommendedInstruments(
+                        "upi/collect",
+                        recommendedInstrumentationList[0].first,
+                        recommendedInstrumentationList[0].second
+                    )
+                },
+                address = address,
+                onClickChangeAddress = {
+                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                            ?.removePrefix(countryCode?.second ?: "")
+                        editor.putString("phoneNumber", confirmPhoneNumber)
+                        editor.putString("phoneCode", countryCode?.second)
+                        editor.putString("countryName", countryCode?.first)
+                        editor.apply()
+                    }
+                    val bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                        this,
+                        false,
+                        showName,
+                        showPhone,
+                        showEmail,
+                        showPAN,
+                        showDOB,
+                        showShipping,
+                        isNameEditable,
+                        isPhoneEditable,
+                        isEmailEditable,
+                        isPANEditable,
+                        isDOBEditable
+                    )
+                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+                },
+                toShowOnChangeAddressClick = isEmailEditable || isPhoneEditable || isNameEditable || showShipping,
+                toShowAddress = showEmail || showShipping || showPhone || showName
+            )
+        }
     }
 }
