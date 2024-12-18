@@ -215,9 +215,12 @@ class BoxPayUpiComponent(
         if (UPIAppsAndPackageMap.containsKey("PhonePe")) {
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
+            imageView.setBackgroundResource(R.drawable.popular_item_unselected_bg)
             imageView.setImageResource(R.drawable.phonepe_logo)
             textView.text = "PhonePe"
-            getPopularConstraintLayoutByNum(i).setOnClickListener() {
+            val layout = getPopularConstraintLayoutByNum(i)
+            layout.visibility = View.VISIBLE
+            layout.setOnClickListener() {
                 resetClickToDefault()
                 selectedUpiIntent = "PhonePe"
                 imageView.setBackgroundResource(R.drawable.selected_popular_item_bg)
@@ -246,10 +249,12 @@ class BoxPayUpiComponent(
         if (UPIAppsAndPackageMap.containsKey("GPay")) {
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
+            imageView.setBackgroundResource(R.drawable.popular_item_unselected_bg)
             imageView.setImageResource(R.drawable.google_pay_seeklogo)
             textView.text = "GPay"
-
-            getPopularConstraintLayoutByNum(i).setOnClickListener() {
+            val layout = getPopularConstraintLayoutByNum(i)
+            layout.visibility = View.VISIBLE
+            layout.setOnClickListener() {
                 resetClickToDefault()
                 selectedUpiIntent = "GPay"
                 imageView.setBackgroundResource(R.drawable.selected_popular_item_bg)
@@ -278,10 +283,12 @@ class BoxPayUpiComponent(
         if (UPIAppsAndPackageMap.containsKey("Paytm")) {
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
+            imageView.setBackgroundResource(R.drawable.popular_item_unselected_bg)
             imageView.setImageResource(R.drawable.paytm_upi_logo)
             textView.text = "Paytm"
-
-            getPopularConstraintLayoutByNum(i).setOnClickListener() {
+            val layout = getPopularConstraintLayoutByNum(i)
+            layout.visibility = View.VISIBLE
+            layout.setOnClickListener() {
                 resetClickToDefault()
                 selectedUpiIntent = "PayTm"
                 imageView.setBackgroundResource(R.drawable.selected_popular_item_bg)
@@ -308,10 +315,12 @@ class BoxPayUpiComponent(
 
         val imageView = getPopularImageViewByNum(i)
         val textView = getPopularTextViewByNum(i)
+        imageView.setBackgroundResource(R.drawable.popular_item_unselected_bg)
         imageView.setImageResource(R.drawable.ic_other_intent)
         textView.text = "Others"
-
-        getPopularConstraintLayoutByNum(i).setOnClickListener() {
+        val layout = getPopularConstraintLayoutByNum(i)
+        layout.visibility = View.VISIBLE
+        layout.setOnClickListener() {
             resetClickToDefault()
             binding.proceedButton.visibility = View.GONE
             if (binding.addNewUpiTextInputLayout.isVisible) {
@@ -330,10 +339,18 @@ class BoxPayUpiComponent(
     }
 
     private fun resetClickToDefault() {
-        binding.popularUPIImageView1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        binding.popularUPIImageView2.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        binding.popularUPIImageView3.setBackgroundResource(R.drawable.popular_item_unselected_bg)
-        binding.popularUPIImageView4.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        if (binding.PopularUPILinearLayout1.isVisible) {
+            binding.popularUPIImageView1.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        }
+        if (binding.PopularUPILinearLayout2.isVisible) {
+            binding.popularUPIImageView2.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        }
+        if (binding.PopularUPILinearLayout3.isVisible) {
+            binding.popularUPIImageView3.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        }
+        if (binding.PopularUPILinearLayout4.isVisible) {
+            binding.popularUPIImageView4.setBackgroundResource(R.drawable.popular_item_unselected_bg)
+        }
     }
 
     private fun getPopularImageViewByNum(num: Int): ImageView {
