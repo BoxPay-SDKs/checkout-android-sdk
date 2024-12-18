@@ -77,9 +77,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
-import com.microsoft.clarity.Clarity
-import com.microsoft.clarity.ClarityConfig
-import com.microsoft.clarity.models.LogLevel
 import com.mixpanel.android.mpmetrics.MixpanelAPI
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
@@ -906,10 +903,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             })
             overlayViewModel.setShowOverlay(true)
-            if (::context.isInitialized) {
-                val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
-                Clarity.initialize(context.applicationContext, config)
-            }
 
             hidePriceBreakUp()
 
@@ -2364,7 +2357,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             try {
                 val status = response.getString("status")
-                Clarity.setCustomTag("token", token)
                 val transactionId = response.getString("lastTransactionId").toString()
                 if (status.equals(
                         "Approved",

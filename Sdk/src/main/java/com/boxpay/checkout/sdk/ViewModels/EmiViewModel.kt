@@ -414,10 +414,6 @@ class EmiViewModel : ViewModel() {
         val expiry = expiry.value?.text?.filter { it.isDigit() }
         val cvv = cvv.value
 
-        // 1. Validate Card Number (only digits, correct length, Luhn check)
-        if (cardNumber?.isEmpty() == true || (cardNumber?.length != 16 && cardNumber?.length != 15)) return false
-
-        // 2. Validate Expiry Date (MMYY format, not expired)
         if (expiry?.length != 4) return false // Expecting 4 digits (MMYY)
         val month = expiry.substring(0, 2).toIntOrNull() ?: return false
         val year = expiry.substring(2, 4).toIntOrNull() ?: return false
@@ -427,6 +423,10 @@ class EmiViewModel : ViewModel() {
         val currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
         isCardExpired.value = (year < currentYear || (year == currentYear && month < currentMonth)) // Expired
         if (isCardExpired.value) return false
+
+        // 1. Validate Card Number (only digits, correct length, Luhn check)
+        if (cardNumber?.isEmpty() == true || (cardNumber?.length != 16 && cardNumber?.length != 15)) return false
+
 
         // 3. Validate CVV (3 digits for most cards, 4 for Amex)
         val isAmex = cardNumber.length == 15

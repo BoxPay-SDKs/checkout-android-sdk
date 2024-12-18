@@ -73,7 +73,6 @@ dependencies {
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
-    implementation("com.microsoft.clarity:clarity:2.5.1")
     implementation ("com.mixpanel.android:mixpanel-android:7.5.4")
     testImplementation("org.mockito:mockito-core:5.7.0") // Replace with the latest version
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
