@@ -21,7 +21,8 @@ class BoxPayCheckout(
     val onPaymentResult: ((PaymentResultObject) -> Unit)?,
     private val sandboxEnabled: Boolean = false,
     private val customerShopperToken: String = "",
-    private val isSuccessScreenVisible: Boolean = true
+    private val isSuccessScreenVisible: Boolean = true,
+    private val extraParams: HashMap<String, Boolean>? = null
 ) {
     constructor(
         context: Context,
@@ -32,6 +33,24 @@ class BoxPayCheckout(
         isSuccessScreenVisible : Boolean = true
     ) : this(
         context, token, onPaymentResult, sandboxEnabled, customerShopperToken,isSuccessScreenVisible
+    )
+
+    constructor(
+        context: Context,
+        token: String,
+        onPaymentResult: ((PaymentResultObject) -> Unit)?,
+        customerShopperToken: String = "",
+        sandboxEnabled: Boolean = false,
+        isSuccessScreenVisible: Boolean = true,
+        extraParams: HashMap<String, Boolean>
+    ) : this(
+        context,
+        token,
+        onPaymentResult,
+        sandboxEnabled,
+        customerShopperToken,
+        isSuccessScreenVisible,
+        extraParams
     )
 
     private var sharedPreferences: SharedPreferences =
@@ -116,6 +135,9 @@ class BoxPayCheckout(
                 // Now you can use fragmentManager
                 val bottomSheet = MainBottomSheet()
                 bottomSheet.setContext(activity.applicationContext)
+                if (extraParams?.contains("loadQrDirect") == true && extraParams.get("loadQrDirect") == true) {
+                    bottomSheet.loadQrDirect(true)
+                }
                 bottomSheet.show(fragmentManager, "MainBottomSheet")
             }
         } catch (e: Exception) {

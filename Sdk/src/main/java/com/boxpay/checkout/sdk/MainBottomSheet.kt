@@ -130,6 +130,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var showShipping = false
     private var showPhone = false
     var upiOptionsShown = false
+    private var toLoadQrDirect: Boolean? = null
     private var priceBreakUpVisible = false
     var countryCode: Pair<String, String>? = null
     private var transactionAmount: String? = null
@@ -1176,6 +1177,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
                     }
                 }
+            }
+
+            if (toLoadQrDirect == true) {
+                showQRCode()
             }
 
             binding.root
@@ -4158,5 +4163,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (_: Exception) {
             // no op
         }
+    }
+
+    fun loadQrDirect(toLoadQr: Boolean) {
+        toLoadQrDirect = toLoadQr
     }
 }

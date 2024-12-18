@@ -101,11 +101,13 @@ class Check : AppCompatActivity() {
         } else {
             val boxPayCheckout =
                 BoxPayCheckout(
-                    this,
-                    tokenLiveData.value ?: "",
-                    ::onPaymentResultCallback,
-                    false,
-                    customerShopperToken = customerShopperToken ?: ""
+                    context = this,
+                    token = tokenLiveData.value ?: "",
+                    onPaymentResult = ::onPaymentResultCallback,
+                    sandboxEnabled = false,
+                    customerShopperToken = customerShopperToken ?: "",
+                    isSuccessScreenVisible = true,
+                    extraParams = hashMapOf("loadQrDirect" to false)
                 )
             boxPayCheckout.testEnv = true
             boxPayCheckout.display()
