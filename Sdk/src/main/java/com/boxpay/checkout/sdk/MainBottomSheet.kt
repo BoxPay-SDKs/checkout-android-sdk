@@ -3211,7 +3211,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
             } catch (e: Exception) {
-                println("========exception $e")
+                handleException(
+                    context,
+                    e.message ?: "",
+                    token ?: "",
+                    Base_Session_API_URL,
+                    "Main bottom sheet in makeSessionCall"
+                )
                 Toast.makeText(
                     requireContext(),
                     "Invalid token/selected environment.\nPlease press back button and try again",

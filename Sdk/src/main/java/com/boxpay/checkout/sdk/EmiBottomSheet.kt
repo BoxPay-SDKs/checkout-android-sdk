@@ -44,6 +44,7 @@ import com.boxpay.checkout.sdk.composeScreens.screen.SelectTenureEmi
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -341,7 +342,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                         }
                     }
                 } catch (e: Exception) {
-                    println("==========excetption in screen $e")
+
                 }
             }
         }
@@ -460,11 +461,27 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                         }
                         hideLoader()
                     } catch (e: Exception) {
-                        println("=======exception $e")
+                        context?.let {
+                            handleException(
+                                it,
+                                e.message ?: "",
+                                token ?: "",
+                                Base_Session_API_URL,
+                                "Emi Bank Details adding bank"
+                            )
+                        }
                     }
                 }
             } catch (e: Exception) {
-                println("===ccscs====exception $e")
+                context?.let {
+                    handleException(
+                        it,
+                        e.message ?: "",
+                        token ?: "",
+                        Base_Session_API_URL,
+                        "Emi Screen fetching the api details"
+                    )
+                }
             }
 
         }, { error ->
@@ -768,8 +785,15 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             // Retrieve the value associated with the "message" key
             return jsonObject.getString("message")
         } catch (e: Exception) {
-            // Handle JSON parsing exception
-            println("=====xxxx==exception $e")
+            context?.let {
+                handleException(
+                    it,
+                    e.message ?: "",
+                    token ?: "",
+                    Base_Session_API_URL,
+                    "Emi Screen error message extract"
+                )
+            }
         }
         return null
     }
@@ -788,7 +812,15 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                 emiViewModel.cardIcon.value = emiViewModel.getImageDrawableForItem(currBrand)
                 emiViewModel.isAmexCard.value = currBrand.equals("AmericanExpress", true)
             } catch (e: Exception) {
-                println("===sssss====exception $e")
+                context?.let {
+                    handleException(
+                        it,
+                        e.message ?: "",
+                        token ?: "",
+                        Base_Session_API_URL,
+                        "Emi Screen network call to identify card type"
+                    )
+                }
             }
         }, Response.ErrorListener { _ ->
 
@@ -858,7 +890,15 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                     }
 
                 } catch (e: JSONException) {
-                    println("=axsxsxs======exception $e")
+                    context?.let {
+                        handleException(
+                            it,
+                            e.message ?: "",
+                            token ?: "",
+                            Base_Session_API_URL,
+                            "Emi Screen in fetch status and reason"
+                        )
+                    }
                 }
             },
             Response.ErrorListener {
