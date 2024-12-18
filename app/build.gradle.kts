@@ -18,7 +18,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SDK_VERSION", "\"1.1.21-beta2\"")
+        buildConfigField("String", "SDK_VERSION", "\"1.1.21-beta3\"")
 
         buildFeatures.buildConfig = true
     }
@@ -95,7 +95,6 @@ dependencies {
     androidTestImplementation("androidx.test:rules:1.4.0")
     implementation("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
-    implementation("com.microsoft.clarity:clarity:2.5.1")
 
 }
 

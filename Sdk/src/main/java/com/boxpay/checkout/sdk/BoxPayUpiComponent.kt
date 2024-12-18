@@ -614,7 +614,6 @@ class BoxPayUpiComponent(
                     val urlForIntent = actionsArray.getJSONObject(0).getString("url")
 
                     val urlInBase64 = urlToBase64(urlForIntent)
-                    println("=====url $urlInBase64")
                     openDefaultUPIIntentBottomSheetFromAndroid(urlInBase64)
 
                 } catch (e: JSONException) {
@@ -729,7 +728,6 @@ class BoxPayUpiComponent(
             Response.Listener { response ->
                 try {
                     val status = response.getString("status")
-                    println("========statu$status")
                     val transactionId = response.getString("transactionId").toString()
                     if (status.equals("Pending", ignoreCase = true) && isGpayReturned) {
                         removeLoadingState()
@@ -945,7 +943,6 @@ class BoxPayUpiComponent(
 
                     }
                     val urlInBase64 = urlToBase64(urlForIntent)
-                    println("=====url $urlInBase64")
                     launchUPIIntent(urlInBase64)
                 } catch (e: JSONException) {
                     removeLoadingState()
@@ -1226,13 +1223,7 @@ class BoxPayUpiComponent(
                 sessionTimer = object : CountDownTimer(timeDifference, 1000) {
 
                     override fun onTick(millisUntilFinished: Long) {
-                        val hours = millisUntilFinished / (1000 * 60 * 60)
-                        val minutes = (millisUntilFinished / (1000 * 60)) % 60
-                        val seconds = (millisUntilFinished / 1000) % 60
 
-                        // Print remaining time
-                        val timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds)
-                        println("Time remaining: $timeString")
                     }
 
                     override fun onFinish() {

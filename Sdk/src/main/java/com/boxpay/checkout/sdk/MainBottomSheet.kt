@@ -77,9 +77,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
-import com.microsoft.clarity.Clarity
-import com.microsoft.clarity.ClarityConfig
-import com.microsoft.clarity.models.LogLevel
 import com.mixpanel.android.mpmetrics.MixpanelAPI
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
@@ -133,6 +130,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var showShipping = false
     private var showPhone = false
     var upiOptionsShown = false
+    private var toLoadQrDirect: Boolean? = null
     private var priceBreakUpVisible = false
     var countryCode: Pair<String, String>? = null
     private var transactionAmount: String? = null
@@ -906,10 +904,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             })
             overlayViewModel.setShowOverlay(true)
-            if (::context.isInitialized) {
-                val config = ClarityConfig("o4josf35jv", logLevel = LogLevel.Debug)
-                Clarity.initialize(context.applicationContext, config)
-            }
 
             hidePriceBreakUp()
 
@@ -2364,7 +2358,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             try {
                 val status = response.getString("status")
-                Clarity.setCustomTag("token", token)
                 val transactionId = response.getString("lastTransactionId").toString()
                 if (status.equals(
                         "Approved",
@@ -3216,10 +3209,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     showUPIOptions()
                     removeLoadingState()
                 }
+                if (toLoadQrDirect == true) {
+                    showQRCode()
+                }
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
             } catch (e: Exception) {
-                println("========exception $e")
+                handleException(
+                    context,
+                    e.message ?: "",
+                    token ?: "",
+                    Base_Session_API_URL,
+                    "Main bottom sheet in makeSessionCall"
+                )
                 Toast.makeText(
                     requireContext(),
                     "Invalid token/selected environment.\nPlease press back button and try again",
@@ -4160,5 +4162,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (_: Exception) {
             // no op
         }
+    }
+
+    fun loadQrDirect(toLoadQr: Boolean) {
+        toLoadQrDirect = toLoadQr
     }
 }
