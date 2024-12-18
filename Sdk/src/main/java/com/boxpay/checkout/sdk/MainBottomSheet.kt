@@ -1179,10 +1179,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
             }
 
-            if (toLoadQrDirect == true) {
-                showQRCode()
-            }
-
             binding.root
         } catch (e: Exception) {
             handleException(
@@ -3212,6 +3208,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     upiOptionsShown = true
                     showUPIOptions()
                     removeLoadingState()
+                }
+                if (toLoadQrDirect == true) {
+                    showQRCode()
                 }
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)

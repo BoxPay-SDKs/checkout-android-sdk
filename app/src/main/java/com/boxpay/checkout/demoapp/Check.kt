@@ -15,6 +15,7 @@ import com.boxpay.checkout.demoapp.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.BoxPayCheckout
 import com.boxpay.checkout.sdk.BoxPayUpiComponent
 import com.boxpay.checkout.sdk.BuildConfig
+import com.boxpay.checkout.sdk.ConfigurationOptions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import org.json.JSONObject
 
@@ -37,7 +38,7 @@ class Check : AppCompatActivity() {
 
         makePaymentRequest(this)
         val bundle = intent.extras
-        isUpiAlone = bundle?.getBoolean("isUpiAlone",false) ?: false
+        isUpiAlone = bundle?.getBoolean("isUpiAlone", false) ?: false
 
         binding.textView6.text = "Generating Token Please wait..."
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
@@ -82,7 +83,8 @@ class Check : AppCompatActivity() {
 
     private fun showBottomSheetWithOverlay() {
         if (isUpiAlone) {
-            val boxPayUpiComponent = BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
+            val boxPayUpiComponent =
+                BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
             boxPayUpiComponent.setTestEnv(true)
             boxPayUpiComponent.setContext(this)
             binding.proceedButtonBottom.visibility = View.VISIBLE
@@ -91,7 +93,7 @@ class Check : AppCompatActivity() {
             // Replace a container in your activity's layout
             binding.openButton.removeAllViews()
             supportFragmentManager.beginTransaction()
-                .replace(R.id.openButton,boxPayUpiComponent)
+                .replace(R.id.openButton, boxPayUpiComponent)
                 .commit()
 
             binding.proceedButtonBottom.setOnClickListener {
@@ -107,7 +109,7 @@ class Check : AppCompatActivity() {
                     sandboxEnabled = false,
                     customerShopperToken = customerShopperToken ?: "",
                     isSuccessScreenVisible = true,
-                    extraParams = hashMapOf("loadQrDirect" to false)
+                    configurationOptions = mapOf(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to false)
                 )
             boxPayCheckout.testEnv = true
             boxPayCheckout.display()
