@@ -22,7 +22,7 @@ class BoxPayCheckout(
     private val sandboxEnabled: Boolean = false,
     private val customerShopperToken: String = "",
     private val isSuccessScreenVisible: Boolean = true,
-    private val configurationOptions: Map<ConfigurationOptions, Boolean>? = null
+    private val configurationOptions: Map<ConfigurationOptions, Any>? = null
 ) {
     constructor(
         context: Context,
@@ -42,7 +42,7 @@ class BoxPayCheckout(
         customerShopperToken: String = "",
         sandboxEnabled: Boolean = false,
         isSuccessScreenVisible: Boolean = true,
-        configurationOptions: Map<ConfigurationOptions, Boolean>
+        configurationOptions: Map<ConfigurationOptions, Any>
     ) : this(
         context,
         token,
@@ -135,9 +135,7 @@ class BoxPayCheckout(
                 // Now you can use fragmentManager
                 val bottomSheet = MainBottomSheet()
                 bottomSheet.setContext(activity.applicationContext)
-                if (configurationOptions?.contains(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD) == true && configurationOptions.get(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD) == true) {
-                    bottomSheet.loadQrDirect(true)
-                }
+                bottomSheet.loadQrDirect(configurationOptions?.get(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD) == true)
                 bottomSheet.show(fragmentManager, "MainBottomSheet")
             }
         } catch (e: Exception) {

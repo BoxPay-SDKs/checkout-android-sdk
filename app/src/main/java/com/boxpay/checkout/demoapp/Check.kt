@@ -109,7 +109,7 @@ class Check : AppCompatActivity() {
                     sandboxEnabled = false,
                     customerShopperToken = customerShopperToken ?: "",
                     isSuccessScreenVisible = true,
-                    configurationOptions = mapOf(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to false)
+                    configurationOptions = mapOf(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true)
                 )
             boxPayCheckout.testEnv = true
             boxPayCheckout.display()
