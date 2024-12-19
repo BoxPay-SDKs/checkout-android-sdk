@@ -33,6 +33,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -457,13 +458,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     )
                 )
             ) // Set border thickness and color
-            setColor(Color.TRANSPARENT) // Background color inside the border
         }
         val unfocusedDrawable = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadius = 16f // Adjust the corner radius
+            cornerRadius = 8f // Adjust the corner radius
             setStroke(4, Color.parseColor("#E6E6E6")) // Set border thickness and color
-            setColor(Color.TRANSPARENT) // Background color inside the border
         }
 
         binding.editTextCardNumber.addTextChangedListener(object : TextWatcher {
@@ -867,7 +866,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardNumber.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
-                binding.cardNumberLayout.background = unfocusedDrawable
+                binding.cardNumberLayout.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                 val cardNumber = removeSpaces(binding.editTextCardNumber.text.toString())
                 if (!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))) {
                     binding.ll1InvalidCardNumber.visibility = View.VISIBLE
@@ -886,7 +885,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardValidity.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
-                binding.editTextCardValidity.background = unfocusedDrawable
+                binding.editTextCardValidity.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                 val cardValidity = binding.editTextCardValidity.text.toString()
                 try {
                     if (!(isValidExpirationDate(
@@ -918,7 +917,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.editTextCardCVV.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
                 try {
-                    binding.cvvLayout.background = unfocusedDrawable
+                    binding.cvvLayout.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                     val cardCVV = binding.editTextCardCVV.text.toString()
                     if (!isValidCVC(cardCVV.toInt())) {
                         binding.invalidCVV.visibility = View.VISIBLE
@@ -944,7 +943,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
         binding.editTextNameOnCard.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
-                binding.editTextNameOnCard.background = unfocusedDrawable
+                binding.editTextNameOnCard.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                 if (binding.editTextNameOnCard.text.isNullOrEmpty()) {
                     isNameOnCardValid = false
                     binding.nameOnCardErrorLayout.visibility = View.VISIBLE
