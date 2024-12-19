@@ -175,12 +175,10 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         if (!sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
-            val callback = SingletonClass.getInstance().getYourObject()
-            if (callback != null) {
-                val transactionId = sharedPreferences.getString("transactionId", "").toString()
-                val operationId = sharedPreferences.getString("operationId", "").toString()
-                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
-                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+            val callback =  SingletonClass.getInstance().getYourObject()
+            if(callback != null){
+                val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
                 dismiss()
             }
         }

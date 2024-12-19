@@ -87,8 +87,8 @@ class Check : AppCompatActivity() {
                 BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
             boxPayUpiComponent.setTestEnv(true)
             boxPayUpiComponent.setContext(this)
-            binding.proceedButtonBottom.visibility = View.VISIBLE
-            boxPayUpiComponent.setProceedButtonVisibility(false)
+//            binding.proceedButtonBottom.visibility = View.VISIBLE
+            boxPayUpiComponent.setProceedButtonVisibility(true)
 
             // Replace a container in your activity's layout
             binding.openButton.removeAllViews()
@@ -96,10 +96,10 @@ class Check : AppCompatActivity() {
                 .replace(R.id.openButton, boxPayUpiComponent)
                 .commit()
 
-            binding.proceedButtonBottom.setOnClickListener {
-                boxPayUpiComponent.onClickProceed()
-                binding.proceedButtonBottom.isEnabled = false
-            }
+//            binding.proceedButtonBottom.setOnClickListener {
+//                boxPayUpiComponent.onClickProceed()
+//                binding.proceedButtonBottom.isEnabled = false
+//            }
         } else {
             val boxPayCheckout =
                 BoxPayCheckout(
@@ -108,7 +108,7 @@ class Check : AppCompatActivity() {
                     onPaymentResult = ::onPaymentResultCallback,
                     sandboxEnabled = false,
                     customerShopperToken = customerShopperToken ?: "",
-                    isSuccessScreenVisible = true,
+                    isSuccessScreenVisible = false,
                     configurationOptions = mapOf(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true)
                 )
             boxPayCheckout.testEnv = true

@@ -2,7 +2,6 @@ package com.boxpay.checkout.sdk.utils
 
 import android.content.Context
 import android.webkit.WebSettings
-import android.widget.Toast
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
@@ -21,7 +20,6 @@ fun handleException(
     screenName: String
 ) {
     callUIAnalytics(context, token, baseUrl, message, screenName)
-    Toast.makeText(context, "Some Error Occurred", Toast.LENGTH_LONG).show()
 }
 
 private fun callUIAnalytics(context: Context, token: String, baseUrl: String, message: String, screenName: String) {

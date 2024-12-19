@@ -24,7 +24,7 @@ class EmiViewModel : ViewModel() {
     val selectedBank = mutableStateOf<Bank?>(null)
     val selectTenureScreen = mutableStateOf(false)
     val selectedEmi = mutableStateOf<Pair<Int, String>>(Pair(0, ""))
-    val selectedPercent = mutableStateOf<Int?>(null)
+    val selectedPercent = mutableStateOf<Double?>(null)
     val addCardScreen = mutableStateOf(false)
     val cardNumber = mutableStateOf<TextFieldValue?>(null)
     val cardName = mutableStateOf<String?>(null)
@@ -76,21 +76,38 @@ class EmiViewModel : ViewModel() {
                     if (!emiExists) {
                         val updatedBank = existingBank.copy(
                             emiList = existingBank.emiList + emi,
-                            noCostApplied = noCostApplied
+                            noCostApplied = noCostApplied,
+                            percent = minOf(existingBank.percent, bank.percent) // Use the lesser percent
                         )
                         existingCardType.copy(
-                            banks = (existingCardType.banks.map {
-                                if (it.name == bank.name && it.iconUrl == bank.iconUrl) updatedBank else it
-                            }).sortedWith(compareBy({ !it.noCostApplied }, { it.percent }))
+                            banks = existingCardType.banks.map { currentBank ->
+                                if (currentBank.name == bank.name && currentBank.iconUrl == bank.iconUrl) updatedBank else currentBank
+                            }.sortedWith(
+                                compareBy(
+                                    { !it.noCostApplied },
+                                    { !it.lowCostApplied },
+                                    { it.percent }
+                                )
+                            )
                         )
                     } else {
                         existingCardType
                     }
                 } else {
-                    val newBankWithEmi = bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
+                    val newBankWithEmi = bank.copy(
+                        emiList = listOf(emi),
+                        noCostApplied = emi.noCostApplied,
+                        percent = bank.percent // Retain the bank's percent for the new bank
+                    )
                     existingCardType.copy(
                         banks = (existingCardType.banks + newBankWithEmi)
-                            .sortedWith(compareBy({ !it.noCostApplied }, { it.percent }))
+                            .sortedWith(
+                                compareBy(
+                                    { !it.noCostApplied },
+                                    { !it.lowCostApplied },
+                                    { it.percent }
+                                )
+                            )
                     )
                 }
 
@@ -98,12 +115,22 @@ class EmiViewModel : ViewModel() {
                     if (card.cardType.equals(cardType, ignoreCase = true)) updatedCardType else card
                 })
             } else {
-                val newBankWithEmi = bank.copy(emiList = listOf(emi), noCostApplied = emi.noCostApplied)
+                val newBankWithEmi = bank.copy(
+                    emiList = listOf(emi),
+                    noCostApplied = emi.noCostApplied,
+                    percent = bank.percent // Retain the bank's percent for the new bank
+                )
                 it.copy(
                     cards = it.cards + CardType(
                         cardType = cardType,
                         banks = listOf(newBankWithEmi)
-                            .sortedWith(compareBy({ !it.noCostApplied }, { it.percent }))
+                            .sortedWith(
+                                compareBy(
+                                    { !it.noCostApplied },
+                                    { !it.lowCostApplied },
+                                    { it.percent }
+                                )
+                            )
                     )
                 )
             }
@@ -120,6 +147,8 @@ class EmiViewModel : ViewModel() {
                 }
             )
         }
+
+
 
         originalEmiBankList.value = emiBankList.value
     }
@@ -185,7 +214,13 @@ class EmiViewModel : ViewModel() {
     }
 
     fun onClickBank(bank: Bank) {
-        val sortedEmiList = bank.emiList.sortedBy { it.duration }
+        val sortedEmiList = bank.emiList.sortedWith(
+            compareBy<Emi>(
+                { !it.noCostApplied },  // Sort `noCostApplied` first (true comes before false)
+                { !it.lowCostApplied }, // Then `lowCostApplied` (true comes before false)
+                { it.duration }         // Finally by `duration` in ascending order
+            )
+        )
 
         val sortedBank = bank.copy(emiList = sortedEmiList)
 
@@ -198,6 +233,7 @@ class EmiViewModel : ViewModel() {
     }
 
 
+
     fun onClickRadio(duration: Int, amount: String) {
         selectedEmi.value = Pair(duration, amount)
     }
@@ -208,7 +244,7 @@ class EmiViewModel : ViewModel() {
         selectedEmi.value = Pair(0, "")
     }
 
-    fun onProceedEmi(percent: Int) {
+    fun onProceedEmi(percent: Double) {
         selectedPercent.value = percent
         addCardScreen.value = true
     }
@@ -221,6 +257,8 @@ class EmiViewModel : ViewModel() {
         cvv.value = null
         addCardScreen.value = false
         selectedPercent.value = null
+        isCardExpired.value = true
+        isCardValid.value = false
     }
 
     fun onCardNumberChange(text: TextFieldValue) {

@@ -390,7 +390,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
                 // Print the filtered wallet payment methods
                 showAllWallets()
-                removeLoadingScreenState()
+                removeShimmerState()
 
             } catch (e: Exception) {
 
@@ -441,7 +441,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
                 // Print the filtered wallet payment methods
                 showAllWallets()
-                removeLoadingScreenState()
+                removeShimmerState()
             },
             Response.ErrorListener { _ ->
 
@@ -562,6 +562,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
+                        showLoadingState()
                         if (!response.isNull("actions") && response.getJSONArray("actions")
                                 .length() != 0
                         ) {
@@ -704,27 +705,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.isEnabled = true
     }
 
-    private fun handleSuccess() {
-        val sharedPreferences =
-            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        if (sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
-            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-            bottomSheet.show(
-                parentFragmentManager,
-                "PaymentStatusBottomSheetWithDetails"
-            )
-            dismiss()
-        } else {
-            val callback = SingletonClass.getInstance().getYourObject()
-            if (callback != null) {
-                val transactionId = sharedPreferences.getString("transactionId", "").toString()
-                val operationId = sharedPreferences.getString("operationId", "").toString()
-                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
-                dismiss()
-            }
-        }
-    }
-
     fun showLoadingInButton() {
         binding.textView6.visibility = View.INVISIBLE
         binding.progressBar.visibility = View.VISIBLE
@@ -762,6 +742,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
     private fun removeLoadingScreenState() {
         binding.loadingRelativeLayout.visibility = View.GONE
         binding.walletsRecyclerView.visibility = View.VISIBLE
+        enableProceedButton()
     }
 
     private fun fetchStatusAndReason(url: String) {
@@ -770,7 +751,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             Response.Listener { response ->
                 try {
                     val status = response.getString("status")
-                    val transactionId = response.getString("transactionId")
+                    val transactionId = response.getString("transactionId").toString()
 
                     if (status.contains(
                             "Approved",
@@ -779,26 +760,18 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                     ) {
 
                         editor.putString("status", "Success")
+                        editor.putString("amount", response.getString("amount").toString())
+                        editor.putString("transactionId", transactionId)
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
-                            val callback = SingletonClass.getInstance().getYourObject()
-                            val callbackForDismissing =
-                                SingletonForDismissMainSheet.getInstance().getYourObject()
                             job?.cancel()
-                            handleSuccess()
-                            if (callback != null) {
-                                callback.onPaymentResult(
-                                    PaymentResultObject(
-                                        "Success",
-                                        transactionId,
-                                        transactionId
-                                    )
-                                )
-                            }
-                            if (callbackForDismissing != null) {
-                                callbackForDismissing.dismissFunction()
-                            }
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            dismiss()
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
@@ -814,8 +787,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
                         if (isAdded && isResumed && !isStateSaved) {
                             job?.cancel()
-                            job?.cancel()
-                            job?.cancel()
+                            removeLoadingScreenState()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
                             ).show(parentFragmentManager, "FailureScreen")
@@ -832,8 +804,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                headers["X-Client-Connector-Name"] = "Android SDK"
-                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers
             }
         }
@@ -855,6 +825,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         if (requestCode == 333) {
             if (resultCode == Activity.RESULT_OK) {
                 job?.cancel()
+                removeLoadingScreenState()
                 PaymentFailureScreen(
                     errorMessage = "Please retry using other payment method or try again in sometime"
                 ).show(parentFragmentManager, "FailureScreen")
@@ -873,5 +844,16 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
         }
         return null
+    }
+
+    fun showLoadingState() {
+        binding.loadingRelativeLayout.visibility = View.VISIBLE
+        binding.walletsRecyclerView.visibility = View.GONE
+        disableProceedButton()
+    }
+
+    fun removeShimmerState() {
+        binding.recyclerViewShimmer.visibility = View.GONE
+        binding.walletsRecyclerView.visibility = View.VISIBLE
     }
 }

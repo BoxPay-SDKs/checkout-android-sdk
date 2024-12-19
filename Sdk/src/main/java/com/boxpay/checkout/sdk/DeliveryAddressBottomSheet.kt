@@ -1,6 +1,5 @@
 package com.boxpay.checkout.sdk
 
-import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
@@ -22,10 +21,8 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Filter
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.TextView
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
@@ -38,13 +35,10 @@ import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.datepicker.MaterialDatePicker
 import org.json.JSONObject
 import java.text.SimpleDateFormat
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Calendar
@@ -988,7 +982,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
             outputFormat.format(date!!)
         } catch (e: Exception) {
-            e.printStackTrace()
+
             null // Return null in case of a parsing error
         }
     }
@@ -1003,7 +997,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val outputFormat = SimpleDateFormat("MM-dd-yyyy", Locale.US)
             outputFormat.format(date!!)
         } catch (e: Exception) {
-            e.printStackTrace()
+
             null // Return null if parsing fails
         }
     }

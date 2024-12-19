@@ -3,6 +3,7 @@ package com.boxpay.checkout.sdk
 import DismissViewModel
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -32,6 +33,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -52,6 +55,7 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.DCCViewModel
 import com.boxpay.checkout.sdk.ViewModels.SessionViewModel
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
+import com.boxpay.checkout.sdk.composeScreens.components.CvvBottomSheet
 import com.boxpay.checkout.sdk.databinding.FragmentAddCardBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.CurrencyData
 import com.boxpay.checkout.sdk.dataclasses.DCCRequest
@@ -149,7 +153,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         val jsonData = JSONObject()
         val brands = mutableListOf<String>()
         val request = object : JsonObjectRequest(Method.POST, url, jsonData, { response ->
-            logJsonObject(response)
             try {
                 val currBrand = response.getJSONObject("paymentMethod").getString("brand")
                 brands.add(currBrand)
@@ -362,6 +365,27 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
+        binding.cvvToolTipIcon.setOnClickListener {
+            val bottomSheet = CvvBottomSheetDialogFragment(
+                selectedColorBottomSheet = androidx.compose.ui.graphics.Color(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "primaryButtonColor",
+                            "#000000"
+                        )
+                    )
+                ),
+                selectedTextColor = androidx.compose.ui.graphics.Color(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "buttonTextColor",
+                            "#ffffff"
+                        )
+                    )
+                )
+            )
+            bottomSheet.show(childFragmentManager, "CvvBottomSheet")
+        }
 
         val allowedCharacters =
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890. "
@@ -434,45 +458,12 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     )
                 )
             ) // Set border thickness and color
-            setColor(Color.TRANSPARENT) // Background color inside the border
         }
         val unfocusedDrawable = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
-            cornerRadius = 16f // Adjust the corner radius
-            setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
-            setColor(Color.TRANSPARENT) // Background color inside the border
+            cornerRadius = 8f // Adjust the corner radius
+            setStroke(4, Color.parseColor("#E6E6E6")) // Set border thickness and color
         }
-        binding.editTextCardCVV.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                binding.editTextCardCVV.background = focusedDrawable
-            } else {
-                binding.editTextCardCVV.background = unfocusedDrawable
-            }
-        }
-        binding.editTextCardValidity.onFocusChangeListener =
-            View.OnFocusChangeListener { _, hasFocus ->
-                if (hasFocus) {
-                    binding.editTextCardValidity.background = focusedDrawable
-                } else {
-                    binding.editTextCardValidity.background = unfocusedDrawable
-                }
-            }
-        binding.editTextCardNumber.onFocusChangeListener =
-            View.OnFocusChangeListener { _, hasFocus ->
-                if (hasFocus) {
-                    binding.editTextCardNumber.background = focusedDrawable
-                } else {
-                    binding.editTextCardNumber.background = unfocusedDrawable
-                }
-            }
-        binding.editTextNameOnCard.onFocusChangeListener =
-            View.OnFocusChangeListener { _, hasFocus ->
-                if (hasFocus) {
-                    binding.editTextNameOnCard.background = focusedDrawable
-                } else {
-                    binding.editTextNameOnCard.background = unfocusedDrawable
-                }
-            }
 
         binding.editTextCardNumber.addTextChangedListener(object : TextWatcher {
 
@@ -504,17 +495,16 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     if (s?.length == 19) {
                         val text = s.toString().replace("\\s".toRegex(), "")
                         if (isValidCardNumberByLuhn(removeSpaces(text))) {
-                            binding.editTextCardValidity.requestFocus()
                             isCardNumberValid = true
                             binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
                             proceedButtonIsEnabled.value = true
                             enableProceedButton()
-
                         } else {
                             isCardNumberValid = false
                             proceedButtonIsEnabled.value = false
                             disableProceedButton()
                         }
+                        binding.editTextCardValidity.requestFocus()
                         isFirstTimeFillingCardNumber = false
                     }
                 }
@@ -605,11 +595,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     }
                     binding.textView4.text = "Invalid Card Number"
                     disableProceedButton()
-                } else {
-                    isCardNumberValid = true
-                    binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
-                    proceedButtonIsEnabled.value = true
-                    enableProceedButton()
                 }
             }
         })
@@ -881,6 +866,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardNumber.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
+                binding.cardNumberLayout.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                 val cardNumber = removeSpaces(binding.editTextCardNumber.text.toString())
                 if (!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))) {
                     binding.ll1InvalidCardNumber.visibility = View.VISIBLE
@@ -892,11 +878,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
                 }
+            } else {
+                binding.cardNumberLayout.background = focusedDrawable
             }
         }
 
         binding.editTextCardValidity.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
+                binding.editTextCardValidity.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                 val cardValidity = binding.editTextCardValidity.text.toString()
                 try {
                     if (!(isValidExpirationDate(
@@ -921,11 +910,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         binding.textView7.text = "Invalid card Validity"
                     }
                 }
+            } else {
+                binding.editTextCardValidity.background = focusedDrawable
             }
         }
         binding.editTextCardCVV.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
                 try {
+                    binding.cvvLayout.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                     val cardCVV = binding.editTextCardCVV.text.toString()
                     if (!isValidCVC(cardCVV.toInt())) {
                         binding.invalidCVV.visibility = View.VISIBLE
@@ -945,10 +937,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         binding.textView8.text = "Invalid CVV"
                     }
                 }
+            } else {
+                binding.cvvLayout.background = focusedDrawable
             }
         }
         binding.editTextNameOnCard.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
+                binding.editTextNameOnCard.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                 if (binding.editTextNameOnCard.text.isNullOrEmpty()) {
                     isNameOnCardValid = false
                     binding.nameOnCardErrorLayout.visibility = View.VISIBLE
@@ -956,6 +951,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     isNameOnCardValid = true
                     binding.nameOnCardErrorLayout.visibility = View.INVISIBLE
                 }
+            } else {
+                binding.editTextNameOnCard.background = focusedDrawable
             }
         }
         return binding.root
@@ -966,7 +963,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         try {
             json = context.assets.open("currency_data.json").bufferedReader().use { it.readText() }
         } catch (ex: IOException) {
-            ex.printStackTrace()
+
             return null
         }
 
@@ -1508,9 +1505,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
                 // Handle response
-                hideLoadingInButton()
                 try {
-                    logJsonObject(response)
+                    hideLoadingInButton()
 
                     val status = response.getJSONObject("status").getString("status")
                     val reasonCode = response.getJSONObject("status").getString("reasonCode")
@@ -1520,12 +1516,18 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                     var url = ""
 
-                    if (status.contains("Rejected", ignoreCase = true)) {
+                    if (status.contains("Rejected", ignoreCase = true) || status.contains(
+                            "FAILED",
+                            ignoreCase = true
+                        )
+                    ) {
                         var cleanedMessage = reason.substringAfter(":")
                         if (!reasonCode.startsWith("uf", true)) {
                             cleanedMessage =
                                 "Please retry using other payment method or try again in sometime"
                         }
+                        editor.putString("status", "Failed")
+                        editor.apply()
                         job?.cancel()
                         PaymentFailureScreen(errorMessage = cleanedMessage).show(
                             parentFragmentManager,
@@ -1550,22 +1552,29 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                                 .getString("url")
                         }
 
-                        if (status.contains("Approved", ignoreCase = true)) {
+                        if (status.contains(
+                                "Approved",
+                                ignoreCase = true
+                            ) || status.contains("PAID", ignoreCase = true)
+                        ) {
+                            editor.putString("status", "Success")
+                            editor.putString("transactionId", transactionId)
+                            editor.apply()
                             handleDccEvents()
                             handleSuccess()
-                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         } else {
                             showLoadingState()
                             val intent = Intent(requireContext(), OTPScreenWebView::class.java)
                             intent.putExtra("url", url)
                             intent.putExtra("type", type)
                             startFunctionCalls()
-                            startActivity(intent)
+                            startActivityForResult(intent, 333)
                         }
 
                     }
                     editor.apply()
                 } catch (_: JSONException) {
+
                 }
 
             },
@@ -1772,10 +1781,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-
-    fun logJsonObject(jsonObject: JSONObject) {
-    }
-
     fun getMessageForFieldErrorItems(errorString: String) {
 
         // Parse JSON response
@@ -1867,6 +1872,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchStatusAndReason(url: String) {
+        val requestQueue = Volley.newRequestQueue(context)
 
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
@@ -1888,24 +1894,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                         if (isAdded && isResumed && !isStateSaved) {
                             removeLoadingState()
-                            val callback = SingletonClass.getInstance().getYourObject()
-                            val callbackForDismissing =
-                                SingletonForDismissMainSheet.getInstance().getYourObject()
-                            job?.cancel()
                             handleSuccess()
-
-                            if (callback != null) {
-                                callback.onPaymentResult(
-                                    PaymentResultObject(
-                                        "Success",
-                                        transactionId,
-                                        transactionId
-                                    )
-                                )
-                            }
-                            if (callbackForDismissing != null) {
-                                callbackForDismissing.dismissFunction()
-                            }
+                            job?.cancel()
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
@@ -1955,9 +1945,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         } else {
             val callback = SingletonClass.getInstance().getYourObject()
             if (callback != null) {
-                val transactionId = sharedPreferences.getString("transactionId", "").toString()
-                val operationId = sharedPreferences.getString("operationId", "").toString()
-                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
                 val mainBottomSheetFragment =
                     parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
                 mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
@@ -1991,4 +1978,57 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.cardDetails.visibility = View.VISIBLE
         enableProceedButton()
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 333) {
+            if (resultCode == Activity.RESULT_OK) {
+                removeLoadingState()
+                job?.cancel()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+            }
+        }
+    }
+}
+
+class CvvBottomSheetDialogFragment(
+    private val selectedColorBottomSheet: androidx.compose.ui.graphics.Color,
+    private val selectedTextColor : androidx.compose.ui.graphics.Color
+) : BottomSheetDialogFragment() {
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return ComposeView(requireContext()).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setContent {
+                CvvBottomSheet(
+                    selectedColor = selectedColorBottomSheet,
+                    selectedTextColor = selectedTextColor,
+                    onClickBack = {
+                        dismiss()
+                    }
+                )
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val bottomSheet = dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        bottomSheet?.let {
+            val behavior = BottomSheetBehavior.from(it)
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            behavior.peekHeight = BottomSheetBehavior.PEEK_HEIGHT_AUTO
+            behavior.isFitToContents = true // Ensures it fits to its content
+            it.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT // Full screen height
+        }
+    }
+
 }
