@@ -354,7 +354,7 @@
                         android:id="@+id/addNewUpiProceedButtonRelativeLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/button_bg"
+                        android:background="@drawable/disable_button"
                         android:padding="12dp">
 
                         <TextView
@@ -364,7 +364,7 @@
                             android:layout_centerInParent="true"
                             android:fontFamily="@font/poppins_semibold"
                             android:text="Pay ₹36,770 via GPay"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#ADACB0"
                             android:textSize="16sp" />
 
                     </RelativeLayout>

@@ -134,8 +134,20 @@ class BoxPayUpiComponent(
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textNow = s.toString()
+                if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}"))) {
+                    enableProceedButton()
+                } else {
+                    disableProceedButton()
+                    if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
+                            ?: 0) >= 2
+                    ) {
+                        binding.invalidCVV.visibility = View.VISIBLE // Show specific error
+                    } else {
+                        binding.invalidCVV.visibility =
+                            View.GONE // Hide error if not matching condition
+                    }
+                }
                 upiCollectId = textNow
-                binding.invalidCVV.visibility = View.GONE
             }
 
             override fun afterTextChanged(p0: Editable?) {
@@ -158,21 +170,19 @@ class BoxPayUpiComponent(
 
         binding.addNewUpiId.setOnClickListener {
             if (binding.addNewUpiTextInputLayout.isVisible) {
-                binding.addNewUpiId.setBackgroundResource(0)
-                binding.imageView13.rotation = 0f
-                binding.addNewUpiTextInputLayout.visibility = View.GONE
-                binding.addUpiIdProceedButton.visibility = View.GONE
-                inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
+                disableAddUpiIdClick()
             } else {
                 binding.addNewUpiId.setBackgroundResource(R.drawable.add_new_upi_id_enabled_background)
                 binding.imageView13.rotation = 180f
                 selectedUpiIntent = ""
+                binding.dashedLine1.visibility = View.INVISIBLE
                 binding.proceedButton.visibility = View.GONE
                 resetClickToDefault()
                 binding.addUpiIdTextView6.text =
                     "Verify & Pay $totalAmount"
                 binding.addNewUpiTextInputLayout.visibility = View.VISIBLE
                 binding.addUpiIdProceedButton.visibility = if (showProceedButton) View.VISIBLE else View.GONE
+                binding.addUpiIdProceedButton.isEnabled = false
                 binding.addNewUpiTextInput.requestFocus()
                 inputMethodManager.showSoftInput(
                     binding.addNewUpiTextInput,
@@ -221,24 +231,9 @@ class BoxPayUpiComponent(
             val layout = getPopularConstraintLayoutByNum(i)
             layout.visibility = View.VISIBLE
             layout.setOnClickListener() {
-                resetClickToDefault()
-                selectedUpiIntent = "PhonePe"
-                imageView.setBackgroundResource(R.drawable.selected_popular_item_bg)
-                val shapeDrawable = imageView.background as? GradientDrawable
-                shapeDrawable?.setStroke(
-                    3, Color.parseColor(
-                        selectedColor
-                    )
-                )
-                binding.textView6.text =
-                    "Pay $totalAmount via $selectedUpiIntent"
-                binding.proceedButton.visibility = if (showProceedButton) View.VISIBLE else View.GONE
+                onClickUpiIntent("PhonePe",imageView)
                 if (binding.addNewUpiTextInputLayout.isVisible) {
-                    binding.addNewUpiId.setBackgroundResource(0)
-                    binding.imageView13.rotation = 0f
-                    binding.addNewUpiTextInputLayout.visibility = View.GONE
-                    binding.addUpiIdProceedButton.visibility = View.GONE
-                    inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
+                    disableAddUpiIdClick()
                 }
             }
 
@@ -255,24 +250,9 @@ class BoxPayUpiComponent(
             val layout = getPopularConstraintLayoutByNum(i)
             layout.visibility = View.VISIBLE
             layout.setOnClickListener() {
-                resetClickToDefault()
-                selectedUpiIntent = "GPay"
-                imageView.setBackgroundResource(R.drawable.selected_popular_item_bg)
-                val shapeDrawable = imageView.background as? GradientDrawable
-                shapeDrawable?.setStroke(
-                    3, Color.parseColor(
-                        selectedColor
-                    )
-                )
-                binding.textView6.text =
-                    "Pay $totalAmount via $selectedUpiIntent"
-                binding.proceedButton.visibility = if (showProceedButton) View.VISIBLE else View.GONE
+                onClickUpiIntent("GPay",imageView)
                 if (binding.addNewUpiTextInputLayout.isVisible) {
-                    binding.addNewUpiId.setBackgroundResource(0)
-                    binding.imageView13.rotation = 0f
-                    binding.addNewUpiTextInputLayout.visibility = View.GONE
-                    binding.addUpiIdProceedButton.visibility = View.GONE
-                    inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
+                    disableAddUpiIdClick()
                 }
             }
 
@@ -289,24 +269,9 @@ class BoxPayUpiComponent(
             val layout = getPopularConstraintLayoutByNum(i)
             layout.visibility = View.VISIBLE
             layout.setOnClickListener() {
-                resetClickToDefault()
-                selectedUpiIntent = "PayTm"
-                imageView.setBackgroundResource(R.drawable.selected_popular_item_bg)
-                val shapeDrawable = imageView.background as? GradientDrawable
-                shapeDrawable?.setStroke(
-                    3, Color.parseColor(
-                        selectedColor
-                    )
-                )
-                binding.textView6.text =
-                    "Pay $totalAmount via $selectedUpiIntent"
-                binding.proceedButton.visibility = if (showProceedButton) View.VISIBLE else View.GONE
+                onClickUpiIntent("PayTm",imageView)
                 if (binding.addNewUpiTextInputLayout.isVisible) {
-                    binding.addNewUpiId.setBackgroundResource(0)
-                    binding.imageView13.rotation = 0f
-                    binding.addNewUpiTextInputLayout.visibility = View.GONE
-                    binding.addUpiIdProceedButton.visibility = View.GONE
-                    inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
+                    disableAddUpiIdClick()
                 }
             }
 
@@ -324,11 +289,7 @@ class BoxPayUpiComponent(
             resetClickToDefault()
             binding.proceedButton.visibility = View.GONE
             if (binding.addNewUpiTextInputLayout.isVisible) {
-                binding.addNewUpiId.setBackgroundResource(0)
-                binding.imageView13.rotation = 0f
-                binding.addNewUpiTextInputLayout.visibility = View.GONE
-                binding.addUpiIdProceedButton.visibility = View.GONE
-                inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
+                disableAddUpiIdClick()
             }
             getUrlForDefaultUPIIntent()
         }
@@ -336,6 +297,21 @@ class BoxPayUpiComponent(
         if (i == 1 || i < 1) {
             binding.popularUPIAppsConstraint.visibility = View.GONE
         }
+    }
+
+    fun onClickUpiIntent(selected: String,imageView: ImageView) {
+        resetClickToDefault()
+        selectedUpiIntent = selected
+        imageView.setBackgroundResource(R.drawable.selected_popular_item_bg)
+        val shapeDrawable = imageView.background as? GradientDrawable
+        shapeDrawable?.setStroke(
+            3, Color.parseColor(
+                selectedColor
+            )
+        )
+        binding.textView6.text =
+            "Pay $totalAmount via $selectedUpiIntent"
+        binding.proceedButton.visibility = if (showProceedButton) View.VISIBLE else View.GONE
     }
 
     private fun resetClickToDefault() {
@@ -435,14 +411,6 @@ class BoxPayUpiComponent(
                     Color.parseColor(selectedColor)
                 )
                 binding.textView6.setTextColor(
-                    Color.parseColor(
-                        selectedTextColor
-                    )
-                )
-                binding.addNewUpiProceedButtonRelativeLayout.setBackgroundColor(
-                    Color.parseColor(selectedColor)
-                )
-                binding.addUpiIdTextView6.setTextColor(
                     Color.parseColor(
                         selectedTextColor
                     )
@@ -1265,5 +1233,37 @@ class BoxPayUpiComponent(
     override fun onDestroy() {
         super.onDestroy()
         sessionTimer?.cancel()
+    }
+
+    private fun enableProceedButton() {
+        binding.addNewUpiProceedButtonRelativeLayout.isEnabled = true
+        binding.addUpiIdProceedButton.isEnabled = true
+        binding.addNewUpiProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.addNewUpiProceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                selectedColor
+            )
+        )
+        binding.invalidCVV.visibility = View.GONE
+        binding.addUpiIdTextView6.setTextColor(Color.parseColor(
+            selectedTextColor
+        ))
+    }
+
+    private fun disableProceedButton() {
+        binding.addUpiIdTextView6.visibility = View.VISIBLE
+        binding.addUpiIdProceedButton.isEnabled = false
+        binding.addNewUpiProceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
+        binding.addUpiIdProceedButton.setBackgroundResource(R.drawable.disable_button)
+        binding.addUpiIdTextView6.setTextColor(Color.parseColor("#ADACB0"))
+    }
+
+    fun disableAddUpiIdClick() {
+        binding.addNewUpiId.setBackgroundResource(0)
+        binding.imageView13.rotation = 0f
+        binding.addNewUpiTextInputLayout.visibility = View.GONE
+        binding.dashedLine1.visibility = View.VISIBLE
+        binding.addUpiIdProceedButton.visibility = View.GONE
+        inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
     }
 }
