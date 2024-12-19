@@ -52,6 +52,11 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         val resultIntent = Intent()
         resultIntent.putExtra("closed", "Your Result Data")
         setResult(Activity.RESULT_OK, resultIntent)
+        binding.webViewForOtpValidation.apply {
+            loadUrl("about:blank") // Load a blank page to reset the WebView
+            clearHistory()         // Clear the browsing history
+            clearCache(true)       // Clear the cache to ensure a fresh load next time
+        }
         finish()
     }
 

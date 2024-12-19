@@ -105,6 +105,45 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent">
 
+                            <LinearLayout
+                                android:id="@+id/recycler_view_shimmer"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                android:visibility="visible">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical">
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="30dp"
+                                        android:layout_marginTop="20dp"
+                                        android:background="@drawable/loading_state" />
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="30dp"
+                                        android:layout_marginTop="20dp"
+                                        android:background="@drawable/loading_state" />
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="30dp"
+                                        android:layout_marginTop="20dp"
+                                        android:background="@drawable/loading_state" />
+
+                                    <View
+                                        android:layout_width="match_parent"
+                                        android:layout_height="30dp"
+                                        android:layout_marginTop="20dp"
+                                        android:background="@drawable/loading_state" />
+                                </LinearLayout>
+                            </LinearLayout>
+
                             <RelativeLayout
                                 android:id="@+id/loading_relative_layout"
                                 android:layout_width="match_parent"
@@ -112,7 +151,8 @@
                                 app:layout_constraintBottom_toBottomOf="parent"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintHorizontal_bias="0.0"
-                                app:layout_constraintStart_toStartOf="parent">
+                                app:layout_constraintStart_toStartOf="parent"
+                                android:visibility="gone">
 
                                 <com.airbnb.lottie.LottieAnimationView
                                     android:id="@+id/boxPayLogoLottieAnimation"

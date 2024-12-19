@@ -1196,29 +1196,34 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     fun dismissMainSheet() {
         dismissThroughAnotherBottomSheet = true
         try {
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed({
-                val cardBottomSheet =
-                    parentFragmentManager.findFragmentByTag("AddCardBottomSheet") as? AddCardBottomSheet
-                if (cardBottomSheet?.isResumed == true) {
-                    cardBottomSheet?.dismissCurrentBottomSheet()
-                }
-                val addUPIID =
-                    parentFragmentManager.findFragmentByTag("AddUPIBottomSheet") as? AddUPIID
-                addUPIID?.dismissCurrentBottomSheet()
-                val walletBottomSheet =
-                    parentFragmentManager.findFragmentByTag("WalletBottomSheet") as? WalletBottomSheet
-                walletBottomSheet?.dismissCurrentBottomSheet()
-                val netBankingBottomSheet =
-                    parentFragmentManager.findFragmentByTag("NetBankingBottomSheet") as? NetBankingBottomSheet
-                netBankingBottomSheet?.dismissCurrentBottomSheet()
-                val emiBottomSheet =
-                    parentFragmentManager.findFragmentByTag("EmiBottomSheet") as? EmiBottomSheet
-                emiBottomSheet?.dismissFunction()
-                sessionTimer?.cancel()
-
+            if (isAdded || parentFragmentManager == null) {
                 dismiss()
-            }, 500)
+                return
+            } else {
+                val handler = Handler(Looper.getMainLooper())
+                handler.postDelayed({
+                    val cardBottomSheet =
+                        parentFragmentManager.findFragmentByTag("AddCardBottomSheet") as? AddCardBottomSheet
+                    if (cardBottomSheet?.isResumed == true) {
+                        cardBottomSheet?.dismissCurrentBottomSheet()
+                    }
+                    val addUPIID =
+                        parentFragmentManager.findFragmentByTag("AddUPIBottomSheet") as? AddUPIID
+                    addUPIID?.dismissCurrentBottomSheet()
+                    val walletBottomSheet =
+                        parentFragmentManager.findFragmentByTag("WalletBottomSheet") as? WalletBottomSheet
+                    walletBottomSheet?.dismissCurrentBottomSheet()
+                    val netBankingBottomSheet =
+                        parentFragmentManager.findFragmentByTag("NetBankingBottomSheet") as? NetBankingBottomSheet
+                    netBankingBottomSheet?.dismissCurrentBottomSheet()
+                    val emiBottomSheet =
+                        parentFragmentManager.findFragmentByTag("EmiBottomSheet") as? EmiBottomSheet
+                    emiBottomSheet?.dismissFunction()
+                    sessionTimer?.cancel()
+
+                    dismiss()
+                }, 500)
+            }
         }catch (e: Exception) {
             handleException(
                 context,

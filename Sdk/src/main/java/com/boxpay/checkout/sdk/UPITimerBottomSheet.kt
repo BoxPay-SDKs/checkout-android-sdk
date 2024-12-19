@@ -278,6 +278,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     }
 
     private fun fetchStatusAndReason(url: String) {
+        val requestQueue = Volley.newRequestQueue(context)
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
@@ -302,38 +303,28 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                         editor.putString("transactionId", transactionId)
                         editor.apply()
                         if (isAdded && isResumed && !isStateSaved) {
-                            countdownTimer.cancel()
+                            handleSuccess()
                             countdownTimerForAPI.cancel()
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
-                            dismiss()
+                            countdownTimer.cancel()
                         }
+
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
                     } else if (status.contains("Processing", ignoreCase = true)) {
                         editor.putString("status", "Processing")
                         editor.apply()
-                    } else if (status.contains(
-                            "FAILED",
-                            ignoreCase = true
-                        ) || status.contains("REJECTED", ignoreCase = true)
-                    ) {
+                    } else if (status.contains("FAILED", ignoreCase = true)) {
+
                         editor.putString("status", "Failed")
                         editor.apply()
+
                         if (isAdded && isResumed && !isStateSaved) {
                             var cleanedMessage = statusReason.substringAfter(":")
                             if (!reasonCode.startsWith("uf", true)) {
                                 cleanedMessage = "Please retry using other payment method or try again in sometime"
                             }
                             countdownTimer.cancel()
-                            countdownTimer.cancel()
-                            countdownTimer.cancel()
-                            countdownTimerForAPI.cancel()
-                            countdownTimerForAPI.cancel()
                             countdownTimerForAPI.cancel()
                             PaymentFailureScreen(
                                 function = {
@@ -382,5 +373,25 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             .map { Random.nextInt(0, charPool.size) }
             .map(charPool::get)
             .joinToString("")
+    }
+
+    private fun handleSuccess() {
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
+            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+            bottomSheet.show(
+                parentFragmentManager,
+                "PaymentStatusBottomSheetWithDetails"
+            )
+        } else {
+            val callback = SingletonClass.getInstance().getYourObject()
+            if (callback != null) {
+                val mainBottomSheetFragment =
+                    parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                dismiss()
+            }
+        }
     }
 }

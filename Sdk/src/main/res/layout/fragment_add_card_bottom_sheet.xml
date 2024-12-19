@@ -95,7 +95,7 @@
                         <EditText
                             android:id="@+id/editTextNameOnCard"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="48dp"
                             android:background="@drawable/edittext_bg"
                             android:fontFamily="@font/poppins"
                             android:layout_marginStart="2dp"
@@ -386,7 +386,7 @@
                             <EditText
                                 android:id="@+id/editTextCardValidity"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_height="48dp"
                                 android:layout_weight="1"
                                 android:background="@drawable/edittext_bg"
                                 android:fontFamily="@font/poppins"
@@ -396,7 +396,7 @@
                                 android:maxLength="4"
                                 android:paddingStart="12dp"
                                 android:paddingTop="10dp"
-                                android:paddingEnd="60dp"
+                                android:paddingEnd="90dp"
                                 android:paddingBottom="10dp"
                                 android:textColor="#000000"
                                 android:textColorHint="#7F7D83"
@@ -457,27 +457,58 @@
                                 android:paddingStart="2dp"
                                 android:textColor="#2D2B32" />
 
-                            <EditText
-                                android:id="@+id/editTextCardCVV"
+                            <LinearLayout
+                                android:id="@+id/cvv_layout"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_height="48dp"
                                 android:layout_weight="1"
                                 android:background="@drawable/edittext_bg"
-                                android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
-                                android:hint="Enter CVV"
-                                android:inputType="numberPassword"
-                                android:maxLength="4"
-                                android:paddingStart="12dp"
-                                android:paddingTop="10dp"
-                                android:paddingEnd="60dp"
-                                android:layout_marginStart="2dp"
-                                android:layout_marginEnd="2dp"
-                                android:paddingBottom="10dp"
-                                android:textColor="#000000"
-                                android:textColorHint="#7F7D83"
-                                android:textSize="14sp"
-                                tools:ignore="TouchTargetSizeCheck" />
+                                android:orientation="horizontal"
+                                android:padding="2dp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/cardCVVTextView">
+
+                                <EditText
+                                    android:id="@+id/edit_text_card_CVV"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:background="@drawable/white_bg_edittext"
+                                    android:fontFamily="@font/poppins"
+                                    android:gravity="center_vertical"
+                                    android:layout_marginStart="2dp"
+                                    android:layout_marginEnd="30dp"
+                                    android:hint="Enter CVV"
+                                    android:inputType="number"
+                                    android:maxLength="19"
+                                    android:paddingStart="12dp"
+                                    android:paddingTop="10dp"
+                                    android:paddingBottom="8dp"
+                                    android:textColor="#000000"
+                                    android:textColorHint="#7F7D83"
+                                    android:textSize="14sp"
+                                    tools:ignore="TouchTargetSizeCheck" />
+
+                                <LinearLayout
+                                    android:id="@+id/cvvToolTipLayout"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="horizontal"
+                                    android:paddingEnd="12dp">
+
+                                    <ImageView
+                                        android:id="@+id/cvvToolTipIcon"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:src="@drawable/ic_question_mark" />
+
+
+                                </LinearLayout>
+
+
+                            </LinearLayout>
 
                             <androidx.constraintlayout.widget.ConstraintLayout
                                 android:id="@+id/invalidCVV"
@@ -562,8 +593,9 @@
                             app:layout_constraintTop_toBottomOf="@+id/texthead_Enter_UPI">
 
                             <LinearLayout
+                                android:id="@+id/card_number_layout"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
+                                android:layout_height="48dp"
                                 android:layout_weight="1"
                                 android:background="@drawable/edittext_bg"
                                 android:gravity="center"
@@ -728,7 +760,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="4dp"
                                 android:layout_marginEnd="4dp"
-                                android:fontFamily="@font/poppins"
+                                android:fontFamily="@font/poppins_semibold"
                                 android:fontWeight="600"
                                 android:gravity="center_vertical"
                                 android:text="100% SECURE"

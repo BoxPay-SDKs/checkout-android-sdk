@@ -294,7 +294,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     name = emiViewModel.selectedBank.value?.name ?: "",
                                     month = emiViewModel.selectedEmi.value.first,
                                     amount = emiViewModel.selectedEmi.value.second,
-                                    percent = emiViewModel.selectedPercent.value ?: 0,
+                                    percent = emiViewModel.selectedPercent.value ?: 0.0,
                                     onClickBack = {
                                         emiViewModel.onBackAddCard()
                                     },
@@ -311,7 +311,9 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     },
                                     onCardNumberChange = {
                                         emiViewModel.onCardNumberChange(it)
-                                        if ((emiViewModel.cardNumber.value?.text?.length ?: 0) >= 9 && emiViewModel.cardIcon.value == R.drawable.default_card_icon) {
+                                        if ((emiViewModel.cardNumber.value?.text?.length
+                                                ?: 0) >= 9 && emiViewModel.cardIcon.value == R.drawable.default_card_icon
+                                        ) {
                                             makeCardNetworkIdentificationCall(
                                                 context!!,
                                                 emiViewModel.cardNumber.value!!.text.filter { it.isDigit() })
@@ -413,13 +415,15 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     .getString("cardlessEmiProviderTitle") else paymentMethod.getJSONObject(
                                     "emiMethod"
                                 ).getString("issuerTitle")
-                            val bankInterestRate =
-                                if (emiCardName.equals(
-                                        "others",
-                                        true
-                                    )
-                                ) 0 else paymentMethod.getJSONObject("emiMethod")
-                                    .getInt("interestRate")
+                            val effectiveInterestRate = paymentMethod.getJSONObject("emiMethod")
+                                .getDouble("effectiveInterestRate")
+
+                            val bankInterestRate = if (emiCardName.equals("others", true)) {
+                                0.0
+                            } else {
+                                effectiveInterestRate
+                            }
+
                             val emiMethod = paymentMethod.getJSONObject("emiMethod")
                             var noApplicableOffer = false
                             var lowApplicableOffer = false
@@ -436,7 +440,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                             val bank = Bank(
                                 iconUrl = emiBankImage,
                                 name = bankName,
-                                percent = "@$bankInterestRate% p.a.",
+                                percent = if (noApplicableOffer) emiMethod.optDouble("interestRate") else bankInterestRate,
                                 noCostApplied = noApplicableOffer,
                                 lowCostApplied = lowApplicableOffer,
                                 emiList = emptyList(),
@@ -444,7 +448,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                             )
                             val emi = Emi(
                                 duration = emiMethod.optInt("duration"),
-                                percent = emiMethod.optInt("interestRate"),
+                                percent = if (noApplicableOffer) emiMethod.optDouble("interestRate") else bankInterestRate,
                                 amount = emiMethod.optString("emiAmountLocaleFull"),
                                 totalAmount = emiMethod.optString("totalAmountLocaleFull"),
                                 discount = null,
@@ -670,7 +674,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 "Please retry using other payment method or try again in sometime"
                         }
                         PaymentFailureScreen({
-                        },errorMessage = cleanedMessage).show(
+                        }, errorMessage = cleanedMessage).show(
                             parentFragmentManager,
                             "FailureScreen"
                         )
@@ -829,7 +833,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchStatusAndReason(url: String) {
-
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
             Response.Listener { response ->
@@ -850,23 +853,13 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
 
                         if (isAdded && isResumed && !isStateSaved) {
                             hideLoader()
-                            val callback = SingletonClass.getInstance().getYourObject()
-                            val callbackForDismissing =
-                                SingletonForDismissMainSheet.getInstance().getYourObject()
                             job?.cancel()
-                            handleSuccess()
-                            if (callback != null) {
-                                callback.onPaymentResult(
-                                    PaymentResultObject(
-                                        "Success",
-                                        transactionId,
-                                        transactionId
-                                    )
-                                )
-                            }
-                            if (callbackForDismissing != null) {
-                                callbackForDismissing.dismissFunction()
-                            }
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            dismiss()
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {

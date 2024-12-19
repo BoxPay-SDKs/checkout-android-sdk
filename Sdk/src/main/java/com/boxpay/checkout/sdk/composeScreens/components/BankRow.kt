@@ -221,7 +221,7 @@ fun EmiAmountDetails(
     selectedColor: Color,
     month: Int,
     amount: String,
-    percent: Int,
+    percent: Double,
     total: String,
     interest: String,
     discount: String?,
@@ -312,7 +312,7 @@ fun EmiAmountDetails(
                 total = total,
                 interest = interest,
                 discount = discount,
-                interestRate = "$percent",
+                interestRate = formatPercent(percent),
                 isNoCostApplied = isNoCostApplied,
                 currencySymbol = currencySymbol
             )
@@ -437,6 +437,14 @@ fun EmiAmountDetails(
                 )
             }
         }
+    }
+}
+
+fun formatPercent(percent: Double): String {
+    return if (percent % 1 == 0.0) {
+        percent.toInt().toString() // Remove decimal point for whole numbers
+    } else {
+        percent.toString() // Keep as-is for fractional numbers
     }
 }
 
@@ -644,7 +652,8 @@ fun TableDetails(
 @Composable
 fun CvvBottomSheet(
     selectedColor: Color,
-    onClickBack: () -> Unit
+    onClickBack: () -> Unit,
+    selectedTextColor: Color
 ) {
     Box(
         modifier = Modifier
@@ -749,7 +758,7 @@ fun CvvBottomSheet(
                         fontSize = 16.sp,
                         fontWeight = FontWeight(600)
                     ),
-                    color = Color.White,
+                    color = selectedTextColor,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),

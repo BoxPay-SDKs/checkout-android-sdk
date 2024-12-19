@@ -110,7 +110,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
                 } else {
-                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true, customerShopperToken = shopperToken, isSuccessScreenVisible = true)
+                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true, customerShopperToken = shopperToken, isSuccessScreenVisible = false)
                     checkout.testEnv = false
                     checkout.display()
                 }
@@ -126,7 +126,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
                 } else {
-                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, shopperToken, isSuccessScreenVisible = true)
+                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, shopperToken, isSuccessScreenVisible = false)
                     checkout.testEnv = true
                     checkout.display()
                 }

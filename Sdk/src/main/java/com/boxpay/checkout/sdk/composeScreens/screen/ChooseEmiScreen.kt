@@ -85,7 +85,6 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -105,6 +104,7 @@ import com.boxpay.checkout.sdk.composeScreens.components.FilterCard
 import com.boxpay.checkout.sdk.composeScreens.components.OthersEmiRow
 import com.boxpay.checkout.sdk.composeScreens.components.ShimmerEffect
 import com.boxpay.checkout.sdk.composeScreens.components.TopBar
+import com.boxpay.checkout.sdk.composeScreens.components.formatPercent
 import com.boxpay.checkout.sdk.composeScreens.model.Bank
 import com.boxpay.checkout.sdk.composeScreens.model.ChooseEmiModel
 import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
@@ -394,7 +394,7 @@ fun ChooseEmiScreen(
                             BankRow(
                                 iconUrl = bank.iconUrl,
                                 bankName = bank.name,
-                                percentText = bank.percent,
+                                percentText = "@${formatPercent(bank.percent)}% p.a.",
                                 isNoCostApplied = bank.noCostApplied,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -521,7 +521,7 @@ fun ChooseEmiScreen(
                             fontSize = 16.sp,
                             fontWeight = FontWeight(600)
                         ),
-                        color = if (selectedRadioButton.isNotEmpty()) Color.White else Color(
+                        color = if (selectedRadioButton.isEmpty()) Color(0xFFADACB0) else Color(
                             android.graphics.Color.parseColor(
                                 sharedPreferences.getString(
                                     "buttonTextColor",
@@ -558,7 +558,7 @@ fun SelectTenureEmi(
     selectedEmi: Pair<Int, String>,
     sharedPreferences: SharedPreferences,
     onClickRadio: (duration: Int, amount: String) -> Unit,
-    onProceed: (Int) -> Unit,
+    onProceed: (Double) -> Unit,
     currencySymbol: String,
 ) {
     val scrollState = rememberScrollState()
@@ -685,7 +685,7 @@ fun AddCardDetailsScreen(
     name: String,
     month: Int,
     amount: String,
-    percent: Int,
+    percent: Double,
     onClickBack: () -> Unit,
     sharedPreferences: SharedPreferences,
     cardNumber: TextFieldValue?,
@@ -954,7 +954,7 @@ fun AddCardDetailsScreen(
                 Image(
                     painter = painterResource(id = cardIcon),
                     contentDescription = "",
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.padding(end = 12.dp).size(32.dp)
                 )
             },
             colors = OutlinedTextFieldDefaults.colors(
@@ -1249,16 +1249,22 @@ fun AddCardDetailsScreen(
                 }
                 .padding(bottom = 20.dp),
             shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color(
-                    android.graphics.Color.parseColor(
-                        sharedPreferences.getString(
-                            "primaryButtonColor",
-                            "#000000"
+            colors = if (allDetailsValid) {
+                ButtonDefaults.buttonColors(
+                    backgroundColor = Color(
+                        android.graphics.Color.parseColor(
+                            sharedPreferences.getString(
+                                "primaryButtonColor",
+                                "#000000"
+                            )
                         )
                     )
                 )
-            )
+            } else {
+                ButtonDefaults.buttonColors(
+                    backgroundColor = Color(0xFFADACB0)
+                )
+            }
         ) {
             if (showLoadingInButton) {
                 AnimatedCircularProgressIndicator(
@@ -1274,7 +1280,7 @@ fun AddCardDetailsScreen(
                         fontSize = 16.sp,
                         fontWeight = FontWeight(600)
                     ),
-                    color = if (allDetailsValid) Color.White else  Color(
+                    color = if (!allDetailsValid) Color(0xFFADACB0) else Color(
                         android.graphics.Color.parseColor(
                             sharedPreferences.getString(
                                 "buttonTextColor",
@@ -1301,7 +1307,15 @@ fun AddCardDetailsScreen(
                 ),
                 onClickBack = {
                     showCvvDetails.value = false
-                }
+                },
+                selectedTextColor = Color(
+                    android.graphics.Color.parseColor(
+                        sharedPreferences.getString(
+                            "buttonTextColor",
+                            "#ffffff"
+                        )
+                    )
+                )
             )
         }
     }
@@ -1592,35 +1606,6 @@ fun SwipeToPayButton(
 
 }
 
-
-@Preview
-@Composable
-private fun SwipeToPayButtonPreview() {
-//    SwipeToPayButton(
-//        onSwipeComplete = { /*TODO*/ }, modifier = Modifier
-//            .fillMaxWidth()
-//            .background(Color.White)
-//            .padding(horizontal = 16.dp),
-//        buttonColor = Color.LightGray,
-//        buttontextColor = Color.White
-//    )
-    RecommendedScreen(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        buttonColor = Color(0xFF1CA672),
-        buttontextColor = Color.White,
-        amount = "₹36,770",
-        lastUsedUpi = "",
-        onClickMoreOptions = {},
-        onSwipeComplete = {},
-        address = "1538 vyapar kendra road, Sushant lok phase 1 sector 43, gurugram, haryana, 12001,+91-8231245318",
-        onClickChangeAddress = {},
-        toShowOnChangeAddressClick = true,
-        toShowAddress = true
-    )
-}
-
 @Composable
 fun RecommendedScreen(
     modifier: Modifier,
@@ -1628,22 +1613,23 @@ fun RecommendedScreen(
     buttontextColor: Color,
     amount: String,
     lastUsedUpi: String,
-    onClickMoreOptions:()-> Unit,
+    onClickMoreOptions: () -> Unit,
     onSwipeComplete: () -> Unit,
     address: String,
-    onClickChangeAddress:()-> Unit,
-    toShowOnChangeAddressClick:Boolean,
-    toShowAddress:Boolean
+    onClickChangeAddress: () -> Unit,
+    toShowOnChangeAddressClick: Boolean,
+    toShowAddress: Boolean
 ) {
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
-        Card (modifier = Modifier
-            .wrapContentHeight()
-            .fillMaxWidth(),
+        Card(
+            modifier = Modifier
+                .wrapContentHeight()
+                .fillMaxWidth(),
             shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp),
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 20.dp
             )
-        ){
+        ) {
             ConstraintLayout(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1684,11 +1670,13 @@ fun RecommendedScreen(
                                 fontWeight = FontWeight.SemiBold,
                                 fontFamily = defaultFontFamily
                             ),
-                            modifier = Modifier.constrainAs(changeCta) {
-                                end.linkTo(parent.end, 16.dp)
-                                centerVerticallyTo(shippingTitle)
+                            modifier = Modifier
+                                .constrainAs(changeCta) {
+                                    end.linkTo(parent.end, 16.dp)
+                                    centerVerticallyTo(shippingTitle)
 
-                            }.clickable { onClickChangeAddress() },
+                                }
+                                .clickable { onClickChangeAddress() },
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -1767,17 +1755,19 @@ fun RecommendedScreen(
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = defaultFontFamily
                     ),
-                    modifier = Modifier.constrainAs(moreOptionsCta) {
-                        end.linkTo(moreOptionsArrow.start, 2.dp)
-                        if (toShowAddress) {
-                            top.linkTo(divider.bottom, 16.dp)
-                        } else {
-                            top.linkTo(parent.top, 16.dp)
-                        }
-                        bottom.linkTo(paymentDesc.bottom)
+                    modifier = Modifier
+                        .constrainAs(moreOptionsCta) {
+                            end.linkTo(moreOptionsArrow.start, 2.dp)
+                            if (toShowAddress) {
+                                top.linkTo(divider.bottom, 16.dp)
+                            } else {
+                                top.linkTo(parent.top, 16.dp)
+                            }
+                            bottom.linkTo(paymentDesc.bottom)
 
-                        width = Dimension.fillToConstraints
-                    }.clickable { onClickMoreOptions() },
+                            width = Dimension.fillToConstraints
+                        }
+                        .clickable { onClickMoreOptions() },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -1849,7 +1839,7 @@ fun RecommendedScreen(
                     )
                 )
                 SwipeToPayButton(
-                    onSwipeComplete = {onSwipeComplete() },
+                    onSwipeComplete = { onSwipeComplete() },
                     buttonColor = buttonColor,
                     buttontextColor = buttontextColor,
                     modifier = Modifier

@@ -1131,6 +1131,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchStatusAndReason(url: String) {
+        val requestQueue = Volley.newRequestQueue(context)
 
         val jsonObjectRequest = object : JsonObjectRequest(
             Method.GET, url, null,
@@ -1144,33 +1145,16 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                             ignoreCase = true
                         ) || status.contains("PAID", ignoreCase = true)
                     ) {
+
                         editor.putString("status", "Success")
                         editor.putString("amount", response.getString("amount").toString())
                         editor.putString("transactionId", transactionId)
                         editor.apply()
 
                         if (isAdded && isResumed && !isStateSaved) {
-                            val callback = SingletonClass.getInstance().getYourObject()
-                            val callbackForDismissing =
-                                SingletonForDismissMainSheet.getInstance().getYourObject()
+                            removeLoadingScreenState()
+                            handleSuccess()
                             job?.cancel()
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
-                            if (callback != null) {
-                                callback.onPaymentResult(
-                                    PaymentResultObject(
-                                        "Success",
-                                        transactionId,
-                                        transactionId
-                                    )
-                                )
-                            }
-                            if (callbackForDismissing != null) {
-                                callbackForDismissing.dismissFunction()
-                            }
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
@@ -1187,16 +1171,13 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         if (isAdded && isResumed && !isStateSaved) {
                             removeLoadingScreenState()
                             job?.cancel()
-                            job?.cancel()
-                            job?.cancel()
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"
                             ).show(parentFragmentManager, "FailureScreen")
                         }
                     }
 
-                } catch (e: JSONException) {
-
+                } catch (_: JSONException) {
                 }
             },
             Response.ErrorListener {
@@ -1241,5 +1222,25 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         binding.loaderCardView.visibility = View.VISIBLE
         binding.cardView.visibility = View.GONE
         disableProceedButton()
+    }
+
+    private fun handleSuccess() {
+        val sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
+            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+            bottomSheet.show(
+                parentFragmentManager,
+                "PaymentStatusBottomSheetWithDetails"
+            )
+        } else {
+            val callback = SingletonClass.getInstance().getYourObject()
+            if (callback != null) {
+                val mainBottomSheetFragment =
+                    parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                dismiss()
+            }
+        }
     }
 }

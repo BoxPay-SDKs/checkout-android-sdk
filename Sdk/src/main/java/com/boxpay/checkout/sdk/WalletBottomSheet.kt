@@ -1232,6 +1232,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                             if (callbackForDismissing != null) {
                                 callbackForDismissing.dismissFunction()
                             }
+                            dismiss()
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {

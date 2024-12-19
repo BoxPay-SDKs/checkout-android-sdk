@@ -8,7 +8,7 @@ data class CardType(
 data class Bank(
     val iconUrl: String,
     val name: String,
-    val percent: String,
+    val percent: Double,
     val noCostApplied: Boolean,
     val lowCostApplied: Boolean,
     val emiList: List<Emi>,
@@ -21,7 +21,7 @@ data class ChooseEmiModel(
 
 data class Emi(
     val duration: Int,
-    val percent: Int,
+    val percent: Double,
     val amount: String,
     val totalAmount: String,
     val discount: String?,
