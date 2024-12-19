@@ -964,7 +964,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         try {
             json = context.assets.open("currency_data.json").bufferedReader().use { it.readText() }
         } catch (ex: IOException) {
-            ex.printStackTrace()
+
             return null
         }
 

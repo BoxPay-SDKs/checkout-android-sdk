@@ -57,7 +57,6 @@ import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.GsonBuilder
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.BalloonCenterAlign
 import com.skydoves.balloon.createBalloon
@@ -910,7 +909,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 hideLoadingInButton()
 
                 try {
-                    logJsonObject(response)
                     // Parse the JSON response
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
@@ -1022,12 +1020,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
     fun dismissCurrentBottomSheet() {
         dismiss()
-    }
-
-    fun logJsonObject(jsonObject: JSONObject) {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        val jsonStr = gson.toJson(jsonObject)
-
     }
 
     private fun enableProceedButton() {
