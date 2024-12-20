@@ -3,7 +3,6 @@ package com.boxpay.checkout.sdk
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
@@ -284,173 +283,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         super.onActivityResult(requestCode, resultCode, data)
         showLoadingState("")
         if (requestCode == 121) {
-            if (resultCode == Activity.RESULT_OK) {
-                val responseUri: Uri? = data?.data
-                if (responseUri != null) {
-                    val responseString = responseUri.toString()
-                    if (responseString.contains("success", ignoreCase = true)) {
-                        // Payment was successful
-                        editor.putString("status", "Success")
-                        editor.apply()
-
-                        if (isAdded && isResumed && !isStateSaved) {
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
-                            job?.cancel()
-                        }
-                    } else if (responseString.contains(
-                            "fail",
-                            ignoreCase = true
-                        ) || responseString.contains("decline", ignoreCase = true)
-                    ) {
-                        // Payment was declined or failed
-                        editor.putString("status", "Failed")
-                        editor.apply()
-                        if (isAdded && isResumed && !isStateSaved) {
-                            job?.cancel()
-                            PaymentFailureScreen(
-                                errorMessage = ""
-                            ).show(parentFragmentManager, "FailureScreen")
-                        }
-                    } else {
-                        // User returned without completing payment or other cases
-                    }
-                } else {
-                    // User returned without completing payment or other cases
-                }
-            } else {
-                // Payment was canceled by the user or some error occurred
-                isGpayReturned = true
-            }
+            isGpayReturned = true
         } else if (requestCode == 122) {
-            if (resultCode == Activity.RESULT_OK) {
-                val responseUri: Uri? = data?.data
-                if (responseUri != null) {
-                    val responseString = responseUri.toString()
-                    if (responseString.contains("success", ignoreCase = true)) {
-                        // Payment was successful
-                        editor.putString("status", "Success")
-                        editor.apply()
-
-                        if (isAdded && isResumed && !isStateSaved) {
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
-                            job?.cancel()
-                        }
-                    } else if (responseString.contains(
-                            "fail",
-                            ignoreCase = true
-                        ) || responseString.contains("decline", ignoreCase = true)
-                    ) {
-                        // Payment was declined or failed
-                        editor.putString("status", "Failed")
-                        editor.apply()
-                        if (isAdded && isResumed && !isStateSaved) {
-                            job?.cancel()
-                            PaymentFailureScreen(
-                                errorMessage = ""
-                            ).show(parentFragmentManager, "FailureScreen")
-                        }
-                    } else {
-                        // User returned without completing payment or other cases
-                    }
-                } else {
-                    // User returned without completing payment or other cases
-                }
-            } else {
-                // Payment was canceled by the user or some error occurred
-                isPaytmReturned = true
-            }
+            isPaytmReturned = true
         } else if (requestCode == 123) {
-            if (resultCode == Activity.RESULT_OK) {
-                val responseUri: Uri? = data?.data
-                if (responseUri != null) {
-                    val responseString = responseUri.toString()
-                    if (responseString.contains("success", ignoreCase = true)) {
-                        // Payment was successful
-                        editor.putString("status", "Success")
-                        editor.apply()
-
-                        if (isAdded && isResumed && !isStateSaved) {
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
-                            job?.cancel()
-                        }
-                    } else if (responseString.contains(
-                            "fail",
-                            ignoreCase = true
-                        ) || responseString.contains("decline", ignoreCase = true)
-                    ) {
-                        // Payment was declined or failed
-                        editor.putString("status", "Failed")
-                        editor.apply()
-                        if (isAdded && isResumed && !isStateSaved) {
-                            job?.cancel()
-                            PaymentFailureScreen(
-                                errorMessage = ""
-                            ).show(parentFragmentManager, "FailureScreen")
-                        }
-                    } else {
-                        // User returned without completing payment or other cases
-                    }
-                } else {
-                    // User returned without completing payment or other cases
-                }
-            } else {
-                // Payment was canceled by the user or some error occurred
-                isPhonePe = true
-            }
+            isPhonePe = true
         } else {
-            if (resultCode == Activity.RESULT_OK) {
-                val responseUri: Uri? = data?.data
-                if (responseUri != null) {
-                    val responseString = responseUri.toString()
-                    if (responseString.contains("success", ignoreCase = true)) {
-                        // Payment was successful
-                        editor.putString("status", "Success")
-                        editor.apply()
-
-                        if (isAdded && isResumed && !isStateSaved) {
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
-                            job?.cancel()
-                        }
-                    } else if (responseString.contains(
-                            "fail",
-                            ignoreCase = true
-                        ) || responseString.contains("decline", ignoreCase = true)
-                    ) {
-                        // Payment was declined or failed
-                        editor.putString("status", "Failed")
-                        editor.apply()
-                        if (isAdded && isResumed && !isStateSaved) {
-                            job?.cancel()
-                            PaymentFailureScreen(
-                                errorMessage = ""
-                            ).show(parentFragmentManager, "FailureScreen")
-                        }
-                    } else {
-                        // User returned without completing payment or other cases
-                    }
-                } else {
-                    // User returned without completing payment or other cases
-                }
-            } else {
-                // Payment was canceled by the user or some error occurred
-                isOthersReturned = true
-            }
+            isOthersReturned = true
         }
     }
 
@@ -3951,7 +3790,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
             if (showEmail || showShipping) {
-                append(", ")
+                append("\n")
                 append(sharedPreferences.getString("email", ""))
             }
 

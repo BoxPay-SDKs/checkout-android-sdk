@@ -1942,6 +1942,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 parentFragmentManager,
                 "PaymentStatusBottomSheetWithDetails"
             )
+            dismiss()
         } else {
             val callback = SingletonClass.getInstance().getYourObject()
             if (callback != null) {
