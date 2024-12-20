@@ -141,6 +141,7 @@ class BoxPayUpiComponent(
                     if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
                             ?: 0) >= 2
                     ) {
+                        binding.textView8.text = "Please enter a valid UPI Id"
                         binding.invalidCVV.visibility = View.VISIBLE // Show specific error
                     } else {
                         binding.invalidCVV.visibility =
