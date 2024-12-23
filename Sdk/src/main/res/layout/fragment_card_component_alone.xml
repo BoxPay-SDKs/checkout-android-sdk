@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_margin="16dp">
+
+    <RelativeLayout
+        android:id="@+id/boxpay_loader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/boxpayLogoLottie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="32dp"
+            app:lottie_fileName="boxpayLogo.json" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/boxpayLogoLottie"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:paddingStart="6dp"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/poppins"
+            android:text="Loading..."
+            android:textColor="#4F4D55" />
+
+        <!--                        app:lottie_autoPlay="true"-->
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/boxpay_card_alone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <TextView
+            android:id="@+id/textView12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins_semibold"
+            android:text="Pay by credit or debit Card"
+            android:layout_marginBottom="8dp"
+            android:textSize="18sp"
+            android:textColor="#020815"
+            android:visibility="visible" />
+
+        <LinearLayout
+            android:id="@+id/cardDetailsLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="16dp"
+            android:background="@drawable/cardview_bg">
+
+            <com.simform.customcomponent.SSCustomEdittextOutlinedBorder
+                android:id="@+id/edtCardNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:inputType="number"
+                app:custom_component_editText_hint="@string/card_number_placeholder"
+                app:custom_component_maxline="1"
+                app:custom_component_minline="1"
+                app:custom_component_maxLength="19"
+                app:custom_component_border_error_color = "#E12121"
+                app:custom_component_border_color = "#E6E6E6"
+                app:custom_component_title_color = "#2D2B32"
+                app:custom_component_border_width = "4"
+                app:custom_component_title_bg_color = "@color/white"
+                app:custom_component_editText_bg_color = "@color/white"
+                app:custom_component_title="@string/card_number_text"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.simform.customcomponent.SSCustomEdittextOutlinedBorder
+                    android:id="@+id/edtExpiry"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:inputType="number"
+                    app:custom_component_border_error_color = "#E12121"
+                    app:custom_component_editText_hint="@string/expiry_placeholder"
+                    app:custom_component_maxline="1"
+                    app:custom_component_minline="1"
+                    app:custom_component_border_width = "4"
+                    app:custom_component_maxLength="5"
+                    app:custom_component_border_color = "#E6E6E6"
+                    app:custom_component_title_color = "#2D2B32"
+                    app:custom_component_title_bg_color = "@color/white"
+                    app:custom_component_editText_bg_color = "@color/white"
+                    app:custom_component_title="@string/expiry_text"/>
+
+                <com.simform.customcomponent.SSCustomEdittextOutlinedBorder
+                    android:id="@+id/edtCVV"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:inputType="number"
+                    app:custom_component_border_error_color = "#E12121"
+                    app:custom_component_border_color = "#E6E6E6"
+                    app:custom_component_editText_hint="@string/cvv_placeholder"
+                    app:custom_component_maxline="1"
+                    app:custom_component_minline="1"
+                    app:custom_component_maxLength="4"
+                    app:custom_component_border_width = "4"
+                    app:custom_component_title_color = "#2D2B32"
+                    app:custom_component_title_bg_color = "@color/white"
+                    app:custom_component_editText_bg_color = "@color/white"
+                    app:custom_component_title="@string/cvv_text"/>
+
+            </LinearLayout>
+            <com.simform.customcomponent.SSCustomEdittextOutlinedBorder
+                android:id="@+id/edtcardName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:inputType="text"
+                app:custom_component_editText_hint="@string/card_name_placeholder"
+                app:custom_component_maxline="1"
+                app:custom_component_minline="1"
+                app:custom_component_border_color = "#E6E6E6"
+                app:custom_component_title_color = "#2D2B32"
+                app:custom_component_border_width = "4"
+                app:custom_component_title_bg_color = "@color/white"
+                app:custom_component_editText_bg_color = "@color/white"
+                app:custom_component_title="@string/card_name_text"/>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</LinearLayout>

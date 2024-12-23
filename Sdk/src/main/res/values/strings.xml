@@ -268,4 +268,15 @@
     <color name="colorEnd">#FAF9F9</color>
     <color name="recomendedItemtext">#1D1C20</color>
     <color name="tooltip_bg">#000000</color>
+
+    <color name="white">#FFFFFF</color>
+
+    <string name="card_number_text">Card Number</string>
+    <string name="card_number_placeholder">Enter card number</string>
+    <string name="expiry_text">Expiry</string>
+    <string name="expiry_placeholder">Expiry (MM/YY)</string>
+    <string name="cvv_text">CVV</string>
+    <string name="cvv_placeholder">Enter CVV</string>
+    <string name="card_name_text">Name on the Card</string>
+    <string name="card_name_placeholder">Enter name on the card</string>
 </resources>

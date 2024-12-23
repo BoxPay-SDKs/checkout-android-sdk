@@ -12,8 +12,8 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.demoapp.databinding.ActivityCheckBinding
+import com.boxpay.checkout.sdk.BoxPayCardComponent
 import com.boxpay.checkout.sdk.BoxPayCheckout
-import com.boxpay.checkout.sdk.BoxPayUpiComponent
 import com.boxpay.checkout.sdk.BuildConfig
 import com.boxpay.checkout.sdk.ConfigurationOptions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
@@ -83,11 +83,11 @@ class Check : AppCompatActivity() {
     private fun showBottomSheetWithOverlay() {
         if (isUpiAlone) {
             val boxPayUpiComponent =
-                BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
-            boxPayUpiComponent.setTestEnv(true)
-            boxPayUpiComponent.setContext(this)
+                BoxPayCardComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
+//            boxPayUpiComponent.setTestEnv(true)
+//            boxPayUpiComponent.setContext(this)
 //            binding.proceedButtonBottom.visibility = View.VISIBLE
-            boxPayUpiComponent.setProceedButtonVisibility(true)
+//            boxPayUpiComponent.setProceedButtonVisibility(true)
 
             // Replace a container in your activity's layout
             binding.openButton.removeAllViews()
