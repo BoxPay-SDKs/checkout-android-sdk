@@ -239,7 +239,7 @@ fun EmiAmountDetails(
             )
             .padding(bottom = 8.dp)
     ) {
-        val (radioButton, heading, table, noteDesc, gst, cta, noCost) = createRefs()
+        val (radioButton, heading, table, noteDesc, gst, cta, noCost, percentConstraint) = createRefs()
         RadioButton(
             selected = isSelected,
             onClick = { onClickRadio() },
@@ -289,6 +289,22 @@ fun EmiAmountDetails(
                 centerVerticallyTo(radioButton)
             }
         )
+        if (!isSelected) {
+            Text(
+                text = "@$percent% p.a",
+                style = TextStyle(
+                    fontFamily = defaultFontFamily,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight(400)
+                ),
+                color = Color(0xFF4F4D55),
+                modifier = Modifier.constrainAs(percentConstraint) {
+                    end.linkTo(parent.end, 8.dp)
+
+                    centerVerticallyTo(radioButton)
+                }
+            )
+        }
         if (isNoCostApplied) {
             FilterTag(
                 text = "NO COST EMI",
@@ -859,11 +875,13 @@ fun ShimmerEffect(
 
 @Composable
 fun ErrorRow(modifier: Modifier, errorText: String) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier) {
         Image(
             painter = painterResource(id = R.drawable.error_outline),
             contentDescription = "",
-            modifier = Modifier.size(12.dp)
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .size(12.dp)
         )
         Text(
             text = errorText,
@@ -873,7 +891,8 @@ fun ErrorRow(modifier: Modifier, errorText: String) {
                 fontWeight = FontWeight(500)
             ),
             color = Color(0xFFB9232F),
-            modifier = Modifier.padding(start = 2.dp)
+            modifier = Modifier
+                .padding(start = 2.dp)
         )
     }
 }

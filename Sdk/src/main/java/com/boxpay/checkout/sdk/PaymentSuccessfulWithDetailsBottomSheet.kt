@@ -96,15 +96,9 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 }
             }
              proceedButton.setOnClickListener(){
-                val callback =  SingletonClass.getInstance().getYourObject()
-                if(callback != null){
-                    val transactionId = sharedPreferences.getString("transactionId","").toString()
-                    val operationId = sharedPreferences.getString("operationId","").toString()
-                    callback.onPaymentResult(PaymentResultObject("Success",transactionId,operationId))
-                    val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
-                    mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
-                    dismiss()
-                }
+                 val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+                 mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                 dismiss()
             }
             if (isDccEnabled){
                 tvCardType.text = savedDccResponse!!.brand

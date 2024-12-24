@@ -557,7 +557,7 @@ fun SelectTenureEmi(
     cardType: String,
     selectedEmi: Pair<Int, String>,
     sharedPreferences: SharedPreferences,
-    onClickRadio: (duration: Int, amount: String) -> Unit,
+    onClickRadio: (duration: Int, amount: String, code: String?) -> Unit,
     onProceed: (Double) -> Unit,
     currencySymbol: String,
 ) {
@@ -638,9 +638,9 @@ fun SelectTenureEmi(
                 EmiAmountDetails(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onClickRadio(it.duration, it.amount) },
+                        .clickable { onClickRadio(it.duration, it.amount, it.code) },
                     isSelected = selectedEmi.first == it.duration && selectedEmi.second == it.amount,
-                    onClickRadio = { onClickRadio(it.duration, it.amount) },
+                    onClickRadio = { onClickRadio(it.duration, it.amount, it.code) },
                     selectedColor = Color(
                         android.graphics.Color.parseColor(
                             sharedPreferences.getString(
@@ -703,7 +703,8 @@ fun AddCardDetailsScreen(
     isCardNumberEnabled: Boolean?,
     isAmexCard: Boolean,
     isCardExpired: Boolean,
-    showLoadingInButton: Boolean
+    showLoadingInButton: Boolean,
+    cardNumberErrorText: String
 ) {
     val cardNumberFocusRequester = FocusRequester()
     val cardNameFocusRequester = FocusRequester()
@@ -766,7 +767,7 @@ fun AddCardDetailsScreen(
             .imePadding()
     ) {
         val (topBar, bankBorder, bankIcon, bankName, divider, emiDetails, cardNumberTitle, cardNumberInput, cardNameTitle, cardNameInput, expiryTitle, expiryInput, cvvTitle, cvvInput, footerEnd, cardNumberInvalidError) = createRefs()
-        val (interestRate, topDivider, cta, cardNumberError, cardNameError, cardExpiryError, cardCvvError, cardCvvInvalidError, cardExpiryInvalidError) = createRefs()
+        val (interestRate, cta, cardNumberError, cardNameError, cardExpiryError, cardCvvError, cardCvvInvalidError, cardExpiryInvalidError) = createRefs()
         TopBar(
             text = "Add Card Details",
             modifier = Modifier
@@ -971,7 +972,7 @@ fun AddCardDetailsScreen(
 
                     width = Dimension.fillToConstraints
                 },
-                errorText = if (isCardNumberEnabled == false) "This card is not supported for the payment" else "Required"
+                errorText = if (isCardNumberEnabled == false) cardNumberErrorText else "Required"
             )
         } else if (!isCardNumberFocused.value && cardNumber != null && (cardNumber.text.length != 19 || isAmexCard)) {
             ErrorRow(
@@ -995,7 +996,7 @@ fun AddCardDetailsScreen(
             color = Color(0xFF2D2B32),
             modifier = Modifier.constrainAs(cardNameTitle) {
                 start.linkTo(parent.start, 16.dp)
-                top.linkTo(expiryInput.bottom, 22.dp)
+                top.linkTo(expiryInput.bottom, 26.dp)
                 end.linkTo(parent.end, 16.dp)
 
                 width = Dimension.fillToConstraints
@@ -1063,7 +1064,7 @@ fun AddCardDetailsScreen(
             color = Color(0xFF2D2B32),
             modifier = Modifier.constrainAs(expiryTitle) {
                 start.linkTo(parent.start, 16.dp)
-                top.linkTo(cardNumberInput.bottom, 22.dp)
+                top.linkTo(cardNumberInput.bottom, 26.dp)
                 end.linkTo(cvvTitle.start, 16.dp)
 
                 width = Dimension.fillToConstraints

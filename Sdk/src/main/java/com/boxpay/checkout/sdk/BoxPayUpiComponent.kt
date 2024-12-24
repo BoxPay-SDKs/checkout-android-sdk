@@ -1181,7 +1181,9 @@ class BoxPayUpiComponent(
     private fun openUPITimerBottomSheet() {
         val bottomSheetFragment = OnlyUPITimerBottomSheet.newInstance(upiCollectId)
         bottomSheetFragment.setCallbackFunction(::onUpiTimerCallback, BASE_URL ?: "", token ?: "")
-        bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "OnlyUPITimerBottomSheet")
+            .commitAllowingStateLoss()
     }
 
     private fun onUpiTimerCallback(result: PaymentResultObject) {

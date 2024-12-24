@@ -36,10 +36,13 @@ class EmiViewModel : ViewModel() {
     val isAmexCard = mutableStateOf(false)
     val isCardValid = mutableStateOf(false)
     val contentLoaded = mutableStateOf(false)
+    val offerSelectedCode = mutableStateOf<String?>(null)
     val isCardExpired = mutableStateOf(true)
     val firstTimeLoaded = mutableStateOf(true)
     val isCardNumberEnabled = mutableStateOf<Boolean?>(null)
     val showLoaderInButton = MutableStateFlow(false)
+    val cardNumberErrorText = mutableStateOf("")
+    val issuerBrand = mutableStateOf<String?>(null)
 
     // To store the original list of banks
     private val originalEmiBankList = mutableStateOf(ChooseEmiModel(emptyList()))
@@ -60,7 +63,7 @@ class EmiViewModel : ViewModel() {
         }
         if (bank.noCostApplied) {
             isFilterExisted.value = true
-            if (bank.noCostApplied && !filterList.value.contains(Pair("No Cost EMI", false))) {
+            if (!filterList.value.contains(Pair("No Cost EMI", false))) {
                 filterList.value += Pair("No Cost EMI", false)
             }
         }
@@ -97,7 +100,7 @@ class EmiViewModel : ViewModel() {
                     val newBankWithEmi = bank.copy(
                         emiList = listOf(emi),
                         noCostApplied = emi.noCostApplied,
-                        percent = bank.percent // Retain the bank's percent for the new bank
+                        percent = bank.percent
                     )
                     existingCardType.copy(
                         banks = (existingCardType.banks + newBankWithEmi)
@@ -118,7 +121,7 @@ class EmiViewModel : ViewModel() {
                 val newBankWithEmi = bank.copy(
                     emiList = listOf(emi),
                     noCostApplied = emi.noCostApplied,
-                    percent = bank.percent // Retain the bank's percent for the new bank
+                    percent = bank.percent
                 )
                 it.copy(
                     cards = it.cards + CardType(
@@ -142,7 +145,7 @@ class EmiViewModel : ViewModel() {
                         "credit card" -> 0
                         "debit card" -> 1
                         "others" -> 2
-                        else -> Int.MAX_VALUE // Any unexpected card types will appear last
+                        else -> Int.MAX_VALUE // Unexpected card types appear last
                     }
                 }
             )
@@ -182,6 +185,7 @@ class EmiViewModel : ViewModel() {
         selectedOthersOption.value = ""
         searchQuery.value = ""
         selectTenureScreen.value = false
+        offerSelectedCode.value = null
         selectedEmi.value = Pair(0, "")
         addCardScreen.value = false
         contentLoaded.value = false
@@ -225,6 +229,7 @@ class EmiViewModel : ViewModel() {
         val sortedBank = bank.copy(emiList = sortedEmiList)
 
         selectedBank.value = sortedBank
+        issuerBrand.value = bank.issuerBrand
         selectedOthersOption.value = ""
         selectTenureScreen.value = true
         filterList.value = filterList.value.map {
@@ -234,14 +239,17 @@ class EmiViewModel : ViewModel() {
 
 
 
-    fun onClickRadio(duration: Int, amount: String) {
+    fun onClickRadio(duration: Int, amount: String, code: String?) {
         selectedEmi.value = Pair(duration, amount)
+        offerSelectedCode.value = code
     }
 
     fun onBackTenure() {
         selectTenureScreen.value = false
         selectedBank.value = null
+        issuerBrand.value = null
         selectedEmi.value = Pair(0, "")
+        offerSelectedCode.value = null
     }
 
     fun onProceedEmi(percent: Double) {
@@ -264,6 +272,7 @@ class EmiViewModel : ViewModel() {
     fun onCardNumberChange(text: TextFieldValue) {
         if (text.text.length < 9) {
             cardIcon.value = (R.drawable.default_card_icon)
+            isCardNumberEnabled.value =  null
         }
         // Sanitize the input and get the new formatted number
         val digitsOnly = text.text.filter { it.isDigit() }
