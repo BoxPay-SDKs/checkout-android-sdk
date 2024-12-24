@@ -672,7 +672,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     private fun openUPITimerBottomSheet() {
         val bottomSheetFragment = UPITimerBottomSheet.newInstance(userVPA)
-        bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "UPITimerBottomSheet")
+            .commitAllowingStateLoss()
     }
 
     fun extractMessageFromErrorResponse(response: String): String? {

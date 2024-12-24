@@ -12,7 +12,8 @@ data class Bank(
     val noCostApplied: Boolean,
     val lowCostApplied: Boolean,
     val emiList: List<Emi>,
-    val cardLessEmiValue: String
+    val cardLessEmiValue: String,
+    val issuerBrand: String?
 )
 
 data class ChooseEmiModel(
@@ -28,5 +29,6 @@ data class Emi(
     val interestCharged: String?,
     val noCostApplied: Boolean,
     val lowCostApplied: Boolean,
-    val processingFee: String
+    val processingFee: String,
+    val code : String?
 )

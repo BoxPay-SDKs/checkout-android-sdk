@@ -1903,7 +1903,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.recomendedRecyclerView.visibility = View.VISIBLE
         binding.recomendedOptionsLinearLayout.visibility = View.VISIBLE
         binding.recomendedText.typeface =
-            ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
+            ResourcesCompat.getFont(context, R.font.poppins_semibold)
     }
 
     private fun hideRecommendedOptions() {
@@ -2032,36 +2032,48 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun openAddUPIIDBottomSheet() {
         val bottomSheetFragment = AddUPIID.newInstance(shippingEnabled)
-        bottomSheetFragment.show(parentFragmentManager, "AddUPIBottomSheet")
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "AddUPIBottomSheet")
+            .commitAllowingStateLoss()
     }
 
     private fun openAddCardBottomSheet() {
         val bottomSheetFragment =
             AddCardBottomSheet.newInstance(shippingEnabled)
-        bottomSheetFragment.show(parentFragmentManager, "AddCardBottomSheet")
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "AddCardBottomSheet")
+            .commitAllowingStateLoss()
     }
 
     private fun openNetBankingBottomSheet() {
 
         val bottomSheetFragment = NetBankingBottomSheet.newInstance(shippingEnabled)
-        bottomSheetFragment.show(parentFragmentManager, "NetBankingBottomSheet")
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "NetBankingBottomSheet")
+            .commitAllowingStateLoss()
     }
 
     private fun openWalletBottomSheet() {
 
         val bottomSheetFragment = WalletBottomSheet.newInstance(shippingEnabled)
-        bottomSheetFragment.show(parentFragmentManager, "WalletBottomSheet")
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "WalletBottomSheet")
+            .commitAllowingStateLoss()
     }
 
     private fun openEmiBottomSheet() {
         val bottomSheetFragment = EmiBottomSheet.newInstance(shippingEnabled)
-        bottomSheetFragment.show(parentFragmentManager, "EmiBottomSheet")
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "EmiBottomSheet")
+            .commitAllowingStateLoss()
     }
 
     private fun openBNPLBottomSheet() {
 
         val bottomSheetFragment = BNPLBottomSheet.newInstance(shippingEnabled)
-        bottomSheetFragment.show(parentFragmentManager, "BnplBottomSheet")
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "BnplBottomSheet")
+            .commitAllowingStateLoss()
     }
 
     private fun makeSessionDataCall() {
@@ -3245,7 +3257,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "RequiresAction")
                         editor.apply()
                         val bottomSheetFragment = UPITimerBottomSheet.newInstance(displayName)
-                        bottomSheetFragment.show(parentFragmentManager, "UPITimerBottomSheet")
+                        parentFragmentManager.beginTransaction()
+                            .add(bottomSheetFragment, "UPITimerBottomSheet")
+                            .commitAllowingStateLoss()
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()

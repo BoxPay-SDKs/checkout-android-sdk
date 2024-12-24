@@ -55,6 +55,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
@@ -275,8 +276,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     cardType = emiViewModel.selectedCard.value,
                                     selectedEmi = emiViewModel.selectedEmi.value,
                                     sharedPreferences = sharedPreferences,
-                                    onClickRadio = { duration, amount ->
-                                        emiViewModel.onClickRadio(duration, amount)
+                                    onClickRadio = { duration, amount , code->
+                                        emiViewModel.onClickRadio(duration, amount, code)
                                     },
                                     onProceed = {
                                         emiViewModel.onProceedEmi(it)
@@ -335,7 +336,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     isCardNumberEnabled = emiViewModel.isCardNumberEnabled.value,
                                     isAmexCard = emiViewModel.isAmexCard.value,
                                     showLoadingInButton = showLoader.value,
-                                    isCardExpired = emiViewModel.isCardExpired.value
+                                    isCardExpired = emiViewModel.isCardExpired.value,
+                                    cardNumberErrorText = emiViewModel.cardNumberErrorText.value
                                 )
                             }
                         }
@@ -396,6 +398,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                     try {
                         val paymentMethod = paymentMethodsArray.getJSONObject(i)
                         if (paymentMethod.getString("type") == "Emi") {
+                            val title = paymentMethod.getString("title")
                             val emiCardName = if (paymentMethod.getString("title")
                                     .contains("credit", true)
                             ) "Credit Card" else if (paymentMethod.getString("title")
@@ -416,7 +419,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     "emiMethod"
                                 ).getString("issuerTitle")
                             val effectiveInterestRate = paymentMethod.getJSONObject("emiMethod")
-                                .getDouble("effectiveInterestRate")
+                                .optDouble("effectiveInterestRate")
 
                             val bankInterestRate = if (emiCardName.equals("others", true)) {
                                 0.0
@@ -444,7 +447,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 noCostApplied = noApplicableOffer,
                                 lowCostApplied = lowApplicableOffer,
                                 emiList = emptyList(),
-                                cardLessEmiValue = emiMethod.optString("cardlessEmiProviderValue")
+                                cardLessEmiValue = emiMethod.optString("cardlessEmiProviderValue"),
+                                issuerBrand = if (emiCardName.equals("others", true)) "" else emiMethod.optString("issuer")
                             )
                             val emi = Emi(
                                 duration = emiMethod.optInt("duration"),
@@ -459,7 +463,9 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 processingFee = if (emiMethod.optJSONObject("processingFee") == null) "0" else emiMethod.optJSONObject(
                                     "processingFee"
                                 )?.getString("amountLocale") ?: "",
-                                lowCostApplied = lowApplicableOffer
+                                lowCostApplied = lowApplicableOffer,
+                                code = emiMethod.optJSONObject("applicableOffer")?.getString("code")
+                                    ?: ""
                             )
                             addBankDetails(cardType = emiCardName, bank = bank, emi = emi)
                         }
@@ -594,6 +600,12 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                 }
             }
             put("instrumentDetails", instrumentDetailsObject)
+
+            if (!emiViewModel.offerSelectedCode.value.isNullOrEmpty()) {
+                put("offers", JSONArray().apply {
+                    put(emiViewModel.offerSelectedCode.value)
+                })
+            }
 
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email", null))
@@ -812,7 +824,19 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             try {
                 val currBrand = response.getJSONObject("paymentMethod").getString("brand")
                 val methodEnabled = response.getBoolean("methodEnabled")
-                emiViewModel.isCardNumberEnabled.value = methodEnabled
+                val issuerName = response.optString("issuerName")
+                if (issuerName == "null") {
+                    emiViewModel.cardNumberErrorText.value = "We couldn't find any EMI plans for this card. Please try using a different card number."
+                    emiViewModel.isCardNumberEnabled.value = false
+                }else if (!issuerName.equals(emiViewModel.issuerBrand.value) && issuerName != "null") {
+                    emiViewModel.cardNumberErrorText.value = "The card is ${response.optString("issuerTitle")} ${emiViewModel.selectedCard.value}. Please enter a card number that belongs to ${emiViewModel.selectedBank.value?.name} ${emiViewModel.selectedCard.value}"
+                    emiViewModel.isCardNumberEnabled.value = false
+                } else {
+                    if (!methodEnabled) {
+                        emiViewModel.cardNumberErrorText.value = "This card is not supported for the payment"
+                    }
+                    emiViewModel.isCardNumberEnabled.value = methodEnabled
+                }
                 emiViewModel.cardIcon.value = emiViewModel.getImageDrawableForItem(currBrand)
                 emiViewModel.isAmexCard.value = currBrand.equals("AmericanExpress", true)
             } catch (e: Exception) {
