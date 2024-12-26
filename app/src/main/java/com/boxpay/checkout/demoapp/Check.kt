@@ -14,6 +14,7 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.demoapp.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.BoxPayCardComponent
 import com.boxpay.checkout.sdk.BoxPayCheckout
+import com.boxpay.checkout.sdk.BoxPayUpiComponent
 import com.boxpay.checkout.sdk.BuildConfig
 import com.boxpay.checkout.sdk.ConfigurationOptions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
@@ -25,6 +26,7 @@ class Check : AppCompatActivity() {
     private var successScreenFullReferencePath: String? = null
     private var tokenFetchedAndOpen = false
     private var isUpiAlone: Boolean = false
+    private var isCardAlone : Boolean = false
 
 
     private val binding: ActivityCheckBinding by lazy {
@@ -39,6 +41,7 @@ class Check : AppCompatActivity() {
         makePaymentRequest(this)
         val bundle = intent.extras
         isUpiAlone = bundle?.getBoolean("isUpiAlone", false) ?: false
+        isCardAlone = bundle?.getBoolean("isCardAlone",false) ?: false
 
         binding.textView6.text = "Generating Token Please wait..."
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
@@ -83,11 +86,11 @@ class Check : AppCompatActivity() {
     private fun showBottomSheetWithOverlay() {
         if (isUpiAlone) {
             val boxPayUpiComponent =
-                BoxPayCardComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
-//            boxPayUpiComponent.setTestEnv(true)
-//            boxPayUpiComponent.setContext(this)
-//            binding.proceedButtonBottom.visibility = View.VISIBLE
-//            boxPayUpiComponent.setProceedButtonVisibility(true)
+                BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
+            boxPayUpiComponent.setTestEnv(true)
+            boxPayUpiComponent.setContext(this)
+            binding.proceedButtonBottom.visibility = View.VISIBLE
+            boxPayUpiComponent.setProceedButtonVisibility(true)
 
             // Replace a container in your activity's layout
             binding.openButton.removeAllViews()
@@ -98,18 +101,25 @@ class Check : AppCompatActivity() {
 //                boxPayUpiComponent.onClickProceed()
 //                binding.proceedButtonBottom.isEnabled = false
 //            }
-        } else {
-            val boxPayCheckout = BoxPayCheckout(
-                context = this,
-                token = tokenLiveData.value ?: "",
-                onPaymentResult = ::onPaymentResultCallback,
-                customerShopperToken = customerShopperToken ?: "",
-                configurationOptions = mapOf(
-                    ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
-                    ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
-                    ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
+        } else if(isCardAlone){
+            val boxPayCardComponent = BoxPayCardComponent(tokenLiveData.value ?: "", false,::onPaymentResultCallback)
+            binding.openButton.removeAllViews()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.openButton, boxPayCardComponent)
+                .commit()
+        }else {
+            val boxPayCheckout =
+                BoxPayCheckout(
+                    context = this,
+                    token = tokenLiveData.value ?: "",
+                    onPaymentResult = ::onPaymentResultCallback,
+                    customerShopperToken = customerShopperToken ?: "",
+                    configurationOptions = mapOf(
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
+                        ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
+                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
+                    )
                 )
-            )
             boxPayCheckout.testEnv = true
             boxPayCheckout.display()
         }

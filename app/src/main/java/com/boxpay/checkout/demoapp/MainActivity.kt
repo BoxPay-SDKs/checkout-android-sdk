@@ -32,6 +32,20 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+        binding.openCardAlone.setOnClickListener {
+            try {
+                intent = Intent(
+                    this,
+                    Check::class.java
+                )
+                val bundle = Bundle()
+                bundle.putBoolean("isCardAlone",true)
+                intent.putExtras(bundle)
+                startActivity(intent)
+            } catch (e: ClassNotFoundException) {
+
+            }
+        }
         binding.openByDefault.setOnClickListener {
             //        var intent: Intent? = null
             try {
