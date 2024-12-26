@@ -1248,7 +1248,7 @@
                                             android:layout_width="wrap_content"
                                             android:layout_height="wrap_content"
                                             android:layout_marginStart="16dp"
-                                            android:layout_marginTop="16dp"
+                                            android:layout_marginTop="100dp"
                                             android:fontFamily="@font/poppins_medium"
                                             android:text="Scan &amp; Pay with UPI application"
                                             android:textColor="#010102"
@@ -1841,7 +1841,7 @@
 
         <LinearLayout
             android:id="@+id/linearLayout"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="140dp"
             android:layout_marginTop="16dp"
