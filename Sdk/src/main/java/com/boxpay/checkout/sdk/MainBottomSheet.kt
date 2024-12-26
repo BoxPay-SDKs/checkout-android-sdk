@@ -22,7 +22,6 @@ import android.os.Handler
 import android.os.Looper
 import android.text.Html
 import android.util.Base64
-import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -881,6 +880,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         hideQRCode()
                     } else {
                         qrCodeShown = true
+                        binding.textView21.visibility = View.GONE
+                        binding.imageView10.visibility = View.GONE
                         showQRCode()
                     }
                 }
@@ -1194,8 +1195,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
 
                     if (upiQRMethod) {
-                        if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod) {
+                        if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == true) {
+                            binding.textView21.visibility = View.GONE
+                            binding.imageView10.visibility = View.GONE
                             showQRCode()
+                        } else if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == false) {
+                            binding.textView21.visibility = View.GONE
+                            binding.imageView10.visibility = View.GONE
                         }
                         binding.UPIQRConstraint.visibility = View.VISIBLE
                     }
@@ -2210,7 +2216,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             .start()
                     }
                 } else {
-                    Log.e("", "subscriptionDetails is null")
                     binding.recurringMainCard.visibility = View.GONE
                 }
 
@@ -2776,6 +2781,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.numberOfItems.text = "Total"
                 }
 
+                editor.apply()
+
                 if (!shippingEnabled) {
                     val paymentMethodsArray =
                         response.getJSONObject("configs").getJSONArray("paymentMethods")
@@ -2843,8 +2850,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             binding.addNewUPIIDConstraint.visibility = View.VISIBLE
                         }
                         if (upiQRMethod) {
-                            if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod) {
+                            if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == true) {
+                                binding.textView21.visibility = View.GONE
+                                binding.imageView10.visibility = View.GONE
                                 showQRCode()
+                            } else if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == false) {
+                                binding.textView21.visibility = View.GONE
+                                binding.imageView10.visibility = View.GONE
                             }
                             binding.UPIQRConstraint.visibility = View.VISIBLE
                         }
@@ -2878,8 +2890,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         binding.cardView7.visibility = View.GONE
                     }
                 }
-
-                editor.apply()
 
                 binding.nameAndMobileTextViewMain.text =
                     if ((showPhone && showName) || showShipping) {
@@ -2933,10 +2943,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 } else {
                     upiOptionsShown = true
                     showUPIOptions()
-                    removeLoadingState()
-                }
-                if (toLoadQrDirect == true && upiQRMethod) {
-                    showQRCode()
+                    if (toLoadQrDirect == false || toLoadQrDirect == null || !upiQRMethod) {
+                        removeLoadingState()
+                    }
                 }
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
@@ -2954,7 +2963,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     Toast.LENGTH_LONG
                 ).show()
             }
-
         }, Response.ErrorListener { error ->
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
