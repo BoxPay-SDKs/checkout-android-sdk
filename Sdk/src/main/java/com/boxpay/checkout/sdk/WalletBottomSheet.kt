@@ -1220,18 +1220,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                                 parentFragmentManager,
                                 "PaymentStatusBottomSheetWithDetails"
                             )
-                            if (callback != null) {
-                                callback.onPaymentResult(
-                                    PaymentResultObject(
-                                        "Success",
-                                        transactionId,
-                                        transactionId
-                                    )
-                                )
-                            }
-                            if (callbackForDismissing != null) {
-                                callbackForDismissing.dismissFunction()
-                            }
                             dismiss()
                         }
 

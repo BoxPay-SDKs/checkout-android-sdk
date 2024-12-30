@@ -89,7 +89,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -132,7 +131,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var toLoadQrDirect: Boolean? = null
     private var priceBreakUpVisible = false
     var countryCode: Pair<String, String>? = null
-    private var transactionAmount: String? = null
     private var upiAvailable = false
     private var upiCollectMethod = false
     private var upiIntentMethod = false
@@ -257,7 +255,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
         } catch (e: Exception) {
             // Handle the exception if application resources cannot be loaded
-            handleException(context,e.message.toString(), token ?: "", baseUrl = Base_Session_API_URL, "fetchInstalledPackageDetails")
+            handleException(
+                context,
+                e.message.toString(),
+                token ?: "",
+                baseUrl = Base_Session_API_URL,
+                "fetchInstalledPackageDetails"
+            )
         }
 
         populatePopularUPIApps()
@@ -1064,7 +1068,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     dismiss()
                 }, 500)
             }
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             handleException(
                 context,
                 e.message ?: "",
@@ -1501,6 +1505,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.netBankingConstraint.isEnabled = true
         binding.bnplConstraint.isEnabled = true
         binding.emiConstraint.isEnabled = true
+        binding.recommendedProceedButton.isEnabled = true
     }
 
     private fun populatePopularUPIApps() {
@@ -2124,10 +2129,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
 
                 val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")
-                val amount = totalAmount.toDouble()
 
-// Format the amount using the NumberFormat class for locale-specific formatting
-                val formattedAmount = NumberFormat.getNumberInstance(Locale.US).format(amount)
+                val formattedAmount =
+                    paymentDetailsObject.getJSONObject("money").getString("amountLocaleFull")
 
 
                 var orderObject: JSONObject? = null
@@ -2177,8 +2181,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         recurringTotal.text =
                             "₹" + paymentDetailsObject.getJSONObject("money").getDouble("amount")
 
-                        val totalAmount =
-                            paymentDetailsObject.getJSONObject("money").getDouble("amount")
                         val sourceString =
                             "· You will be charged ₹" + ("<b>$totalAmount").toString() + "</b> " + " on the next payment date"
                         recurringAmount.text = Html.fromHtml(sourceString)
@@ -2320,16 +2322,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.putString("currencyCode", currencyCode)
                 editor.apply()
 
-                transactionAmount = totalAmount
                 updateTransactionAmountInSharedPreferences(
-                    transactionAmount.toString(),
+                    formattedAmount,
                     currencyCode ?: ""
                 )
 
-                updateTransactionAmountInSharedPreferences(
-                    transactionAmount.toString(),
-                    currencyCode ?: ""
-                )
                 val itemsArray =
                     if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
 
@@ -2388,8 +2385,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 )
                 editor.apply()
 
-                transactionAmount = totalAmount.toString()
-
                 binding.unopenedTotalValue.text = "${currencySymbol}${formattedAmount}"
                 if (totalQuantity == 0) {
                     binding.numberOfItems.text = "Total"
@@ -2400,9 +2395,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.ItemsPrice.text = "${currencySymbol}${formattedAmount}"
 
                 if (originalAmount != null && originalAmount != "0" && originalAmount != "null") {
-                    val doubleTypeOriginal =
-                        NumberFormat.getNumberInstance(Locale.US).format(originalAmount.toDouble())
-                    binding.subtotalTextView.text = "${currencySymbol}${doubleTypeOriginal}"
+                    val originalAmountLocaleFull = paymentDetailsObject.getJSONObject("order")
+                        .getString("originalAmountLocaleFull")
+                    binding.subtotalTextView.text = "$currencySymbol$originalAmountLocaleFull"
                     binding.subTotalRelativeLayout.visibility = View.VISIBLE
                 }
 
@@ -2445,17 +2440,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 if (taxes != null && taxes != "null" && taxes != "0") {
-                    val doubleTypeTax =
-                        NumberFormat.getNumberInstance(Locale.US).format(taxes.toDouble())
-                    binding.taxTextView.text = "${currencySymbol}${doubleTypeTax}"
+                    val taxAmountLocaleFull =
+                        paymentDetailsObject.getJSONObject("order").getString("taxAmountLocaleFull")
+                    binding.taxTextView.text = "$currencySymbol$taxAmountLocaleFull"
                     binding.taxesRelativeLayout.visibility = View.VISIBLE
                 }
 
                 if (shippingCharges != null && shippingCharges != "null" && shippingCharges != "0") {
-                    val doubleTypeshipping =
-                        NumberFormat.getNumberInstance(Locale.US).format(shippingCharges.toDouble())
+                    val shippingAmountLocaleFull = paymentDetailsObject.getJSONObject("order")
+                        .getString("shippingAmountLocaleFull")
                     binding.shippingChargesTextView.text =
-                        "${currencySymbol}$doubleTypeshipping"
+                        "$currencySymbol$shippingAmountLocaleFull"
                     binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
                 }
 
@@ -2480,7 +2475,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 )
                 editor.putString("countryName", countryCode?.first)
-                editor.putString("amount", moneyObject.getString("amount"))
+                editor.putString("amount", formattedAmount)
                 editor.putString("merchantId", response.getString("merchantId"))
                 editor.putString(
                     "countryCode",
@@ -3247,6 +3242,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
+                enabledButtonsForAllPaymentMethods()
 
                 if (status.contains("Rejected", ignoreCase = true)) {
                     var cleanedMessage = reason.substringAfter(":")
@@ -3277,7 +3273,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             parentFragmentManager,
                             "PaymentStatusBottomSheetWithDetails"
                         )
-                        enabledButtonsForAllPaymentMethods()
                     }
                 }
                 hideLoadingInButton()
@@ -3924,7 +3919,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
                 },
                 toShowOnChangeAddressClick = isEmailEditable || isPhoneEditable || isNameEditable || showShipping,
-                toShowAddress = showEmail || showShipping || showPhone || showName
+                toShowAddress = showEmail || showShipping || showPhone || showName,
+                toShowPersonal = !showShipping
             )
         }
     }

@@ -134,7 +134,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                     val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
                     val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
                     if (amount.isNotEmpty() && currencyType.isNotEmpty()){
-                        transactionAmountTextView.text = "$currencyType " + formatToINR(amount.toDouble())
+                        transactionAmountTextView.text = "$currencyType $amount"
                     }
             }
         }
@@ -169,12 +169,9 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         if (!sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
-            val callback =  SingletonClass.getInstance().getYourObject()
-            if(callback != null){
-                val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
-                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
-                dismiss()
-            }
+            val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
+            mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+            dismiss()
         }
     }
 
