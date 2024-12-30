@@ -89,7 +89,6 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -256,7 +255,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
         } catch (e: Exception) {
             // Handle the exception if application resources cannot be loaded
-            handleException(context,e.message.toString(), token ?: "", baseUrl = Base_Session_API_URL, "fetchInstalledPackageDetails")
+            handleException(
+                context,
+                e.message.toString(),
+                token ?: "",
+                baseUrl = Base_Session_API_URL,
+                "fetchInstalledPackageDetails"
+            )
         }
 
         populatePopularUPIApps()
@@ -1063,7 +1068,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     dismiss()
                 }, 500)
             }
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             handleException(
                 context,
                 e.message ?: "",
@@ -2125,8 +2130,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")
 
-// Format the amount using the NumberFormat class for locale-specific formatting
-                val formattedAmount = paymentDetailsObject.getJSONObject("money").getString("amountLocaleFull")
+                val formattedAmount =
+                    paymentDetailsObject.getJSONObject("money").getString("amountLocaleFull")
 
 
                 var orderObject: JSONObject? = null
@@ -2390,8 +2395,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.ItemsPrice.text = "${currencySymbol}${formattedAmount}"
 
                 if (originalAmount != null && originalAmount != "0" && originalAmount != "null") {
-                    val doubleTypeOriginal = NumberFormat.getNumberInstance(if (currencyCode == "INR") Locale("en", "IN") else Locale.US)
-                        .format(originalAmount.toDouble())
+                    val doubleTypeOriginal = paymentDetailsObject.getJSONObject("order")
+                        .getString("originalAmountLocaleFull")
                     binding.subtotalTextView.text = "${currencySymbol}${doubleTypeOriginal}"
                     binding.subTotalRelativeLayout.visibility = View.VISIBLE
                 }
@@ -2436,14 +2441,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (taxes != null && taxes != "null" && taxes != "0") {
                     val doubleTypeTax =
-                        NumberFormat.getNumberInstance(if (currencyCode == "INR") Locale("en", "IN") else Locale.US).format(taxes.toDouble())
+                        paymentDetailsObject.getJSONObject("order").getString("taxAmountLocaleFull")
                     binding.taxTextView.text = "${currencySymbol}${doubleTypeTax}"
                     binding.taxesRelativeLayout.visibility = View.VISIBLE
                 }
 
                 if (shippingCharges != null && shippingCharges != "null" && shippingCharges != "0") {
-                    val doubleTypeshipping =
-                        NumberFormat.getNumberInstance(if (currencyCode == "INR") Locale("en", "IN") else Locale.US).format(shippingCharges.toDouble())
+                    val doubleTypeshipping = paymentDetailsObject.getJSONObject("order")
+                        .getString("shippingAmountLocaleFull")
                     binding.shippingChargesTextView.text =
                         "${currencySymbol}$doubleTypeshipping"
                     binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
