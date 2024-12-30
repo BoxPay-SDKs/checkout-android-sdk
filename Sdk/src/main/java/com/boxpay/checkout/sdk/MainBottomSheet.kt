@@ -2390,8 +2390,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.ItemsPrice.text = "${currencySymbol}${formattedAmount}"
 
                 if (originalAmount != null && originalAmount != "0" && originalAmount != "null") {
-                    val doubleTypeOriginal =
-                        NumberFormat.getNumberInstance(Locale.US).format(originalAmount.toDouble())
+                    val doubleTypeOriginal = NumberFormat.getNumberInstance(if (currencyCode == "INR") Locale("en", "IN") else Locale.US)
+                        .format(originalAmount.toDouble())
                     binding.subtotalTextView.text = "${currencySymbol}${doubleTypeOriginal}"
                     binding.subTotalRelativeLayout.visibility = View.VISIBLE
                 }
@@ -2436,14 +2436,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (taxes != null && taxes != "null" && taxes != "0") {
                     val doubleTypeTax =
-                        NumberFormat.getNumberInstance(Locale.US).format(taxes.toDouble())
+                        NumberFormat.getNumberInstance(if (currencyCode == "INR") Locale("en", "IN") else Locale.US).format(taxes.toDouble())
                     binding.taxTextView.text = "${currencySymbol}${doubleTypeTax}"
                     binding.taxesRelativeLayout.visibility = View.VISIBLE
                 }
 
                 if (shippingCharges != null && shippingCharges != "null" && shippingCharges != "0") {
                     val doubleTypeshipping =
-                        NumberFormat.getNumberInstance(Locale.US).format(shippingCharges.toDouble())
+                        NumberFormat.getNumberInstance(if (currencyCode == "INR") Locale("en", "IN") else Locale.US).format(shippingCharges.toDouble())
                     binding.shippingChargesTextView.text =
                         "${currencySymbol}$doubleTypeshipping"
                     binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
