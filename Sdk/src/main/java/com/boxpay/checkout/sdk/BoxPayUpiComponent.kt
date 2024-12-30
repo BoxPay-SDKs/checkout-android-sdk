@@ -69,7 +69,7 @@ class BoxPayUpiComponent(
     private var firstName: String? = null
     private var lastName: String? = null
     private var gender: String? = null
-    var sessionTimer: CountDownTimer? = null
+    private var sessionTimer: CountDownTimer? = null
     private var phoneNumber: String? = null
     private var uniqueReference: String? = null
     private var dob: String? = null
@@ -119,7 +119,6 @@ class BoxPayUpiComponent(
         coroutineScope.launch {
             val packageManager = context!!.packageManager
             getAllInstalledApps(packageManager)
-            showLoadingState()
         }
         inputMethodManager =
             context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

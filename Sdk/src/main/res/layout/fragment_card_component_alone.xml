@@ -6,36 +6,6 @@
     android:orientation="vertical"
     android:layout_margin="16dp">
 
-    <RelativeLayout
-        android:id="@+id/boxpay_loader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone">
-
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/boxpayLogoLottie"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="32dp"
-            app:lottie_fileName="boxpayLogo.json" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/boxpayLogoLottie"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
-            android:paddingStart="6dp"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/poppins"
-            android:text="Loading..."
-            android:textColor="#4F4D55" />
-
-        <!--                        app:lottie_autoPlay="true"-->
-
-    </RelativeLayout>
-
     <LinearLayout
         android:id="@+id/boxpay_card_alone"
         android:layout_width="match_parent"
@@ -61,6 +31,7 @@
             android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
+            android:visibility="gone"
             android:paddingBottom="16dp"
             android:background="@drawable/cardview_bg">
 
@@ -144,9 +115,94 @@
                 app:custom_component_editText_bg_color = "@color/white"
                 app:custom_component_title="@string/card_name_text"/>
 
+            <androidx.cardview.widget.CardView
+                android:id="@+id/proceedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="2dp"
+                android:clickable="true"
+                android:visibility="visible"
+                app:cardCornerRadius="7dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/PopularUPILinearLayout1">
+
+                <RelativeLayout
+                    android:id="@+id/proceedButtonRelativeLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_bg"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/textView6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:text="Pay ₹36,770"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp" />
+
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
         </LinearLayout>
 
 
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/errorlayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/errorView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins"
+            android:gravity="center_vertical"
+            android:lineSpacingExtra="-1sp"
+            android:text="Please enable card method"
+            android:paddingStart="2dp"
+            android:textColor="#B9232F" />
+
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/boxpay_loader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/boxpayLogoLottie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="32dp"
+            app:lottie_fileName="boxpayLogo.json" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/boxpayLogoLottie"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:paddingStart="6dp"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/poppins"
+            android:text="Loading..."
+            android:textColor="#4F4D55" />
+
+        <!--                        app:lottie_autoPlay="true"-->
+
+    </RelativeLayout>
 
 </LinearLayout>

@@ -103,6 +103,8 @@ class Check : AppCompatActivity() {
 //            }
         } else if(isCardAlone){
             val boxPayCardComponent = BoxPayCardComponent(tokenLiveData.value ?: "", false,::onPaymentResultCallback)
+            boxPayCardComponent.setTestEnv(true)
+            boxPayCardComponent.setContext(this)
             binding.openButton.removeAllViews()
             supportFragmentManager.beginTransaction()
                 .replace(R.id.openButton, boxPayCardComponent)
