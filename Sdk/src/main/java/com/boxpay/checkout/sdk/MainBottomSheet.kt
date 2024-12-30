@@ -1500,6 +1500,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.netBankingConstraint.isEnabled = true
         binding.bnplConstraint.isEnabled = true
         binding.emiConstraint.isEnabled = true
+        binding.recommendedProceedButton.isEnabled = true
     }
 
     private fun populatePopularUPIApps() {
@@ -3236,6 +3237,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
+                enabledButtonsForAllPaymentMethods()
 
                 if (status.contains("Rejected", ignoreCase = true)) {
                     var cleanedMessage = reason.substringAfter(":")
@@ -3266,7 +3268,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             parentFragmentManager,
                             "PaymentStatusBottomSheetWithDetails"
                         )
-                        enabledButtonsForAllPaymentMethods()
                     }
                 }
                 hideLoadingInButton()
@@ -3913,7 +3914,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
                 },
                 toShowOnChangeAddressClick = isEmailEditable || isPhoneEditable || isNameEditable || showShipping,
-                toShowAddress = showEmail || showShipping || showPhone || showName
+                toShowAddress = showEmail || showShipping || showPhone || showName,
+                toShowPersonal = !showShipping
             )
         }
     }

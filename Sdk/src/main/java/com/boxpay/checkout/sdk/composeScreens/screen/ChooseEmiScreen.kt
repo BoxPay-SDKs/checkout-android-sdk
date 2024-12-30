@@ -955,7 +955,9 @@ fun AddCardDetailsScreen(
                 Image(
                     painter = painterResource(id = cardIcon),
                     contentDescription = "",
-                    modifier = Modifier.padding(end = 12.dp).size(32.dp)
+                    modifier = Modifier
+                        .padding(end = 12.dp)
+                        .size(32.dp)
                 )
             },
             colors = OutlinedTextFieldDefaults.colors(
@@ -1619,7 +1621,8 @@ fun RecommendedScreen(
     address: String,
     onClickChangeAddress: () -> Unit,
     toShowOnChangeAddressClick: Boolean,
-    toShowAddress: Boolean
+    toShowAddress: Boolean,
+    toShowPersonal: Boolean
 ) {
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
         Card(
@@ -1641,7 +1644,7 @@ fun RecommendedScreen(
                 val (shippingTitle, shippingAddress, changeCta, divider, paymentTitle, paymentDesc, moreOptionsCta, moreOptionsArrow, selectedBackground, selectedUpi, radioButton, cta, selectedImage) = createRefs()
                 if (toShowAddress) {
                     Text(
-                        text = "Shipping Address",
+                        text = if (toShowPersonal) "Personal Details" else "Shipping Address",
                         color = Color(0xFF2D2B32),
                         style = TextStyle(
                             fontSize = 14.sp,

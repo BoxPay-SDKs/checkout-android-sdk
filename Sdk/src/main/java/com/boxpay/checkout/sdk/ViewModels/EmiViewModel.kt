@@ -267,6 +267,8 @@ class EmiViewModel : ViewModel() {
         selectedPercent.value = null
         isCardExpired.value = true
         isCardValid.value = false
+        cardNumberErrorText.value = ""
+        isCardNumberEnabled.value = null
     }
 
     fun onCardNumberChange(text: TextFieldValue) {
