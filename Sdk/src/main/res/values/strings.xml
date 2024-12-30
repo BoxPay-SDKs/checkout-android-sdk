@@ -273,8 +273,8 @@
 
     <string name="card_number_text">Card Number</string>
     <string name="card_number_placeholder">Enter card number</string>
-    <string name="expiry_text">Expiry</string>
-    <string name="expiry_placeholder">Expiry (MM/YY)</string>
+    <string name="expiry_text">Expiry (MM/YY)</string>
+    <string name="expiry_placeholder">Enter expiry</string>
     <string name="cvv_text">CVV</string>
     <string name="cvv_placeholder">Enter CVV</string>
     <string name="card_name_text">Name on the Card</string>

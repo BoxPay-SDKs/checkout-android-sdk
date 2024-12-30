@@ -384,7 +384,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     )
                 )
             )
-            bottomSheet.show(childFragmentManager, "CvvBottomSheet")
+            parentFragmentManager.beginTransaction()
+                .add(bottomSheet, "CVVInfoBottomSheet")
+                .commitAllowingStateLoss()
         }
 
         val allowedCharacters =
@@ -2029,6 +2031,8 @@ class CvvBottomSheetDialogFragment(
             behavior.peekHeight = BottomSheetBehavior.PEEK_HEIGHT_AUTO
             behavior.isFitToContents = true // Ensures it fits to its content
             it.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT // Full screen height
+
+            behavior.isDraggable = false
         }
     }
 
