@@ -562,10 +562,10 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                         )
                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                     } else {
-                        showLoadingState()
                         if (!response.isNull("actions") && response.getJSONArray("actions")
                                 .length() != 0
                         ) {
+                            showLoadingState()
                             val type =
                                 response.getJSONArray("actions").getJSONObject(0).getString("type")
                             if (status.contains("RequiresAction", ignoreCase = true)) {

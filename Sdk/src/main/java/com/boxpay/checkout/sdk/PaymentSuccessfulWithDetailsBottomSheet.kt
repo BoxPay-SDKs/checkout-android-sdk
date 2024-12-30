@@ -134,7 +134,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                     val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
                     val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
                     if (amount.isNotEmpty() && currencyType.isNotEmpty()){
-                        transactionAmountTextView.text = "$currencyType " + formatToINR(amount.toDouble())
+                        transactionAmountTextView.text = "$currencyType $amount"
                     }
             }
         }

@@ -132,7 +132,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var toLoadQrDirect: Boolean? = null
     private var priceBreakUpVisible = false
     var countryCode: Pair<String, String>? = null
-    private var transactionAmount: String? = null
     private var upiAvailable = false
     private var upiCollectMethod = false
     private var upiIntentMethod = false
@@ -2124,10 +2123,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
 
                 val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")
-                val amount = totalAmount.toDouble()
 
 // Format the amount using the NumberFormat class for locale-specific formatting
-                val formattedAmount = NumberFormat.getNumberInstance(Locale.US).format(amount)
+                val formattedAmount = paymentDetailsObject.getJSONObject("money").getString("amountLocaleFull")
 
 
                 var orderObject: JSONObject? = null
@@ -2177,8 +2175,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         recurringTotal.text =
                             "₹" + paymentDetailsObject.getJSONObject("money").getDouble("amount")
 
-                        val totalAmount =
-                            paymentDetailsObject.getJSONObject("money").getDouble("amount")
                         val sourceString =
                             "· You will be charged ₹" + ("<b>$totalAmount").toString() + "</b> " + " on the next payment date"
                         recurringAmount.text = Html.fromHtml(sourceString)
@@ -2320,16 +2316,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 editor.putString("currencyCode", currencyCode)
                 editor.apply()
 
-                transactionAmount = totalAmount
                 updateTransactionAmountInSharedPreferences(
-                    transactionAmount.toString(),
+                    formattedAmount,
                     currencyCode ?: ""
                 )
 
-                updateTransactionAmountInSharedPreferences(
-                    transactionAmount.toString(),
-                    currencyCode ?: ""
-                )
                 val itemsArray =
                     if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
 
@@ -2387,8 +2378,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     checkoutThemeObject.getString("buttonTextColor")
                 )
                 editor.apply()
-
-                transactionAmount = totalAmount.toString()
 
                 binding.unopenedTotalValue.text = "${currencySymbol}${formattedAmount}"
                 if (totalQuantity == 0) {
@@ -2480,7 +2469,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 )
                 editor.putString("countryName", countryCode?.first)
-                editor.putString("amount", moneyObject.getString("amount"))
+                editor.putString("amount", formattedAmount)
                 editor.putString("merchantId", response.getString("merchantId"))
                 editor.putString(
                     "countryCode",
