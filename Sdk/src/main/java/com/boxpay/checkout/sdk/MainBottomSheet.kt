@@ -2395,9 +2395,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.ItemsPrice.text = "${currencySymbol}${formattedAmount}"
 
                 if (originalAmount != null && originalAmount != "0" && originalAmount != "null") {
-                    val doubleTypeOriginal = paymentDetailsObject.getJSONObject("order")
+                    val originalAmountLocaleFull = paymentDetailsObject.getJSONObject("order")
                         .getString("originalAmountLocaleFull")
-                    binding.subtotalTextView.text = "${currencySymbol}${doubleTypeOriginal}"
+                    binding.subtotalTextView.text = "$currencySymbol$originalAmountLocaleFull"
                     binding.subTotalRelativeLayout.visibility = View.VISIBLE
                 }
 
@@ -2440,17 +2440,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 if (taxes != null && taxes != "null" && taxes != "0") {
-                    val doubleTypeTax =
+                    val taxAmountLocaleFull =
                         paymentDetailsObject.getJSONObject("order").getString("taxAmountLocaleFull")
-                    binding.taxTextView.text = "${currencySymbol}${doubleTypeTax}"
+                    binding.taxTextView.text = "$currencySymbol$taxAmountLocaleFull"
                     binding.taxesRelativeLayout.visibility = View.VISIBLE
                 }
 
                 if (shippingCharges != null && shippingCharges != "null" && shippingCharges != "0") {
-                    val doubleTypeshipping = paymentDetailsObject.getJSONObject("order")
+                    val shippingAmountLocaleFull = paymentDetailsObject.getJSONObject("order")
                         .getString("shippingAmountLocaleFull")
                     binding.shippingChargesTextView.text =
-                        "${currencySymbol}$doubleTypeshipping"
+                        "$currencySymbol$shippingAmountLocaleFull"
                     binding.shippingChargesRelativeLayout.visibility = View.VISIBLE
                 }
 
