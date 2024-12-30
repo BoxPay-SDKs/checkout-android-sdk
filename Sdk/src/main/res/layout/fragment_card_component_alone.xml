@@ -6,36 +6,6 @@
     android:orientation="vertical"
     android:layout_margin="16dp">
 
-    <RelativeLayout
-        android:id="@+id/boxpay_loader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone">
-
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/boxpayLogoLottie"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="32dp"
-            app:lottie_fileName="boxpayLogo.json" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/boxpayLogoLottie"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
-            android:paddingStart="6dp"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/poppins"
-            android:text="Loading..."
-            android:textColor="#4F4D55" />
-
-        <!--                        app:lottie_autoPlay="true"-->
-
-    </RelativeLayout>
-
     <LinearLayout
         android:id="@+id/boxpay_card_alone"
         android:layout_width="match_parent"
@@ -272,5 +242,35 @@
 
 
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/boxpay_loader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/boxpayLogoLottie"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="32dp"
+            app:lottie_fileName="boxpayLogo.json" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/boxpayLogoLottie"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:paddingStart="6dp"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/poppins"
+            android:text="Loading..."
+            android:textColor="#4F4D55" />
+
+        <!--                        app:lottie_autoPlay="true"-->
+
+    </RelativeLayout>
 
 </LinearLayout>
