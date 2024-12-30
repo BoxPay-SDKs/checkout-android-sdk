@@ -634,14 +634,7 @@ class BoxPayCardComponent(
 
         editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-//                editText.background = focusedDrawable
-                binding.textView5.visibility = View.GONE
-                editText.setCompoundDrawablesWithIntrinsicBounds(
-                    null, // Start drawable
-                    null, // Top drawable
-                    null, // End drawable
-                    null // Bottom drawable
-                )
+                editText.background = focusedDrawable
             } else {
 //                editText.background = unfocusedDrawable
                 if (editText.text.isNullOrEmpty()) {

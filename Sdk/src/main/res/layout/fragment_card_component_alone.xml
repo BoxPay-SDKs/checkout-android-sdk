@@ -29,9 +29,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:visibility="gone"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
+            android:visibility="gone"
             android:paddingBottom="16dp"
             android:background="@drawable/cardview_bg">
 
@@ -39,9 +39,7 @@
                 android:id="@+id/edtCardNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingEnd="8dp"
-                android:paddingStart="8dp"
-                android:layout_marginTop="@dimen/_6sdp"
+                android:layout_marginTop="@dimen/_10sdp"
                 android:inputType="number"
                 app:custom_component_editText_hint="@string/card_number_placeholder"
                 app:custom_component_maxline="1"
@@ -54,18 +52,6 @@
                 app:custom_component_title_bg_color = "@color/white"
                 app:custom_component_editText_bg_color = "@color/white"
                 app:custom_component_title="@string/card_number_text"/>
-            <TextView
-                android:id="@+id/textView4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:enabled="false"
-                android:visibility="gone"
-                android:fontFamily="@font/poppins"
-                android:gravity="center"
-                android:text="Required"
-                android:textColor="#B9232F"
-                android:textSize="14sp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
