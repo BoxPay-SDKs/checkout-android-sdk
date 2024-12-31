@@ -65,10 +65,12 @@ class BoxPayCardComponent(
     private var selectedColor = ""
     private var selectedTextColor = ""
     private var totalAmount = ""
+    private var showProceedButton = true
     private var isAmericanExpressCard: Boolean = false
     private var email: String? = null
     private var firstName: String? = null
     private var lastName: String? = null
+    private var handleCardValidity: ((Boolean) -> Unit)? = null
     private var cardVisible = false
     private var gender: String? = null
     private var phoneNumber: String? = null
@@ -86,6 +88,7 @@ class BoxPayCardComponent(
     private var job: Job? = null
     private var focusedDrawable: GradientDrawable? = null
     private var unfocusedDrawable: GradientDrawable? = null
+    private var defaultDrawable : GradientDrawable? = null
     private var errorDrawable: GradientDrawable? = null
     private var isCardExpired: Boolean? = null
     private var isCardNumberEnabled: Boolean? = null
@@ -106,24 +109,15 @@ class BoxPayCardComponent(
            "apis.boxpay.in"
         }
         this.BASE_URL = "https://${sessionUrl}/v0/checkout/sessions/"
-        setupCardNumberFormatting(binding.edtCardNumber, binding.edtExpiry)
-        setupCardExpiryFormatting(binding.edtExpiry, binding.edtCVV)
-        setUpCardCvvFormatting(binding.edtCVV, binding.edtcardName)
-        setUpCardNameFormatting(binding.edtcardName)
         makeSessionDataCall()
 
         binding.proceedButton.setOnClickListener {
-            if (isCardValid()) {
-                postRequest()
-            } else {
-                Toast.makeText(context, "Something is wrong", Toast.LENGTH_SHORT).show()
-            }
+           onClickProceed()
         }
 
         proceedButtonIsEnabled.observe(this) { enableProceedButton ->
             if (enableProceedButton) {
-                val isCardValid = isCardValid()
-                if (isCardValid) {
+                if (isCardValid()) {
                     enableProceedButton()
                 }
             } else {
@@ -261,6 +255,7 @@ class BoxPayCardComponent(
                         }
                     }
                 }
+                handleCardValidity?.let { it(isCardValid()) }
             }
         }
 
@@ -285,10 +280,10 @@ class BoxPayCardComponent(
                         )
                     }
                 }
-                editText.background = focusedDrawable
+//                editText.background = focusedDrawable
                 binding.textView4.visibility = View.GONE
             } else {
-                editText.background = unfocusedDrawable
+//                editText.background = unfocusedDrawable
                 val cardNumber = removeSpaces(editText.text.toString())
                 if (!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))) {
                     binding.textView4.visibility = View.VISIBLE
@@ -349,6 +344,7 @@ class BoxPayCardComponent(
             ), // End drawable
             null // Bottom drawable
         )
+//        customEditText.background = defaultDrawable
     }
 
     private fun isValidCardNumberLength(inputCardNumber: String): Boolean {
@@ -421,13 +417,14 @@ class BoxPayCardComponent(
                         }
                     }
                 }
+                handleCardValidity?.let { it(isCardValid()) }
             }
         }
 
         editText.addTextChangedListener(textWatcher)
         editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                editText.background = focusedDrawable
+//                editText.background = focusedDrawable
                 binding.expiryErrorText.visibility = View.GONE
                 editText.setCompoundDrawablesWithIntrinsicBounds(
                     null, // Start drawable
@@ -436,7 +433,7 @@ class BoxPayCardComponent(
                     null // Bottom drawable
                 )
             } else {
-                editText.background = unfocusedDrawable
+//                editText.background = unfocusedDrawable
                 if (editText.text.isNullOrEmpty()) {
                     binding.expiryErrorText.visibility = View.VISIBLE
                     editText.background = errorDrawable
@@ -492,6 +489,7 @@ class BoxPayCardComponent(
                 }
             }
         }
+//        customEditText.background = defaultDrawable
     }
 
     private fun setUpCardCvvFormatting(
@@ -533,27 +531,28 @@ class BoxPayCardComponent(
                         proceedButtonIsEnabled.value = false
                     }
                 }
+                handleCardValidity?.let { it(isCardValid()) }
             }
         }
         editText.addTextChangedListener(textWatcher)
         editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                editText.background = focusedDrawable
+//                customEditText.background = focusedDrawable
                 binding.cvvErrorText.visibility = View.GONE
             } else {
-                editText.background = unfocusedDrawable
+//                customEditText.background = unfocusedDrawable
                 if (editText.text.isNullOrEmpty()) {
                     binding.cvvErrorText.visibility = View.VISIBLE
-                    editText.background = errorDrawable
+                    customEditText.background = errorDrawable
                     binding.cvvErrorText.text = "Required"
                 } else if (editText.length() != 3 && !isAmericanExpressCard) {
                     binding.cvvErrorText.visibility = View.VISIBLE
                     binding.cvvErrorText.text = "CVV is invalid"
-                    editText.background = errorDrawable
+                    customEditText.background = errorDrawable
                 } else if (editText.length() != 4 && isAmericanExpressCard) {
                     binding.cvvErrorText.visibility = View.VISIBLE
                     binding.cvvErrorText.text = "CVV is invalid"
-                    editText.background = errorDrawable
+                    customEditText.background = errorDrawable
                 } else {
                     binding.cvvErrorText.visibility = View.GONE
                 }
@@ -568,6 +567,7 @@ class BoxPayCardComponent(
             ), // End drawable
             null // Bottom drawable
         )
+//        customEditText.background = defaultDrawable
 
         editText.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_UP) {
@@ -627,13 +627,14 @@ class BoxPayCardComponent(
                         proceedButtonIsEnabled.value = true
                     }
                 }
+                handleCardValidity?.let { it(isCardValid()) }
             }
         }
         editText.addTextChangedListener(textWatcher)
 
         editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
-                editText.background = focusedDrawable
+//                editText.background = focusedDrawable
                 binding.textView5.visibility = View.GONE
                 editText.setCompoundDrawablesWithIntrinsicBounds(
                     null, // Start drawable
@@ -642,7 +643,7 @@ class BoxPayCardComponent(
                     null // Bottom drawable
                 )
             } else {
-                editText.background = unfocusedDrawable
+//                editText.background = unfocusedDrawable
                 if (editText.text.isNullOrEmpty()) {
                     binding.textView5.visibility = View.VISIBLE
                     editText.background = errorDrawable
@@ -659,6 +660,7 @@ class BoxPayCardComponent(
                 }
             }
         }
+//        customEditText.background = defaultDrawable
     }
 
     private fun isValidCardNumberByLuhn(stringInputCardNumber: String): Boolean {
@@ -730,7 +732,7 @@ class BoxPayCardComponent(
         return formatted.toString()
     }
 
-    fun isValidExpirationDate(inputExpMonth: String, inputExpYear: String): Boolean {
+    private fun isValidExpirationDate(inputExpMonth: String, inputExpYear: String): Boolean {
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
         val currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
 
@@ -849,6 +851,7 @@ class BoxPayCardComponent(
                     binding.cardDetailsLinearLayout.visibility = View.GONE
                     binding.errorlayout.visibility = View.VISIBLE
                 }
+
                 focusedDrawable = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
                     cornerRadius = 16f // Adjust the corner radius
@@ -858,6 +861,7 @@ class BoxPayCardComponent(
                         )
                     ) // Set border thickness and color
                 }
+
                 unfocusedDrawable = GradientDrawable().apply {
                     shape = GradientDrawable.RECTANGLE
                     cornerRadius = 16f // Adjust the corner radius
@@ -865,7 +869,17 @@ class BoxPayCardComponent(
                         4, Color.parseColor(
                             "#E6E6E6"
                         )
-                    ) // Set border thickness and color
+                    )
+                }
+
+                defaultDrawable = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadius = 16f // Adjust the corner radius
+                    setStroke(
+                        4, Color.parseColor(
+                            "#000000"
+                        )
+                    )
                 }
 
                 errorDrawable = GradientDrawable().apply {
@@ -910,12 +924,17 @@ class BoxPayCardComponent(
     private fun removeLoadingState() {
         binding.boxpayLoader.visibility = View.GONE
         if (cardVisible) {
+            setupCardNumberFormatting(binding.edtCardNumber, binding.edtExpiry)
+            setupCardExpiryFormatting(binding.edtExpiry, binding.edtCVV)
+            setUpCardCvvFormatting(binding.edtCVV, binding.edtcardName)
+            setUpCardNameFormatting(binding.edtcardName)
+            binding.proceedButton.visibility = if (showProceedButton) View.VISIBLE else View.GONE
             binding.cardDetailsLinearLayout.visibility = View.VISIBLE
         }
         binding.boxpayLogoLottie.cancelAnimation()
     }
 
-    fun startCountdown(endTime: String) {
+    private fun startCountdown(endTime: String) {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault())
         dateFormat.timeZone = TimeZone.getTimeZone("UTC")
 
@@ -1001,7 +1020,7 @@ class BoxPayCardComponent(
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
-    fun makeCardNetworkIdentificationCall(
+    private fun makeCardNetworkIdentificationCall(
         context: Context, cardNumber: String, completeCardNumber: String
     ) {
         val queue = Volley.newRequestQueue(context)
@@ -1018,8 +1037,7 @@ class BoxPayCardComponent(
                     isCardNumberEnabled = false
                     binding.textView4.visibility = View.VISIBLE
                     binding.textView4.text = "This card is not supported for the payment"
-                    val editText = binding.edtCardNumber.findViewById<EditText>(R.id.editText)
-                    editText.background = errorDrawable
+                    binding.edtCardNumber.background = errorDrawable
                     proceedButtonIsEnabled.value = false
                 }
 
@@ -1203,11 +1221,6 @@ class BoxPayCardComponent(
                 val transactionId = response.getString("transactionId").toString()
 
                 if (status.contains("Rejected", ignoreCase = true)) {
-                    var cleanedMessage = reason.substringAfter(":")
-                    if (!reasonCode.startsWith("uf", true)) {
-                        cleanedMessage =
-                            "Please retry using other payment method or try again in sometime"
-                    }
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(
@@ -1404,7 +1417,7 @@ class BoxPayCardComponent(
         requestQueue.add(jsonObjectRequest)
     }
 
-    fun generateRandomAlphanumericString(length: Int): String {
+    private fun generateRandomAlphanumericString(length: Int): String {
         val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length)
             .map { Random.nextInt(0, charPool.size) }
@@ -1429,5 +1442,24 @@ class BoxPayCardComponent(
                 }
             }
         }
+    }
+
+    fun setProceedButtonVisibility(visible: Boolean, handleCardValidityCallback:((Boolean)-> Unit)?) {
+        showProceedButton = visible
+        handleCardValidity = handleCardValidityCallback
+    }
+
+    fun onClickProceed() {
+        if (isCardValid()) {
+            postRequest()
+        } else {
+            Toast.makeText(context, "Something is wrong", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        sessionTimer?.cancel()
+        job?.cancel()
     }
 }

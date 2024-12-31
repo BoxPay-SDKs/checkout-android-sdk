@@ -2,6 +2,7 @@ package com.boxpay.checkout.demoapp
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -102,13 +103,23 @@ class Check : AppCompatActivity() {
 //                binding.proceedButtonBottom.isEnabled = false
 //            }
         } else if(isCardAlone){
+            disableProceedButton()
             val boxPayCardComponent = BoxPayCardComponent(tokenLiveData.value ?: "", false,::onPaymentResultCallback)
             boxPayCardComponent.setTestEnv(true)
             boxPayCardComponent.setContext(this)
             binding.openButton.removeAllViews()
+            boxPayCardComponent.setProceedButtonVisibility(false, ::handleCardValidity)
             supportFragmentManager.beginTransaction()
                 .replace(R.id.openButton, boxPayCardComponent)
                 .commit()
+
+            binding.proceedButtonBottom.visibility = View.VISIBLE
+
+            binding.proceedButtonBottom.setOnClickListener {
+                boxPayCardComponent.onClickProceed()
+                binding.proceedButtonBottom.isEnabled = false
+            }
+
         }else {
             val boxPayCheckout =
                 BoxPayCheckout(
@@ -249,5 +260,32 @@ class Check : AppCompatActivity() {
             // Handle JSON parsing exception
         }
         return null
+    }
+
+    fun handleCardValidity(valid: Boolean) {
+        if (valid) {
+            enableProceedButton()
+        } else {
+            disableProceedButton()
+        }
+    }
+
+    private fun enableProceedButton() {
+        binding.bottomProceedButtonLayout.isEnabled = true
+        binding.proceedButtonBottom.isEnabled = true
+        binding.bottomProceedButtonLayout.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.button_bg)
+        binding.bottomProceedButtonText.setTextColor(
+            Color.parseColor(
+                "#FFFFFF"
+            )
+        )
+    }
+
+    private fun disableProceedButton() {
+        binding.bottomProceedButtonText.visibility = View.VISIBLE
+        binding.proceedButtonBottom.isEnabled = false
+        binding.bottomProceedButtonLayout.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.disable_button)
+        binding.proceedButtonBottom.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.disable_button)
+        binding.bottomProceedButtonText.setTextColor(Color.parseColor("#ADACB0"))
     }
 }

@@ -90,7 +90,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("io.coil-kt:coil-svg:2.2.2")
     implementation("androidx.activity:activity-compose:1.5.1")
-    implementation("com.github.simformsolutions:SSCustomEditTextOutLineBorder:1.0.15")
+    implementation("com.github.simformsolutions:SSCustomEditTextOutLineBorder:1.0.16")
 
 }
 

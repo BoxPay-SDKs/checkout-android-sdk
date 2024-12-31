@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.demoapp.databinding.ActivityMerchantDetailsScreenBinding
+import com.boxpay.checkout.sdk.BoxPayCardComponent
 import com.boxpay.checkout.sdk.BoxPayCheckout
 import com.boxpay.checkout.sdk.BoxPayUpiComponent
 import com.boxpay.checkout.sdk.ConfigurationOptions
@@ -20,6 +21,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
     }
     private var selectedEnvironment: String? = null
     private var isUpiEnabled: Boolean = false
+    private var isCardEnabled: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,11 +43,12 @@ class MerchantDetailsScreen : AppCompatActivity() {
 
         val upiRadioButton = binding.upiRadioButton
         upiRadioButton.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                isUpiEnabled = true
-            } else {
-                isUpiEnabled = false
-            }
+            isUpiEnabled = isChecked
+        }
+
+        val cardRadioButton = binding.cardRadioButton
+        cardRadioButton.setOnCheckedChangeListener { _, isChecked ->
+            isCardEnabled = isChecked
         }
 
         binding.environmentSpinner.onItemSelectedListener =
@@ -94,6 +97,14 @@ class MerchantDetailsScreen : AppCompatActivity() {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
+                } else if (isCardEnabled){
+                    val boxPayCardComponent = BoxPayCardComponent(token, false,::onPaymentResult)
+                    boxPayCardComponent.setTestEnv(true)
+                    boxPayCardComponent.setContext(this)
+                    binding.mainContainer.removeAllViews()
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container, boxPayCardComponent)
+                        .commit()
                 } else {
                     val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken, configurationOptions = mapOf(
                         ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
@@ -114,6 +125,14 @@ class MerchantDetailsScreen : AppCompatActivity() {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
+                } else if (isCardEnabled){
+                    val boxPayCardComponent = BoxPayCardComponent(token, false,::onPaymentResult)
+                    boxPayCardComponent.setTestEnv(true)
+                    boxPayCardComponent.setContext(this)
+                    binding.mainContainer.removeAllViews()
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container, boxPayCardComponent)
+                        .commit()
                 } else {
                     val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken,configurationOptions = mapOf(
                         ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
@@ -133,6 +152,14 @@ class MerchantDetailsScreen : AppCompatActivity() {
                     binding.mainContainer.removeAllViews()
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.main_container,boxPayUpiComponent)
+                        .commit()
+                } else if (isCardEnabled){
+                    val boxPayCardComponent = BoxPayCardComponent(token, false,::onPaymentResult)
+                    boxPayCardComponent.setTestEnv(true)
+                    boxPayCardComponent.setContext(this)
+                    binding.mainContainer.removeAllViews()
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.main_container, boxPayCardComponent)
                         .commit()
                 } else {
                     val checkout = BoxPayCheckout(this, token, ::onPaymentResult, shopperToken, configurationOptions = mapOf(
