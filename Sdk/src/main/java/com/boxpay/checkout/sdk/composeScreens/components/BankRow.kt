@@ -59,7 +59,6 @@ import com.boxpay.checkout.sdk.composeScreens.model.interFontFamily
 fun BankRow(
     iconUrl: String,
     bankName: String,
-    percentText: String,
     isNoCostApplied: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -69,7 +68,7 @@ fun BankRow(
         }
         .build()
     ConstraintLayout(modifier) {
-        val (icon, name, noCostTag, percent, arrowIcon) = createRefs()
+        val (icon, name, noCostTag, arrowIcon) = createRefs()
 
         Image(
             painter = rememberAsyncImagePainter(
@@ -96,7 +95,7 @@ fun BankRow(
             color = Color(0xFF4F4D55),
             modifier = Modifier.constrainAs(name) {
                 start.linkTo(icon.end, 8.dp)
-                end.linkTo(percent.start, 4.dp)
+                end.linkTo(arrowIcon.start, 4.dp)
                 if (isNoCostApplied) {
                     top.linkTo(parent.top, 16.dp)
                 } else {
@@ -128,20 +127,6 @@ fun BankRow(
 
                     centerVerticallyTo(icon)
                 }
-        )
-        Text(
-            text = percentText,
-            style = TextStyle(
-                fontFamily = defaultFontFamily,
-                fontSize = 14.sp,
-                fontWeight = FontWeight(400)
-            ),
-            color = Color(0xFF4F4D55),
-            modifier = Modifier.constrainAs(percent) {
-                end.linkTo(arrowIcon.start, 4.dp)
-
-                centerVerticallyTo(arrowIcon)
-            }
         )
     }
 }
@@ -230,7 +215,8 @@ fun EmiAmountDetails(
     onProceed: () -> Unit,
     isNoCostApplied: Boolean,
     currencySymbol: String,
-    selectedTextColor: Color
+    selectedTextColor: Color,
+    netAmount: String
 ) {
     ConstraintLayout(
         modifier
@@ -239,7 +225,7 @@ fun EmiAmountDetails(
             )
             .padding(bottom = 8.dp)
     ) {
-        val (radioButton, heading, table, noteDesc, gst, cta, noCost, percentConstraint) = createRefs()
+        val (radioButton, heading, table, noteDesc, gst, cta, noCost) = createRefs()
         RadioButton(
             selected = isSelected,
             onClick = { onClickRadio() },
@@ -282,6 +268,18 @@ fun EmiAmountDetails(
                         )
                     )
                 )
+                if (!isSelected) {
+                    append(
+                        AnnotatedString(
+                            text = " | @$percent% p.a.",
+                            spanStyle = SpanStyle(
+                                fontFamily = defaultFontFamily,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight(600)
+                            )
+                        )
+                    )
+                }
             },
             color = Color(0xFF4F4D55),
             modifier = Modifier.constrainAs(heading) {
@@ -289,22 +287,6 @@ fun EmiAmountDetails(
                 centerVerticallyTo(radioButton)
             }
         )
-        if (!isSelected) {
-            Text(
-                text = "@$percent% p.a",
-                style = TextStyle(
-                    fontFamily = defaultFontFamily,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight(400)
-                ),
-                color = Color(0xFF4F4D55),
-                modifier = Modifier.constrainAs(percentConstraint) {
-                    end.linkTo(parent.end, 8.dp)
-
-                    centerVerticallyTo(radioButton)
-                }
-            )
-        }
         if (isNoCostApplied) {
             FilterTag(
                 text = "NO COST EMI",
@@ -332,40 +314,78 @@ fun EmiAmountDetails(
                 isNoCostApplied = isNoCostApplied,
                 currencySymbol = currencySymbol
             )
-            if (isNoCostApplied) {
-                Text(
-                    text = buildAnnotatedString {
-                        append(
-                            AnnotatedString(
-                                text = "Note:",
-                                spanStyle = SpanStyle(
-                                    fontFamily = defaultFontFamily,
-                                    fontWeight = FontWeight(600),
-                                    fontSize = 12.sp
-                                )
+            Text(
+                text = buildAnnotatedString {
+                    append(
+                        AnnotatedString(
+                            text = "Your card will be charged for an amount of",
+                            spanStyle = SpanStyle(
+                                fontFamily = defaultFontFamily,
+                                fontWeight = FontWeight(400),
+                                fontSize = 12.sp
                             )
                         )
-                        append(
-                            AnnotatedString(
-                                text = " The bank will continue to charge interest on No Cost EMI plans as per existing rates. However, the interest to be charged by bank will be passed on to you as an upfront discount.",
-                                spanStyle = SpanStyle(
-                                    fontFamily = defaultFontFamily,
-                                    fontWeight = FontWeight(400),
-                                    fontSize = 12.sp
-                                )
+                    )
+                    append(
+                        AnnotatedString(
+                            text = " $currencySymbol$netAmount.",
+                            spanStyle = SpanStyle(
+                                fontFamily = defaultFontFamily,
+                                fontWeight = FontWeight(600),
+                                fontSize = 12.sp
                             )
                         )
-                    },
-                    color = Color(0xFF2D2B32),
-                    modifier = Modifier.constrainAs(noteDesc) {
-                        start.linkTo(parent.start, 16.dp)
-                        end.linkTo(parent.end, 16.dp)
-                        top.linkTo(table.bottom, 12.dp)
+                    )
+                    append(
+                        AnnotatedString(
+                            text = " You will be charged an interest of ",
+                            spanStyle = SpanStyle(
+                                fontFamily = defaultFontFamily,
+                                fontWeight = FontWeight(400),
+                                fontSize = 12.sp
+                            )
+                        )
+                    )
+                    append(
+                        AnnotatedString(
+                            text = " $currencySymbol$interest",
+                            spanStyle = SpanStyle(
+                                fontFamily = defaultFontFamily,
+                                fontWeight = FontWeight(600),
+                                fontSize = 12.sp
+                            )
+                        )
+                    )
+                    append(
+                        AnnotatedString(
+                            text = " by the bank making the total payable amount as",
+                            spanStyle = SpanStyle(
+                                fontFamily = defaultFontFamily,
+                                fontWeight = FontWeight(400),
+                                fontSize = 12.sp
+                            )
+                        )
+                    )
+                    append(
+                        AnnotatedString(
+                            text = " $currencySymbol$total",
+                            spanStyle = SpanStyle(
+                                fontFamily = defaultFontFamily,
+                                fontWeight = FontWeight(600),
+                                fontSize = 12.sp
+                            )
+                        )
+                    )
+                },
+                color = Color(0xFF2D2B32),
+                modifier = Modifier.constrainAs(noteDesc) {
+                    start.linkTo(parent.start, 16.dp)
+                    end.linkTo(parent.end, 16.dp)
+                    top.linkTo(table.bottom, 12.dp)
 
-                        width = Dimension.fillToConstraints
-                    }
-                )
-            }
+                    width = Dimension.fillToConstraints
+                }
+            )
             Text(
                 text = if (processingFee.equals("0", true)) buildAnnotatedString {
                     append(
@@ -414,11 +434,7 @@ fun EmiAmountDetails(
                 modifier = Modifier.constrainAs(gst) {
                     start.linkTo(parent.start, 16.dp)
                     end.linkTo(parent.end, 16.dp)
-                    if (!isNoCostApplied) {
-                        top.linkTo(table.bottom, 12.dp)
-                    } else {
-                        top.linkTo(noteDesc.bottom, 12.dp)
-                    }
+                    top.linkTo(noteDesc.bottom, 12.dp)
 
                     width = Dimension.fillToConstraints
                 }
@@ -554,7 +570,7 @@ fun TableDetails(
                             text = currencySymbol,
                             spanStyle = SpanStyle(
                                 fontFamily = interFontFamily,
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight(200)
                             )
                         )
@@ -564,7 +580,7 @@ fun TableDetails(
                             text = amount,
                             spanStyle = SpanStyle(
                                 fontFamily = defaultFontFamily,
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight(400)
                             )
                         )
@@ -582,7 +598,7 @@ fun TableDetails(
                             text = currencySymbol,
                             spanStyle = SpanStyle(
                                 fontFamily = interFontFamily,
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight(200)
                             )
                         )
@@ -592,7 +608,7 @@ fun TableDetails(
                             text = interest,
                             spanStyle = SpanStyle(
                                 fontFamily = defaultFontFamily,
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight(400)
                             )
                         )
@@ -611,7 +627,7 @@ fun TableDetails(
                                 text = "-$currencySymbol",
                                 spanStyle = SpanStyle(
                                     fontFamily = interFontFamily,
-                                    fontSize = 14.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight(200)
                                 )
                             )
@@ -621,7 +637,7 @@ fun TableDetails(
                                 text = interest,
                                 spanStyle = SpanStyle(
                                     fontFamily = defaultFontFamily,
-                                    fontSize = 14.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight(200)
                                 )
                             )
@@ -640,7 +656,7 @@ fun TableDetails(
                             text = currencySymbol,
                             spanStyle = SpanStyle(
                                 fontFamily = interFontFamily,
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight(200)
                             )
                         )
@@ -650,7 +666,7 @@ fun TableDetails(
                             text = total,
                             spanStyle = SpanStyle(
                                 fontFamily = defaultFontFamily,
-                                fontSize = 14.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight(600)
                             )
                         )
