@@ -1,24 +1,31 @@
 package com.boxpay.checkout.sdk
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.text.Editable
+import android.text.InputFilter
 import android.text.TextWatcher
+import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebSettings
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
 import com.airbnb.lottie.LottieDrawable
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
@@ -29,7 +36,13 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
 import com.simform.customcomponent.SSCustomEdittextOutlinedBorder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import org.json.JSONException
 import org.json.JSONObject
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -37,6 +50,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.random.Random
 
 class BoxPayCardComponent(
     val token: String?,
@@ -97,6 +111,14 @@ class BoxPayCardComponent(
         setUpCardCvvFormatting(binding.edtCVV, binding.edtcardName)
         setUpCardNameFormatting(binding.edtcardName)
         makeSessionDataCall()
+
+        binding.proceedButton.setOnClickListener {
+            if (isCardValid()) {
+                postRequest()
+            } else {
+                Toast.makeText(context, "Something is wrong", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         proceedButtonIsEnabled.observe(this) { enableProceedButton ->
             if (enableProceedButton) {
@@ -245,17 +267,26 @@ class BoxPayCardComponent(
         editText.addTextChangedListener(textWatcher)
         editText.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
+                if (binding.textView4.isVisible) {
+                    val text = editText.text.replace("\\s".toRegex(), "")
+                    if (editText.length() >= 9) {
+                        makeCardNetworkIdentificationCall(
+                            requireContext(), text.substring(0, 9), text
+                        )
+                    } else {
+                        editText.setCompoundDrawablesWithIntrinsicBounds(
+                            null, // Start drawable
+                            null, // Top drawable
+                            ContextCompat.getDrawable(
+                                editText.context,
+                                R.drawable.default_card_icon
+                            ), // End drawable
+                            null // Bottom drawable
+                        )
+                    }
+                }
                 editText.background = focusedDrawable
                 binding.textView4.visibility = View.GONE
-                editText.setCompoundDrawablesWithIntrinsicBounds(
-                    null, // Start drawable
-                    null, // Top drawable
-                    ContextCompat.getDrawable(
-                        editText.context,
-                        R.drawable.default_card_icon
-                    ), // End drawable
-                    null // Bottom drawable
-                )
             } else {
                 editText.background = unfocusedDrawable
                 val cardNumber = removeSpaces(editText.text.toString())
@@ -287,16 +318,25 @@ class BoxPayCardComponent(
                         )
                     }
                 } else {
+                    if (binding.textView4.isVisible) {
+                        val text = editText.text.replace("\\s".toRegex(), "")
+                        if (editText.length() >= 9) {
+                            makeCardNetworkIdentificationCall(
+                                requireContext(), text.substring(0, 9), text
+                            )
+                        } else {
+                            editText.setCompoundDrawablesWithIntrinsicBounds(
+                                null, // Start drawable
+                                null, // Top drawable
+                                ContextCompat.getDrawable(
+                                    editText.context,
+                                    R.drawable.default_card_icon
+                                ), // End drawable
+                                null // Bottom drawable
+                            )
+                        }
+                    }
                     binding.textView4.visibility = View.GONE
-                    editText.setCompoundDrawablesWithIntrinsicBounds(
-                        null, // Start drawable
-                        null, // Top drawable
-                        ContextCompat.getDrawable(
-                            editText.context,
-                            R.drawable.default_card_icon
-                        ), // End drawable
-                        null // Bottom drawable
-                    )
                 }
             }
         }
@@ -459,6 +499,7 @@ class BoxPayCardComponent(
         nextCustomEditText: SSCustomEdittextOutlinedBorder
     ) {
         val editText = customEditText.findViewById<EditText>(R.id.editText)
+        editText.transformationMethod = PasswordTransformationMethod.getInstance()
         val nextEditText = nextCustomEditText.findViewById<EditText>(R.id.editText)
         val textWatcher = object : TextWatcher {
 
@@ -468,6 +509,11 @@ class BoxPayCardComponent(
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 // No action needed in this callback for cursor handling
+                if (isAmericanExpressCard) {
+                    editText.filters = arrayOf(InputFilter.LengthFilter(4))
+                } else {
+                    editText.filters = arrayOf(InputFilter.LengthFilter(3))
+                }
                 if (s.toString().isBlank()) {
                     proceedButtonIsEnabled.value = false
                 }
@@ -1075,5 +1121,313 @@ class BoxPayCardComponent(
 
         // All validations passed
         return true
+    }
+
+    private fun postRequest() {
+        val cardExpiryYYYY_MM = addDashInsteadOfSlash(binding.edtExpiry.getTextValue)
+        showLoadingState()
+        val requestQueue = Volley.newRequestQueue(context)
+        val requestBody = JSONObject().apply {
+            val browserData = JSONObject().apply {
+                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+
+                // Get the screen height and width
+                val displayMetrics = resources.displayMetrics
+                put("screenHeight", displayMetrics.heightPixels.toString())
+                put("screenWidth", displayMetrics.widthPixels.toString())
+                put("acceptHeader", "application/json")
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", Locale.getDefault().toString())
+                put("javaEnabled", true) // Example value
+                put("packageId", requireActivity().packageName)
+            }
+            put("browserData", browserData)
+
+            val instrumentDetailsObject = JSONObject().apply {
+                put("type", "card/plain")
+
+                val cardObject = JSONObject().apply {
+                    put("number", binding.edtCardNumber.getTextValue)
+                    put("expiry", cardExpiryYYYY_MM)
+                    put("cvc", binding.edtCVV.getTextValue)
+                    put("holderName", binding.edtcardName.getTextValue)
+                }
+                put("card", cardObject)
+            }
+            put("instrumentDetails", instrumentDetailsObject)
+
+            val shopperObject = JSONObject().apply {
+                put("email", email)
+                put("firstName", firstName)
+                put("gender", gender)
+                put("lastName", lastName)
+                put("phoneNumber", phoneNumber)
+                put("uniqueReference", uniqueReference)
+                put("dateOfBirth", dob)
+                put("panNumber", panNumber)
+
+                val deliveryAddressObject = JSONObject().apply {
+
+                    put("address1", address1)
+                    put("address2", address2)
+                    put("city", city)
+                    put("countryCode", countryCode)
+                    put("postalCode", postalCode)
+                    put("state", state)
+                    put("city", city)
+                    put("countryName", countryName)
+
+                }
+                put("deliveryAddress", deliveryAddressObject)
+            }
+            put("shopper", shopperObject)
+
+            val deviceDetails = JSONObject().apply {
+                put("browser", Build.BRAND)
+                put("platformVersion", Build.VERSION.RELEASE)
+                put("deviceType", Build.MANUFACTURER)
+                put("deviceName", Build.MANUFACTURER)
+                put("deviceBrandName", Build.MODEL)
+            }
+            put("deviceDetails", deviceDetails)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, BASE_URL + token, requestBody,
+            Response.Listener { response ->
+
+                val status = response.getJSONObject("status").getString("status")
+                val reason = response.getJSONObject("status").getString("reason")
+                val reasonCode = response.getJSONObject("status").getString("reasonCode")
+                val transactionId = response.getString("transactionId").toString()
+
+                if (status.contains("Rejected", ignoreCase = true)) {
+                    var cleanedMessage = reason.substringAfter(":")
+                    if (!reasonCode.startsWith("uf", true)) {
+                        cleanedMessage =
+                            "Please retry using other payment method or try again in sometime"
+                    }
+                    onPaymentResult?.let {
+                        it(
+                            PaymentResultObject(
+                                resultFetched = "Failed",
+                                transactionIdFetched = "",
+                                operationIdFetched = ""
+                            )
+                        )
+                    }
+                    removeLoadingState()
+                } else {
+                    val type =
+                        response.getJSONArray("actions").getJSONObject(0).getString("type")
+                    if (status.contains("RequiresAction", ignoreCase = true)) {
+                        onPaymentResult?.let {
+                            it(
+                                PaymentResultObject(
+                                    resultFetched = status,
+                                    transactionIdFetched = "",
+                                    operationIdFetched = ""
+                                )
+                            )
+                        }
+                        val url = if (type.contains("html", true)) {
+                            response
+                                .getJSONArray("actions")
+                                .getJSONObject(0)
+                                .getString("htmlPageString")
+                        } else {
+                            response
+                                .getJSONArray("actions")
+                                .getJSONObject(0)
+                                .getString("url")
+                        }
+                        showLoadingState()
+                        val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                        intent.putExtra("url", url)
+                        intent.putExtra("type", type)
+                        startFunctionCalls()
+                        startActivityForResult(intent, 333)
+                    } else if (status.contains("Approved", ignoreCase = true)) {
+                        onPaymentResult?.let {
+                            it(
+                                PaymentResultObject(
+                                    resultFetched = "Success",
+                                    transactionIdFetched = transactionId,
+                                    operationIdFetched = transactionId
+                                )
+                            )
+                        }
+                        removeLoadingState()
+                    }
+                }
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    onPaymentResult?.let {
+                        it(
+                            PaymentResultObject(
+                                resultFetched = "Failed",
+                                transactionIdFetched = "",
+                                operationIdFetched = ""
+                            )
+                        )
+                    }
+                }
+                removeLoadingState()
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                headers["X-Client-Connector-Name"] = "Android SDK"
+                headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
+                return headers
+            }
+        }.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    private fun addDashInsteadOfSlash(date: String): String {
+        try {
+            val mm = date.substring(0, 2)
+            val yyyy = "20" + date.substring(3, 5)
+            return yyyy + "-" + mm
+        } catch (e: Exception) {
+            binding.expiryErrorText.text = "Invalid Validity"
+            return ""
+        }
+    }
+
+    private fun startFunctionCalls() {
+        job?.cancel()
+        job = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                delay(3000)
+                fetchStatusAndReason("${BASE_URL}${token}/status")
+                // Delay for 4 seconds
+            }
+        }
+    }
+
+    private fun fetchStatusAndReason(url: String) {
+        val requestQueue = Volley.newRequestQueue(context)
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.GET, url, null,
+            Response.Listener { response ->
+                try {
+                    val status = response.getString("status")
+                    val transactionId = response.getString("transactionId").toString()
+
+                    if (status.equals("Rejected", ignoreCase = true) || status.equals(
+                            "failed",
+                            true
+                        )
+                    ) {
+                        job?.cancel()
+                        onPaymentResult?.let {
+                            it(
+                                PaymentResultObject(
+                                    resultFetched = "Failed",
+                                    transactionIdFetched = transactionId,
+                                    operationIdFetched = transactionId
+                                )
+                            )
+                        }
+                        removeLoadingState()
+                    } else {
+                        if (status.equals("RequiresAction", ignoreCase = true)) {
+                            job?.cancel()
+                            onPaymentResult?.let {
+                                it(
+                                    PaymentResultObject(
+                                        resultFetched = status,
+                                        transactionIdFetched = transactionId,
+                                        operationIdFetched = transactionId
+                                    )
+                                )
+                            }
+                            removeLoadingState()
+                        } else if (status.equals(
+                                "Approved",
+                                ignoreCase = true
+                            ) || status.equals("paid", true)
+                        ) {
+                            job?.cancel()
+                            onPaymentResult?.let {
+                                it(
+                                    PaymentResultObject(
+                                        resultFetched = "Success",
+                                        transactionIdFetched = transactionId,
+                                        operationIdFetched = transactionId
+                                    )
+                                )
+                            }
+                            removeLoadingState()
+                        }
+                    }
+                } catch (_: JSONException) {
+
+                }
+            },
+            Response.ErrorListener { error ->
+                if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    val errorResponse = String(error.networkResponse.data)
+                    onPaymentResult?.let {
+                        it(
+                            PaymentResultObject(
+                                resultFetched = "Failed",
+                                transactionIdFetched = "",
+                                operationIdFetched = ""
+                            )
+                        )
+                    }
+                }
+                job?.cancel()
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Trace-Id"] = generateRandomAlphanumericString(10)
+                return headers
+            }
+        }
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
+    }
+
+    fun generateRandomAlphanumericString(length: Int): String {
+        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+        return (1..length)
+            .map { Random.nextInt(0, charPool.size) }
+            .map(charPool::get)
+            .joinToString("")
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 333) {
+            if (resultCode == Activity.RESULT_OK) {
+                removeLoadingState()
+                job?.cancel()
+                onPaymentResult?.let {
+                    it(
+                        PaymentResultObject(
+                            resultFetched = "Failed",
+                            transactionIdFetched = "",
+                            operationIdFetched = ""
+                        )
+                    )
+                }
+            }
+        }
     }
 }

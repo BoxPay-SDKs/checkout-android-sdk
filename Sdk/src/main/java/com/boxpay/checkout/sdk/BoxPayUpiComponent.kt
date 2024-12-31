@@ -1098,13 +1098,10 @@ class BoxPayUpiComponent(
 
                 if (status.contains("Rejected", ignoreCase = true)) {
                     var cleanedMessage = reason.substringAfter(":")
-                    if (cleanedMessage.contains("virtual address", true)) {
-                        cleanedMessage = "Invalid UPI Id"
-                    } else if (!reasonCode.startsWith("uf", true)) {
+                    if (!reasonCode.startsWith("uf", true)) {
                         cleanedMessage =
                             "Please retry using other payment method or try again in sometime"
                     }
-                    Toast.makeText(context, cleanedMessage, Toast.LENGTH_SHORT).show()
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(

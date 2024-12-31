@@ -139,7 +139,7 @@
                         android:id="@+id/cvvErrorText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="2dp"
+                        android:layout_marginStart="8dp"
                         android:enabled="false"
                         android:visibility="gone"
                         android:fontFamily="@font/poppins"
