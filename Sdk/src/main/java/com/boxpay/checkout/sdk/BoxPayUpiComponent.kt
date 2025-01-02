@@ -405,8 +405,22 @@ class BoxPayUpiComponent(
                 val countryCodeJson = JSONObject(jsonString)
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
                 val checkoutThemeObject = merchantDetailsObject.getJSONObject("checkoutTheme")
-                selectedColor = checkoutThemeObject.getString("headerColor")
+                val sharedPreferences = requireContext().getSharedPreferences(
+                    "TransactionDetails",
+                    Context.MODE_PRIVATE
+                )
+                val editor = sharedPreferences.edit()
+                selectedColor = checkoutThemeObject.getString("primaryButtonColor")
                 selectedTextColor = checkoutThemeObject.getString("buttonTextColor")
+                editor.putString(
+                    "primaryButtonColor",
+                    checkoutThemeObject.getString("primaryButtonColor")
+                )
+                editor.putString(
+                    "buttonTextColor",
+                    checkoutThemeObject.getString("buttonTextColor")
+                )
+                editor.apply()
                 binding.proceedButtonRelativeLayout.setBackgroundColor(
                     Color.parseColor(selectedColor)
                 )
