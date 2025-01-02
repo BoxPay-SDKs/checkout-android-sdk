@@ -30,5 +30,6 @@ data class Emi(
     val noCostApplied: Boolean,
     val lowCostApplied: Boolean,
     val processingFee: String,
-    val code : String?
+    val code : String?,
+    val netAmount: String?
 )

@@ -104,7 +104,6 @@ import com.boxpay.checkout.sdk.composeScreens.components.FilterCard
 import com.boxpay.checkout.sdk.composeScreens.components.OthersEmiRow
 import com.boxpay.checkout.sdk.composeScreens.components.ShimmerEffect
 import com.boxpay.checkout.sdk.composeScreens.components.TopBar
-import com.boxpay.checkout.sdk.composeScreens.components.formatPercent
 import com.boxpay.checkout.sdk.composeScreens.model.Bank
 import com.boxpay.checkout.sdk.composeScreens.model.ChooseEmiModel
 import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
@@ -394,7 +393,6 @@ fun ChooseEmiScreen(
                             BankRow(
                                 iconUrl = bank.iconUrl,
                                 bankName = bank.name,
-                                percentText = "@${formatPercent(bank.percent)}% p.a.",
                                 isNoCostApplied = bank.noCostApplied,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -669,7 +667,8 @@ fun SelectTenureEmi(
                                 "#ffffff"
                             )
                         )
-                    )
+                    ),
+                    netAmount = it.netAmount ?: ""
                 )
                 if (it.amount != selectedBank.emiList.last().amount) {
                     Divider(modifier = Modifier.fillMaxWidth())

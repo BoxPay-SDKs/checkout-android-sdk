@@ -465,7 +465,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 )?.getString("amountLocale") ?: "",
                                 lowCostApplied = lowApplicableOffer,
                                 code = emiMethod.optJSONObject("applicableOffer")?.getString("code")
-                                    ?: ""
+                                    ?: "",
+                                netAmount = emiMethod.optString("netAmountLocaleFull")
                             )
                             addBankDetails(cardType = emiCardName, bank = bank, emi = emi)
                         }
