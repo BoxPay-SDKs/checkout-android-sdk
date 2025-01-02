@@ -19,37 +19,20 @@ class BoxPayCheckout(
     private val context: Context,
     private val token: String,
     val onPaymentResult: ((PaymentResultObject) -> Unit)?,
-    private val sandboxEnabled: Boolean = false,
     private val customerShopperToken: String = "",
-    private val isSuccessScreenVisible: Boolean = true,
     private val configurationOptions: Map<ConfigurationOptions, Any>? = null
 ) {
     constructor(
         context: Context,
         token: String,
         onPaymentResult: ((PaymentResultObject) -> Unit)?,
+        configurationOptions: Map<ConfigurationOptions, Any>,
         customerShopperToken: String = "",
-        sandboxEnabled: Boolean = false,
-        isSuccessScreenVisible : Boolean = true
-    ) : this(
-        context, token, onPaymentResult, sandboxEnabled, customerShopperToken,isSuccessScreenVisible
-    )
-
-    constructor(
-        context: Context,
-        token: String,
-        onPaymentResult: ((PaymentResultObject) -> Unit)?,
-        customerShopperToken: String = "",
-        sandboxEnabled: Boolean = false,
-        isSuccessScreenVisible: Boolean = true,
-        configurationOptions: Map<ConfigurationOptions, Any>
     ) : this(
         context,
         token,
         onPaymentResult,
-        sandboxEnabled,
         customerShopperToken,
-        isSuccessScreenVisible,
         configurationOptions
     )
 
@@ -62,7 +45,7 @@ class BoxPayCheckout(
     private var BASE_URL: String? = null
 
     fun display() {
-        if (sandboxEnabled) {
+        if (configurationOptions?.get(ConfigurationOptions.ENABLE_SANDBOX_ENV) == true) {
             editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
             this.BASE_URL = "sandbox-apis.boxpay.tech"
         } else if (testEnv) {
@@ -72,7 +55,7 @@ class BoxPayCheckout(
             editor.putString("baseUrl", "apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
         }
-        editor.putBoolean("isSuccessScreenVisible", isSuccessScreenVisible)
+        editor.putBoolean("isSuccessScreenVisible", configurationOptions?.get(ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN) == true)
         editor.apply()
         try {
             if (!token.isNullOrEmpty()) {
@@ -157,5 +140,7 @@ class BoxPayCheckout(
 }
 
 enum class ConfigurationOptions() {
-    SHOW_UPI_QR_ON_LOAD
+    SHOW_UPI_QR_ON_LOAD,
+    SHOW_BOXPAY_SUCCESS_SCREEN,
+    ENABLE_SANDBOX_ENV
 }

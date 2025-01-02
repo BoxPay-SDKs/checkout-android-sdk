@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.demoapp.databinding.ActivityMerchantDetailsScreenBinding
 import com.boxpay.checkout.sdk.BoxPayCheckout
 import com.boxpay.checkout.sdk.BoxPayUpiComponent
+import com.boxpay.checkout.sdk.ConfigurationOptions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 
 class MerchantDetailsScreen : AppCompatActivity() {
@@ -94,7 +95,11 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
                 } else {
-                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, false, customerShopperToken = shopperToken, isSuccessScreenVisible = true)
+                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken, configurationOptions = mapOf(
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
+                        ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
+                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
+                    ))
                     checkout.testEnv = false
                     checkout.display()
                 }
@@ -110,7 +115,11 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
                 } else {
-                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, true, customerShopperToken = shopperToken, isSuccessScreenVisible = false)
+                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken,configurationOptions = mapOf(
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
+                        ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
+                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
+                    ))
                     checkout.testEnv = false
                     checkout.display()
                 }
@@ -126,7 +135,11 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
                 } else {
-                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, shopperToken, isSuccessScreenVisible = false)
+                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, shopperToken, configurationOptions = mapOf(
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
+                        ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
+                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
+                    ))
                     checkout.testEnv = true
                     checkout.display()
                 }

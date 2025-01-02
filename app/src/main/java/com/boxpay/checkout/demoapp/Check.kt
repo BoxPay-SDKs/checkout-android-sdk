@@ -106,10 +106,12 @@ class Check : AppCompatActivity() {
                     context = this,
                     token = tokenLiveData.value ?: "",
                     onPaymentResult = ::onPaymentResultCallback,
-                    sandboxEnabled = false,
                     customerShopperToken = customerShopperToken ?: "",
-                    isSuccessScreenVisible = true,
-                    configurationOptions = mapOf(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true)
+                    configurationOptions = mapOf(
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
+                        ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
+                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
+                    )
                 )
             boxPayCheckout.testEnv = true
             boxPayCheckout.display()
