@@ -31,7 +31,7 @@
             android:orientation="vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:visibility="gone"
+            android:visibility="visible"
             android:paddingBottom="16dp"
             android:background="@drawable/cardview_bg">
 
@@ -52,19 +52,29 @@
                 app:custom_component_title_bg_color = "@color/white"
                 app:custom_component_editText_bg_color = "@color/white"
                 app:custom_component_title="@string/card_number_text"/>
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:enabled="false"
+                android:visibility="invisible"
+                android:fontFamily="@font/poppins"
+                android:gravity="center"
+                android:text="Required"
+                android:textColor="#B9232F"
+                android:textSize="14sp"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_6sdp"
                 android:orientation="horizontal">
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_weight="0.7"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginStart="8dp"
                     android:orientation="vertical">
 
                     <com.simform.customcomponent.SSCustomEdittextOutlinedBorder
@@ -89,7 +99,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:enabled="false"
-                        android:visibility="gone"
+                        android:visibility="invisible"
                         android:fontFamily="@font/poppins"
                         android:gravity="center"
                         android:text="Required"
@@ -102,7 +112,6 @@
                     android:layout_width="0dp"
                     android:layout_weight="0.7"
                     android:layout_marginStart="4dp"
-                    android:layout_marginEnd="8dp"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
@@ -129,7 +138,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:enabled="false"
-                        android:visibility="gone"
+                        android:visibility="invisible"
                         android:fontFamily="@font/poppins"
                         android:gravity="center"
                         android:text="Required"
@@ -143,9 +152,7 @@
                 android:id="@+id/edtcardName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingEnd="8dp"
-                android:paddingStart="8dp"
-                android:layout_marginTop="@dimen/_10sdp"
+                android:layout_marginTop="@dimen/_6sdp"
                 android:inputType="text"
                 app:custom_component_editText_hint="@string/card_name_placeholder"
                 app:custom_component_maxline="1"
@@ -162,7 +169,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:enabled="false"
-                android:visibility="gone"
+                android:visibility="invisible"
                 android:fontFamily="@font/poppins"
                 android:gravity="center"
                 android:text="Required"

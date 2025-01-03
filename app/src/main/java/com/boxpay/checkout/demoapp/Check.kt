@@ -17,8 +17,8 @@ import com.boxpay.checkout.sdk.BoxPayCardComponent
 import com.boxpay.checkout.sdk.BoxPayCheckout
 import com.boxpay.checkout.sdk.BoxPayUpiComponent
 import com.boxpay.checkout.sdk.BuildConfig
-import com.boxpay.checkout.sdk.ConfigurationOptions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.ConfigurationOptions
 import org.json.JSONObject
 
 class Check : AppCompatActivity() {
@@ -88,7 +88,6 @@ class Check : AppCompatActivity() {
         if (isUpiAlone) {
             val boxPayUpiComponent =
                 BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
-            boxPayUpiComponent.setTestEnv(true)
             boxPayUpiComponent.setContext(this)
             binding.proceedButtonBottom.visibility = View.VISIBLE
             boxPayUpiComponent.setProceedButtonVisibility(true)
@@ -105,15 +104,14 @@ class Check : AppCompatActivity() {
         } else if(isCardAlone){
             disableProceedButton()
             val boxPayCardComponent = BoxPayCardComponent(tokenLiveData.value ?: "", false,::onPaymentResultCallback)
-            boxPayCardComponent.setTestEnv(true)
             boxPayCardComponent.setContext(this)
             binding.openButton.removeAllViews()
-            boxPayCardComponent.setProceedButtonVisibility(false, ::handleCardValidity)
+            boxPayCardComponent.setProceedButtonVisibility(true,null)
             supportFragmentManager.beginTransaction()
                 .replace(R.id.openButton, boxPayCardComponent)
                 .commit()
 
-            binding.proceedButtonBottom.visibility = View.VISIBLE
+            binding.proceedButtonBottom.visibility = View.GONE
 
             binding.proceedButtonBottom.setOnClickListener {
                 boxPayCardComponent.onClickProceed()

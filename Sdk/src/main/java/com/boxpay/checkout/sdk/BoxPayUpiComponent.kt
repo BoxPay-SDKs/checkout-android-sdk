@@ -58,7 +58,6 @@ class BoxPayUpiComponent(
     val onPaymentResult: ((PaymentResultObject) -> Unit)
 ) : Fragment() {
     private var UPIAppsAndPackageMap: MutableMap<String, String> = mutableMapOf()
-    private var testEnvironment: Boolean = false
     private var BASE_URL = ""
     private lateinit var binding: FragmentUpiComponentAloneBinding
     private var selectedColor = ""
@@ -83,12 +82,12 @@ class BoxPayUpiComponent(
     private var countryName: String? = null
     private var context: Context? = null
     private var job: Job? = null
-    var isGpayReturned = false
-    var isOthersReturned = false
-    var isPhonePe = false
-    var selectedUpiIntent = ""
-    var isPaytmReturned = false
-    var upiCollectId: String? = null
+    private var isGpayReturned = false
+    private var isOthersReturned = false
+    private var isPhonePe = false
+    private var selectedUpiIntent = ""
+    private var isPaytmReturned = false
+    private var upiCollectId: String? = null
     private lateinit var inputMethodManager: InputMethodManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,16 +105,6 @@ class BoxPayUpiComponent(
     ): View? {
         binding = FragmentUpiComponentAloneBinding.inflate(inflater, container, false)
         val coroutineScope = CoroutineScope(Dispatchers.Main)
-        var sessionUrl = ""
-        if (sandboxEnabled == true) {
-            sessionUrl = "sandbox-apis.boxpay.tech"
-        } else if (testEnvironment) {
-            sessionUrl = "test-apis.boxpay.tech"
-        } else {
-            sessionUrl = "apis.boxpay.in"
-        }
-        this.BASE_URL = "https://${sessionUrl}/v0/checkout/sessions/"
-        makeSessionDataCall()
         coroutineScope.launch {
             val packageManager = context!!.packageManager
             getAllInstalledApps(packageManager)
@@ -299,7 +288,7 @@ class BoxPayUpiComponent(
         }
     }
 
-    fun onClickUpiIntent(selected: String,imageView: ImageView) {
+    private fun onClickUpiIntent(selected: String,imageView: ImageView) {
         resetClickToDefault()
         selectedUpiIntent = selected
         imageView.setBackgroundResource(R.drawable.selected_popular_item_bg)
@@ -519,11 +508,6 @@ class BoxPayUpiComponent(
         queue.add(jsonObjectAll)
     }
 
-    fun setTestEnv(testEnv: Boolean) {
-        testEnvironment = testEnv
-    }
-
-
     private fun showLoadingState() {
         binding.boxpayLogoLottie.apply {
             playAnimation()
@@ -673,7 +657,7 @@ class BoxPayUpiComponent(
         return bufferedReader.use { it.readText() }
     }
 
-    fun urlToBase64(base64String: String): String {
+    private fun urlToBase64(base64String: String): String {
 
         return try {
             // Decode Base64 string to byte array
@@ -712,7 +696,7 @@ class BoxPayUpiComponent(
         }
     }
 
-    fun generateRandomAlphanumericString(length: Int): String {
+    private fun generateRandomAlphanumericString(length: Int): String {
         val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length)
             .map { Random.nextInt(0, charPool.size) }
@@ -1187,7 +1171,6 @@ class BoxPayUpiComponent(
         requestQueue.add(jsonObjectRequest)
     }
 
-
     private fun openUPITimerBottomSheet() {
         val bottomSheetFragment = OnlyUPITimerBottomSheet.newInstance(upiCollectId)
         bottomSheetFragment.setCallbackFunction(::onUpiTimerCallback, BASE_URL ?: "", token ?: "")
@@ -1209,7 +1192,7 @@ class BoxPayUpiComponent(
         }
     }
 
-    fun startCountdown(endTime: String) {
+    private fun startCountdown(endTime: String) {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault())
         dateFormat.timeZone = TimeZone.getTimeZone("UTC")
 
@@ -1271,12 +1254,17 @@ class BoxPayUpiComponent(
         binding.addUpiIdTextView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
-    fun disableAddUpiIdClick() {
+    private fun disableAddUpiIdClick() {
         binding.addNewUpiId.setBackgroundResource(0)
         binding.imageView13.rotation = 0f
         binding.addNewUpiTextInputLayout.visibility = View.GONE
         binding.dashedLine1.visibility = View.VISIBLE
         binding.addUpiIdProceedButton.visibility = View.GONE
         inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
+    }
+
+    fun displayUpiComponent(sessionUrl: String) {
+        this.BASE_URL = "https://${sessionUrl}/v0/checkout/sessions/"
+        makeSessionDataCall()
     }
 }
