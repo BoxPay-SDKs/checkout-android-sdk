@@ -19,6 +19,7 @@ import android.webkit.WebSettings
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -43,7 +44,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -62,7 +62,6 @@ class BoxPayCardComponent(
     private var sessionTimer: CountDownTimer? = null
     private var selectedColor = ""
     private var selectedTextColor = ""
-    private var totalAmount = ""
     private var showProceedButton = true
     private var isAmericanExpressCard: Boolean = false
     private var email: String? = null
@@ -98,6 +97,7 @@ class BoxPayCardComponent(
         setupCardExpiryFormatting(binding.edtExpiry, binding.edtCVV)
         setUpCardCvvFormatting(binding.edtCVV, binding.edtcardName)
         setUpCardNameFormatting(binding.edtcardName)
+        makeSessionDataCall()
 
         binding.proceedButton.setOnClickListener {
            onClickProceed()
@@ -617,6 +617,14 @@ class BoxPayCardComponent(
                         null // Bottom drawable
                     )
                 }
+            } else {
+                binding.textView5.visibility = View.INVISIBLE
+                editText.setCompoundDrawablesWithIntrinsicBounds(
+                    null, // Start drawable
+                    null, // Top drawable
+                    null, // End drawable
+                    null // Bottom drawable
+                )
             }
         }
     }
@@ -789,12 +797,10 @@ class BoxPayCardComponent(
                         null
                     }
 
-                val money = paymentDetailsObject.getJSONObject("money").getString("amount")
-                val amount = money.toDouble()
+                val money = paymentDetailsObject.getJSONObject("money").getString("amountLocaleFull")
                 val currencySymbol =
                     paymentDetailsObject.getJSONObject("money").getString("currencySymbol")
-                totalAmount =
-                    "$currencySymbol${NumberFormat.getNumberInstance(Locale.US).format(amount)}"
+                binding.textView6.text = "Pay $currencySymbol$money"
                 val paymentMethodsArray =
                     response.getJSONObject("configs").getJSONArray("paymentMethods")
                 for (i in 0 until paymentMethodsArray.length()) {
@@ -1374,8 +1380,12 @@ class BoxPayCardComponent(
         job?.cancel()
     }
 
-    fun displayCardComponent(sessionUrl: String) {
+    fun displayCardComponent(sessionUrl: String, layout: Int) {
         this.BASE_URL = "https://${sessionUrl}/v0/checkout/sessions/"
-        makeSessionDataCall()
+
+        val transaction = (context as AppCompatActivity).supportFragmentManager.beginTransaction()
+        transaction.replace(layout, this)
+        transaction.addToBackStack(null)
+        transaction.commit()
     }
 }

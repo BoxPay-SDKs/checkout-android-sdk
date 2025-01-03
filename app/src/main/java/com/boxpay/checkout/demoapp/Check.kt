@@ -13,9 +13,8 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.demoapp.databinding.ActivityCheckBinding
-import com.boxpay.checkout.sdk.BoxPayCardComponent
 import com.boxpay.checkout.sdk.BoxPayCheckout
-import com.boxpay.checkout.sdk.BoxPayUpiComponent
+import com.boxpay.checkout.sdk.BoxPayElements
 import com.boxpay.checkout.sdk.BuildConfig
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.ConfigurationOptions
@@ -51,31 +50,10 @@ class Check : AppCompatActivity() {
             if (tokenInObserve != null) {
                 handleResponseWithToken()
                 binding.textView6.text = "Opening"
-                binding.openButton.isEnabled = false
             }
         })
 
         var actionInProgress = false
-        binding.openButton.setOnClickListener() {
-
-            // Disable the button
-            if (actionInProgress) {
-                return@setOnClickListener
-            }
-
-
-            actionInProgress = true
-
-            // Disable the button
-            binding.openButton.isEnabled = false
-            binding.openButton.visibility = View.GONE
-
-            if (!(tokenLiveData.value.isNullOrEmpty())) {
-                showBottomSheetWithOverlay()
-                actionInProgress = false
-                binding.openButton.isEnabled = true
-            }
-        }
     }
 
     private fun handleResponseWithToken() {
@@ -85,40 +63,22 @@ class Check : AppCompatActivity() {
     }
 
     private fun showBottomSheetWithOverlay() {
-        if (isUpiAlone) {
-            val boxPayUpiComponent =
-                BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
-            boxPayUpiComponent.setContext(this)
+        if (isUpiAlone || isCardAlone) {
+            val boxPayElements = BoxPayElements(
+                tokenLiveData.value ?: "",
+                ::onPaymentResultCallback,
+                mapOf(ConfigurationOptions.SHOW_UPI_METHOD to isUpiAlone, ConfigurationOptions.SHOW_CARD_METHOD to isCardAlone)
+            )
+            boxPayElements.setContext(this)
+            boxPayElements.setUPILayoutId(R.id.upiOpenButon)
+            boxPayElements.setCardLayoutId(R.id.cardOpenButton)
+            boxPayElements.setProceedButtonVisibility(false)
             binding.proceedButtonBottom.visibility = View.VISIBLE
-            boxPayUpiComponent.setProceedButtonVisibility(true)
-
-            // Replace a container in your activity's layout
-            binding.openButton.removeAllViews()
-            supportFragmentManager.beginTransaction().replace(R.id.openButton, boxPayUpiComponent)
-                .commit()
-
-//            binding.proceedButtonBottom.setOnClickListener {
-//                boxPayUpiComponent.onClickProceed()
-//                binding.proceedButtonBottom.isEnabled = false
-//            }
-        } else if(isCardAlone){
-            disableProceedButton()
-            val boxPayCardComponent = BoxPayCardComponent(tokenLiveData.value ?: "", false,::onPaymentResultCallback)
-            boxPayCardComponent.setContext(this)
-            binding.openButton.removeAllViews()
-            boxPayCardComponent.setProceedButtonVisibility(true,null)
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.openButton, boxPayCardComponent)
-                .commit()
-
-            binding.proceedButtonBottom.visibility = View.GONE
-
-            binding.proceedButtonBottom.setOnClickListener {
-                boxPayCardComponent.onClickProceed()
-                binding.proceedButtonBottom.isEnabled = false
-            }
-
-        }else {
+            boxPayElements.setCardValidityCallback(::handleCardValidity)
+            binding.cardOpenButton.removeAllViews()
+            binding.upiOpenButon.removeAllViews()
+            boxPayElements.showPaymentMethods()
+        } else {
             val boxPayCheckout =
                 BoxPayCheckout(
                     context = this,

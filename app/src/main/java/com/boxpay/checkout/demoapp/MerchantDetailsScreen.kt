@@ -11,8 +11,8 @@ import com.boxpay.checkout.demoapp.databinding.ActivityMerchantDetailsScreenBind
 import com.boxpay.checkout.sdk.BoxPayCardComponent
 import com.boxpay.checkout.sdk.BoxPayCheckout
 import com.boxpay.checkout.sdk.BoxPayUpiComponent
-import com.boxpay.checkout.sdk.ConfigurationOptions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.ConfigurationOptions
 
 class MerchantDetailsScreen : AppCompatActivity() {
 
@@ -89,7 +89,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
             if (selectedEnvironment == "prod") {
                 if (isUpiEnabled) {
                     val boxPayUpiComponent = BoxPayUpiComponent(token, false, ::onPaymentResult)
-                    boxPayUpiComponent.setTestEnv(true)
                     boxPayUpiComponent.setContext(this)
 
                     // Replace a container in your activity's layout
@@ -99,7 +98,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .commit()
                 } else if (isCardEnabled){
                     val boxPayCardComponent = BoxPayCardComponent(token, false,::onPaymentResult)
-                    boxPayCardComponent.setTestEnv(true)
                     boxPayCardComponent.setContext(this)
                     binding.mainContainer.removeAllViews()
                     supportFragmentManager.beginTransaction()
@@ -117,7 +115,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
             } else if (selectedEnvironment == "sandbox") {
                 if (isUpiEnabled) {
                     val boxPayUpiComponent = BoxPayUpiComponent(token, false, ::onPaymentResult)
-                    boxPayUpiComponent.setTestEnv(true)
                     boxPayUpiComponent.setContext(this)
 
                     // Replace a container in your activity's layout
@@ -127,14 +124,14 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .commit()
                 } else if (isCardEnabled){
                     val boxPayCardComponent = BoxPayCardComponent(token, false,::onPaymentResult)
-                    boxPayCardComponent.setTestEnv(true)
                     boxPayCardComponent.setContext(this)
                     binding.mainContainer.removeAllViews()
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.main_container, boxPayCardComponent)
                         .commit()
                 } else {
-                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken,configurationOptions = mapOf(
+                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken,
+                        configurationOptions = mapOf(
                         ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to true,
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
@@ -145,7 +142,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
             } else if (selectedEnvironment == "test") {
                 if (isUpiEnabled) {
                     val boxPayUpiComponent = BoxPayUpiComponent(token, false, ::onPaymentResult)
-                    boxPayUpiComponent.setTestEnv(true)
                     boxPayUpiComponent.setContext(this)
 
                     // Replace a container in your activity's layout
@@ -155,7 +151,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .commit()
                 } else if (isCardEnabled){
                     val boxPayCardComponent = BoxPayCardComponent(token, false,::onPaymentResult)
-                    boxPayCardComponent.setTestEnv(true)
                     boxPayCardComponent.setContext(this)
                     binding.mainContainer.removeAllViews()
                     supportFragmentManager.beginTransaction()

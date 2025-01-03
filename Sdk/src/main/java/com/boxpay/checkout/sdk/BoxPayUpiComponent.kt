@@ -23,6 +23,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.airbnb.lottie.LottieDrawable
@@ -114,6 +115,7 @@ class BoxPayUpiComponent(
         binding.proceedButton.setOnClickListener {
             onProceedPayment()
         }
+        makeSessionDataCall()
 
         binding.addNewUpiTextInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -1263,8 +1265,12 @@ class BoxPayUpiComponent(
         inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
     }
 
-    fun displayUpiComponent(sessionUrl: String) {
+    fun displayUpiComponent(sessionUrl: String, layout: Int) {
         this.BASE_URL = "https://${sessionUrl}/v0/checkout/sessions/"
-        makeSessionDataCall()
+
+        val transaction = (context as AppCompatActivity).supportFragmentManager.beginTransaction()
+        transaction.replace(layout, this)
+        transaction.addToBackStack(null)
+        transaction.commit()
     }
 }
