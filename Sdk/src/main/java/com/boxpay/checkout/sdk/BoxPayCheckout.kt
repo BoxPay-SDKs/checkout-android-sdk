@@ -45,17 +45,23 @@ class BoxPayCheckout(
     private var BASE_URL: String? = null
 
     fun display() {
-        if (configurationOptions?.get(ConfigurationOptions.ENABLE_SANDBOX_ENV) == true) {
-            editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
-            this.BASE_URL = "sandbox-apis.boxpay.tech"
-        } else if (testEnv) {
-            editor.putString("baseUrl", "test-apis.boxpay.tech")
-            this.BASE_URL = "test-apis.boxpay.tech"
-        } else {
+        if(configurationOptions != null){
+            if (configurationOptions[ConfigurationOptions.ENABLE_SANDBOX_ENV] == true) {
+                editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
+                this.BASE_URL = "sandbox-apis.boxpay.tech"
+            } else if (testEnv) {
+                editor.putString("baseUrl", "test-apis.boxpay.tech")
+                this.BASE_URL = "test-apis.boxpay.tech"
+            } else {
+                editor.putString("baseUrl", "apis.boxpay.in")
+                this.BASE_URL = "apis.boxpay.in"
+            }
+            editor.putBoolean("isSuccessScreenVisible", configurationOptions[ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN] == true)
+        }else {
+            editor.putBoolean("isSuccessScreenVisible", false)
             editor.putString("baseUrl", "apis.boxpay.in")
             this.BASE_URL = "apis.boxpay.in"
         }
-        editor.putBoolean("isSuccessScreenVisible", configurationOptions?.get(ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN) == true)
         editor.apply()
         try {
             if (!token.isNullOrEmpty()) {
