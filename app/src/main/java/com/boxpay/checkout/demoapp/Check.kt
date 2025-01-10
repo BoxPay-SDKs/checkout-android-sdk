@@ -75,8 +75,7 @@ class Check : AppCompatActivity() {
     }
 
     private fun handleResponseWithToken() {
-        if (tokenFetchedAndOpen)
-            return
+        if (tokenFetchedAndOpen) return
         showBottomSheetWithOverlay()
         tokenFetchedAndOpen = true
     }
@@ -92,8 +91,7 @@ class Check : AppCompatActivity() {
 
             // Replace a container in your activity's layout
             binding.openButton.removeAllViews()
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.openButton, boxPayUpiComponent)
+            supportFragmentManager.beginTransaction().replace(R.id.openButton, boxPayUpiComponent)
                 .commit()
 
 //            binding.proceedButtonBottom.setOnClickListener {
@@ -101,18 +99,17 @@ class Check : AppCompatActivity() {
 //                binding.proceedButtonBottom.isEnabled = false
 //            }
         } else {
-            val boxPayCheckout =
-                BoxPayCheckout(
-                    context = this,
-                    token = tokenLiveData.value ?: "",
-                    onPaymentResult = ::onPaymentResultCallback,
-                    customerShopperToken = customerShopperToken ?: "",
-                    configurationOptions = mapOf(
-                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
-                        ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
-                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
-                    )
+            val boxPayCheckout = BoxPayCheckout(
+                context = this,
+                token = tokenLiveData.value ?: "",
+                onPaymentResult = ::onPaymentResultCallback,
+                customerShopperToken = customerShopperToken ?: "",
+                configurationOptions = mapOf(
+                    ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
+                    ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
+                    ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                 )
+            )
             boxPayCheckout.testEnv = true
             boxPayCheckout.display()
         }
@@ -204,22 +201,19 @@ class Check : AppCompatActivity() {
 }"""
         )
 
-        val request = object : JsonObjectRequest(Method.POST, url, jsonData,
-            { response ->
-                val sharedPreferences =
-                    this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-                val editor: SharedPreferences.Editor = sharedPreferences.edit()
-                val tokenFetched = response.getString("token")
-                val payload = response.optJSONObject("payload")
-                customerShopperToken = payload?.optString("shopper_token", "")
-                tokenLiveData.value = tokenFetched
-                editor.putString("baseUrl", "test-apis.boxpay.tech")
-                editor.putString("token", tokenLiveData.value)
-                editor.apply()
-                // Call a function that depends on the token
-            },
-            Response.ErrorListener {
-            }) {
+        val request = object : JsonObjectRequest(Method.POST, url, jsonData, { response ->
+            val sharedPreferences =
+                this.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            val tokenFetched = response.getString("token")
+            val payload = response.optJSONObject("payload")
+            customerShopperToken = payload?.optString("shopper_token", "")
+            tokenLiveData.value = tokenFetched
+            editor.putString("baseUrl", "test-apis.boxpay.tech")
+            editor.putString("token", tokenLiveData.value)
+            editor.apply()
+            // Call a function that depends on the token
+        }, Response.ErrorListener {}) {
             override fun getHeaders(): Map<String, String> {
                 val headers = HashMap<String, String>()
                 headers["Content-Type"] = "application/json"

@@ -112,8 +112,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private lateinit var editor: SharedPreferences.Editor
     private var cardNetworkName: String = ""
     private var shippingEnabled: Boolean = false
-    private val dccViewModel: DCCViewModel by viewModels()
-    private val sessionViewModel: SessionViewModel by viewModels()
     private var sessionData: SessionResponse? = null
     private var isCurrencySelected = true
     private var dccRequest: DCCRequest? = null
@@ -173,6 +171,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 dccRequest!!.instrument!!.brand = cardNetworkName
                 dccRequest!!.instrument!!.accountNumber = completeCardNumber
                 if (!isDCCFetched && completeCardNumber.length >= 10) {
+                    val dccViewModel = DCCViewModel(requireActivity())
                     dccViewModel.getDCC(dccRequest!!, token!!).distinctUntilChanged()
                         .observe(this) { dccResponse ->
                             if (dccResponse != null) {
@@ -299,6 +298,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 
         fetchTransactionDetailsFromSharedPreferences()
+        val sessionViewModel = SessionViewModel(requireActivity())
         sessionViewModel.createCheckoutSession(token!!).observe(this) { response ->
             if (response != null) {
                 sessionData = response

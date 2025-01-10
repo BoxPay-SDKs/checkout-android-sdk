@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk.repositories
 
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import com.boxpay.checkout.sdk.dataclasses.DCCRequest
 import com.boxpay.checkout.sdk.dataclasses.DCCResponse
@@ -8,8 +9,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class DCCRepo {
-    private val apiService = RetrofitInstance.api
+class DCCRepo(context: Context) {
+    private val apiService = RetrofitInstance.getApi(context)
     private val dccResponseMutableLiveData = MutableLiveData<DCCResponse?>()
 
     fun getDCC(dccRequest: DCCRequest, token: String) : MutableLiveData<DCCResponse?> {
