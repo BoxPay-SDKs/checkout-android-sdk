@@ -67,16 +67,13 @@ class Check : AppCompatActivity() {
             val boxPayElements = BoxPayElements(
                 tokenLiveData.value ?: "",
                 ::onPaymentResultCallback,
-                mapOf(ConfigurationOptions.SHOW_UPI_METHOD to isUpiAlone, ConfigurationOptions.SHOW_CARD_METHOD to isCardAlone)
+                mapOf(ConfigurationOptions.SHOW_UPI_METHOD_ALONE to isUpiAlone, ConfigurationOptions.SHOW_CARD_METHOD_ALONE to isCardAlone)
             )
             boxPayElements.setContext(this)
             boxPayElements.setUPILayoutId(R.id.upiOpenButon)
-            boxPayElements.setCardLayoutId(R.id.cardOpenButton)
-            boxPayElements.setProceedButtonVisibility(false)
-            binding.proceedButtonBottom.visibility = View.VISIBLE
+                boxPayElements.setCardLayoutId(R.id.cardOpenButton)
+            boxPayElements.setProceedButtonVisibility(true)
             boxPayElements.setCardValidityCallback(::handleCardValidity)
-            binding.cardOpenButton.removeAllViews()
-            binding.upiOpenButon.removeAllViews()
             boxPayElements.showPaymentMethods()
         } else {
             val boxPayCheckout =
@@ -86,9 +83,9 @@ class Check : AppCompatActivity() {
                     onPaymentResult = ::onPaymentResultCallback,
                     customerShopperToken = customerShopperToken ?: "",
                     configurationOptions = mapOf(
-                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to false,
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
-                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
+                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to false
                     )
                 )
             boxPayCheckout.testEnv = true

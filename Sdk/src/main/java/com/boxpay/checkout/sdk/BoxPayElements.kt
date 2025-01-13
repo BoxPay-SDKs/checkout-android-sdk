@@ -41,7 +41,7 @@ class BoxPayElements(
     }
 
     fun initiateUpiPayment() {
-        if (configurationOptions?.get(ConfigurationOptions.SHOW_UPI_METHOD) == true) {
+        if (configurationOptions?.get(ConfigurationOptions.SHOW_UPI_METHOD_ALONE) == true) {
             boxPayUpiComponent.onProceedPayment()
         } else {
             Toast.makeText(
@@ -53,7 +53,7 @@ class BoxPayElements(
     }
 
     fun initiateCardPayment() {
-        if (configurationOptions?.get(ConfigurationOptions.SHOW_CARD_METHOD) == true) {
+        if (configurationOptions?.get(ConfigurationOptions.SHOW_CARD_METHOD_ALONE) == true) {
             boxPayCardComponent.onClickProceed()
         } else {
             Toast.makeText(
@@ -76,14 +76,14 @@ class BoxPayElements(
                 "apis.boxpay.in"
             }
 
-            if (configurationOptions?.get(ConfigurationOptions.SHOW_UPI_METHOD) == true) {
+            if (configurationOptions?.get(ConfigurationOptions.SHOW_UPI_METHOD_ALONE) == true) {
                 boxPayUpiComponent = BoxPayUpiComponent(token, configurationOptions?.get(ConfigurationOptions.ENABLE_SANDBOX_ENV) == true, onPaymentResult)
                 boxPayUpiComponent.setContext(context!!)
                 boxPayUpiComponent.setProceedButtonVisibility(proceedButtonVisibility)
                 boxPayUpiComponent.displayUpiComponent(sessionUrl, upiLayout!!)
             }
 
-            if (configurationOptions?.get(ConfigurationOptions.SHOW_CARD_METHOD) == true) {
+            if (configurationOptions?.get(ConfigurationOptions.SHOW_CARD_METHOD_ALONE) == true) {
                 boxPayCardComponent = BoxPayCardComponent(token, configurationOptions?.get(ConfigurationOptions.ENABLE_SANDBOX_ENV) == true, onPaymentResult)
                 boxPayCardComponent.setContext(context!!)
                 boxPayCardComponent.setProceedButtonVisibility(proceedButtonVisibility, handleCardValidity)

@@ -114,7 +114,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                 }
             } else if (selectedEnvironment == "sandbox") {
                 if (isUpiEnabled) {
-                    val boxPayUpiComponent = BoxPayUpiComponent(token, false, ::onPaymentResult)
+                    val boxPayUpiComponent = BoxPayUpiComponent(token, true, ::onPaymentResult)
                     boxPayUpiComponent.setContext(this)
 
                     // Replace a container in your activity's layout
@@ -134,7 +134,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         configurationOptions = mapOf(
                         ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to true,
-                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
+                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to false
                     ))
                     checkout.testEnv = false
                     checkout.display()
