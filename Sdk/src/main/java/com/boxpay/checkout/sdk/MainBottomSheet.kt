@@ -2329,6 +2329,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val itemsArray =
                     if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
+                var productName : String? = null
 
                 if (itemsArray != null) {
                     for (i in 0 until itemsArray.length()) {
@@ -2338,9 +2339,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         prices.add(itemObject.getString("amountWithoutTaxLocaleFull"))
                         val quantity = itemObject.getInt("quantity")
                         itemQty.add(quantity.toString())
+                        productName = if (productName.isNullOrEmpty()) {
+                            "${itemObject.getString("itemName")} X (x${itemObject.getInt("quantity")})"
+                        } else {
+                            "$productName\n${itemObject.getString("itemName")} X (x${itemObject.getInt("quantity")})"
+                        }
                         totalQuantity += quantity
                     }
                 }
+                editor.putString("orderDetails",productName)
+                editor.putInt("orderDetailsLength",itemsArray?.length() ?: 0)
+                editor.apply()
 
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
                 val checkoutThemeObject = merchantDetailsObject.getJSONObject("checkoutTheme")

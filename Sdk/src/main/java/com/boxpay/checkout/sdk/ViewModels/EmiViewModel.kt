@@ -43,6 +43,10 @@ class EmiViewModel : ViewModel() {
     val showLoaderInButton = MutableStateFlow(false)
     val cardNumberErrorText = mutableStateOf("")
     val issuerBrand = mutableStateOf<String?>(null)
+    val isNoCostSelected = mutableStateOf(false)
+    val isLowCostSelected = mutableStateOf(false)
+    val discount = mutableStateOf<String?>(null)
+    val netAmount = mutableStateOf<String?>(null)
 
     // To store the original list of banks
     private val originalEmiBankList = mutableStateOf(ChooseEmiModel(emptyList()))
@@ -75,11 +79,13 @@ class EmiViewModel : ViewModel() {
                 val updatedCardType = if (existingBank != null) {
                     val emiExists = existingBank.emiList.any { it.duration == emi.duration && it.amount == emi.amount }
                     val noCostApplied = existingBank.emiList.any { it.noCostApplied } || emi.noCostApplied
+                    val lowCostApplied = existingBank.emiList.any { it.lowCostApplied } || emi.lowCostApplied
 
                     if (!emiExists) {
                         val updatedBank = existingBank.copy(
                             emiList = existingBank.emiList + emi,
                             noCostApplied = noCostApplied,
+                            lowCostApplied = lowCostApplied,
                             percent = minOf(existingBank.percent, bank.percent) // Use the lesser percent
                         )
                         existingCardType.copy(
@@ -100,6 +106,7 @@ class EmiViewModel : ViewModel() {
                     val newBankWithEmi = bank.copy(
                         emiList = listOf(emi),
                         noCostApplied = emi.noCostApplied,
+                        lowCostApplied = emi.lowCostApplied,
                         percent = bank.percent
                     )
                     existingCardType.copy(
@@ -121,6 +128,7 @@ class EmiViewModel : ViewModel() {
                 val newBankWithEmi = bank.copy(
                     emiList = listOf(emi),
                     noCostApplied = emi.noCostApplied,
+                    lowCostApplied = emi.lowCostApplied,
                     percent = bank.percent
                 )
                 it.copy(
@@ -245,15 +253,23 @@ class EmiViewModel : ViewModel() {
     }
 
     fun onBackTenure() {
-        selectTenureScreen.value = false
+        isNoCostSelected.value = false
+        isLowCostSelected.value = false
+        discount.value = null
+        netAmount.value = null
         selectedBank.value = null
         issuerBrand.value = null
         selectedEmi.value = Pair(0, "")
         offerSelectedCode.value = null
+        selectTenureScreen.value = false
     }
 
-    fun onProceedEmi(percent: Double) {
+    fun onProceedEmi(percent: Double, isLowCost: Boolean, isNoCost : Boolean, discount: String, netAmount: String) {
         selectedPercent.value = percent
+        isLowCostSelected.value = isLowCost
+        isNoCostSelected.value = isNoCost
+        this.discount.value = discount
+        this.netAmount.value = netAmount
         addCardScreen.value = true
     }
 

@@ -60,6 +60,7 @@ fun BankRow(
     iconUrl: String,
     bankName: String,
     isNoCostApplied: Boolean,
+    isLowCostApplied: Boolean,
     modifier: Modifier = Modifier
 ) {
     val imageLoader = ImageLoader.Builder(LocalContext.current)
@@ -68,7 +69,7 @@ fun BankRow(
         }
         .build()
     ConstraintLayout(modifier) {
-        val (icon, name, noCostTag, arrowIcon) = createRefs()
+        val (icon, name, noCostTag, arrowIcon, lowCostTag) = createRefs()
 
         Image(
             painter = rememberAsyncImagePainter(
@@ -96,7 +97,7 @@ fun BankRow(
             modifier = Modifier.constrainAs(name) {
                 start.linkTo(icon.end, 8.dp)
                 end.linkTo(arrowIcon.start, 4.dp)
-                if (isNoCostApplied) {
+                if (isNoCostApplied || isLowCostApplied) {
                     top.linkTo(parent.top, 16.dp)
                 } else {
                     centerVerticallyTo(icon)
@@ -115,6 +116,21 @@ fun BankRow(
                     top.linkTo(name.bottom, 4.dp)
 
                     visibility = if (isNoCostApplied) Visibility.Visible else Visibility.Gone
+                }
+                .padding(bottom = 10.dp)
+        )
+        FilterTag(
+            text = "LOW COST EMI",
+            modifier = Modifier
+                .constrainAs(lowCostTag) {
+                    if (isNoCostApplied) {
+                        start.linkTo(noCostTag.end, 8.dp)
+                    } else {
+                        start.linkTo(icon.end, 8.dp)
+                    }
+                    top.linkTo(name.bottom, 4.dp)
+
+                    visibility = if (isLowCostApplied) Visibility.Visible else Visibility.Gone
                 }
                 .padding(bottom = 10.dp)
         )
@@ -214,6 +230,7 @@ fun EmiAmountDetails(
     bankName: String,
     onProceed: () -> Unit,
     isNoCostApplied: Boolean,
+    isLowCostAppled: Boolean,
     currencySymbol: String,
     selectedTextColor: Color,
     netAmount: String
@@ -225,7 +242,7 @@ fun EmiAmountDetails(
             )
             .padding(bottom = 8.dp)
     ) {
-        val (radioButton, heading, table, noteDesc, gst, cta, noCost) = createRefs()
+        val (radioButton, heading, table, noteDesc, gst, cta, noCost, lowCost) = createRefs()
         RadioButton(
             selected = isSelected,
             onClick = { onClickRadio() },
@@ -271,7 +288,7 @@ fun EmiAmountDetails(
                 if (!isSelected) {
                     append(
                         AnnotatedString(
-                            text = " | @$percent% p.a.",
+                            text = " | @${formatPercent(percent)}% p.a.",
                             spanStyle = SpanStyle(
                                 fontFamily = defaultFontFamily,
                                 fontSize = 14.sp,
@@ -292,6 +309,16 @@ fun EmiAmountDetails(
                 text = "NO COST EMI",
                 modifier = Modifier
                     .constrainAs(noCost) {
+                        start.linkTo(heading.end, 8.dp)
+                        centerVerticallyTo(radioButton)
+                    }
+            )
+        }
+        if (isLowCostAppled) {
+            FilterTag(
+                text = "LOW COST EMI",
+                modifier = Modifier
+                    .constrainAs(lowCost) {
                         start.linkTo(heading.end, 8.dp)
                         centerVerticallyTo(radioButton)
                     }
@@ -328,7 +355,17 @@ fun EmiAmountDetails(
                     )
                     append(
                         AnnotatedString(
-                            text = " $currencySymbol$netAmount.",
+                            text = " $currencySymbol",
+                            spanStyle = SpanStyle(
+                                fontFamily = interFontFamily,
+                                fontWeight = FontWeight(200),
+                                fontSize = 12.sp
+                            )
+                        )
+                    )
+                    append(
+                        AnnotatedString(
+                            text = "$netAmount.",
                             spanStyle = SpanStyle(
                                 fontFamily = defaultFontFamily,
                                 fontWeight = FontWeight(600),
@@ -348,7 +385,17 @@ fun EmiAmountDetails(
                     )
                     append(
                         AnnotatedString(
-                            text = " $currencySymbol$interest",
+                            text = " $currencySymbol",
+                            spanStyle = SpanStyle(
+                                fontFamily = interFontFamily,
+                                fontWeight = FontWeight(200),
+                                fontSize = 12.sp
+                            )
+                        )
+                    )
+                    append(
+                        AnnotatedString(
+                            text = interest,
                             spanStyle = SpanStyle(
                                 fontFamily = defaultFontFamily,
                                 fontWeight = FontWeight(600),
@@ -368,7 +415,17 @@ fun EmiAmountDetails(
                     )
                     append(
                         AnnotatedString(
-                            text = " $currencySymbol$total",
+                            text = " $currencySymbol",
+                            spanStyle = SpanStyle(
+                                fontFamily = interFontFamily,
+                                fontWeight = FontWeight(200),
+                                fontSize = 12.sp
+                            )
+                        )
+                    )
+                    append(
+                        AnnotatedString(
+                            text = "$total",
                             spanStyle = SpanStyle(
                                 fontFamily = defaultFontFamily,
                                 fontWeight = FontWeight(600),

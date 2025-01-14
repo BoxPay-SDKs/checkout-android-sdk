@@ -337,7 +337,8 @@
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/poppins"                            android:layout_weight="1"
+                            android:fontFamily="@font/poppins"
+                            android:layout_weight="1"
                             android:text="Transaction Currency"
                             android:textColor="#4F4D55"
                             android:textSize="12sp" />
@@ -355,6 +356,133 @@
 
 
                     </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/llProductName"
+                        android:layout_width="match_parent"
+                        android:orientation="horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="7dp"
+                        android:visibility="visible"
+                        android:weightSum="2">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.6"
+                            android:gravity="start"
+                            android:fontFamily="@font/poppins"
+                            android:text="Product Name"
+                            android:textColor="#4F4D55"
+                            android:textSize="12sp" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1.4"
+                            android:orientation="vertical"
+                            android:layout_height="wrap_content">
+
+                            <TextView
+                                android:id="@+id/tvProduct"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/inter_medium"
+                                android:text=""
+                                android:ellipsize="end"
+                                android:textColor="#000000"
+                                android:gravity="end"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/viewMoreTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/inter_medium"
+                                android:text="View More Items"
+                                android:layout_gravity="end"
+                                android:textColor="#007BFF"
+                                android:textSize="12sp"
+                                android:visibility="gone"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/offerContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:orientation="vertical">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="5dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/dotted_line" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:orientation="horizontal"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:weightSum="2">
+
+                            <TextView
+                                android:id="@+id/subTotal"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins"
+                                android:text="Subtotal"
+                                android:textColor="#4F4D55"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/subTotalAmount"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/inter_medium"
+                                android:text="₹599.00"
+                                android:layout_weight="1"
+                                android:gravity="end"
+                                android:textColor="#000000"
+                                android:textSize="12sp" />
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:orientation="horizontal"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:weightSum="2">
+
+                            <TextView
+                                android:id="@+id/offerDiscount"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins"
+                                android:text="No Cost EMI Discount"
+                                android:textColor="#4F4D55"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/offerDiscountAmount"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/inter_medium"
+                                android:text="₹599.00"
+                                android:layout_weight="1"
+                                android:gravity="end"
+                                android:textColor="#2DA94F"
+                                android:textSize="12sp" />
+
+
+                        </LinearLayout>
+
+                    </LinearLayout>
 
 
                     <View
@@ -362,8 +490,6 @@
                         android:layout_height="5dp"
                         android:layout_marginTop="10dp"
                         android:background="@drawable/dotted_line" />
-
-
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -396,14 +522,11 @@
 
                     </LinearLayout>
 
-
-
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="5dp"
                         android:layout_marginTop="10dp"
                         android:background="@drawable/dotted_line" />
-
 
                     <TextView
                         android:layout_marginTop="10dp"

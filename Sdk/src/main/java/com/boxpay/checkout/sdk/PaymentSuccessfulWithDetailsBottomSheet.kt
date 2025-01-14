@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,8 +34,15 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
     private var token: String? = null
     private var transactionID: String? = null
     private var amount: String? = null
+    private var orderDetails: String? = null
+    private var isViewMoreExpanded  = false
+    private var orderDetailsLength : Int = 0
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var savedDccResponse : DCCResponse? = null
+    private var isLowCostApplied = false
+    private var isNoCostApplied = false
+    private var discountAmount : String? = null
+    private var subtotalAmount : String? = null
     private var isDccEnabled : Boolean = false
     override fun onResume() {
         super.onResume()
@@ -63,6 +71,39 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         binding.apply {
             transactionAmountTextView.text = amount
             transactionIDTextView.text = transactionID
+            if(!orderDetails.isNullOrEmpty() || orderDetails != "null") {
+                tvProduct.text = orderDetails
+                tvProduct.maxLines = 1
+                tvProduct.ellipsize = TextUtils.TruncateAt.END
+                llProductName.visibility = View.VISIBLE
+            }
+
+            if (isLowCostApplied || isNoCostApplied) {
+                offerDiscount.text = if (isNoCostApplied) "No Cost EMI Discount" else "Low Cost EMI Discount"
+                offerContainer.visibility = View.VISIBLE
+            }
+
+            if (orderDetailsLength > 1) {
+                viewMoreTextView.setTextColor(Color.parseColor(
+                    sharedPreferences.getString(
+                        "primaryButtonColor",
+                        "#000000"
+                    )
+                ))
+                viewMoreTextView.visibility = View.VISIBLE
+            }
+            viewMoreTextView.setOnClickListener {
+                isViewMoreExpanded = !isViewMoreExpanded
+                if (!isViewMoreExpanded) {
+                    tvProduct.maxLines = 1
+                    tvProduct.ellipsize = TextUtils.TruncateAt.END
+                    viewMoreTextView.text = "View More Items"
+                } else {
+                    tvProduct.maxLines = Integer.MAX_VALUE
+                    tvProduct.ellipsize = null
+                    viewMoreTextView.text = "View Less Items"
+                }
+            }
             proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
             transactionDateAndTimeTextView.text = getCurrentDateAndTimeInFormattedString()
             proceedButton.isEnabled = true
@@ -133,9 +174,14 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                     proceedButton.visibility = View.VISIBLE
                     val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
                     val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
-                    if (amount.isNotEmpty() && currencyType.isNotEmpty()){
+                    if (amount.isNotEmpty() && currencyType.isNotEmpty() && !isLowCostApplied && !isNoCostApplied){
                         transactionAmountTextView.text = "$currencyType $amount"
                     }
+                if (amount.isNotEmpty() && currencyType.isNotEmpty() && (isLowCostApplied || isNoCostApplied)) {
+                    transactionAmountTextView.text = "$currencyType $subtotalAmount"
+                    offerDiscountAmount.text = "-$currencyType $discountAmount"
+                    subTotalAmount.text = "$currencyType $amount"
+                }
             }
         }
         return binding.root
@@ -229,6 +275,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         token = sharedPreferences.getString("token","empty")
         transactionID = sharedPreferences.getString("transactionId","empty")
         amount = sharedPreferences.getString("currencySymbol","₹")+sharedPreferences.getString("amount","empty")
+        orderDetails = sharedPreferences.getString("orderDetails",null)
+        orderDetailsLength = sharedPreferences.getInt("orderDetailsLength", 0)
     }
 
     object SharedPreferencesHelper {
@@ -299,5 +347,12 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
             })
         }
         return dialog
+    }
+
+    fun setIsOfferApplied(isLowApplied: Boolean, isNoApplied: Boolean, subtotalAmount:String?, discount: String?) {
+        this.isLowCostApplied = isLowApplied
+        this.isNoCostApplied = isNoApplied
+        this.subtotalAmount = subtotalAmount
+        this.discountAmount = discount
     }
 }

@@ -394,6 +394,7 @@ fun ChooseEmiScreen(
                                 iconUrl = bank.iconUrl,
                                 bankName = bank.name,
                                 isNoCostApplied = bank.noCostApplied,
+                                isLowCostApplied = bank.lowCostApplied,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
@@ -556,7 +557,7 @@ fun SelectTenureEmi(
     selectedEmi: Pair<Int, String>,
     sharedPreferences: SharedPreferences,
     onClickRadio: (duration: Int, amount: String, code: String?) -> Unit,
-    onProceed: (Double) -> Unit,
+    onProceed: (Double, Boolean, Boolean, discount: String, netAmount: String) -> Unit,
     currencySymbol: String,
 ) {
     val scrollState = rememberScrollState()
@@ -657,9 +658,10 @@ fun SelectTenureEmi(
                     processingFee = it.processingFee,
                     bankName = selectedBank.name,
                     onProceed = {
-                        onProceed(it.percent)
+                        onProceed(it.percent, it.lowCostApplied, it.noCostApplied, it.discount ?: "", it.netAmount ?: "")
                     },
                     isNoCostApplied = it.noCostApplied,
+                    isLowCostAppled = it.lowCostApplied,
                     selectedTextColor = Color(
                         android.graphics.Color.parseColor(
                             sharedPreferences.getString(

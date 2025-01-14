@@ -279,8 +279,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     onClickRadio = { duration, amount , code->
                                         emiViewModel.onClickRadio(duration, amount, code)
                                     },
-                                    onProceed = {
-                                        emiViewModel.onProceedEmi(it)
+                                    onProceed = {percent, low, no, discount, netAmount ->
+                                        emiViewModel.onProceedEmi(percent, low, no, discount, netAmount)
                                     },
                                     currencySymbol = sharedPreferences.getString(
                                         "currencySymbol",
@@ -455,7 +455,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 percent = if (noApplicableOffer) emiMethod.optDouble("interestRate") else bankInterestRate,
                                 amount = emiMethod.optString("emiAmountLocaleFull"),
                                 totalAmount = emiMethod.optString("totalAmountLocaleFull"),
-                                discount = null,
+                                discount = emiMethod.optString("merchantBorneInterestAmountLocaleFull"),
                                 interestCharged = if (lowApplicableOffer) emiMethod.optString("interestChargedAmountLocaleFull") else emiMethod.optString(
                                     "bankChargedInterestAmountLocaleFull"
                                 ),
@@ -711,6 +711,9 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                         }
 
                         if (status.contains("Approved", ignoreCase = true)) {
+                            editor.putString("status", "Success")
+                            editor.putString("transactionId", transactionId)
+                            editor.apply()
                             handleSuccess()
                             emiViewModel.showLoaderInButton.value = false
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
@@ -879,12 +882,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                         if (isAdded && isResumed && !isStateSaved) {
                             hideLoader()
                             job?.cancel()
-                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-                            bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
-                            )
-                            dismiss()
+                            handleSuccess()
                         }
 
                     } else if (status.contains("RequiresAction", ignoreCase = true)) {
@@ -945,16 +943,15 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         if (sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+            bottomSheet.setIsOfferApplied(emiViewModel.isLowCostSelected.value, emiViewModel.isNoCostSelected.value, emiViewModel.netAmount.value, emiViewModel.discount.value)
             bottomSheet.show(
                 parentFragmentManager,
                 "PaymentStatusBottomSheetWithDetails"
             )
+            dismiss()
         } else {
             val callback = SingletonClass.getInstance().getYourObject()
             if (callback != null) {
-                val transactionId = sharedPreferences.getString("transactionId", "").toString()
-                val operationId = sharedPreferences.getString("operationId", "").toString()
-                callback.onPaymentResult(PaymentResultObject("Success", transactionId, operationId))
                 val mainBottomSheetFragment =
                     parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
                 mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
