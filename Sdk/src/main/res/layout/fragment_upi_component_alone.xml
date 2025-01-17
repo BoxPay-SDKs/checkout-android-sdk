@@ -14,27 +14,42 @@
         android:visibility="visible">
 
         <LinearLayout
+            android:id="@+id/topView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/textView12"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/poppins_semibold"
-                android:text="Pay by any UPI App"
-                android:layout_marginBottom="8dp"
-                android:textSize="18sp"
-                android:textColor="#020815"
-                android:visibility="visible" />
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView12"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:text="Pay by any UPI App"
+                    android:layout_marginBottom="8dp"
+                    android:textSize="18sp"
+                    android:textColor="#020815"
+                    android:visibility="visible" />
+
+                <ImageView
+                    android:id="@+id/upiLogo"
+                    android:src="@drawable/ic_boxpay_upi"
+                    android:layout_marginStart="4dp"
+                    android:layout_width="44dp"
+                    android:layout_height="26dp"/>
+            </LinearLayout>
 
             <ImageView
-                android:id="@+id/upiLogo"
-                android:src="@drawable/ic_boxpay_upi"
-                android:layout_marginStart="4dp"
-                android:layout_width="44dp"
-                android:layout_height="26dp"/>
+                android:id="@+id/imageView12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="right arrow"
+                app:srcCompat="@drawable/right_arrow" />
         </LinearLayout>
 
         <LinearLayout
@@ -201,7 +216,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginTop="6dp"
-                android:visibility="gone">
+                android:visibility="visible">
 
                 <View
                     android:id="@+id/dashedLine1"

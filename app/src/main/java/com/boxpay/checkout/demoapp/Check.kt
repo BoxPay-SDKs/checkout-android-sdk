@@ -64,17 +64,33 @@ class Check : AppCompatActivity() {
 
     private fun showBottomSheetWithOverlay() {
         if (isUpiAlone || isCardAlone) {
+            val paymentMethod = if (isUpiAlone && isCardAlone) {
+                listOf("upi","card")
+            } else if (isUpiAlone) {
+                listOf("upi")
+            } else {
+                listOf("card")
+            }
             val boxPayElements = BoxPayElements(
                 tokenLiveData.value ?: "",
                 ::onPaymentResultCallback,
-                mapOf(ConfigurationOptions.SHOW_UPI_METHOD_ALONE to isUpiAlone, ConfigurationOptions.SHOW_CARD_METHOD_ALONE to isCardAlone)
+                paymentMethod,
             )
             boxPayElements.setContext(this)
             boxPayElements.setUPILayoutId(R.id.upiOpenButon)
-                boxPayElements.setCardLayoutId(R.id.cardOpenButton)
-            boxPayElements.setProceedButtonVisibility(true)
+            boxPayElements.setCardLayoutId(R.id.cardOpenButton)
+            binding.cardOpenButton.removeAllViews()
+            binding.upiOpenButon.removeAllViews()
+            boxPayElements.setProceedButtonVisibility(false)
             boxPayElements.setCardValidityCallback(::handleCardValidity)
+            boxPayElements.setUpiValidityCallback(::handleUpiValidity)
             boxPayElements.showPaymentMethods()
+            disableProceedButton()
+
+            binding.proceedButtonBottom.visibility = View.VISIBLE
+            binding.proceedButtonBottom.setOnClickListener {
+                boxPayElements.initiatePayment()
+            }
         } else {
             val boxPayCheckout =
                 BoxPayCheckout(
@@ -217,14 +233,6 @@ class Check : AppCompatActivity() {
         return null
     }
 
-    fun handleCardValidity(valid: Boolean) {
-        if (valid) {
-            enableProceedButton()
-        } else {
-            disableProceedButton()
-        }
-    }
-
     private fun enableProceedButton() {
         binding.bottomProceedButtonLayout.isEnabled = true
         binding.proceedButtonBottom.isEnabled = true
@@ -242,5 +250,21 @@ class Check : AppCompatActivity() {
         binding.bottomProceedButtonLayout.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.disable_button)
         binding.proceedButtonBottom.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.disable_button)
         binding.bottomProceedButtonText.setTextColor(Color.parseColor("#ADACB0"))
+    }
+
+    private fun handleUpiValidity(valid: Boolean) {
+        if (valid) {
+            enableProceedButton()
+        } else {
+            disableProceedButton()
+        }
+    }
+
+    private fun handleCardValidity(valid: Boolean) {
+        if (valid) {
+            enableProceedButton()
+        } else {
+            disableProceedButton()
+        }
     }
 }

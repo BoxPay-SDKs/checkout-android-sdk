@@ -15,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.widget.EditText
 import android.widget.Toast
@@ -68,6 +69,7 @@ class BoxPayCardComponent(
     private var firstName: String? = null
     private var lastName: String? = null
     private var handleCardValidity: ((Boolean) -> Unit)? = null
+    private var handleCardVisibility :(() -> Unit)? = null
     private var cardVisible = false
     private var gender: String? = null
     private var phoneNumber: String? = null
@@ -86,6 +88,7 @@ class BoxPayCardComponent(
     private var isCardExpired: Boolean? = null
     private var isCardNumberEnabled: Boolean? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
+    private lateinit var inputMethodManager: InputMethodManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -96,6 +99,8 @@ class BoxPayCardComponent(
         setupCardNumberFormatting(binding.edtCardNumber, binding.edtExpiry)
         setupCardExpiryFormatting(binding.edtExpiry, binding.edtCVV)
         setUpCardCvvFormatting(binding.edtCVV, binding.edtcardName)
+        inputMethodManager =
+            context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         setUpCardNameFormatting(binding.edtcardName)
         makeSessionDataCall()
 
@@ -113,6 +118,9 @@ class BoxPayCardComponent(
             }
         }
 
+        binding.topView.setOnClickListener {
+            hideCardComponent()
+        }
 
         return binding.root
     }
@@ -851,7 +859,11 @@ class BoxPayCardComponent(
         binding.boxpayLoader.visibility = View.GONE
         if (cardVisible) {
             binding.proceedButton.visibility = if (showProceedButton) View.VISIBLE else View.GONE
-            binding.cardDetailsLinearLayout.visibility = View.VISIBLE
+            binding.cardDetailsLinearLayout.visibility = if (handleCardVisibility != null) {
+                View.GONE
+            } else {
+                View.VISIBLE
+            }
         }
         binding.boxpayLogoLottie.cancelAnimation()
     }
@@ -1061,6 +1073,7 @@ class BoxPayCardComponent(
     private fun postRequest() {
         val cardExpiryYYYY_MM = addDashInsteadOfSlash(binding.edtExpiry.getTextValue)
         showLoadingState()
+        handleCardValidity?.let { it(false) }
         val requestQueue = Volley.newRequestQueue(context)
         val requestBody = JSONObject().apply {
             val browserData = JSONObject().apply {
@@ -1133,11 +1146,10 @@ class BoxPayCardComponent(
             Response.Listener { response ->
 
                 val status = response.getJSONObject("status").getString("status")
-                val reason = response.getJSONObject("status").getString("reason")
-                val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 val transactionId = response.getString("transactionId").toString()
 
                 if (status.contains("Rejected", ignoreCase = true)) {
+                    handleCardValidity?.let { it(true) }
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(
@@ -1179,6 +1191,7 @@ class BoxPayCardComponent(
                         startFunctionCalls()
                         startActivityForResult(intent, 333)
                     } else if (status.contains("Approved", ignoreCase = true)) {
+                        handleCardValidity?.let { it(true) }
                         onPaymentResult?.let {
                             it(
                                 PaymentResultObject(
@@ -1196,6 +1209,7 @@ class BoxPayCardComponent(
                 // Handle error
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
+                    handleCardValidity?.let { it(true) }
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(
@@ -1264,6 +1278,7 @@ class BoxPayCardComponent(
                         )
                     ) {
                         job?.cancel()
+                        handleCardValidity?.let { it(true) }
                         onPaymentResult?.let {
                             it(
                                 PaymentResultObject(
@@ -1293,6 +1308,7 @@ class BoxPayCardComponent(
                             ) || status.equals("paid", true)
                         ) {
                             job?.cancel()
+                            handleCardValidity?.let { it(true) }
                             onPaymentResult?.let {
                                 it(
                                     PaymentResultObject(
@@ -1311,7 +1327,7 @@ class BoxPayCardComponent(
             },
             Response.ErrorListener { error ->
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
+                    handleCardValidity?.let { it(true) }
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(
@@ -1387,5 +1403,24 @@ class BoxPayCardComponent(
         transaction.replace(layout, this)
         transaction.addToBackStack(null)
         transaction.commit()
+    }
+
+    private fun hideCardComponent() {
+        if (binding.cardDetailsLinearLayout.isVisible) {
+            binding.cardDetailsLinearLayout.visibility = View.GONE
+        } else {
+            binding.cardDetailsLinearLayout.visibility = View.VISIBLE
+            handleCardValidity?.let { it(isCardValid()) }
+        }
+        handleCardVisibility?.invoke()
+    }
+
+    fun setVisibilityFunction(handleVisibility: ()-> Unit) {
+        this.handleCardVisibility = handleVisibility
+    }
+
+    fun onClickUpiComponent() {
+        binding.cardDetailsLinearLayout.visibility = View.GONE
+        inputMethodManager.hideSoftInputFromWindow(binding.edtCVV.windowToken, 0)
     }
 }

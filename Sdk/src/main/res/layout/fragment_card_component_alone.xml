@@ -13,16 +13,33 @@
         android:orientation="vertical"
         android:visibility="visible">
 
-        <TextView
-            android:id="@+id/textView12"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/topView"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/poppins_semibold"
-            android:text="Pay by credit or debit card"
-            android:layout_marginBottom="8dp"
-            android:textSize="18sp"
-            android:textColor="#020815"
-            android:visibility="visible" />
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textView12"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_semibold"
+                android:text="Pay by credit or debit card"
+                android:layout_marginBottom="8dp"
+                android:textSize="18sp"
+                android:textColor="#020815"
+                android:visibility="visible"
+                android:layout_weight="1"/>
+
+            <ImageView
+                android:id="@+id/imageView12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="right arrow"
+                android:layout_gravity="end"
+                app:srcCompat="@drawable/right_arrow" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/cardDetailsLinearLayout"

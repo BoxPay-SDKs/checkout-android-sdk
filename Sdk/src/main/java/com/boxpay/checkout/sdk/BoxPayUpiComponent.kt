@@ -64,6 +64,8 @@ class BoxPayUpiComponent(
     private var selectedColor = ""
     private var showProceedButton = true
     private var selectedTextColor = ""
+    private var handleUpiVisibility :(() -> Unit)? = null
+    private var handleUpiValidity: ((Boolean) -> Unit)? = null
     private var totalAmount = ""
     private var email: String? = null
     private var firstName: String? = null
@@ -124,21 +126,8 @@ class BoxPayUpiComponent(
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textNow = s.toString()
-                if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}"))) {
-                    enableProceedButton()
-                } else {
-                    disableProceedButton()
-                    if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
-                            ?: 0) >= 2
-                    ) {
-                        binding.textView8.text = "Please enter a valid UPI Id"
-                        binding.invalidCVV.visibility = View.VISIBLE // Show specific error
-                    } else {
-                        binding.invalidCVV.visibility =
-                            View.GONE // Hide error if not matching condition
-                    }
-                }
                 upiCollectId = textNow
+                isUpiValid()
             }
 
             override fun afterTextChanged(p0: Editable?) {
@@ -179,13 +168,22 @@ class BoxPayUpiComponent(
                     binding.addNewUpiTextInput,
                     InputMethodManager.SHOW_IMPLICIT
                 )
+                isUpiValid()
             }
+        }
+
+        binding.topView.setOnClickListener {
+            hideUpiComponent()
         }
         return binding.root
     }
 
     fun onProceedPayment() {
-        getUrlForUPIIntent(selectedUpiIntent)
+        if (selectedUpiIntent.isNotEmpty()) {
+            getUrlForUPIIntent(selectedUpiIntent)
+        } else {
+            postRequest()
+        }
     }
 
     private fun getAllInstalledApps(packageManager: PackageManager) {
@@ -226,6 +224,7 @@ class BoxPayUpiComponent(
                 if (binding.addNewUpiTextInputLayout.isVisible) {
                     disableAddUpiIdClick()
                 }
+                handleUpiValidity?.let { it(true) }
             }
 
             i++
@@ -245,6 +244,7 @@ class BoxPayUpiComponent(
                 if (binding.addNewUpiTextInputLayout.isVisible) {
                     disableAddUpiIdClick()
                 }
+                handleUpiValidity?.let { it(true) }
             }
 
             i++
@@ -264,6 +264,7 @@ class BoxPayUpiComponent(
                 if (binding.addNewUpiTextInputLayout.isVisible) {
                     disableAddUpiIdClick()
                 }
+                handleUpiValidity?.let { it(true) }
             }
 
             i++
@@ -282,6 +283,7 @@ class BoxPayUpiComponent(
             if (binding.addNewUpiTextInputLayout.isVisible) {
                 disableAddUpiIdClick()
             }
+            handleUpiValidity?.let { it(false) }
             getUrlForDefaultUPIIntent()
         }
 
@@ -718,6 +720,7 @@ class BoxPayUpiComponent(
                         removeLoadingState()
                         job?.cancel()
                         isGpayReturned = false
+                        handleUpiValidity?.let { it(true) }
                         onPaymentResult?.let {
                             it(
                                 PaymentResultObject(
@@ -732,6 +735,7 @@ class BoxPayUpiComponent(
                         removeLoadingState()
                         job?.cancel()
                         isPhonePe = false
+                        handleUpiValidity?.let { it(true) }
                         onPaymentResult?.let {
                             it(
                                 PaymentResultObject(
@@ -759,6 +763,7 @@ class BoxPayUpiComponent(
                     if (status.equals("Pending", ignoreCase = true) && isPaytmReturned) {
                         removeLoadingState()
                         job?.cancel()
+                        handleUpiValidity?.let { it(true) }
                         isPaytmReturned = false
                         onPaymentResult?.let {
                             it(
@@ -777,6 +782,7 @@ class BoxPayUpiComponent(
                         )
                     ) {
                         job?.cancel()
+                        handleUpiValidity?.let { it(true) }
                         onPaymentResult?.let {
                             it(
                                 PaymentResultObject(
@@ -804,6 +810,7 @@ class BoxPayUpiComponent(
                             ) || status.equals("paid", true)
                         ) {
                             job?.cancel()
+                            handleUpiValidity?.let { it(true) }
                             onPaymentResult?.let {
                                 it(
                                     PaymentResultObject(
@@ -821,7 +828,7 @@ class BoxPayUpiComponent(
             },
             Response.ErrorListener { error ->
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
+                    handleUpiValidity?.let { it(true) }
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(
@@ -847,6 +854,7 @@ class BoxPayUpiComponent(
 
     private fun getUrlForUPIIntent(appName: String) {
         showLoadingState()
+        handleUpiValidity?.let { it(false) }
 
         val requestQueue = Volley.newRequestQueue(context)
         val requestBody = JSONObject().apply {
@@ -937,6 +945,7 @@ class BoxPayUpiComponent(
             Response.ErrorListener { error ->
 
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    handleUpiValidity?.let { it(true) }
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(
@@ -1009,16 +1018,9 @@ class BoxPayUpiComponent(
         }
     }
 
-    fun setProceedButtonVisibility(visible: Boolean) {
+    fun setProceedButtonVisibility(visible: Boolean, handleUpiValidityCallback:((Boolean)-> Unit)?) {
         showProceedButton = visible
-    }
-
-    fun onClickProceed() {
-        if (selectedUpiIntent.isNotEmpty()) {
-            getUrlForUPIIntent(selectedUpiIntent)
-        } else {
-            postRequest()
-        }
+        handleUpiValidity = handleUpiValidityCallback
     }
 
     private fun postRequest() {
@@ -1272,5 +1274,51 @@ class BoxPayUpiComponent(
         transaction.replace(layout, this)
         transaction.addToBackStack(null)
         transaction.commit()
+    }
+
+    fun hideUpiComponent() {
+        if (binding.upiOptionsLinearLayout.isVisible) {
+            binding.upiOptionsLinearLayout.visibility = View.GONE
+        } else {
+            binding.upiOptionsLinearLayout.visibility = View.VISIBLE
+            if (selectedUpiIntent.isNotEmpty()) {
+                handleUpiValidity?.let { it(true) }
+            } else {
+                isUpiValid()
+            }
+        }
+        handleUpiVisibility?.invoke()
+    }
+
+    fun onClickCardComponent() {
+        binding.upiOptionsLinearLayout.visibility = View.GONE
+        inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
+    }
+
+    fun setVisibilityFunction(handleVisibility: ()-> Unit) {
+        this.handleUpiVisibility = handleVisibility
+    }
+
+    fun isUpiValid() {
+        if (!upiCollectId.isNullOrEmpty()) {
+            if (upiCollectId?.isNotBlank() == true && upiCollectId?.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}")) == true) {
+                handleUpiValidity?.let { it(true) }
+                enableProceedButton()
+            } else {
+                handleUpiValidity?.let { it(false) }
+                disableProceedButton()
+                if (upiCollectId?.contains('@') == true && (upiCollectId?.split('@')?.getOrNull(1)?.length
+                        ?: 0) >= 2
+                ) {
+                    binding.textView8.text = "Please enter a valid UPI Id"
+                    binding.invalidCVV.visibility = View.VISIBLE // Show specific error
+                } else {
+                    binding.invalidCVV.visibility = View.GONE // Hide error if not matching condition
+                }
+            }
+        } else {
+            handleUpiValidity?.let { it(false) }
+            disableProceedButton()
+        }
     }
 }
