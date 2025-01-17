@@ -75,6 +75,7 @@ class Check : AppCompatActivity() {
                 paymentMethod,
             )
             boxPayElements.setContext(this)
+            boxPayElements.setTestEnv(true)
             boxPayElements.setUPILayoutId(R.id.upiOpenButon)
             boxPayElements.setCardLayoutId(R.id.cardOpenButton)
             binding.cardOpenButton.removeAllViews()

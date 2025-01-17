@@ -12,7 +12,7 @@ class BoxPayElements(
     private val paymentMethods: List<String>,
     private val configurationOptions: Map<ConfigurationOptions, Any>? = null
 ) {
-    private var testEnv:Boolean = true
+    private var testEnv:Boolean = false
     private var context: Context? = null
     private var proceedButtonVisibility: Boolean = false
     private var handleCardValidity: ((Boolean) -> Unit)? = null
@@ -25,6 +25,10 @@ class BoxPayElements(
 
     fun setContext(context: Context) {
         this.context = context
+    }
+
+    fun setTestEnv(testEnv: Boolean) {
+        this.testEnv = testEnv
     }
 
     fun setProceedButtonVisibility(visible: Boolean) {
