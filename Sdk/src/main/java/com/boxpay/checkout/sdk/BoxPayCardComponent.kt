@@ -54,7 +54,6 @@ import kotlin.random.Random
 
 class BoxPayCardComponent(
     val token: String?,
-    val sandboxEnabled: Boolean?,
     val onPaymentResult: ((PaymentResultObject) -> Unit)
 ) : Fragment() {
 
@@ -151,18 +150,10 @@ class BoxPayCardComponent(
                 s.let {
                     if (s?.length == 18 && !isAmericanExpressCard) {
                         val text = s.toString().replace("\\s".toRegex(), "")
-                        if (isValidCardNumberByLuhn(removeSpaces(text))) {
-                            proceedButtonIsEnabled.value = true
-                        } else {
-                            proceedButtonIsEnabled.value = false
-                        }
+                        proceedButtonIsEnabled.value = isValidCardNumberByLuhn(removeSpaces(text))
                     } else if (s?.length == 17 && isAmericanExpressCard) {
                         val text = s.toString().replace("\\s".toRegex(), "")
-                        if (isValidCardNumberByLuhn(removeSpaces(text))) {
-                            proceedButtonIsEnabled.value = true
-                        } else {
-                            proceedButtonIsEnabled.value = false
-                        }
+                        proceedButtonIsEnabled.value = isValidCardNumberByLuhn(removeSpaces(text))
                     }
                 }
             }
@@ -175,7 +166,6 @@ class BoxPayCardComponent(
                         val formattedText = formatCardNumber(text)
                         if (editable.toString() != formattedText && !userDeletingChars) {
                             isFormatting = true // Set flag to prevent reformatting
-                            val editText = customEditText.findViewById<EditText>(R.id.editText)
                             editText.setText(formattedText)
 
                             // Move the cursor to the end of the text
@@ -234,7 +224,7 @@ class BoxPayCardComponent(
 
                         if (text.length >= 9) {
                             makeCardNetworkIdentificationCall(
-                                requireContext(), text.substring(0, 9), text
+                                requireContext(), text.substring(0, 9)
                             )
                         } else {
                             editText.setCompoundDrawablesWithIntrinsicBounds(
@@ -260,7 +250,7 @@ class BoxPayCardComponent(
                     val text = editText.text.replace("\\s".toRegex(), "")
                     if (editText.length() >= 9) {
                         makeCardNetworkIdentificationCall(
-                            requireContext(), text.substring(0, 9), text
+                            requireContext(), text.substring(0, 9)
                         )
                     } else {
                         editText.setCompoundDrawablesWithIntrinsicBounds(
@@ -307,7 +297,7 @@ class BoxPayCardComponent(
                         val text = editText.text.replace("\\s".toRegex(), "")
                         if (editText.length() >= 9) {
                             makeCardNetworkIdentificationCall(
-                                requireContext(), text.substring(0, 9), text
+                                requireContext(), text.substring(0, 9)
                             )
                         } else {
                             editText.setCompoundDrawablesWithIntrinsicBounds(
@@ -599,11 +589,7 @@ class BoxPayCardComponent(
             override fun afterTextChanged(s: Editable?) {
                 s?.let { editable ->
                     val textNow = editable.toString()
-                    if (textNow.isNullOrEmpty()) {
-                        proceedButtonIsEnabled.value = false
-                    } else {
-                        proceedButtonIsEnabled.value = true
-                    }
+                    proceedButtonIsEnabled.value = textNow.isNotEmpty()
                 }
                 handleCardValidity?.let { it(isCardValid()) }
             }
@@ -838,7 +824,11 @@ class BoxPayCardComponent(
         }, Response.ErrorListener { error ->
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
-
+                Toast.makeText(
+                    context,
+                    errorResponse,
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }) {
             // no op
@@ -951,7 +941,8 @@ class BoxPayCardComponent(
     }
 
     private fun makeCardNetworkIdentificationCall(
-        context: Context, cardNumber: String, completeCardNumber: String
+        context: Context,
+        cardNumber: String
     ) {
         val queue = Volley.newRequestQueue(context)
         val url = BASE_URL + "${token}/bank-identification-numbers/${cardNumber}"
@@ -1071,7 +1062,7 @@ class BoxPayCardComponent(
     }
 
     private fun postRequest() {
-        val cardExpiryYYYY_MM = addDashInsteadOfSlash(binding.edtExpiry.getTextValue)
+        val cardExpiryYyyyMm = addDashInsteadOfSlash(binding.edtExpiry.getTextValue)
         showLoadingState()
         handleCardValidity?.let { it(false) }
         val requestQueue = Volley.newRequestQueue(context)
@@ -1096,7 +1087,7 @@ class BoxPayCardComponent(
 
                 val cardObject = JSONObject().apply {
                     put("number", binding.edtCardNumber.getTextValue)
-                    put("expiry", cardExpiryYYYY_MM)
+                    put("expiry", cardExpiryYyyyMm)
                     put("cvc", binding.edtCVV.getTextValue)
                     put("holderName", binding.edtcardName.getTextValue)
                 }
@@ -1208,7 +1199,6 @@ class BoxPayCardComponent(
             Response.ErrorListener { error ->
                 // Handle error
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
                     handleCardValidity?.let { it(true) }
                     onPaymentResult?.let {
                         it(
@@ -1245,7 +1235,7 @@ class BoxPayCardComponent(
         try {
             val mm = date.substring(0, 2)
             val yyyy = "20" + date.substring(3, 5)
-            return yyyy + "-" + mm
+            return "$yyyy-$mm"
         } catch (e: Exception) {
             binding.expiryErrorText.text = "Invalid Validity"
             return ""

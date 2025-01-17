@@ -88,7 +88,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
             binding.button.text = "Please Wait"
             if (selectedEnvironment == "prod") {
                 if (isUpiEnabled) {
-                    val boxPayUpiComponent = BoxPayUpiComponent(token, false, ::onPaymentResult)
+                    val boxPayUpiComponent = BoxPayUpiComponent(token, ::onPaymentResult)
                     boxPayUpiComponent.setContext(this)
 
                     // Replace a container in your activity's layout
@@ -97,7 +97,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
                 } else if (isCardEnabled){
-                    val boxPayCardComponent = BoxPayCardComponent(token, false,::onPaymentResult)
+                    val boxPayCardComponent = BoxPayCardComponent(token,::onPaymentResult)
                     boxPayCardComponent.setContext(this)
                     binding.mainContainer.removeAllViews()
                     supportFragmentManager.beginTransaction()
@@ -114,7 +114,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                 }
             } else if (selectedEnvironment == "sandbox") {
                 if (isUpiEnabled) {
-                    val boxPayUpiComponent = BoxPayUpiComponent(token, true, ::onPaymentResult)
+                    val boxPayUpiComponent = BoxPayUpiComponent(token, ::onPaymentResult)
                     boxPayUpiComponent.setContext(this)
 
                     // Replace a container in your activity's layout
@@ -123,7 +123,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
                 } else if (isCardEnabled){
-                    val boxPayCardComponent = BoxPayCardComponent(token, false,::onPaymentResult)
+                    val boxPayCardComponent = BoxPayCardComponent(token,::onPaymentResult)
                     boxPayCardComponent.setContext(this)
                     binding.mainContainer.removeAllViews()
                     supportFragmentManager.beginTransaction()
@@ -141,7 +141,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                 }
             } else if (selectedEnvironment == "test") {
                 if (isUpiEnabled) {
-                    val boxPayUpiComponent = BoxPayUpiComponent(token, false, ::onPaymentResult)
+                    val boxPayUpiComponent = BoxPayUpiComponent(token, ::onPaymentResult)
                     boxPayUpiComponent.setContext(this)
 
                     // Replace a container in your activity's layout
@@ -150,7 +150,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         .replace(R.id.main_container,boxPayUpiComponent)
                         .commit()
                 } else if (isCardEnabled){
-                    val boxPayCardComponent = BoxPayCardComponent(token, false,::onPaymentResult)
+                    val boxPayCardComponent = BoxPayCardComponent(token,::onPaymentResult)
                     boxPayCardComponent.setContext(this)
                     binding.mainContainer.removeAllViews()
                     supportFragmentManager.beginTransaction()

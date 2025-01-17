@@ -93,7 +93,7 @@ class BoxPayElements(
 
             if (paymentMethods.contains("upi")) {
                 currentlyExpandedComponent = "upi"
-                boxPayUpiComponent = BoxPayUpiComponent(token, configurationOptions?.get(ConfigurationOptions.ENABLE_SANDBOX_ENV) == true, onPaymentResult)
+                boxPayUpiComponent = BoxPayUpiComponent(token, onPaymentResult)
                 boxPayUpiComponent.setContext(context!!)
                 boxPayUpiComponent.setProceedButtonVisibility(proceedButtonVisibility, handleUpiValidity)
                 boxPayUpiComponent.displayUpiComponent(sessionUrl, upiLayout!!)
@@ -101,7 +101,7 @@ class BoxPayElements(
 
             if (paymentMethods.contains("card")) {
                 currentlyExpandedComponent = "card"
-                boxPayCardComponent = BoxPayCardComponent(token, configurationOptions?.get(ConfigurationOptions.ENABLE_SANDBOX_ENV) == true, onPaymentResult)
+                boxPayCardComponent = BoxPayCardComponent(token,onPaymentResult)
                 boxPayCardComponent.setContext(context!!)
                 boxPayCardComponent.setProceedButtonVisibility(proceedButtonVisibility, handleCardValidity)
                 boxPayCardComponent.displayCardComponent(sessionUrl, cardLayout!!)
@@ -111,6 +111,14 @@ class BoxPayElements(
                 currentlyExpandedComponent = "upi"
                 boxPayUpiComponent.setVisibilityFunction(::onUpiVisibilityCallback)
                 boxPayCardComponent.setVisibilityFunction(::onCardVisibilityCallback)
+            }
+
+            if (paymentMethods.isEmpty() || paymentMethods.any { it != "upi" && it != "card" }) {
+                Toast.makeText(
+                    context,
+                    "Payment method list is invalid. Please pass only \"upi\" or \"card\" in the list.",
+                    Toast.LENGTH_LONG
+                ).show()
             }
 
         } catch (e: Exception) {

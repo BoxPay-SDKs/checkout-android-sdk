@@ -52,8 +52,6 @@ class Check : AppCompatActivity() {
                 binding.textView6.text = "Opening"
             }
         })
-
-        var actionInProgress = false
     }
 
     private fun handleResponseWithToken() {

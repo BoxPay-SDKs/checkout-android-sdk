@@ -55,7 +55,6 @@ import kotlin.random.Random
 
 class BoxPayUpiComponent(
     val token: String?,
-    val sandboxEnabled: Boolean?,
     val onPaymentResult: ((PaymentResultObject) -> Unit)
 ) : Fragment() {
     private var UPIAppsAndPackageMap: MutableMap<String, String> = mutableMapOf()
