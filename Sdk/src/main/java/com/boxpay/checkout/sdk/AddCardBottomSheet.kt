@@ -18,8 +18,10 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
+import android.text.SpannableString
 import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
+import android.text.style.UnderlineSpan
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -367,6 +369,28 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
+        binding.knowMoreText.setOnClickListener {
+            val bottomSheet = SavedCardKnowMoreBottomSheet(
+                selectedColor = androidx.compose.ui.graphics.Color(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "primaryButtonColor",
+                            "#000000"
+                        )
+                    )
+                ),
+                selectedTextColor = androidx.compose.ui.graphics.Color(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "buttonTextColor",
+                            "#ffffff"
+                        )
+                    )
+                )
+            )
+            bottomSheet.show(childFragmentManager, "CvvBottomSheet")
+        }
+
         binding.cvvToolTipIcon.setOnClickListener {
             val bottomSheet = CvvBottomSheetDialogFragment(
                 selectedColorBottomSheet = androidx.compose.ui.graphics.Color(
@@ -462,11 +486,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     )
                 )
             ) // Set border thickness and color
-        }
-        val unfocusedDrawable = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 8f // Adjust the corner radius
-            setStroke(4, Color.parseColor("#E6E6E6")) // Set border thickness and color
         }
 
         binding.editTextCardNumber.addTextChangedListener(object : TextWatcher {
@@ -987,6 +1006,17 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 binding.editTextNameOnCard.background = focusedDrawable
             }
         }
+        val spannableString = SpannableString("Know more")
+        spannableString.setSpan(UnderlineSpan(), 0, spannableString.length, 0)
+        binding.knowMoreText.text = spannableString
+        binding.knowMoreText.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#ffffff"
+                )
+            )
+        )
         return binding.root
     }
 

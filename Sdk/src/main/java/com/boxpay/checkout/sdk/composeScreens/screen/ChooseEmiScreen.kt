@@ -96,7 +96,6 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import com.boxpay.checkout.sdk.R
 import com.boxpay.checkout.sdk.composeScreens.components.BankRow
-import com.boxpay.checkout.sdk.composeScreens.components.CardSecureRow
 import com.boxpay.checkout.sdk.composeScreens.components.CvvBottomSheet
 import com.boxpay.checkout.sdk.composeScreens.components.EmiAmountDetails
 import com.boxpay.checkout.sdk.composeScreens.components.ErrorRow
@@ -1234,12 +1233,12 @@ fun AddCardDetailsScreen(
                 errorText = "Invalid CVV"
             )
         }
-        CardSecureRow(
-            modifier = Modifier.constrainAs(footerEnd) {
-                end.linkTo(parent.end, 16.dp)
-                top.linkTo(cardNameInput.bottom, 14.dp)
-            }
-        )
+//        CardSecureRow(
+//            modifier = Modifier.constrainAs(footerEnd) {
+//                end.linkTo(parent.end, 16.dp)
+//                top.linkTo(cardNameInput.bottom, 14.dp)
+//            }
+//        )
         Button(
             enabled = allDetailsValid,
             onClick = { if (!showLoadingInButton) onProceedClick() },
