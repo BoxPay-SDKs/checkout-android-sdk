@@ -10,6 +10,7 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.CallBackFunctions
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.handleException
 import org.json.JSONObject
@@ -65,7 +66,7 @@ class BoxPayCheckout(
         editor.apply()
         try {
             if (!token.isNullOrEmpty()) {
-                callUIAnalytics(context, "CHECKOUT_LOADED")
+                callUIAnalytics(context)
                 putTransactionDetailsInSharedPreferences()
                 openBottomSheet()
             } else {
@@ -76,15 +77,15 @@ class BoxPayCheckout(
         }
     }
 
-    private fun callUIAnalytics(context: Context, event: String) {
+    private fun callUIAnalytics(context: Context) {
         val requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
         val browserLanguage = Locale.getDefault().toString()
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
-            put("callerToken", token)
-            put("uiEvent", event)
+            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.UI_EVENT, AnalyticsEvents.CHECKOUT_LOADED)
 
             // Create browserData JSON object
             val browserData = JSONObject().apply {

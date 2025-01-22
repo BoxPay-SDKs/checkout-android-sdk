@@ -65,6 +65,7 @@ import com.boxpay.checkout.sdk.adapters.RecommendedItemsAdapter
 import com.boxpay.checkout.sdk.composeScreens.screen.RecommendedScreen
 import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
@@ -316,7 +317,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (e: Exception) {
             // Log specific error if the app is not found
             upiIntentError = e.message
-            callUIAnalytics(requireActivity(), "UPI_APP_NOT_FOUND", "", "UPI")
+            callUIAnalytics(requireActivity(), AnalyticsEvents.UPI_APP_NOT_FOUND, "", "UPI")
             PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(
                 parentFragmentManager,
                 "FailureScreen"
@@ -326,7 +327,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (e: Exception) {
             // Log any other error that occurs
             upiIntentError = e.message
-            callUIAnalytics(requireActivity(), "FAILED_TO_LAUNCH_UPI_INTENT", "", "UPI")
+            callUIAnalytics(requireActivity(), AnalyticsEvents.FAILED_TO_LAUNCH_UPI_INTENT, "", "UPI")
             PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(
                 parentFragmentManager,
                 "FailureScreen"
@@ -642,7 +643,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
                     callUIAnalytics(
                         requireActivity(),
-                        "ERROR_GETTING_UPI_URL $errorMessage",
+                        "${AnalyticsEvents.ERROR_GETTING_UPI_URL} $errorMessage",
                         "",
                         "UPI"
                     )
@@ -795,6 +796,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!binding.loadingRelativeLayout.isVisible) {
                     recommendedCheckedPosition = checkedPositon
                     if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
+                        callUIAnalytics(
+                            requireContext(),
+                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                            "UpiCollect",
+                            "UPI"
+                        )
+                        callUIAnalytics(
+                            requireContext(),
+                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                            "UpiCollect",
+                            "UPI"
+                        )
                         binding.recommendedProceedButton.visibility = View.VISIBLE
                         binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
                         binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
@@ -820,6 +833,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.recommendedProceedButton.setOnClickListener {
                 if (!binding.loadingRelativeLayout.isVisible) {
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_INITIATED,
+                        "UpiCollect",
+                        "UPI"
+                    )
                     postRecommendedInstruments(
                         "upi/collect",
                         recommendedInstrumentationList[recommendedCheckedPosition!!].first,
@@ -860,14 +879,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.addNewUPIIDConstraint.isEnabled = false
                     callUIAnalytics(
                         requireContext(),
-                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
                         "UpiCollect",
                         "Upi"
                     )
-                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Upi")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "Upi")
                     callUIAnalytics(
                         requireContext(),
-                        "PAYMENT_METHOD_SELECTED",
+                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
                         "UpiCollect",
                         "Upi"
                     )
@@ -901,8 +920,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.cardConstraint.isEnabled = false
-                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Card")
-                    callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "", "Card")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "Card")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "", "Card")
                     openAddCardBottomSheet()
                 }
             }
@@ -914,7 +933,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.walletConstraint.isEnabled = false
-                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Wallet")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "Wallet")
                     openWalletBottomSheet()
                 }
             }
@@ -925,7 +944,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.emiConstraint.isEnabled = false
-                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Emi")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "Emi")
                     openEmiBottomSheet()
                 }
             }
@@ -938,7 +957,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.bnplConstraint.isEnabled = false
                     callUIAnalytics(
                         requireContext(),
-                        "PAYMENT_CATEGORY_SELECTED",
+                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
                         "",
                         "BuyNowPayLater"
                     )
@@ -953,7 +972,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.netBankingConstraint.isEnabled = false
-                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "NetBanking")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "NetBanking")
                     openNetBankingBottomSheet()
                 }
             }
@@ -1522,12 +1541,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     getUrlForUPIIntent("PhonePe")
                     callUIAnalytics(
                         requireContext(),
-                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
                         "UpiIntent",
                         "Upi"
                     )
-                    callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
-                    callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "UpiIntent", "Upi")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiIntent", "Upi")
                 }
             }
 
@@ -1548,12 +1567,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     getUrlForUPIIntent("GPay")
                     callUIAnalytics(
                         requireContext(),
-                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
                         "UpiIntent",
                         "Upi"
                     )
-                    callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
-                    callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "UpiIntent", "Upi")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiIntent", "Upi")
                 }
             }
 
@@ -1574,12 +1593,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     getUrlForUPIIntent("PayTm")
                     callUIAnalytics(
                         requireContext(),
-                        "PAYMENT_INSTRUMENT_PROVIDED",
+                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
                         "UpiIntent",
                         "Upi"
                     )
-                    callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
-                    callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "UpiIntent", "Upi")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiIntent", "Upi")
                 }
             }
 
@@ -1595,9 +1614,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             if (!binding.loadingRelativeLayout.isVisible) {
                 showLoadingState("payUsingAnyUPIConstraint")
                 getUrlForDefaultUPIIntent()
-                callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "UpiIntent", "Upi")
-                callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "UpiIntent", "Upi")
-                callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiIntent", "Upi")
+                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, "UpiIntent", "Upi")
+                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "UpiIntent", "Upi")
+                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiIntent", "Upi")
             }
         }
 
@@ -1620,16 +1639,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
-            put("callerToken", token)
-            put("uiEvent", event)
+            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.UI_EVENT, event)
 
             // Create eventAttrs JSON object
             val eventAttrs = JSONObject().apply {
-                put("paymentType", paymentType)
-                put("upiIntentError", upiIntentError)
+                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
+                if (!upiIntentError.isNullOrEmpty()) {
+                    put(AnalyticsEvents.UPI_INTENT_ERROR, upiIntentError)
+                }
 
-                if (paymentSubType.isBlank())
-                    put("paymentSubType", paymentSubType)
+                if (paymentSubType.isNotBlank())
+                    put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
             }
             put("eventAttrs", eventAttrs)
 
@@ -3888,6 +3909,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.swipeCtaScreen.visibility = View.GONE
                 },
                 onSwipeComplete = {
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_INITIATED,
+                        "UpiCollect",
+                        "UPI"
+                    )
                     binding.swipeScreenAnimation.apply {
                         playAnimation()
                         repeatCount =
