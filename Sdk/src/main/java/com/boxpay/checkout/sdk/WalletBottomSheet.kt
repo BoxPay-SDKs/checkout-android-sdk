@@ -50,6 +50,7 @@ import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.WalletAdapter
 import com.boxpay.checkout.sdk.databinding.FragmentWalletBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.WalletDataClass
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
@@ -275,6 +276,18 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                                 popularWalletsSelected = true
                                 proceedButtonIsEnabled.value = true
                                 popularWalletsSelectedIndex = index
+                                callUIAnalytics(
+                                    requireContext(),
+                                    AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                                    walletDetailsOriginal[popularWalletsSelectedIndex].walletBrand,
+                                    "Wallet"
+                                )
+                                callUIAnalytics(
+                                    requireContext(),
+                                    AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                                    walletDetailsOriginal[popularWalletsSelectedIndex].walletBrand,
+                                    "Wallet"
+                                )
                             }
                         }
                     }
@@ -510,9 +523,21 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
            })
 
            allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
-               if (checkPositionObserved == null) {
+               if (checkPositionObserved == null || checkPositionObserved == -1) {
                    disableProceedButton()
                } else {
+                   callUIAnalytics(
+                       requireContext(),
+                       AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                       walletDetailsOriginal[checkPositionObserved].walletBrand,
+                       "Wallet"
+                   )
+                   callUIAnalytics(
+                       requireContext(),
+                       AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                       walletDetailsOriginal[checkPositionObserved].walletBrand,
+                       "Wallet"
+                   )
                    enableProceedButton()
                    checkedPosition = checkPositionObserved
                }
@@ -526,7 +551,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                        walletDetailsOriginal[popularWalletsSelectedIndex].instrumentTypeValue
                    callUIAnalytics(
                        requireContext(),
-                       "PAYMENT_INITIATED",
+                       AnalyticsEvents.PAYMENT_INITIATED,
                        walletDetailsOriginal[popularWalletsSelectedIndex].walletBrand,
                        "Wallet"
                    )
@@ -536,7 +561,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                        walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
                    callUIAnalytics(
                        requireContext(),
-                       "PAYMENT_INITIATED",
+                       AnalyticsEvents.PAYMENT_INITIATED,
                        walletDetailsOriginal[checkedPosition!!].walletBrand,
                        "Wallet"
                    )
@@ -592,13 +617,13 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
-            put("callerToken", token)
-            put("uiEvent", event)
+            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.UI_EVENT, event)
 
             // Create eventAttrs JSON object
             val eventAttrs = JSONObject().apply {
-                put("paymentType", paymentType)
-                put("paymentSubType", paymentSubType)
+                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
+                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
             }
             put("eventAttrs", eventAttrs)
 

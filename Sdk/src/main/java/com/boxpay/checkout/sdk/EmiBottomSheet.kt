@@ -42,6 +42,7 @@ import com.boxpay.checkout.sdk.composeScreens.screen.ChooseEmiScreen
 import com.boxpay.checkout.sdk.composeScreens.screen.EmiShimmerScreen
 import com.boxpay.checkout.sdk.composeScreens.screen.SelectTenureEmi
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
@@ -246,6 +247,18 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                                     },
                                     onClickRadio = {
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                                            "CardlessEMI",
+                                            "EMI"
+                                        )
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                                            "CardlessEMI",
+                                            "EMI"
+                                        )
                                         emiViewModel.onClickRadio(it)
                                     },
                                     selectedRadioButton = emiViewModel.selectedOthersOption.value,
@@ -255,12 +268,30 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                         emiViewModel.onValueChange(it)
                                     },
                                     onClickBank = {
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
                                         emiViewModel.onClickBank(it)
                                     },
                                     onClickFilter = { card, filter ->
                                         emiViewModel.getBanksByFilter(card, filter)
                                     },
                                     onClickProceedButton = {
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_INITIATED,
+                                            "CardlessEMI",
+                                            "EMI"
+                                        )
                                         emiViewModel.showLoaderInButton.value = true
                                         postRequest(context!!)
                                     },
@@ -305,12 +336,48 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     expiry = emiViewModel.expiry.value,
                                     cvv = emiViewModel.cvv.value,
                                     onCardNameChange = {
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
                                         emiViewModel.onCardNameChange(it)
                                     },
                                     onCardExpiryChange = {
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
                                         emiViewModel.onCardExpiryChange(it)
                                     },
                                     onCardNumberChange = {
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
                                         emiViewModel.onCardNumberChange(it)
                                         if ((emiViewModel.cardNumber.value?.text?.length
                                                 ?: 0) >= 9 && emiViewModel.cardIcon.value == R.drawable.default_card_icon
@@ -321,9 +388,27 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                         }
                                     },
                                     onCardCvvChange = {
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
                                         emiViewModel.onCardCvvChange(it)
                                     },
                                     onProceedClick = {
+                                        callUIAnalytics(
+                                            requireContext(),
+                                            AnalyticsEvents.PAYMENT_INITIATED,
+                                            emiViewModel.selectedCard.value,
+                                            "EMI"
+                                        )
                                         emiViewModel.showLoaderInButton.value = true
                                         postRequest(context!!)
                                     },
@@ -936,6 +1021,54 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                 fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
             }
         }
+    }
+
+    private fun callUIAnalytics(
+        context: Context,
+        event: String,
+        paymentSubType: String,
+        paymentType: String
+    ) {
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
+
+        val requestQueue = Volley.newRequestQueue(context)
+        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
+        val browserLanguage = Locale.getDefault().toString()
+
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.UI_EVENT, event)
+
+            // Create eventAttrs JSON object
+            val eventAttrs = JSONObject().apply {
+                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
+                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
+            }
+            put("eventAttrs", eventAttrs)
+
+            // Create browserData JSON object
+            val browserData = JSONObject().apply {
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", browserLanguage)
+            }
+            put("browserData", browserData)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
+            Response.Listener { /*no response handling */},
+            Response.ErrorListener { /*no response handling */ }) {}.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
     }
 
     private fun handleSuccess() {

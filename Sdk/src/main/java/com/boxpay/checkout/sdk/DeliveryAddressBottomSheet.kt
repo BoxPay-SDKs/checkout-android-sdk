@@ -17,6 +17,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.WebSettings
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Filter
@@ -26,11 +27,13 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentDeliveryAddressBottomSheetBinding
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -129,6 +132,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 if (s?.isEmpty() == true) {
                     binding.countryErrorText.visibility = View.VISIBLE
                 } else {
@@ -159,6 +168,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 if (s?.isEmpty() == true) {
                     binding.mobileErrorText.text = "Required"
                     binding.mobileErrorText.visibility = View.VISIBLE
@@ -187,6 +202,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 s?.let {
                     if (it.isNotEmpty()){
                         if (it.length == 10) {
@@ -234,6 +255,13 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.countryEditText.setOnItemClickListener { parent, view, position, id ->
             val selectedItem = parent.getItemAtPosition(position).toString()
 
+            callUIAnalytics(
+                requireContext(),
+                AnalyticsEvents.ADDRESS_UPDATED,
+                "",
+                ""
+            )
+
             countrySelectedFromDropDown = selectedItem
             countrySelected = true
             countryCodePhoneNum = setPhoneCodeUsingCountryName(
@@ -264,6 +292,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         binding.spinnerDialCodes.setOnItemClickListener { parent, view, position, id ->
             val selectedDialCode = parent.getItemAtPosition(position).toString()
+            callUIAnalytics(
+                requireContext(),
+                AnalyticsEvents.ADDRESS_UPDATED,
+                "",
+                ""
+            )
             // Display or use the selected item
             if (!selectedDialCode.contains("no",true)) {
                 countryCodePhoneNum = selectedDialCode
@@ -578,6 +612,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 if (s?.isEmpty() == true) {
                     binding.fullNameErrorTex.visibility = View.VISIBLE
                     binding.fullNameEditText.background =
@@ -609,6 +649,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 if (s?.isEmpty() == true) {
                     isMobileNumberValid()
                     binding.mobileNumberEditText.background =
@@ -641,6 +687,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 if (s?.isEmpty() == true) {
                     isEmailValid()
                     binding.emailEditText.background =
@@ -669,6 +721,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 if (s?.isEmpty() == true) {
                     isPrimaryAddressValid()
                     binding.addressEditText1.background =
@@ -698,6 +756,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 toCheckAllFieldsAreFilled()
             }
 
@@ -721,6 +785,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 if (s?.isEmpty() == true) {
                     isPostalValid()
                     binding.postalCodeEditText.background =
@@ -749,6 +819,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 if (s?.isEmpty() == true) {
                     isStateValid()
                     binding.stateEditText.background =
@@ -777,6 +853,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.ADDRESS_UPDATED,
+                    "",
+                    ""
+                )
                 if (s?.isEmpty() == true) {
                     isCityValid()
                     binding.cityEditText.background =
@@ -807,6 +889,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.proceedButton.setOnClickListener() {
+            callUIAnalytics(
+                requireContext(),
+                AnalyticsEvents.ADDRESS_UPDATED,
+                "",
+                ""
+            )
             val fullName = binding.fullNameEditText.text
             val mobileNumber = binding.mobileNumberEditText.text
             val email = binding.emailEditText.text
@@ -1418,6 +1506,53 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
         queue.add(jsonObjectAll)
     }
+    private fun callUIAnalytics(
+        context: Context,
+        event: String,
+        paymentSubType: String,
+        paymentType: String
+    ) {
+        val baseUrl = sharedPreferences.getString("baseUrl", "null")
+
+        val requestQueue = Volley.newRequestQueue(context)
+        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
+        val browserLanguage = Locale.getDefault().toString()
+
+        // Constructing the request body
+        val requestBody = JSONObject().apply {
+            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.UI_EVENT, event)
+
+            // Create eventAttrs JSON object
+            val eventAttrs = JSONObject().apply {
+                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
+                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
+            }
+            put("eventAttrs", eventAttrs)
+
+            // Create browserData JSON object
+            val browserData = JSONObject().apply {
+                put("userAgentHeader", userAgentHeader)
+                put("browserLanguage", browserLanguage)
+            }
+            put("browserData", browserData)
+        }
+
+        // Request a JSONObject response from the provided URL
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
+            Response.Listener { /*no response handling */},
+            Response.ErrorListener { /*no response handling */ }) {}.apply {
+            // Set retry policy
+            val timeoutMs = 100000 // Timeout in milliseconds
+            val maxRetries = 0 // Max retry attempts
+            val backoffMultiplier = 1.0f // Backoff multiplier
+            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+        }
+
+        // Add the request to the RequestQueue.
+        requestQueue.add(jsonObjectRequest)
+    }
 }
 
 class CustomArrayAdapter(
@@ -1505,5 +1640,4 @@ class CustomArrayAdapter(
             }
         }
     }
-
 }

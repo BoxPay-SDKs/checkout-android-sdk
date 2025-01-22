@@ -38,7 +38,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.distinctUntilChanged
@@ -65,6 +64,7 @@ import com.boxpay.checkout.sdk.dataclasses.LegalEntity
 import com.boxpay.checkout.sdk.dataclasses.Money
 import com.boxpay.checkout.sdk.dataclasses.SessionResponse
 import com.boxpay.checkout.sdk.dataclasses.Shopper
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -509,7 +509,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     }
                 }
 
-                callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "", "Card")
+                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, cardNetworkName.ifEmpty { "" }, "Card")
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -631,7 +631,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     proceedButtonIsEnabled.value = false
                 }
 
-                callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "", "Card")
+                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, cardNetworkName.ifEmpty { "" }, "Card")
                 enableProceedButton()
             }
 
@@ -746,7 +746,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             proceedButtonIsEnabled.value = false
                         }
                     }
-                    callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "", "Card")
+                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, cardNetworkName.ifEmpty { "" }, "Card")
                 } else {
                     isCardCVVValid = false
                     proceedButtonIsEnabled.value = false
@@ -799,7 +799,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     binding.nameOnCardErrorLayout.visibility = View.INVISIBLE
                     proceedButtonIsEnabled.value = false
                 }
-                callUIAnalytics(requireContext(), "PAYMENT_INSTRUMENT_PROVIDED", "", "Card")
+                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, cardNetworkName.ifEmpty { "" }, "Card")
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -820,7 +820,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.editTextCardCVV.setTransformationMethod(AsteriskPasswordTransformationMethod())
 
         binding.proceedButton.setOnClickListener {
-            callUIAnalytics(requireContext(), "PAYMENT_INITIATED", cardNetworkName, "Card")
+            callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, cardNetworkName.ifEmpty { "" }, "Card")
             removeErrors()
             cardNumber = deformatCardNumber(binding.editTextCardNumber.text.toString())
             cardExpiryYYYY_MM = addDashInsteadOfSlash(binding.editTextCardValidity.text.toString())
@@ -1363,13 +1363,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
-            put("callerToken", token)
-            put("uiEvent", event)
+            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.UI_EVENT, event)
 
             // Create eventAttrs JSON object
             val eventAttrs = JSONObject().apply {
-                put("paymentType", paymentType)
-                put("paymentSubType", paymentSubType)
+                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
+                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
             }
             put("eventAttrs", eventAttrs)
 

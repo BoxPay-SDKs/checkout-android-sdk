@@ -32,6 +32,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.FragmentAddUPIIDBinding
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
@@ -129,7 +130,13 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     if (!binding.progressBar.isVisible) {
                         callUIAnalytics(
                             requireContext(),
-                            "PAYMENT_INSTRUMENT_PROVIDED",
+                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                            "UpiCollect",
+                            "Upi"
+                        )
+                        callUIAnalytics(
+                            requireContext(),
+                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
                             "UpiCollect",
                             "Upi"
                         )
@@ -167,7 +174,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 closeKeyboard(this)
 
 
-                callUIAnalytics(requireContext(), "PAYMENT_INITIATED", "UpiCollect", "Upi")
+                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiCollect", "Upi")
 
             if (checkString(userVPA!!)) {
                 binding.ll1InvalidUPI.visibility = View.INVISIBLE
@@ -712,13 +719,13 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
-            put("callerToken", token)
-            put("uiEvent", event)
+            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.UI_EVENT, event)
 
             // Create eventAttrs JSON object
             val eventAttrs = JSONObject().apply {
-                put("paymentType", paymentType)
-                put("paymentSubType", paymentSubType)
+                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
+                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
             }
             put("eventAttrs", eventAttrs)
 

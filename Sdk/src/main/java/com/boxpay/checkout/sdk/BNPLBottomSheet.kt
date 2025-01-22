@@ -34,6 +34,7 @@ import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.BnplAdapters
 import com.boxpay.checkout.sdk.databinding.FragmentBnplBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.BnplDataClass
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.handleException
@@ -102,7 +103,8 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
 
-            val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
+            val layoutParams =
+                binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
             layoutParams.height = desiredHeight
             binding.nestedScrollView.layoutParams = layoutParams
 
@@ -151,24 +153,34 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 if (checkPositionObserved == null) {
                     disableProceedButton()
                 } else {
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                        bnplDetailOriginal[checkPositionObserved].bnplBrand,
+                        "BNPL"
+                    )
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                        bnplDetailOriginal[checkPositionObserved].bnplBrand,
+                        "BNPL"
+                    )
                     enableProceedButton()
                     checkedPosition = checkPositionObserved
                 }
             })
 
-        binding.proceedButton.setOnClickListener() {
-            showLoadingInButton()
-            var walletInstrumentTypeValue = ""
-            walletInstrumentTypeValue =
-                walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
-            callUIAnalytics(
-                requireContext(),
-                "PAYMENT_INITIATED",
-                bnplDetailOriginal[checkedPosition!!].bnplBrand,
-                "BNPL"
-            )
-
-
+            binding.proceedButton.setOnClickListener() {
+                showLoadingInButton()
+                var walletInstrumentTypeValue = ""
+                walletInstrumentTypeValue =
+                    walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.PAYMENT_INITIATED,
+                    bnplDetailOriginal[checkedPosition!!].bnplBrand,
+                    "BNPL"
+                )
                 postRequest(requireContext(), walletInstrumentTypeValue)
             }
 
@@ -317,13 +329,13 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
-            put("callerToken", token)
-            put("uiEvent", event)
+            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.UI_EVENT, event)
 
             // Create eventAttrs JSON object
             val eventAttrs = JSONObject().apply {
-                put("paymentType", paymentType)
-                put("paymentSubType", paymentSubType)
+                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
+                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
             }
             put("eventAttrs", eventAttrs)
 
@@ -498,15 +510,23 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
-                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
+                    put(
+                        "dateOfBirth",
+                        CommonFunctions.formatToISO8601WithCurrentTime(
+                            sharedPreferences.getString(
+                                "dateOfBirth",
+                                null
+                            )!!
+                        )
+                    )
                 }
 
-                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                if (sharedPreferences.getString("panNumberChosen", null) != null) {
                     put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                }else{
+                } else {
                     put("panNumber", sharedPreferences.getString("panNumber", null))
                 }
 
@@ -667,12 +687,14 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.textView6.setTextColor(Color.parseColor(
-            sharedPreferences.getString(
-                "buttonTextColor",
-                "#ffffff"
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
             )
-        ))
+        )
     }
 
 
@@ -696,12 +718,14 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.textView6.setTextColor(Color.parseColor(
-            sharedPreferences.getString(
-                "buttonTextColor",
-                "#ffffff"
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
             )
-        ))
+        )
         binding.proceedButton.isEnabled = true
     }
 
