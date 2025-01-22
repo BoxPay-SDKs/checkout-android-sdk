@@ -12,6 +12,7 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.CallBackFunctions
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.ConfigurationOptions
 import com.boxpay.checkout.sdk.utils.handleException
 import org.json.JSONObject
 import java.util.Locale
@@ -144,10 +145,4 @@ class BoxPayCheckout(
         editor.putString("shopperToken", customerShopperToken)
         editor.apply()
     }
-}
-
-enum class ConfigurationOptions() {
-    SHOW_UPI_QR_ON_LOAD,
-    SHOW_BOXPAY_SUCCESS_SCREEN,
-    ENABLE_SANDBOX_ENV
 }

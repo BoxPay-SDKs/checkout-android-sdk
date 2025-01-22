@@ -2,6 +2,7 @@ package com.boxpay.checkout.demoapp
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -13,10 +14,10 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.demoapp.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.BoxPayCheckout
-import com.boxpay.checkout.sdk.BoxPayUpiComponent
+import com.boxpay.checkout.sdk.BoxPayElements
 import com.boxpay.checkout.sdk.BuildConfig
-import com.boxpay.checkout.sdk.ConfigurationOptions
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.ConfigurationOptions
 import org.json.JSONObject
 
 class Check : AppCompatActivity() {
@@ -25,6 +26,7 @@ class Check : AppCompatActivity() {
     private var successScreenFullReferencePath: String? = null
     private var tokenFetchedAndOpen = false
     private var isUpiAlone: Boolean = false
+    private var isCardAlone : Boolean = false
 
 
     private val binding: ActivityCheckBinding by lazy {
@@ -39,6 +41,7 @@ class Check : AppCompatActivity() {
         makePaymentRequest(this)
         val bundle = intent.extras
         isUpiAlone = bundle?.getBoolean("isUpiAlone", false) ?: false
+        isCardAlone = bundle?.getBoolean("isCardAlone",false) ?: false
 
         binding.textView6.text = "Generating Token Please wait..."
         successScreenFullReferencePath = "com.example.AndroidCheckOutSDK.SuccessScreen"
@@ -47,31 +50,8 @@ class Check : AppCompatActivity() {
             if (tokenInObserve != null) {
                 handleResponseWithToken()
                 binding.textView6.text = "Opening"
-                binding.openButton.isEnabled = false
             }
         })
-
-        var actionInProgress = false
-        binding.openButton.setOnClickListener() {
-
-            // Disable the button
-            if (actionInProgress) {
-                return@setOnClickListener
-            }
-
-
-            actionInProgress = true
-
-            // Disable the button
-            binding.openButton.isEnabled = false
-            binding.openButton.visibility = View.GONE
-
-            if (!(tokenLiveData.value.isNullOrEmpty())) {
-                showBottomSheetWithOverlay()
-                actionInProgress = false
-                binding.openButton.isEnabled = true
-            }
-        }
     }
 
     private fun handleResponseWithToken() {
@@ -81,35 +61,48 @@ class Check : AppCompatActivity() {
     }
 
     private fun showBottomSheetWithOverlay() {
-        if (isUpiAlone) {
-            val boxPayUpiComponent =
-                BoxPayUpiComponent(tokenLiveData.value ?: "", false, ::onPaymentResultCallback)
-            boxPayUpiComponent.setTestEnv(true)
-            boxPayUpiComponent.setContext(this)
-//            binding.proceedButtonBottom.visibility = View.VISIBLE
-            boxPayUpiComponent.setProceedButtonVisibility(true)
-
-            // Replace a container in your activity's layout
-            binding.openButton.removeAllViews()
-            supportFragmentManager.beginTransaction().replace(R.id.openButton, boxPayUpiComponent)
-                .commit()
-
-//            binding.proceedButtonBottom.setOnClickListener {
-//                boxPayUpiComponent.onClickProceed()
-//                binding.proceedButtonBottom.isEnabled = false
-//            }
-        } else {
-            val boxPayCheckout = BoxPayCheckout(
-                context = this,
-                token = tokenLiveData.value ?: "",
-                onPaymentResult = ::onPaymentResultCallback,
-                customerShopperToken = customerShopperToken ?: "",
-                configurationOptions = mapOf(
-                    ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
-                    ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
-                    ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
-                )
+        if (isUpiAlone || isCardAlone) {
+            val paymentMethod = if (isUpiAlone && isCardAlone) {
+                listOf("upi","card")
+            } else if (isUpiAlone) {
+                listOf("upi")
+            } else {
+                listOf("card")
+            }
+            val boxPayElements = BoxPayElements(
+                tokenLiveData.value ?: "",
+                ::onPaymentResultCallback,
+                paymentMethod,
             )
+            boxPayElements.setContext(this)
+            boxPayElements.setTestEnv(true)
+            boxPayElements.setUPILayoutId(R.id.upiOpenButon)
+            boxPayElements.setCardLayoutId(R.id.cardOpenButton)
+            binding.cardOpenButton.removeAllViews()
+            binding.upiOpenButon.removeAllViews()
+            boxPayElements.setProceedButtonVisibility(false)
+            boxPayElements.setCardValidityCallback(::handleCardValidity)
+            boxPayElements.setUpiValidityCallback(::handleUpiValidity)
+            boxPayElements.showPaymentMethods()
+            disableProceedButton()
+
+            binding.proceedButtonBottom.visibility = View.VISIBLE
+            binding.proceedButtonBottom.setOnClickListener {
+                boxPayElements.initiatePayment()
+            }
+        } else {
+            val boxPayCheckout =
+                BoxPayCheckout(
+                    context = this,
+                    token = tokenLiveData.value ?: "",
+                    onPaymentResult = ::onPaymentResultCallback,
+                    customerShopperToken = customerShopperToken ?: "",
+                    configurationOptions = mapOf(
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to false,
+                        ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
+                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to false
+                    )
+                )
             boxPayCheckout.testEnv = true
             boxPayCheckout.display()
         }
@@ -237,5 +230,40 @@ class Check : AppCompatActivity() {
             // Handle JSON parsing exception
         }
         return null
+    }
+
+    private fun enableProceedButton() {
+        binding.bottomProceedButtonLayout.isEnabled = true
+        binding.proceedButtonBottom.isEnabled = true
+        binding.bottomProceedButtonLayout.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.button_bg)
+        binding.bottomProceedButtonText.setTextColor(
+            Color.parseColor(
+                "#FFFFFF"
+            )
+        )
+    }
+
+    private fun disableProceedButton() {
+        binding.bottomProceedButtonText.visibility = View.VISIBLE
+        binding.proceedButtonBottom.isEnabled = false
+        binding.bottomProceedButtonLayout.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.disable_button)
+        binding.proceedButtonBottom.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.disable_button)
+        binding.bottomProceedButtonText.setTextColor(Color.parseColor("#ADACB0"))
+    }
+
+    private fun handleUpiValidity(valid: Boolean) {
+        if (valid) {
+            enableProceedButton()
+        } else {
+            disableProceedButton()
+        }
+    }
+
+    private fun handleCardValidity(valid: Boolean) {
+        if (valid) {
+            enableProceedButton()
+        } else {
+            disableProceedButton()
+        }
     }
 }

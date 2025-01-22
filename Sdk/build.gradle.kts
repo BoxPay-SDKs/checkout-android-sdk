@@ -13,7 +13,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
-        buildConfigField("String", "SDK_VERSION", "\"1.2.2-beta\"")
+        buildConfigField("String", "SDK_VERSION", "\"1.2.2-beta2\"")
 
         android.buildFeatures.buildConfig = true
     }
@@ -90,6 +90,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("io.coil-kt:coil-svg:2.2.2")
     implementation("androidx.activity:activity-compose:1.5.1")
+    implementation("com.github.simformsolutions:SSCustomEditTextOutLineBorder:1.0.16")
 
 }
 

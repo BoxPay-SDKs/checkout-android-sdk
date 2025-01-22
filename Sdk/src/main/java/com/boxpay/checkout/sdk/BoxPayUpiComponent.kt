@@ -23,6 +23,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.airbnb.lottie.LottieDrawable
@@ -54,22 +55,22 @@ import kotlin.random.Random
 
 class BoxPayUpiComponent(
     val token: String?,
-    val sandboxEnabled: Boolean?,
     val onPaymentResult: ((PaymentResultObject) -> Unit)
 ) : Fragment() {
     private var UPIAppsAndPackageMap: MutableMap<String, String> = mutableMapOf()
-    private var testEnvironment: Boolean = false
     private var BASE_URL = ""
     private lateinit var binding: FragmentUpiComponentAloneBinding
     private var selectedColor = ""
     private var showProceedButton = true
     private var selectedTextColor = ""
+    private var handleUpiVisibility :(() -> Unit)? = null
+    private var handleUpiValidity: ((Boolean) -> Unit)? = null
     private var totalAmount = ""
     private var email: String? = null
     private var firstName: String? = null
     private var lastName: String? = null
     private var gender: String? = null
-    var sessionTimer: CountDownTimer? = null
+    private var sessionTimer: CountDownTimer? = null
     private var phoneNumber: String? = null
     private var uniqueReference: String? = null
     private var dob: String? = null
@@ -83,12 +84,12 @@ class BoxPayUpiComponent(
     private var countryName: String? = null
     private var context: Context? = null
     private var job: Job? = null
-    var isGpayReturned = false
-    var isOthersReturned = false
-    var isPhonePe = false
-    var selectedUpiIntent = ""
-    var isPaytmReturned = false
-    var upiCollectId: String? = null
+    private var isGpayReturned = false
+    private var isOthersReturned = false
+    private var isPhonePe = false
+    private var selectedUpiIntent = ""
+    private var isPaytmReturned = false
+    private var upiCollectId: String? = null
     private lateinit var inputMethodManager: InputMethodManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,26 +107,16 @@ class BoxPayUpiComponent(
     ): View? {
         binding = FragmentUpiComponentAloneBinding.inflate(inflater, container, false)
         val coroutineScope = CoroutineScope(Dispatchers.Main)
-        var sessionUrl = ""
-        if (sandboxEnabled == true) {
-            sessionUrl = "sandbox-apis.boxpay.tech"
-        } else if (testEnvironment) {
-            sessionUrl = "test-apis.boxpay.tech"
-        } else {
-            sessionUrl = "apis.boxpay.in"
-        }
-        this.BASE_URL = "https://${sessionUrl}/v0/checkout/sessions/"
-        makeSessionDataCall()
         coroutineScope.launch {
             val packageManager = context!!.packageManager
             getAllInstalledApps(packageManager)
-            showLoadingState()
         }
         inputMethodManager =
             context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         binding.proceedButton.setOnClickListener {
             onProceedPayment()
         }
+        makeSessionDataCall()
 
         binding.addNewUpiTextInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -134,21 +125,8 @@ class BoxPayUpiComponent(
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val textNow = s.toString()
-                if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}"))) {
-                    enableProceedButton()
-                } else {
-                    disableProceedButton()
-                    if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
-                            ?: 0) >= 2
-                    ) {
-                        binding.textView8.text = "Please enter a valid UPI Id"
-                        binding.invalidCVV.visibility = View.VISIBLE // Show specific error
-                    } else {
-                        binding.invalidCVV.visibility =
-                            View.GONE // Hide error if not matching condition
-                    }
-                }
                 upiCollectId = textNow
+                isUpiValid()
             }
 
             override fun afterTextChanged(p0: Editable?) {
@@ -189,13 +167,22 @@ class BoxPayUpiComponent(
                     binding.addNewUpiTextInput,
                     InputMethodManager.SHOW_IMPLICIT
                 )
+                isUpiValid()
             }
+        }
+
+        binding.topView.setOnClickListener {
+            hideUpiComponent()
         }
         return binding.root
     }
 
     fun onProceedPayment() {
-        getUrlForUPIIntent(selectedUpiIntent)
+        if (selectedUpiIntent.isNotEmpty()) {
+            getUrlForUPIIntent(selectedUpiIntent)
+        } else {
+            postRequest()
+        }
     }
 
     private fun getAllInstalledApps(packageManager: PackageManager) {
@@ -236,6 +223,7 @@ class BoxPayUpiComponent(
                 if (binding.addNewUpiTextInputLayout.isVisible) {
                     disableAddUpiIdClick()
                 }
+                handleUpiValidity?.let { it(true) }
             }
 
             i++
@@ -255,6 +243,7 @@ class BoxPayUpiComponent(
                 if (binding.addNewUpiTextInputLayout.isVisible) {
                     disableAddUpiIdClick()
                 }
+                handleUpiValidity?.let { it(true) }
             }
 
             i++
@@ -274,6 +263,7 @@ class BoxPayUpiComponent(
                 if (binding.addNewUpiTextInputLayout.isVisible) {
                     disableAddUpiIdClick()
                 }
+                handleUpiValidity?.let { it(true) }
             }
 
             i++
@@ -292,6 +282,7 @@ class BoxPayUpiComponent(
             if (binding.addNewUpiTextInputLayout.isVisible) {
                 disableAddUpiIdClick()
             }
+            handleUpiValidity?.let { it(false) }
             getUrlForDefaultUPIIntent()
         }
 
@@ -300,7 +291,7 @@ class BoxPayUpiComponent(
         }
     }
 
-    fun onClickUpiIntent(selected: String,imageView: ImageView) {
+    private fun onClickUpiIntent(selected: String,imageView: ImageView) {
         resetClickToDefault()
         selectedUpiIntent = selected
         imageView.setBackgroundResource(R.drawable.selected_popular_item_bg)
@@ -406,8 +397,22 @@ class BoxPayUpiComponent(
                 val countryCodeJson = JSONObject(jsonString)
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
                 val checkoutThemeObject = merchantDetailsObject.getJSONObject("checkoutTheme")
-                selectedColor = checkoutThemeObject.getString("headerColor")
+                val sharedPreferences = requireContext().getSharedPreferences(
+                    "TransactionDetails",
+                    Context.MODE_PRIVATE
+                )
+                val editor = sharedPreferences.edit()
+                selectedColor = checkoutThemeObject.getString("primaryButtonColor")
                 selectedTextColor = checkoutThemeObject.getString("buttonTextColor")
+                editor.putString(
+                    "primaryButtonColor",
+                    checkoutThemeObject.getString("primaryButtonColor")
+                )
+                editor.putString(
+                    "buttonTextColor",
+                    checkoutThemeObject.getString("buttonTextColor")
+                )
+                editor.apply()
                 binding.proceedButtonRelativeLayout.setBackgroundColor(
                     Color.parseColor(selectedColor)
                 )
@@ -505,11 +510,6 @@ class BoxPayUpiComponent(
         }
         queue.add(jsonObjectAll)
     }
-
-    fun setTestEnv(testEnv: Boolean) {
-        testEnvironment = testEnv
-    }
-
 
     private fun showLoadingState() {
         binding.boxpayLogoLottie.apply {
@@ -660,7 +660,7 @@ class BoxPayUpiComponent(
         return bufferedReader.use { it.readText() }
     }
 
-    fun urlToBase64(base64String: String): String {
+    private fun urlToBase64(base64String: String): String {
 
         return try {
             // Decode Base64 string to byte array
@@ -699,7 +699,7 @@ class BoxPayUpiComponent(
         }
     }
 
-    fun generateRandomAlphanumericString(length: Int): String {
+    private fun generateRandomAlphanumericString(length: Int): String {
         val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..length)
             .map { Random.nextInt(0, charPool.size) }
@@ -719,6 +719,7 @@ class BoxPayUpiComponent(
                         removeLoadingState()
                         job?.cancel()
                         isGpayReturned = false
+                        handleUpiValidity?.let { it(true) }
                         onPaymentResult?.let {
                             it(
                                 PaymentResultObject(
@@ -733,6 +734,7 @@ class BoxPayUpiComponent(
                         removeLoadingState()
                         job?.cancel()
                         isPhonePe = false
+                        handleUpiValidity?.let { it(true) }
                         onPaymentResult?.let {
                             it(
                                 PaymentResultObject(
@@ -760,6 +762,7 @@ class BoxPayUpiComponent(
                     if (status.equals("Pending", ignoreCase = true) && isPaytmReturned) {
                         removeLoadingState()
                         job?.cancel()
+                        handleUpiValidity?.let { it(true) }
                         isPaytmReturned = false
                         onPaymentResult?.let {
                             it(
@@ -778,6 +781,7 @@ class BoxPayUpiComponent(
                         )
                     ) {
                         job?.cancel()
+                        handleUpiValidity?.let { it(true) }
                         onPaymentResult?.let {
                             it(
                                 PaymentResultObject(
@@ -805,6 +809,7 @@ class BoxPayUpiComponent(
                             ) || status.equals("paid", true)
                         ) {
                             job?.cancel()
+                            handleUpiValidity?.let { it(true) }
                             onPaymentResult?.let {
                                 it(
                                     PaymentResultObject(
@@ -822,7 +827,7 @@ class BoxPayUpiComponent(
             },
             Response.ErrorListener { error ->
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
-                    val errorResponse = String(error.networkResponse.data)
+                    handleUpiValidity?.let { it(true) }
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(
@@ -848,6 +853,7 @@ class BoxPayUpiComponent(
 
     private fun getUrlForUPIIntent(appName: String) {
         showLoadingState()
+        handleUpiValidity?.let { it(false) }
 
         val requestQueue = Volley.newRequestQueue(context)
         val requestBody = JSONObject().apply {
@@ -938,6 +944,7 @@ class BoxPayUpiComponent(
             Response.ErrorListener { error ->
 
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
+                    handleUpiValidity?.let { it(true) }
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(
@@ -1010,16 +1017,9 @@ class BoxPayUpiComponent(
         }
     }
 
-    fun setProceedButtonVisibility(visible: Boolean) {
+    fun setProceedButtonVisibility(visible: Boolean, handleUpiValidityCallback:((Boolean)-> Unit)?) {
         showProceedButton = visible
-    }
-
-    fun onClickProceed() {
-        if (selectedUpiIntent.isNotEmpty()) {
-            getUrlForUPIIntent(selectedUpiIntent)
-        } else {
-            postRequest()
-        }
+        handleUpiValidity = handleUpiValidityCallback
     }
 
     private fun postRequest() {
@@ -1099,13 +1099,10 @@ class BoxPayUpiComponent(
 
                 if (status.contains("Rejected", ignoreCase = true)) {
                     var cleanedMessage = reason.substringAfter(":")
-                    if (cleanedMessage.contains("virtual address", true)) {
-                        cleanedMessage = "Invalid UPI Id"
-                    } else if (!reasonCode.startsWith("uf", true)) {
+                    if (!reasonCode.startsWith("uf", true)) {
                         cleanedMessage =
                             "Please retry using other payment method or try again in sometime"
                     }
-                    Toast.makeText(context, cleanedMessage, Toast.LENGTH_SHORT).show()
                     onPaymentResult?.let {
                         it(
                             PaymentResultObject(
@@ -1177,7 +1174,6 @@ class BoxPayUpiComponent(
         requestQueue.add(jsonObjectRequest)
     }
 
-
     private fun openUPITimerBottomSheet() {
         val bottomSheetFragment = OnlyUPITimerBottomSheet.newInstance(upiCollectId)
         bottomSheetFragment.setCallbackFunction(::onUpiTimerCallback, BASE_URL ?: "", token ?: "")
@@ -1199,7 +1195,7 @@ class BoxPayUpiComponent(
         }
     }
 
-    fun startCountdown(endTime: String) {
+    private fun startCountdown(endTime: String) {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault())
         dateFormat.timeZone = TimeZone.getTimeZone("UTC")
 
@@ -1261,12 +1257,67 @@ class BoxPayUpiComponent(
         binding.addUpiIdTextView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
-    fun disableAddUpiIdClick() {
+    private fun disableAddUpiIdClick() {
         binding.addNewUpiId.setBackgroundResource(0)
         binding.imageView13.rotation = 0f
         binding.addNewUpiTextInputLayout.visibility = View.GONE
         binding.dashedLine1.visibility = View.VISIBLE
         binding.addUpiIdProceedButton.visibility = View.GONE
         inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
+    }
+
+    fun displayUpiComponent(sessionUrl: String, layout: Int) {
+        this.BASE_URL = "https://${sessionUrl}/v0/checkout/sessions/"
+
+        val transaction = (context as AppCompatActivity).supportFragmentManager.beginTransaction()
+        transaction.replace(layout, this)
+        transaction.addToBackStack(null)
+        transaction.commit()
+    }
+
+    fun hideUpiComponent() {
+        if (binding.upiOptionsLinearLayout.isVisible) {
+            binding.upiOptionsLinearLayout.visibility = View.GONE
+        } else {
+            binding.upiOptionsLinearLayout.visibility = View.VISIBLE
+            if (selectedUpiIntent.isNotEmpty()) {
+                handleUpiValidity?.let { it(true) }
+            } else {
+                isUpiValid()
+            }
+        }
+        handleUpiVisibility?.invoke()
+    }
+
+    fun onClickCardComponent() {
+        binding.upiOptionsLinearLayout.visibility = View.GONE
+        inputMethodManager.hideSoftInputFromWindow(binding.addNewUpiTextInput.windowToken, 0)
+    }
+
+    fun setVisibilityFunction(handleVisibility: ()-> Unit) {
+        this.handleUpiVisibility = handleVisibility
+    }
+
+    fun isUpiValid() {
+        if (!upiCollectId.isNullOrEmpty()) {
+            if (upiCollectId?.isNotBlank() == true && upiCollectId?.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}")) == true) {
+                handleUpiValidity?.let { it(true) }
+                enableProceedButton()
+            } else {
+                handleUpiValidity?.let { it(false) }
+                disableProceedButton()
+                if (upiCollectId?.contains('@') == true && (upiCollectId?.split('@')?.getOrNull(1)?.length
+                        ?: 0) >= 2
+                ) {
+                    binding.textView8.text = "Please enter a valid UPI Id"
+                    binding.invalidCVV.visibility = View.VISIBLE // Show specific error
+                } else {
+                    binding.invalidCVV.visibility = View.GONE // Hide error if not matching condition
+                }
+            }
+        } else {
+            handleUpiValidity?.let { it(false) }
+            disableProceedButton()
+        }
     }
 }
