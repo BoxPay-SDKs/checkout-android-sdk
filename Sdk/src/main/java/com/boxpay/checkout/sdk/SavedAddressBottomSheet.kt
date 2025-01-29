@@ -391,7 +391,7 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
                         editor.putString("address2", null)
                         editor.putString("city", null)
                         editor.putString("state", null)
-                        editor.putString("countryCode", null)
+                        editor.putString("countryCode", "IN")
                         editor.putString("postalCode", null)
                         editor.putString("email", null)
                         editor.putString("phoneNumber", null)
