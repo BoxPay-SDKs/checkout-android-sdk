@@ -41,9 +41,10 @@
                 android:layout_marginTop="10dp"
                 android:gravity="center"
                 android:orientation="vertical"
+                android:visibility="gone"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:visibility="gone">
+                app:layout_constraintTop_toTopOf="parent">
+
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -61,11 +62,11 @@
                 android:layout_marginBottom="16dp"
                 app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="10dp"
+                app:layout_constrainedHeight="true"
+                app:layout_constraintBottom_toTopOf="@id/proceedButton"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView"
-                app:layout_constraintBottom_toTopOf="@id/proceedButton"
-                app:layout_constrainedHeight="true">
+                app:layout_constraintTop_toBottomOf="@+id/textView">
 
                 <androidx.core.widget.NestedScrollView
                     android:layout_width="match_parent"
@@ -104,8 +105,8 @@
                                 android:id="@+id/fullNameEditText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="5dp"
                                 android:layout_marginStart="2dp"
+                                android:layout_marginTop="5dp"
                                 android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg"
                                 android:fontFamily="@font/poppins"
@@ -127,18 +128,19 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Required"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f" />
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
                         </LinearLayout>
 
 
                         <LinearLayout
                             android:id="@id/mobileNumberLayout"
                             android:layout_width="match_parent"
-                            android:orientation="vertical"
                             android:layout_height="match_parent"
+                            android:orientation="vertical"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/fullNameLayout">
+
                             <TextView
                                 android:id="@+id/mobileNumberTextView"
                                 android:layout_width="wrap_content"
@@ -153,8 +155,8 @@
                                 android:id="@+id/mobileNumberLinearLayout"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="5dp"
                                 android:layout_marginStart="2dp"
+                                android:layout_marginTop="5dp"
                                 android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg">
 
@@ -165,9 +167,9 @@
                                     android:layout_gravity="center"
                                     android:layout_marginStart="4dp"
                                     android:background="#ffffffff"
-                                    android:inputType="number"
-                                    android:dropDownWidth="75dp"
                                     android:dropDownAnchor="@+id/mobileNumberLinearLayout"
+                                    android:dropDownWidth="75dp"
+                                    android:inputType="number"
                                     android:textSize="14sp"
                                     tools:ignore="TouchTargetSizeCheck" />
 
@@ -196,18 +198,18 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Mobile Number length is not correct"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f"/>
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
 
                         </LinearLayout>
 
                         <LinearLayout
                             android:id="@+id/emailLayout"
                             android:layout_width="match_parent"
-                            android:orientation="vertical"
                             android:layout_height="match_parent"
+                            android:orientation="vertical"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/mobileNumberLayout" >
+                            app:layout_constraintTop_toBottomOf="@+id/mobileNumberLayout">
 
                             <TextView
                                 android:id="@+id/emailTextView"
@@ -223,12 +225,12 @@
                                 android:id="@+id/emailEditText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="2dp"
                                 android:layout_marginTop="5dp"
+                                android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
-                                android:layout_marginStart="2dp"
-                                android:layout_marginEnd="2dp"
                                 android:hint="Email address"
                                 android:inputType="text"
                                 android:padding="8dp"
@@ -246,28 +248,28 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Invalid Email Id"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f" />
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
                         </LinearLayout>
 
                         <LinearLayout
                             android:id="@+id/panLayout"
                             android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                             android:orientation="vertical"
                             android:visibility="visible"
-                            android:layout_height="match_parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/emailLayout" >
+                            app:layout_constraintTop_toBottomOf="@+id/emailLayout">
 
                             <TextView
                                 android:id="@+id/panTextView"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:drawableEnd="@drawable/help_circle"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="PAN*"
-                                android:drawableEnd="@drawable/help_circle"
                                 android:textColor="@android:color/black" />
 
                             <EditText
@@ -296,28 +298,28 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Invalid PAN"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f" />
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
                         </LinearLayout>
 
 
                         <LinearLayout
                             android:id="@+id/dobLayout"
                             android:layout_width="match_parent"
+                            android:layout_height="match_parent"
                             android:orientation="vertical"
                             android:visibility="visible"
-                            android:layout_height="match_parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/panLayout" >
+                            app:layout_constraintTop_toBottomOf="@+id/panLayout">
 
                             <TextView
                                 android:id="@+id/dobTextView"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:drawableEnd="@drawable/help_circle"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
-                                android:drawableEnd="@drawable/help_circle"
                                 android:text="Date of Birth/Incorporation*"
                                 android:textColor="@android:color/black" />
 
@@ -327,15 +329,15 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="5dp"
                                 android:background="@drawable/edittext_bg"
+                                android:clickable="true"
+                                android:drawableEnd="@drawable/baseline_calendar_month_24"
+                                android:focusable="false"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:hint="mm-dd-yyyy"
                                 android:inputType="text"
                                 android:padding="8dp"
-                                android:focusable="false"
-                                android:clickable="true"
                                 android:textColor="#000000"
-                                android:drawableEnd="@drawable/baseline_calendar_month_24"
                                 android:textColorHint="#7F7D83"
                                 android:textSize="14sp"
                                 tools:ignore="TouchTargetSizeCheck" />
@@ -349,8 +351,8 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Invalid DOB/Incorporation"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f" />
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
                         </LinearLayout>
 
 
@@ -361,7 +363,8 @@
                             android:orientation="vertical"
                             android:textColor="@android:color/black"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/dobLayout" >
+                            app:layout_constraintTop_toBottomOf="@+id/dobLayout">
+
                             <TextView
                                 android:id="@+id/countryTextView"
                                 android:layout_width="wrap_content"
@@ -370,18 +373,18 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Country*"
-                                android:textColor="@android:color/black"/>
+                                android:textColor="@android:color/black" />
 
                             <com.boxpay.checkout.sdk.adapters.InstantAutoComplete
                                 android:id="@+id/countryEditText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="2dp"
                                 android:layout_marginTop="4dp"
+                                android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
-                                android:layout_marginStart="2dp"
-                                android:layout_marginEnd="2dp"
                                 android:hint="Country"
                                 android:inputType="text"
                                 android:padding="8dp"
@@ -399,8 +402,8 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Required"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f"/>
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
 
                             <TextView
                                 android:id="@+id/postalCodeTextView"
@@ -411,18 +414,18 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="ZIP/Postal Code*"
-                                android:textColor="@android:color/black"/>
+                                android:textColor="@android:color/black" />
 
                             <EditText
                                 android:id="@+id/postalCodeEditText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="2dp"
                                 android:layout_marginTop="4dp"
+                                android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
-                                android:layout_marginStart="2dp"
-                                android:layout_marginEnd="2dp"
                                 android:hint="ZIP/Postal Code"
                                 android:inputType="number"
                                 android:padding="8dp"
@@ -440,8 +443,8 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Invalid Postal Code"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f"/>
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
 
 
                             <TextView
@@ -453,18 +456,19 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="State*"
-                                android:textColor="@android:color/black"/>
+                                android:textColor="@android:color/black" />
+
                             <EditText
                                 android:id="@+id/stateEditText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="2dp"
                                 android:layout_marginTop="4dp"
+                                android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:hint="State"
-                                android:layout_marginStart="2dp"
-                                android:layout_marginEnd="2dp"
                                 android:inputType="text"
                                 android:padding="8dp"
                                 android:textColor="#000000"
@@ -481,8 +485,8 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Required"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f" />
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
 
 
                             <TextView
@@ -494,19 +498,19 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="City*"
-                                android:textColor="@android:color/black"/>
+                                android:textColor="@android:color/black" />
 
                             <EditText
                                 android:id="@+id/cityEditText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="2dp"
                                 android:layout_marginTop="4dp"
+                                android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:hint="City"
-                                android:layout_marginStart="2dp"
-                                android:layout_marginEnd="2dp"
                                 android:inputType="text"
                                 android:padding="8dp"
                                 android:textColor="#000000"
@@ -523,8 +527,8 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Required"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f" />
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
 
                             <TextView
                                 android:id="@+id/addressTextView"
@@ -535,20 +539,20 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="House number, Apartment *"
-                                android:textColor="@android:color/black"/>
+                                android:textColor="@android:color/black" />
 
                             <EditText
                                 android:id="@+id/addressEditText1"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="2dp"
                                 android:layout_marginTop="4dp"
+                                android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:hint="House number, Apartment "
                                 android:inputType="text"
-                                android:layout_marginStart="2dp"
-                                android:layout_marginEnd="2dp"
                                 android:padding="8dp"
                                 android:textColor="#000000"
                                 android:textColorHint="#7F7D83"
@@ -564,14 +568,15 @@
                                 android:gravity="center_vertical"
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Required"
-                                android:visibility="invisible"
-                                android:textColor="#ffff4d4f" />
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
 
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:layout_marginTop="2dp"
                                 android:orientation="horizontal">
+
                                 <TextView
                                     android:id="@+id/addressTextView2"
                                     android:layout_width="wrap_content"
@@ -597,19 +602,134 @@
                                 android:id="@+id/addressEditText2"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginStart="2dp"
                                 android:layout_marginTop="4dp"
+                                android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="center_vertical"
                                 android:hint="Area, Colony, Street, Sector"
                                 android:inputType="text"
                                 android:padding="8dp"
-                                android:layout_marginStart="2dp"
-                                android:layout_marginEnd="2dp"
                                 android:textColor="#000000"
                                 android:textColorHint="#7F7D83"
                                 android:textSize="14sp"
                                 tools:ignore="TouchTargetSizeCheck" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/save_address_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/addressLayout">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <CheckBox
+                                    android:id="@+id/savedAddressCheckbox"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="true"/>
+
+                                <TextView
+                                    android:id="@+id/saveAddressText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/poppins"
+                                    android:gravity="center_vertical"
+                                    android:lineSpacingExtra="-1sp"
+                                    android:text="Save address as"
+                                    android:textColor="#2D2B32" />
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:id="@+id/homeSavedAddress"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="@drawable/saved_address_background"
+                                    android:drawableStart="@drawable/home_icon"
+                                    android:drawablePadding="4dp"
+                                    android:fontFamily="@font/poppins"
+                                    android:gravity="center_vertical"
+                                    android:lineSpacingExtra="-1sp"
+                                    android:paddingHorizontal="8dp"
+                                    android:paddingVertical="10dp"
+                                    android:text="Home"
+                                    android:textColor="#2D2B32"
+                                    android:textFontWeight="400"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/officeSavedAddress"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:background="@drawable/saved_address_background"
+                                    android:drawableStart="@drawable/ic_boxpay_saved_office_address"
+                                    android:drawablePadding="4dp"
+                                    android:fontFamily="@font/poppins"
+                                    android:lineSpacingExtra="-1sp"
+                                    android:paddingHorizontal="8dp"
+                                    android:paddingVertical="10dp"
+                                    android:text="Office"
+                                    android:textColor="#2D2B32"
+                                    android:textFontWeight="400"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/otherSavedAddress"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:background="@drawable/saved_address_background"
+                                    android:drawableStart="@drawable/ic_boxpay_other_saved_address"
+                                    android:drawablePadding="4dp"
+                                    android:fontFamily="@font/poppins"
+                                    android:lineSpacingExtra="-1sp"
+                                    android:paddingHorizontal="8dp"
+                                    android:paddingVertical="10dp"
+                                    android:text="Others"
+                                    android:textColor="#2D2B32"
+                                    android:textFontWeight="400"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+
+                            <EditText
+                                android:id="@+id/otherSaveAddressTextField"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="2dp"
+                                android:layout_marginTop="20dp"
+                                android:layout_marginEnd="2dp"
+                                android:background="@drawable/edittext_bg"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:hint="Save as"
+                                android:visibility="gone"
+                                android:inputType="text"
+                                android:padding="8dp"
+                                android:textColor="#000000"
+                                android:textColorHint="#7F7D83"
+                                android:textSize="14sp"
+                                tools:ignore="TouchTargetSizeCheck" />
+
+
                         </LinearLayout>
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -660,6 +780,37 @@
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
+            <RelativeLayout
+                android:id="@+id/loading_relative_layout"
+                android:layout_width="match_parent"
+                android:layout_height="560dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/boxPayLogoLottieAnimation"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerInParent="true"
+                    app:lottie_autoPlay="true"
+                    app:lottie_fileName="boxpayLogo.json"
+                    app:lottie_loop="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/boxPayLogoLottieAnimation"
+                    android:layout_centerInParent="true"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/poppins"
+                    android:text="Loading..."
+                    android:textColor="#4F4D55" />
+            </RelativeLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </LinearLayout></androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

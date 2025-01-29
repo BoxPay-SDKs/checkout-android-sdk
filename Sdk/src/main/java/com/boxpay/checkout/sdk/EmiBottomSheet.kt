@@ -70,7 +70,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
     private lateinit var Base_Session_API_URL: String
-    private var successScreenFullReferencePath: String? = null
     private var token: String? = null
     private var shippingEnabled: Boolean = false
     private var transactionId: String? = null
@@ -449,11 +448,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        val sharedPreferences =
-            requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("token", "empty")
-        successScreenFullReferencePath =
-            sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }
 
     private fun showLoadingState() {
