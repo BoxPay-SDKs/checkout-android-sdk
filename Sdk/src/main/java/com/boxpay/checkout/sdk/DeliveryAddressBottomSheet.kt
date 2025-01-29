@@ -86,6 +86,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isDOBEditable = true
     private var isDobSelected = false
     private var isPANFilled = false
+    private var isHomeAddressSaved : Boolean = false
+    private var isOfficeAddressSaved : Boolean = false
     private lateinit var inputMethodManager: InputMethodManager
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -191,34 +193,42 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             ) // Set border thickness and color
         }
         binding.homeSavedAddress.setOnClickListener {
-            binding.homeSavedAddress.background = focusedDrawable
-            binding.officeSavedAddress.background =
-                AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
-            binding.otherSavedAddress.background =
-                AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
-            binding.otherSaveAddressTextField.text = null
-            binding.otherSaveAddressTextField.visibility = View.GONE
-            labelType = "Home"
-            if (toCheckAllFieldsAreFilled()) {
-                enableProceedButton()
+            if (!isHomeAddressSaved) {
+                binding.homeSavedAddress.background = focusedDrawable
+                binding.officeSavedAddress.background =
+                    AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
+                binding.otherSavedAddress.background =
+                    AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
+                binding.otherSaveAddressTextField.text = null
+                binding.otherSaveAddressTextField.visibility = View.GONE
+                labelType = "Home"
+                if (toCheckAllFieldsAreFilled()) {
+                    enableProceedButton()
+                } else {
+                    disableProceedButton()
+                }
             } else {
-                disableProceedButton()
+                Toast.makeText(context, "Address already saved with Home", Toast.LENGTH_LONG).show()
             }
         }
 
         binding.officeSavedAddress.setOnClickListener {
-            binding.officeSavedAddress.background = focusedDrawable
-            binding.homeSavedAddress.background =
-                AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
-            binding.otherSavedAddress.background =
-                AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
-            binding.otherSaveAddressTextField.text = null
-            binding.otherSaveAddressTextField.visibility = View.GONE
-            labelType = "Work"
-            if (toCheckAllFieldsAreFilled()) {
-                enableProceedButton()
+            if (!isOfficeAddressSaved) {
+                binding.officeSavedAddress.background = focusedDrawable
+                binding.homeSavedAddress.background =
+                    AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
+                binding.otherSavedAddress.background =
+                    AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
+                binding.otherSaveAddressTextField.text = null
+                binding.otherSaveAddressTextField.visibility = View.GONE
+                labelType = "Work"
+                if (toCheckAllFieldsAreFilled()) {
+                    enableProceedButton()
+                } else {
+                    disableProceedButton()
+                }
             } else {
-                disableProceedButton()
+                Toast.makeText(context, "Address already saved with Office", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -1067,6 +1077,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             editor.putString("indexCountryCodePhone", indexCountryCodePhone)
             editor.putString("panNumber", PAN)
             editor.putString("dateOfBirth", DOB)
+            editor.putString("labelType",labelType)
+            editor.putString("labelName",labelName)
 
 
             editor.apply()
@@ -1873,6 +1885,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.loadingRelativeLayout.visibility = View.VISIBLE
         binding.cardView.visibility = View.GONE
         binding.proceedButton.visibility = View.GONE
+    }
+
+    fun setClickOfHomeAndWork(isHomeSaved: Boolean, isWorkSaved: Boolean) {
+        this.isHomeAddressSaved = isHomeSaved
+        this.isOfficeAddressSaved = isWorkSaved
     }
 }
 
