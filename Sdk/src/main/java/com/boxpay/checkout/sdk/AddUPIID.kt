@@ -260,6 +260,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         requestQueue.add(jsonObjectRequest)
     }
 
+
     private fun updateTransactionIDInSharedPreferences(transactionIdArg: String) {
         editor.putString("transactionId", transactionIdArg)
         editor.putString("operationId", transactionIdArg)
@@ -416,7 +417,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -465,7 +465,11 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
                 }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
-                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                    } else {
+                        put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
+                    }
                 }
 
                 if (sharedPreferences.getString("panNumberChosen", null) != null){

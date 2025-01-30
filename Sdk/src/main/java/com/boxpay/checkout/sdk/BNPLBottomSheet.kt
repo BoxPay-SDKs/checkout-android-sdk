@@ -181,7 +181,9 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                     bnplDetailOriginal[checkedPosition!!].bnplBrand,
                     "BNPL"
                 )
-                postRequest(requireContext(), walletInstrumentTypeValue)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    postRequest(requireContext(), walletInstrumentTypeValue)
+                }
             }
 
 

@@ -822,11 +822,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "UpiCollect",
                         "UPI"
                     )
-                    postRecommendedInstruments(
-                        "upi/collect",
-                        recommendedInstrumentationList[recommendedCheckedPosition!!].first,
-                        recommendedInstrumentationList[recommendedCheckedPosition!!].second
-                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        postRecommendedInstruments(
+                            "upi/collect",
+                            recommendedInstrumentationList[recommendedCheckedPosition!!].first,
+                            recommendedInstrumentationList[recommendedCheckedPosition!!].second
+                        )
+                    }
                 }
             }
             binding.itemsInOrderRecyclerView.setOnClickListener() {
@@ -1168,7 +1170,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun fetchQRCode() {
-        postRequestForQRCode(requireContext())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            postRequestForQRCode(requireContext())
+        }
     }
 
     private fun hideQRCode() {
@@ -1704,7 +1708,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         getPopularConstraintLayoutByNum(i).setOnClickListener() {
             if (!binding.loadingRelativeLayout.isVisible) {
                 showLoadingState()
-                getUrlForDefaultUPIIntent()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    getUrlForDefaultUPIIntent()
+                }
                 callUIAnalytics(
                     requireContext(),
                     AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
@@ -4056,11 +4062,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             LottieDrawable.INFINITE // This makes the animation repeat infinitely
                     }
                     binding.swipeLoader.visibility = View.VISIBLE
-                    postRecommendedInstruments(
-                        "upi/collect",
-                        recommendedInstrumentationList[0].first,
-                        recommendedInstrumentationList[0].second
-                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        postRecommendedInstruments(
+                            "upi/collect",
+                            recommendedInstrumentationList[0].first,
+                            recommendedInstrumentationList[0].second
+                        )
+                    }
                 },
                 address = address,
                 onClickChangeAddress = {

@@ -1752,7 +1752,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     "dateOfBirth", if (convertedDate != null) {
                         convertedDate!!
                     } else {
-                        convertDateFormat(extractDateFromTimestamp(binding.dobEditText.text.toString()))!!
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            convertDateFormat(extractDateFromTimestamp(binding.dobEditText.text.toString()))!!
+                        } else {
+                            null
+                        }
                     }
                 )
             }
@@ -1826,7 +1830,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     "dateOfBirth", if (convertedDate != null) {
                         convertedDate!!
                     } else {
-                        convertDateFormat(extractDateFromTimestamp(binding.dobEditText.text.toString()))!!
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            convertDateFormat(extractDateFromTimestamp(binding.dobEditText.text.toString()))!!
+                        } else {
+                            null
+                        }
                     }
                 )
             }
