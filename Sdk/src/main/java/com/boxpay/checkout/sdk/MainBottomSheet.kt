@@ -36,7 +36,6 @@ import android.widget.LinearLayout
 import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
@@ -113,7 +112,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var uniqueReference: String? = null
     private var successScreenFullReferencePath: String? = null
     private var UPIAppsAndPackageMap: MutableMap<String, String> = mutableMapOf()
-    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var job: Job? = null
     private var isTablet = false
     private var showName = false
@@ -269,7 +267,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
-    private fun showLoadingState(source: String) {
+    private fun showLoadingState() {
         binding.boxpayLogoLottie.apply {
             playAnimation()
             repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
@@ -285,7 +283,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        showLoadingState("")
+        showLoadingState()
         if (requestCode == 121) {
             isGpayReturned = true
         } else if (requestCode == 122) {
@@ -688,7 +686,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
-
         Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
         val mp =
             MixpanelAPI.getInstance(requireActivity(), "76ea8537c5f272d43cd09d1756b189f8", true)
@@ -699,7 +696,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         mp.track("MainScreen", props)
         return try {
             binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
-            showLoadingState("")
+            showLoadingState()
 
             val imm =
                 requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -724,10 +721,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val callback = SingletonClassForLoadingState.getInstance().getYourObject()
 
             callback?.onBottomSheetOpened?.invoke()
-
-            val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
-
-            Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
 
             fetchTransactionDetailsFromSharedPreferences()
             overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
@@ -829,11 +822,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "UpiCollect",
                         "UPI"
                     )
-                    postRecommendedInstruments(
-                        "upi/collect",
-                        recommendedInstrumentationList[recommendedCheckedPosition!!].first,
-                        recommendedInstrumentationList[recommendedCheckedPosition!!].second
-                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        postRecommendedInstruments(
+                            "upi/collect",
+                            recommendedInstrumentationList[recommendedCheckedPosition!!].first,
+                            recommendedInstrumentationList[recommendedCheckedPosition!!].second
+                        )
+                    }
                 }
             }
             binding.itemsInOrderRecyclerView.setOnClickListener() {
@@ -1169,13 +1164,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun showQRCode() {
         qrCodeShown = true
         binding.qrCodeOpenConstraint.visibility = View.VISIBLE
-        showLoadingState("showQRCode")
+        showLoadingState()
         binding.refreshButton.visibility = View.GONE
         fetchQRCode()
     }
 
     private fun fetchQRCode() {
-        postRequestForQRCode(requireContext())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            postRequestForQRCode(requireContext())
+        }
     }
 
     private fun hideQRCode() {
@@ -1605,7 +1602,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     overlayViewModel.setShowOverlay(false)
-                    showLoadingState("fetchIntentURL")
+                    showLoadingState()
                     getUrlForUPIIntent("PhonePe")
                     callUIAnalytics(
                         requireContext(),
@@ -1641,7 +1638,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     overlayViewModel.setShowOverlay(false)
-                    showLoadingState("fetchIntentURL")
+                    showLoadingState()
                     getUrlForUPIIntent("GPay")
                     callUIAnalytics(
                         requireContext(),
@@ -1677,7 +1674,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     overlayViewModel.setShowOverlay(false)
-                    showLoadingState("fetchIntentURL")
+                    showLoadingState()
                     getUrlForUPIIntent("PayTm")
                     callUIAnalytics(
                         requireContext(),
@@ -1710,8 +1707,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         getPopularConstraintLayoutByNum(i).setOnClickListener() {
             if (!binding.loadingRelativeLayout.isVisible) {
-                showLoadingState("payUsingAnyUPIConstraint")
-                getUrlForDefaultUPIIntent()
+                showLoadingState()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    getUrlForDefaultUPIIntent()
+                }
                 callUIAnalytics(
                     requireContext(),
                     AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
@@ -2419,7 +2418,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 fieldObject.optBoolean("editable", false) || showShipping
                         }
                     }
-                } else {
                 }
 
                 if (showEmail || showShipping || showPhone || showName) {
@@ -3575,7 +3573,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 container.addView(horizontalLayout)
             }
 
-        } catch (e: Exception) {
+        } catch (_: Exception) {
 
         }
     }
@@ -3588,9 +3586,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     ) {
         try {
             val textView = TextView(context).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    if (toAddWeight) 0 else LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
+                layoutParams = LayoutParams(
+                    if (toAddWeight) 0 else LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT
                 ).apply {
                     if (toAddWeight) {
                         weight = 1.0f // All views have equal weight
@@ -4064,11 +4062,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             LottieDrawable.INFINITE // This makes the animation repeat infinitely
                     }
                     binding.swipeLoader.visibility = View.VISIBLE
-                    postRecommendedInstruments(
-                        "upi/collect",
-                        recommendedInstrumentationList[0].first,
-                        recommendedInstrumentationList[0].second
-                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        postRecommendedInstruments(
+                            "upi/collect",
+                            recommendedInstrumentationList[0].first,
+                            recommendedInstrumentationList[0].second
+                        )
+                    }
                 },
                 address = address,
                 onClickChangeAddress = {

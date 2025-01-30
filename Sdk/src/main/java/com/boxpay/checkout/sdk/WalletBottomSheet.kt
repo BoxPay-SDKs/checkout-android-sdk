@@ -569,8 +569,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                }
 
                binding.errorField.visibility = View.GONE
-
-               postRequest(requireContext(), walletInstrumentTypeValue)
+               if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                   postRequest(requireContext(), walletInstrumentTypeValue)
+               }
            }
 
            liveDataPopularWalletSelectedOrNot.observe(this, Observer {
