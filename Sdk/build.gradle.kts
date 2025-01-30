@@ -9,11 +9,11 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 26
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
-        buildConfigField("String", "SDK_VERSION", "\"1.2.2-beta2\"")
+        buildConfigField("String", "SDK_VERSION", "\"1.2.2-beta3\"")
 
         android.buildFeatures.buildConfig = true
     }

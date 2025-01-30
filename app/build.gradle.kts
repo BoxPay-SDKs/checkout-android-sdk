@@ -11,14 +11,14 @@ android {
 
     defaultConfig {
         applicationId = "com.boxpay.checkout.demoapp"
-        minSdk = 21
+        minSdk = 26
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SDK_VERSION", "\"1.2.2-beta2\"")
+        buildConfigField("String", "SDK_VERSION", "\"1.2.2-beta3\"")
 
         buildFeatures.buildConfig = true
     }

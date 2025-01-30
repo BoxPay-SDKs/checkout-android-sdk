@@ -51,9 +51,6 @@ fun SavedAddressesScreen(
     val isMoreOptionClicked = remember {
         mutableStateOf(false)
     }
-    val uniqueRef = remember {
-        mutableStateOf<String?>(null)
-    }
     val addressIcon = remember {
         mutableStateOf<Int?>(null)
     }
