@@ -170,7 +170,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                     ))
-                    checkout.testEnv = false
+                    checkout.testEnv = true
                     checkout.display()
                 }
             }

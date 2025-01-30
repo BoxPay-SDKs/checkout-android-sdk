@@ -138,7 +138,7 @@
                                 android:id="@+id/arrowIcon"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="16dp"
+                                android:layout_marginEnd="6dp"
                                 android:src="@drawable/chevron_down"
                                 app:layout_constraintBottom_toBottomOf="@+id/unopenedTotalValue"
                                 app:layout_constraintEnd_toEndOf="parent"
@@ -676,61 +676,42 @@
 
                     </androidx.cardview.widget.CardView>
 
+                    <TextView
+                        android:id="@+id/deliveryAddressText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/poppins"
+                        android:text="Address"
+                        android:textSize="14sp"
+                        android:textColor="#020815"
+                        android:textFontWeight="600"
+                        android:visibility="visible"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/cardviewRecurring" />
+
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cardView8"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="8dp"
                         android:layout_marginEnd="16dp"
                         android:background="@android:color/white"
                         android:visibility="visible"
                         app:cardCornerRadius="10dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardviewRecurring">
+                        app:layout_constraintTop_toBottomOf="@+id/deliveryAddressText">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/deliveryAddressConstraintLayout"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:background="@drawable/cardview_bg"
-                            android:paddingBottom="16dp"
+                            android:paddingBottom="12dp"
                             android:visibility="visible">
-
-                            <ImageView
-                                android:id="@+id/deliveryAddressObjectImage"
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:layout_marginStart="14dp"
-                                android:src="@drawable/truck"
-                                app:layout_constraintBottom_toBottomOf="@+id/textView2"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="@+id/textView2" />
-
-                            <TextView
-                                android:id="@+id/textView2"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="6dp"
-                                android:layout_marginTop="8dp"
-                                android:fontFamily="@font/poppins_bold"
-                                android:gravity="center"
-                                android:text="Delivery Address"
-                                android:textColor="#2D2B32"
-                                android:textSize="16sp"
-                                app:layout_constraintStart_toEndOf="@+id/deliveryAddressObjectImage"
-                                app:layout_constraintTop_toTopOf="parent" />
-
-                            <View
-                                android:id="@+id/dashedLine4"
-                                android:layout_width="match_parent"
-                                android:layout_height="4dp"
-                                android:layout_marginTop="8dp"
-                                android:background="@drawable/dashed_line"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
                             <ImageView
                                 android:id="@+id/homeIcon"
@@ -738,25 +719,27 @@
                                 android:layout_height="20dp"
                                 android:layout_marginStart="14dp"
                                 android:layout_marginTop="12dp"
-                                android:src="@drawable/home_icon"
+                                android:src="@drawable/ic_boxpay_deliver_location"
                                 app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/dashedLine4" />
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
 
                             <TextView
                                 android:id="@+id/nameAndMobileTextViewMain"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="12dp"
+                                android:layout_marginStart="8dp"
                                 android:layout_marginTop="12dp"
                                 android:fontFamily="@font/poppins_medium"
-                                android:paddingEnd="8dp"
-                                android:text="Person Name"
-                                android:textColor="#010102"
+                                android:text="Deliver to"
+                                android:textColor="#4F4D55"
+                                android:textSize="12sp"
+                                android:fontFeatureSettings="400"
                                 app:layout_constrainedWidth="true"
                                 app:layout_constraintEnd_toStartOf="@id/right_arrow"
                                 app:layout_constraintHorizontal_bias="0.03"
                                 app:layout_constraintStart_toEndOf="@id/homeIcon"
-                                app:layout_constraintTop_toBottomOf="@+id/dashedLine4" />
+                                app:layout_constraintTop_toTopOf="parent"/>
 
                             <ImageView
                                 android:id="@+id/right_arrow"
@@ -764,22 +747,9 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="12dp"
                                 android:layout_marginEnd="12dp"
-                                android:src="@drawable/ic_edit_details"
+                                android:src="@drawable/rightarrow"
                                 app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintTop_toBottomOf="@id/dashedLine4" />
-
-                            <TextView
-                                android:id="@+id/emailTextView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/poppins"
-                                android:paddingEnd="8dp"
-                                android:text="Person Email"
-                                android:textColor="#010102"
-                                app:layout_constrainedWidth="true"
-                                app:layout_constraintHorizontal_bias="0.03"
-                                app:layout_constraintStart_toStartOf="@+id/nameAndMobileTextViewMain"
-                                app:layout_constraintTop_toBottomOf="@+id/nameAndMobileTextViewMain" />
+                                app:layout_constraintTop_toTopOf="parent" />
 
                             <TextView
                                 android:id="@+id/addressTextViewMain"
@@ -787,12 +757,18 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/poppins"
                                 android:gravity="start|center_vertical"
-                                android:text="123 Lorem ipsum lorem ipsum\nlorem ipsum lorem ipsum\nGurgaon, Haryana,12001"
-                                android:textColor="#7F7D83"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
+                                android:text="123 Lorem ipsum lorem ipsum lorem ipsum lorem ipsum\nGurgaon, Haryana,12001"
+                                android:textColor="#4F4D55"
+                                android:textSize="14sp"
+                                android:paddingTop="2dp"
+                                android:maxLines="1"
+                                android:textFontWeight="600"
+                                app:layout_constrainedWidth="true"
+                                android:ellipsize="end"
+                                app:layout_constraintHorizontal_bias="0.03"
                                 app:layout_constraintStart_toStartOf="@+id/nameAndMobileTextViewMain"
-                                app:layout_constraintTop_toBottomOf="@+id/emailTextView" />
+                                app:layout_constraintEnd_toStartOf="@+id/right_arrow"
+                                app:layout_constraintTop_toBottomOf="@+id/right_arrow" />
 
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -806,7 +782,9 @@
                         android:layout_marginTop="16dp"
                         android:fontFamily="@font/poppins"
                         android:text="Choose payment method"
-                        android:textColor="#0A090B"
+                        android:textSize="14sp"
+                        android:textColor="#020815"
+                        android:textFontWeight="600"
                         android:visibility="visible"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/scrollCard" />

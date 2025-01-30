@@ -55,7 +55,6 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.boxpay.checkout.sdk.ViewModels.CallBackFunctions
 import com.boxpay.checkout.sdk.ViewModels.CallbackForDismissMainSheet
 import com.boxpay.checkout.sdk.ViewModels.OverlayViewModel
 import com.boxpay.checkout.sdk.ViewModels.SingletonClassForLoadingState
@@ -118,6 +117,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var job: Job? = null
     private var isTablet = false
     private var showName = false
+    private var labelType : String? = null
+    private var labelName : String? = null
     private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
     private var moreOptionsClicked: Boolean? = null
@@ -159,7 +160,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     var isOthersReturned = false
     var isPhonePe = false
     var isPaytmReturned = false
-    private var callBackFunctions: CallBackFunctions? = null
     private var shippingEnabled: Boolean = false
     private var dismissThroughAnotherBottomSheet: Boolean = false
     private lateinit var bottomSheet: DeliveryAddressBottomSheet
@@ -327,7 +327,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (e: Exception) {
             // Log any other error that occurs
             upiIntentError = e.message
-            callUIAnalytics(requireActivity(), AnalyticsEvents.FAILED_TO_LAUNCH_UPI_INTENT, "", "UPI")
+            callUIAnalytics(
+                requireActivity(),
+                AnalyticsEvents.FAILED_TO_LAUNCH_UPI_INTENT,
+                "",
+                "UPI"
+            )
             PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(
                 parentFragmentManager,
                 "FailureScreen"
@@ -707,21 +712,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
             val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-            bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                this,
-                false,
-                showName,
-                showPhone,
-                showEmail,
-                showPAN,
-                showDOB,
-                showShipping,
-                isNameEditable,
-                isPhoneEditable,
-                isEmailEditable,
-                isPANEditable,
-                isDOBEditable
-            )
 
             if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
                 isTablet = false
@@ -883,7 +873,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "UpiCollect",
                         "Upi"
                     )
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "Upi")
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
+                        "",
+                        "Upi"
+                    )
                     callUIAnalytics(
                         requireContext(),
                         AnalyticsEvents.PAYMENT_METHOD_SELECTED,
@@ -920,8 +915,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.cardConstraint.isEnabled = false
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "Card")
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "", "Card")
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
+                        "",
+                        "Card"
+                    )
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                        "",
+                        "Card"
+                    )
                     openAddCardBottomSheet()
                 }
             }
@@ -933,7 +938,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.walletConstraint.isEnabled = false
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "Wallet")
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
+                        "",
+                        "Wallet"
+                    )
                     openWalletBottomSheet()
                 }
             }
@@ -944,7 +954,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.emiConstraint.isEnabled = false
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "Emi")
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
+                        "",
+                        "Emi"
+                    )
                     openEmiBottomSheet()
                 }
             }
@@ -972,7 +987,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.netBankingConstraint.isEnabled = false
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_CATEGORY_SELECTED, "", "NetBanking")
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
+                        "",
+                        "NetBanking"
+                    )
                     openNetBankingBottomSheet()
                 }
             }
@@ -993,22 +1013,44 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("countryName", countryCode?.first)
                         editor.apply()
                     }
-                    val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                        this,
-                        false,
-                        showName,
-                        showPhone,
-                        showEmail,
-                        showPAN,
-                        showDOB,
-                        showShipping,
-                        isNameEditable,
-                        isPhoneEditable,
-                        isEmailEditable,
-                        isPANEditable,
-                        isDOBEditable
-                    )
-                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+                    if (customerShopperToken != null && customerShopperToken != "") {
+                        val bottomSheet = SavedAddressBottomSheet()
+                        bottomSheet.setAddressViewAndEditSettings(
+                            viewName = showName,
+                            viewEmail = showEmail,
+                            viewPhone = showPhone,
+                            viewShipping = showShipping,
+                            editPan = isPANEditable,
+                            editDob = isDOBEditable,
+                            editEmail = isEmailEditable,
+                            editPhone = isPhoneEditable,
+                            editName = isNameEditable,
+                            viewDob = showDOB,
+                            viewPan = showPAN
+                        )
+                        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                            bottomSheet.show(parentFragmentManager, "SavedAddressBottomSheet")
+                        }
+                    } else {
+                        val bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                            this,
+                            false,
+                            showName,
+                            showPhone,
+                            showEmail,
+                            showPAN,
+                            showDOB,
+                            showShipping,
+                            isNameEditable,
+                            isPhoneEditable,
+                            isEmailEditable,
+                            isPANEditable,
+                            isDOBEditable
+                        )
+                        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                            bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheet")
+                        }
+                    }
                 }
             }
 
@@ -1022,23 +1064,43 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("phoneCode", countryCode?.second)
                         editor.apply()
                     }
-                    val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                        this,
-                        true,
-                        showName,
-                        showPhone,
-                        showEmail,
-                        showPAN,
-                        showDOB,
-                        showShipping,
-                        isNameEditable,
-                        isPhoneEditable,
-                        isEmailEditable,
-                        isPANEditable,
-                        isDOBEditable
-                    )
-                    viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-                        bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+                    if (customerShopperToken != null && customerShopperToken != "") {
+                        val bottomSheet = SavedAddressBottomSheet()
+                        bottomSheet.setAddressViewAndEditSettings(
+                            viewName = showName,
+                            viewEmail = showEmail,
+                            viewPhone = showPhone,
+                            viewShipping = showShipping,
+                            editPan = isPANEditable,
+                            editDob = isDOBEditable,
+                            editEmail = isEmailEditable,
+                            editPhone = isPhoneEditable,
+                            editName = isNameEditable,
+                            viewDob = showDOB,
+                            viewPan = showPAN
+                        )
+                        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                            bottomSheet.show(parentFragmentManager, "SavedAddressBottomSheet")
+                        }
+                    } else {
+                        val bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                            this,
+                            false,
+                            showName,
+                            showPhone,
+                            showEmail,
+                            showPAN,
+                            showDOB,
+                            showShipping,
+                            isNameEditable,
+                            isPhoneEditable,
+                            isEmailEditable,
+                            isPANEditable,
+                            isDOBEditable
+                        )
+                        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                            bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheet")
+                        }
                     }
                 }
             }
@@ -1070,6 +1132,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (cardBottomSheet?.isResumed == true) {
                         cardBottomSheet?.dismissCurrentBottomSheet()
                     }
+                    val savedAddressBottomSheet =
+                        parentFragmentManager.findFragmentByTag("SavedAddressBottomSheet") as SavedAddressBottomSheet?
+                    savedAddressBottomSheet?.dismissCurrentBottomSheet()
+                    val deliveryAddressBottomSheet =
+                        parentFragmentManager.findFragmentByTag("DeliveryAddressBottomSheet") as DeliveryAddressBottomSheet?
+                    deliveryAddressBottomSheet?.dismissCurrentBottomSheet()
                     val addUPIID =
                         parentFragmentManager.findFragmentByTag("AddUPIBottomSheet") as? AddUPIID
                     addUPIID?.dismissCurrentBottomSheet()
@@ -1545,8 +1613,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "UpiIntent",
                         "Upi"
                     )
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "UpiIntent", "Upi")
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiIntent", "Upi")
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                        "UpiIntent",
+                        "Upi"
+                    )
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_INITIATED,
+                        "UpiIntent",
+                        "Upi"
+                    )
                 }
             }
 
@@ -1571,8 +1649,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "UpiIntent",
                         "Upi"
                     )
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "UpiIntent", "Upi")
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiIntent", "Upi")
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                        "UpiIntent",
+                        "Upi"
+                    )
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_INITIATED,
+                        "UpiIntent",
+                        "Upi"
+                    )
                 }
             }
 
@@ -1597,8 +1685,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "UpiIntent",
                         "Upi"
                     )
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "UpiIntent", "Upi")
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiIntent", "Upi")
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                        "UpiIntent",
+                        "Upi"
+                    )
+                    callUIAnalytics(
+                        requireContext(),
+                        AnalyticsEvents.PAYMENT_INITIATED,
+                        "UpiIntent",
+                        "Upi"
+                    )
                 }
             }
 
@@ -1614,9 +1712,24 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             if (!binding.loadingRelativeLayout.isVisible) {
                 showLoadingState("payUsingAnyUPIConstraint")
                 getUrlForDefaultUPIIntent()
-                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, "UpiIntent", "Upi")
-                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_METHOD_SELECTED, "UpiIntent", "Upi")
-                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiIntent", "Upi")
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
+                    "UpiIntent",
+                    "Upi"
+                )
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.PAYMENT_METHOD_SELECTED,
+                    "UpiIntent",
+                    "Upi"
+                )
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.PAYMENT_INITIATED,
+                    "UpiIntent",
+                    "Upi"
+                )
             }
         }
 
@@ -2311,11 +2424,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (showEmail || showShipping || showPhone || showName) {
                     binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+                    binding.deliveryAddressText.visibility = View.VISIBLE
                 } else {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.deliveryAddressText.visibility = View.GONE
                 }
-                binding.emailTextView.visibility =
-                    if (showEmail || showShipping) View.VISIBLE else View.GONE
                 binding.nameAndMobileTextViewMain.visibility =
                     if (showName || showPhone || showShipping) View.VISIBLE else View.GONE
 
@@ -2529,6 +2642,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("city", null)
                     editor.putString("state", null)
                     editor.putString("postalCode", null)
+                    editor.putString("labelType",null)
+                    editor.putString("labelName",null)
                 } else {
                     editor.putString(
                         "postalCode",
@@ -2542,6 +2657,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "city",
                         shopperObject.getJSONObject("deliveryAddress").getString("city")
                     )
+                    labelType = shopperObject.getJSONObject("deliveryAddress").getString("labelType")
+                    labelName = shopperObject.getJSONObject("deliveryAddress").getString("labelName")
+                    editor.putString("labelType",shopperObject.getJSONObject("deliveryAddress").getString("labelType"))
+                    editor.putString("labelName",shopperObject.getJSONObject("deliveryAddress").getString("labelName"))
                     editor.putString("indexCountryCodePhone", countryCode?.second)
                     editor.putString("phoneCode", countryCode?.second)
                     editor.putString(
@@ -2597,6 +2716,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 if (shopperObject.isNull("deliveryAddress") && showShipping && orderDetails == null) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.deliveryAddressText.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
@@ -2635,6 +2755,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )) && (showName || showEmail || showPhone) && orderDetails == null
                 ) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.deliveryAddressText.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
@@ -2670,6 +2791,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     showPriceBreakUp()
                 } else if (showPAN && shopperObject.isNull("panNumber")) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.deliveryAddressText.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
@@ -2705,6 +2827,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     showPriceBreakUp()
                 } else if (showDOB && shopperObject.isNull("dateOfBirth")) {
                     binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.deliveryAddressText.visibility = View.GONE
                     binding.textView12.visibility = View.GONE
                     binding.upiLinearLayout.visibility = View.GONE
                     binding.cardView5.visibility = View.GONE
@@ -2917,7 +3040,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 binding.nameAndMobileTextViewMain.text =
-                    if ((showPhone && showName) || showShipping) {
+                    if (showShipping) {
+                        if (shopperObject.getJSONObject("deliveryAddress").getString("labelName") != "null" && !shopperObject.getJSONObject("deliveryAddress").getString("labelName").isNullOrEmpty()) {
+                                "Deliver to ${shopperObject.getJSONObject("deliveryAddress").getString("labelName")}"
+                        } else {
+                            "Deliver to ${shopperObject.getJSONObject("deliveryAddress").getString("labelType")}"
+                        }
+                    } else if (showPhone && showName) {
                         sharedPreferences.getString(
                             "firstName",
                             ""
@@ -2925,7 +3054,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "lastName",
                             ""
                         ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-                    } else if (showName) {
+                    } else if(showName){
                         sharedPreferences.getString(
                             "firstName",
                             ""
@@ -2936,32 +3065,30 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     } else {
                         "(${sharedPreferences.getString("phoneNumber", "")})"
                     }
-                binding.emailTextView.text = sharedPreferences.getString("email", "")
                 if (showShipping) {
-                    binding.textView2.text = "Delivery Address"
+                    binding.deliveryAddressText.text = "Address"
                     binding.addressTextViewMain.text =
                         if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
-                            "${sharedPreferences.getString("address1", null)}\n" +
-                                    "${sharedPreferences.getString("address2", null)}\n" +
+                            "${sharedPreferences.getString("address1", null)}, " +
+                                    "${sharedPreferences.getString("address2", null)}, " +
                                     "${sharedPreferences.getString("city", null)}" +
                                     ", ${sharedPreferences.getString("state", "null")}" +
                                     ", ${sharedPreferences.getString("postalCode", "null")}"
                         } else {
-                            "${sharedPreferences.getString("address1", null)}\n" +
+                            "${sharedPreferences.getString("address1", null)}, " +
                                     "${sharedPreferences.getString("city", null)}" +
                                     ", ${sharedPreferences.getString("state", "null")}" +
                                     ", ${sharedPreferences.getString("postalCode", "null")}"
                         }
                 } else {
-                    binding.textView2.text = "Personal details"
-                    binding.homeIcon.visibility = View.GONE
-                    binding.deliveryAddressObjectImage.setImageDrawable(
+                    binding.deliveryAddressText.text = "Personal Details"
+                    binding.homeIcon.setImageDrawable(
                         ContextCompat.getDrawable(
                             context!!,
                             R.drawable.ic_personal_details
                         )
                     )
-                    binding.addressTextViewMain.visibility = View.GONE
+                    binding.addressTextViewMain.text = sharedPreferences.getString("email", "")
                 }
                 if (customerShopperToken != null && customerShopperToken != "") {
                     getRecommendedInstrumentation()
@@ -2975,6 +3102,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
             } catch (e: Exception) {
+                println("======api error ${e.message}")
                 handleException(
                     context,
                     e.message ?: "",
@@ -2992,7 +3120,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
                 val errorMessage = extractMessageFromErrorResponse(errorResponse)
-
+                println("======api error $errorMessage")
                 if (errorMessage?.contains("expired", true) == true) {
                     SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                 } else {
@@ -3037,44 +3165,58 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun updateBottomSheet() {
         binding.orderSummaryConstraintLayout.setPadding(0, 16, 0, 16)
-        binding.nameAndMobileTextViewMain.text = if ((showPhone && showName) || showShipping) {
-            sharedPreferences.getString(
-                "firstName",
-                ""
-            ) + " " + sharedPreferences.getString(
-                "lastName",
-                ""
-            ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-        } else if (showName) {
-            sharedPreferences.getString(
-                "firstName",
-                ""
-            ) + " " + sharedPreferences.getString(
-                "lastName",
-                ""
-            )
-        } else {
-            "(${sharedPreferences.getString("phoneNumber", "")})"
-        }
-        binding.emailTextView.text = sharedPreferences.getString("email", "")
+        labelName = sharedPreferences.getString("labelName", "")
+        labelType = sharedPreferences.getString("labelType", "")
+        binding.nameAndMobileTextViewMain.text =
+            if (showShipping) {
+                if (labelName != "null" && !labelName.isNullOrEmpty()) {
+                    "Deliver to $labelName"
+                } else {
+                    "Deliver to $labelType"
+                }
+            } else if (showPhone && showName) {
+                sharedPreferences.getString(
+                    "firstName",
+                    ""
+                ) + " " + sharedPreferences.getString(
+                    "lastName",
+                    ""
+                ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
+            } else if(showName){
+                sharedPreferences.getString(
+                    "firstName",
+                    ""
+                ) + " " + sharedPreferences.getString(
+                    "lastName",
+                    ""
+                )
+            } else {
+                "(${sharedPreferences.getString("phoneNumber", "")})"
+            }
         if (showShipping) {
-            binding.textView2.text = "Delivery Address"
+            binding.deliveryAddressText.text = "Address"
             binding.addressTextViewMain.text =
                 if (!sharedPreferences.getString("address2", null).isNullOrEmpty()) {
-                    "${sharedPreferences.getString("address1", null)}\n" +
-                            "${sharedPreferences.getString("address2", null)}\n" +
+                    "${sharedPreferences.getString("address1", null)}, " +
+                            "${sharedPreferences.getString("address2", null)}, " +
                             "${sharedPreferences.getString("city", null)}" +
                             ", ${sharedPreferences.getString("state", "null")}" +
                             ", ${sharedPreferences.getString("postalCode", "null")}"
                 } else {
-                    "${sharedPreferences.getString("address1", null)}\n" +
+                    "${sharedPreferences.getString("address1", null)}, " +
                             "${sharedPreferences.getString("city", null)}" +
                             ", ${sharedPreferences.getString("state", "null")}" +
                             ", ${sharedPreferences.getString("postalCode", "null")}"
                 }
         } else {
-            binding.textView2.text = "Personal details"
-            binding.addressTextViewMain.visibility = View.GONE
+            binding.deliveryAddressText.text = "Personal Details"
+            binding.homeIcon.setImageDrawable(
+                ContextCompat.getDrawable(
+                    context!!,
+                    R.drawable.ic_personal_details
+                )
+            )
+            binding.addressTextViewMain.text = sharedPreferences.getString("email", "")
         }
         binding.cardView8.visibility = View.VISIBLE
         countryCode = Pair(
@@ -3083,6 +3225,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         )
 
         binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+        binding.deliveryAddressText.visibility = View.VISIBLE
         binding.textView12.visibility = View.VISIBLE
         binding.upiLinearLayout.visibility = View.VISIBLE
         binding.cardView5.visibility = View.VISIBLE
