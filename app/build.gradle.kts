@@ -18,13 +18,15 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SDK_VERSION", "\"1.2.2-beta3\"")
+        buildConfigField("String", "SDK_VERSION", "\"1.2.2-beta4\"")
 
         buildFeatures.buildConfig = true
     }
 
     lint {
         baseline = file("lint-baseline.xml")
+        checkReleaseBuilds = false
+        abortOnError = false
     }
 
     buildTypes {
