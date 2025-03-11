@@ -37,6 +37,7 @@ import com.boxpay.checkout.sdk.dataclasses.BnplDataClass
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -50,7 +51,6 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
-import kotlin.random.Random
 
 internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
@@ -755,14 +755,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
             parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
         mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
         dismiss()
-    }
-
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 
     private fun removeLoadingScreenState() {

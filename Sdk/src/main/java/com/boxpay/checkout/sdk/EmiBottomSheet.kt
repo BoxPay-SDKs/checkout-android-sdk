@@ -45,6 +45,7 @@ import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -60,7 +61,6 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
-import kotlin.random.Random
 
 internal class EmiBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentChooseEmiOptionBinding
@@ -868,14 +868,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         editor.putString("transactionId", transactionIdArg)
         editor.putString("operationId", transactionIdArg)
         editor.apply()
-    }
-
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 
     fun extractMessageFromErrorResponse(response: String): String? {

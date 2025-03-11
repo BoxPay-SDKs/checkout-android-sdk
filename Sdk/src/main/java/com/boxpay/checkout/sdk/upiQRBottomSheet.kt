@@ -15,10 +15,10 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentUpiQRBottomSheetBinding
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
 import java.util.Locale
-import kotlin.random.Random
 
 
 class upiQRBottomSheet : BottomSheetDialogFragment() {
@@ -172,13 +172,5 @@ class upiQRBottomSheet : BottomSheetDialogFragment() {
     private fun updateTransactionIDInSharedPreferences(transactionIdArg : String) {
         editor.putString("transactionId", transactionIdArg)
         editor.apply()
-    }
-
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 }

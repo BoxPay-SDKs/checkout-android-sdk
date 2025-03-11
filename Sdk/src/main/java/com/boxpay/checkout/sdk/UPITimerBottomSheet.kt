@@ -21,11 +21,11 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
 import com.boxpay.checkout.sdk.databinding.FragmentUPITimerBottomSheetBinding
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONException
-import kotlin.random.Random
 
 internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     CancelConfirmationBottomSheet.ConfirmationListener {
@@ -365,14 +365,6 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
 
     override fun onConfirmation() {
         dismiss()
-    }
-
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 
     private fun handleSuccess() {

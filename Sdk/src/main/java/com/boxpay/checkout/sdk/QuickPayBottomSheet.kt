@@ -17,7 +17,6 @@ import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.FrameLayout
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.android.volley.DefaultRetryPolicy
@@ -26,12 +25,12 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentQuickPayBottomSheetBinding
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import org.json.JSONObject
 import java.util.Locale
-import kotlin.random.Random
 
 class QuickPayBottomSheet : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentQuickPayBottomSheetBinding
@@ -355,13 +354,5 @@ class QuickPayBottomSheet : BottomSheetDialogFragment() {
             })
         }
         return dialog
-    }
-
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool : List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 }
