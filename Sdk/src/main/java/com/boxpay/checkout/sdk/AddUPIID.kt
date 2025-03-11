@@ -1,9 +1,11 @@
 package com.boxpay.checkout.sdk
 
 import android.animation.ObjectAnimator
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -39,6 +41,13 @@ import com.boxpay.checkout.sdk.utils.handleException
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
 import kotlin.random.Random
@@ -60,6 +69,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
+    private var job: Job? = null
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -513,6 +523,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Method.POST, Base_Session_API_URL + token, requestBody,
             Response.Listener { response ->
 
+
+                println("=====response $response")
                 val status = response.getJSONObject("status").getString("status")
                 binding.editText.isEnabled = true
                 val reason = response.getJSONObject("status").getString("reason")
@@ -537,8 +549,31 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        openUPITimerBottomSheet()
-                        dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        val actionsArray = response.getJSONArray("actions")
+                        if (actionsArray.length() > 0) {
+                            val type =
+                                response.getJSONArray("actions").getJSONObject(0).getString("type")
+                            val url = if (type.contains("html", true)) {
+                                response
+                                    .getJSONArray("actions")
+                                    .getJSONObject(0)
+                                    .getString("htmlPageString")
+                            } else {
+                                response
+                                    .getJSONArray("actions")
+                                    .getJSONObject(0)
+                                    .getString("url")
+                            }
+                            showLoadingInButton()
+                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
+                            intent.putExtra("url", url)
+                            intent.putExtra("type", type)
+                            startFunctionCalls()
+                            startActivityForResult(intent, 333)
+                        } else {
+                            openUPITimerBottomSheet()
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        }
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()
@@ -614,6 +649,95 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     fun dismissCurrentBottomSheet() {
         dismiss()
+    }
+
+    private fun startFunctionCalls() {
+        job = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                delay(3000)
+                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 333) {
+            if (resultCode == Activity.RESULT_OK) {
+                hideLoadingInButton()
+                job?.cancel()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+            }
+        }
+    }
+
+    private fun fetchStatusAndReason(url: String) {
+        val requestQueue = Volley.newRequestQueue(context)
+
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Method.GET, url, null,
+            Response.Listener { response ->
+                try {
+                    val status = response.getString("status")
+                    val transactionId = response.getString("transactionId").toString()
+
+                    if (status.contains(
+                            "Approved",
+                            ignoreCase = true
+                        ) || status.contains("PAID", ignoreCase = true)
+                    ) {
+
+                        editor.putString("status", "Success")
+                        editor.putString("amount", response.getString("amount").toString())
+                        editor.putString("transactionId", transactionId)
+                        editor.apply()
+
+                        if (isAdded && isResumed && !isStateSaved) {
+                            hideLoadingInButton()
+                            job?.cancel()
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            dismiss()
+                        }
+
+                    } else if (status.contains("RequiresAction", ignoreCase = true)) {
+                        editor.putString("status", "RequiresAction")
+                        editor.apply()
+                    } else if (status.contains("Processing", ignoreCase = true)) {
+                        editor.putString("status", "Posted")
+                        editor.apply()
+                    } else if (status.contains("FAILED", ignoreCase = true)) {
+
+                        editor.putString("status", "Failed")
+                        editor.apply()
+
+                        if (isAdded && isResumed && !isStateSaved) {
+                            hideLoadingInButton()
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    }
+
+                } catch (_: JSONException) {
+                }
+            },
+            Response.ErrorListener {
+                // no op
+            }) {
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                return headers
+            }
+        }
+        requestQueue.add(jsonObjectRequest)
     }
 
     fun hideLoadingInButton() {
