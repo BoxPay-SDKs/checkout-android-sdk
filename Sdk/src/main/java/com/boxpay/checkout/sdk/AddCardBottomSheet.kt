@@ -67,6 +67,9 @@ import com.boxpay.checkout.sdk.dataclasses.Shopper
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
+import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -84,7 +87,6 @@ import java.io.IOException
 import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
-import kotlin.random.Random
 
 @SuppressLint("SetTextI18n")
 internal class AddCardBottomSheet : BottomSheetDialogFragment() {
@@ -1536,22 +1538,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             "FailureScreen"
                         )
                     } else {
-                        val type =
-                            response.getJSONArray("actions").getJSONObject(0).getString("type")
-
                         if (status.contains("RequiresAction", ignoreCase = true)) {
                             editor.putString("status", "RequiresAction")
-                        }
-                        url = if (type.contains("html", true)) {
-                            response
-                                .getJSONArray("actions")
-                                .getJSONObject(0)
-                                .getString("htmlPageString")
-                        } else {
-                            response
-                                .getJSONArray("actions")
-                                .getJSONObject(0)
-                                .getString("url")
                         }
 
                         if (status.contains(
@@ -1566,11 +1554,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             handleSuccess()
                         } else {
                             showLoadingState()
-                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                            intent.putExtra("url", url)
-                            intent.putExtra("type", type)
+                           openWebView(this, response)
                             startFunctionCalls()
-                            startActivityForResult(intent, 333)
                         }
 
                     }
@@ -1854,14 +1839,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
-    }
-
     private fun allFieldsAreValid(): Boolean {
         return (binding.nameOnCardErrorLayout.visibility == View.INVISIBLE || binding.nameOnCardErrorLayout.visibility == View.GONE) && (binding.ll1InvalidCardNumber.visibility == View.INVISIBLE || binding.ll1InvalidCardNumber.visibility == View.GONE) && (binding.invalidCardValidity.visibility == View.INVISIBLE || binding.invalidCardValidity.visibility == View.GONE) && (binding.invalidCVV.visibility == View.INVISIBLE || binding.invalidCVV.visibility == View.GONE) && binding.editTextCardCVV.text.isNotEmpty() && binding.editTextCardValidity.text.isNotEmpty() && binding.editTextNameOnCard.text.isNotEmpty() && binding.editTextCardNumber.text.isNotEmpty() && isValidCardNumberByLuhn(
             binding.editTextCardNumber.text.toString().replace("\\s".toRegex(), "")
@@ -1871,68 +1848,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             binding.editTextCardValidity.text.toString().substring(0, 2),
             binding.editTextCardValidity.text.toString().substring(3, 5)
         ) && isNameOnCardValid && (isCurrencySelected || isDCCEnabled)
-    }
-
-    private fun fetchStatusAndReason(url: String) {
-        val requestQueue = Volley.newRequestQueue(context)
-
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.GET, url, null,
-            Response.Listener { response ->
-                try {
-                    val status = response.getString("status")
-                    val transactionId = response.getString("transactionId").toString()
-
-                    if (status.contains(
-                            "Approved",
-                            ignoreCase = true
-                        ) || status.contains("PAID", ignoreCase = true)
-                    ) {
-
-                        editor.putString("status", "Success")
-                        editor.putString("amount", response.getString("amount").toString())
-                        editor.putString("transactionId", transactionId)
-                        editor.apply()
-
-                        if (isAdded && isResumed && !isStateSaved) {
-                            removeLoadingState()
-                            handleSuccess()
-                            job?.cancel()
-                        }
-
-                    } else if (status.contains("RequiresAction", ignoreCase = true)) {
-                        editor.putString("status", "RequiresAction")
-                        editor.apply()
-                    } else if (status.contains("Processing", ignoreCase = true)) {
-                        editor.putString("status", "Posted")
-                        editor.apply()
-                    } else if (status.contains("FAILED", ignoreCase = true)) {
-
-                        editor.putString("status", "Failed")
-                        editor.apply()
-
-                        if (isAdded && isResumed && !isStateSaved) {
-                            removeLoadingState()
-                            job?.cancel()
-                            PaymentFailureScreen(
-                                errorMessage = "Please retry using other payment method or try again in sometime"
-                            ).show(parentFragmentManager, "FailureScreen")
-                        }
-                    }
-
-                } catch (_: JSONException) {
-                }
-            },
-            Response.ErrorListener {
-                // no op
-            }) {
-            override fun getHeaders(): MutableMap<String, String> {
-                val headers = HashMap<String, String>()
-                headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                return headers
-            }
-        }
-        requestQueue.add(jsonObjectRequest)
     }
 
     private fun handleSuccess() {
@@ -1960,7 +1875,30 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 delay(3000)
-                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+                fetchStatusAndReason(context!!,"${Base_Session_API_URL}${token}/status", editor) {isSuccess, status ->
+                    if (isSuccess) {
+                        if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
+                            hideLoadingInButton()
+                            job?.cancel()
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            dismiss()
+                        }
+                    }  else if (status?.contains("FAILED", ignoreCase = true) == true) {
+                        if (isAdded && isResumed && !isStateSaved) {
+                            removeLoadingState()
+                            hideLoadingInButton()
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    }
+                }
             }
         }
     }

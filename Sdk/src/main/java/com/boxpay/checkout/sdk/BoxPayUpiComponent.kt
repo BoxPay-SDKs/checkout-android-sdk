@@ -36,6 +36,7 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentUpiComponentAloneBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -51,7 +52,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import kotlin.random.Random
 
 class BoxPayUpiComponent(
     val token: String?,
@@ -697,14 +697,6 @@ class BoxPayUpiComponent(
                 // Delay for 4 seconds
             }
         }
-    }
-
-    private fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 
     private fun fetchStatusAndReason(url: String) {

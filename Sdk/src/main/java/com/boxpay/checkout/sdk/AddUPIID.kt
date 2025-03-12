@@ -1,9 +1,11 @@
 package com.boxpay.checkout.sdk
 
 import android.animation.ObjectAnimator
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -35,13 +37,21 @@ import com.boxpay.checkout.sdk.databinding.FragmentAddUPIIDBinding
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.util.Locale
-import kotlin.random.Random
 
 
 internal class AddUPIID : BottomSheetDialogFragment() {
@@ -60,6 +70,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
+    private var job: Job? = null
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -537,8 +548,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        openUPITimerBottomSheet()
-                        dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        val actionsArray = response.getJSONArray("actions")
+                        if (actionsArray.length() > 0) {
+                            openWebView(this, response)
+                            startFunctionCalls()
+                        } else {
+                            openUPITimerBottomSheet()
+                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                        }
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()
@@ -614,6 +631,49 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     fun dismissCurrentBottomSheet() {
         dismiss()
+    }
+
+    private fun startFunctionCalls() {
+        job = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                delay(3000)
+                fetchStatusAndReason(context!!,"${Base_Session_API_URL}${token}/status", editor) {isSuccess, status ->
+                    if (isSuccess) {
+                        if (isAdded && isResumed && !isStateSaved) {
+                            hideLoadingInButton()
+                            job?.cancel()
+                            val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
+                            bottomSheet.show(
+                                parentFragmentManager,
+                                "PaymentStatusBottomSheetWithDetails"
+                            )
+                            dismiss()
+                        }
+                    }  else if (status?.contains("FAILED", ignoreCase = true) == true) {
+                        if (isAdded && isResumed && !isStateSaved) {
+                            hideLoadingInButton()
+                            job?.cancel()
+                            PaymentFailureScreen(
+                                errorMessage = "Please retry using other payment method or try again in sometime"
+                            ).show(parentFragmentManager, "FailureScreen")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 333) {
+            if (resultCode == Activity.RESULT_OK) {
+                hideLoadingInButton()
+                job?.cancel()
+                PaymentFailureScreen(
+                    errorMessage = "Please retry using other payment method or try again in sometime"
+                ).show(parentFragmentManager, "FailureScreen")
+            }
+        }
     }
 
     fun hideLoadingInButton() {
@@ -766,13 +826,5 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             fragment.shippingEnabled = shippingEnabled
             return fragment
         }
-    }
-
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 }

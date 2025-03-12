@@ -35,6 +35,7 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentCardComponentAloneBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
 import com.simform.customcomponent.SSCustomEdittextOutlinedBorder
 import kotlinx.coroutines.CoroutineScope
@@ -50,7 +51,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import kotlin.random.Random
 
 class BoxPayCardComponent(
     val token: String?,
@@ -1338,14 +1338,6 @@ class BoxPayCardComponent(
         }
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
-    }
-
-    private fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

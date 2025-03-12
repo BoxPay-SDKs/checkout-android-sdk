@@ -67,6 +67,7 @@ import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -93,7 +94,6 @@ import java.util.Date
 import java.util.Locale
 import java.util.Objects
 import java.util.TimeZone
-import kotlin.random.Random
 
 
 internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSheetInterface {
@@ -3130,7 +3130,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
             } catch (e: Exception) {
-                println("======api error ${e.message}")
+
                 handleException(
                     context,
                     e.message ?: "",
@@ -3148,7 +3148,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                 val errorResponse = String(error.networkResponse.data)
                 val errorMessage = extractMessageFromErrorResponse(errorResponse)
-                println("======api error $errorMessage")
                 if (errorMessage?.contains("expired", true) == true) {
                     SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                 } else {
@@ -3310,14 +3309,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
         }
         return Pair(fullName, code)
-    }
-
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 
     fun loadCountryCodes(countryCodeJson: JSONObject): Array<String> {

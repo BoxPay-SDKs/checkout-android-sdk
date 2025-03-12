@@ -2,7 +2,6 @@ package com.boxpay.checkout.sdk
 
 import android.app.Dialog
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -42,7 +41,7 @@ internal class SessionExpireScreen(val function: () -> Unit = {}) :
                 callback.onPaymentResult(PaymentResultObject("Expired",transactionId,operationId))
 
                 val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
-                mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
+                mainBottomSheetFragment?.dismissMainSheet()
                 dismiss()
             }
         }

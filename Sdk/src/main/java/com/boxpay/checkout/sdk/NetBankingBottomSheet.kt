@@ -54,7 +54,9 @@ import com.boxpay.checkout.sdk.dataclasses.NetbankingDataClass
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -70,7 +72,6 @@ import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
-import kotlin.random.Random
 
 
 internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
@@ -967,28 +968,11 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         if (!response.isNull("actions") && response.getJSONArray("actions")
                                 .length() != 0
                         ) {
-                            val type =
-                                response.getJSONArray("actions").getJSONObject(0)
-                                    .getString("type")
                             if (status.contains("RequiresAction", ignoreCase = true)) {
                                 editor.putString("status", "RequiresAction")
                             }
-                            if (type.contains("html", true)) {
-                                url = response
-                                    .getJSONArray("actions")
-                                    .getJSONObject(0)
-                                    .getString("htmlPageString")
-                            } else {
-                                url = response
-                                    .getJSONArray("actions")
-                                    .getJSONObject(0)
-                                    .getString("url")
-                            }
-                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                            intent.putExtra("url", url)
-                            intent.putExtra("type", type)
+                            openWebView(this, response)
                             startFunctionCalls()
-                            startActivityForResult(intent, 333)
                         } else {
                             job?.cancel()
                             removeLoadingScreenState()
@@ -1156,14 +1140,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             fragment.shippingEnabled = shippingEnabled
             return fragment
         }
-    }
-
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 
     private fun fetchStatusAndReason(url: String) {

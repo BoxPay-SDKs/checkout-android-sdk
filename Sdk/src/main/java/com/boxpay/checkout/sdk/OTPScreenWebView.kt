@@ -28,7 +28,6 @@ import com.google.android.gms.auth.api.phone.SmsRetriever
 import kotlinx.coroutines.Job
 import org.json.JSONException
 import java.util.regex.Pattern
-import kotlin.random.Random
 
 
 internal class OTPScreenWebView() : AppCompatActivity() {
@@ -148,14 +147,6 @@ internal class OTPScreenWebView() : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(smsConsentReceiver)
-    }
-
-    fun generateRandomAlphanumericString(length: Int): String {
-        val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-        return (1..length)
-            .map { Random.nextInt(0, charPool.size) }
-            .map(charPool::get)
-            .joinToString("")
     }
 
     private fun startSmsRetriever() {
