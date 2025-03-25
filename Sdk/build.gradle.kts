@@ -100,7 +100,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.example.AndroidCheckOutSDK"
             artifactId = "AndroidCheckOutSDK"
-            version = "1.0.1"
+            version = "1.2.3-beta4"
 
             afterEvaluate {
                 from(components["release"])
