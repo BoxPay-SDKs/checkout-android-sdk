@@ -232,39 +232,43 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun getAllInstalledApps(packageManager: PackageManager) {
-        // List of known UPI-supported apps and their corresponding package names
-        val upiAppPackages = setOf(
-            "com.google.android.apps.nbu.paisa.user", // GPay
-            "com.phonepe.app",                        // PhonePe
-            "net.one97.paytm"                         // Paytm
-        )
-        var i = 0
-        val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-
-        try {
-            for (app in apps) {
-
-                val appName = packageManager.getApplicationLabel(app).toString()
-
-                // Check if the app's package is in the known UPI apps list
-                if (upiAppPackages.contains(app.packageName)) {
-                    i++
-                    UPIAppsAndPackageMap[appName] = app.packageName
-                }
-            }
-        } catch (e: Exception) {
-            // Handle the exception if application resources cannot be loaded
-            handleException(
-                context,
-                e.message.toString(),
-                token ?: "",
-                baseUrl = Base_Session_API_URL,
-                "fetchInstalledPackageDetails"
+        CoroutineScope(Dispatchers.IO).launch {
+            val upiAppPackages = setOf(
+                "com.google.android.apps.nbu.paisa.user", // GPay
+                "com.phonepe.app",                        // PhonePe
+                "net.one97.paytm"                         // Paytm
             )
-        }
 
-        populatePopularUPIApps()
+            val tempMap = mutableMapOf<String, String>()
+
+            try {
+                val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+
+                for (app in apps) {
+                    val appName = packageManager.getApplicationLabel(app).toString()
+
+                    if (upiAppPackages.contains(app.packageName)) {
+                        tempMap[appName] = app.packageName
+                    }
+                }
+            } catch (e: Exception) {
+                handleException(
+                    context,
+                    e.message.toString(),
+                    token ?: "",
+                    baseUrl = Base_Session_API_URL,
+                    "fetchInstalledPackageDetails"
+                )
+            }
+
+            withContext(Dispatchers.Main) {
+                UPIAppsAndPackageMap.clear()
+                UPIAppsAndPackageMap.putAll(tempMap)
+                populatePopularUPIApps()
+            }
+        }
     }
+
 
 
     private fun showLoadingState() {
@@ -2057,7 +2061,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun showPriceBreakUp() {
-        binding.`itemsInOrderRecyclerView`.visibility = View.VISIBLE
+        binding.itemsInOrderRecyclerView.visibility = View.VISIBLE
         binding.textView18.visibility = View.VISIBLE
         binding.ItemsPrice.visibility = View.VISIBLE
         binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
