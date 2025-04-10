@@ -383,9 +383,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             Method.GET, url, null,
             Response.Listener { response ->
                 try {
-                    println("=====response $response")
                     val status = response.getString("status")
-                    println("=====status $status")
                     val reason = response.getString("statusReason")
                     val reasonCode = response.getString("reasonCode")
                     transactionId = response.getString("transactionId").toString()
