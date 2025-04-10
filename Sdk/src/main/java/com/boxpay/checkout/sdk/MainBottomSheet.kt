@@ -290,6 +290,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         showLoadingState()
+        startFunctionCalls()
         if (requestCode == 121) {
             isGpayReturned = true
         } else if (requestCode == 122) {
