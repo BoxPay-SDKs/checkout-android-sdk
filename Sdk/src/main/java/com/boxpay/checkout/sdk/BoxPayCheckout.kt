@@ -42,16 +42,11 @@ class BoxPayCheckout(
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
 
-    var testEnv = false
-
     private var BASE_URL: String? = null
 
     fun display() {
         if(configurationOptions != null){
             if (configurationOptions[ConfigurationOptions.ENABLE_SANDBOX_ENV] == true) {
-                editor.putString("baseUrl", "sandbox-apis.boxpay.tech")
-                this.BASE_URL = "sandbox-apis.boxpay.tech"
-            } else if (testEnv) {
                 editor.putString("baseUrl", "test-apis.boxpay.tech")
                 this.BASE_URL = "test-apis.boxpay.tech"
             } else {

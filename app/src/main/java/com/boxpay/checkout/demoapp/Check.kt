@@ -103,7 +103,6 @@ class Check : AppCompatActivity() {
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to false
                     )
                 )
-            boxPayCheckout.testEnv = true
             boxPayCheckout.display()
         }
     }
