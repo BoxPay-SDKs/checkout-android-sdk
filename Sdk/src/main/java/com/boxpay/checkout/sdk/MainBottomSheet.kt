@@ -3073,7 +3073,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 binding.nameAndMobileTextViewMain.text =
-                    if (showShipping) {
+                    if (showShipping && !shopperObject.isNull("deliveryAddress")) {
                         if (shopperObject.getJSONObject("deliveryAddress").getString("labelName") != "null" && !shopperObject.getJSONObject("deliveryAddress").getString("labelName").isNullOrEmpty()) {
                                 "Deliver to ${shopperObject.getJSONObject("deliveryAddress").getString("labelName")}"
                         } else {
@@ -3095,8 +3095,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "lastName",
                             ""
                         )
-                    } else {
+                    } else if(showPhone){
                         "(${sharedPreferences.getString("phoneNumber", "")})"
+                    } else {
+                        "Deliver to"
                     }
                 if (showShipping) {
                     binding.deliveryAddressText.text = "Address"

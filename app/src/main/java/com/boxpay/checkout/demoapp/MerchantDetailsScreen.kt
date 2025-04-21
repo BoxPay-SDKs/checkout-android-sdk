@@ -110,7 +110,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                     ))
-                    checkout.testEnv = false
                     checkout.display()
                 }
             } else if (selectedEnvironment == "sandbox") {
@@ -141,7 +140,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                     ))
-                    checkout.testEnv = false
                     checkout.display()
                 }
             } else if (selectedEnvironment == "test") {
@@ -170,7 +168,6 @@ class MerchantDetailsScreen : AppCompatActivity() {
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                     ))
-                    checkout.testEnv = true
                     checkout.display()
                 }
             }
