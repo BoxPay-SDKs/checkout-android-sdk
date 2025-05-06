@@ -348,42 +348,6 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
                     val gson = Gson()
                     val addressListType = object : TypeToken<List<Address>>() {}.type
                     _addressList.value = gson.fromJson(response.toString(), addressListType)
-                    if (_addressList.value?.size == 1) {
-                        val nameParts = addressList.value?.get(0)?.name?.split(" ")
-                        if (nameParts != null) {
-                            val firstName = if (nameParts.size > 1) {
-                                nameParts.dropLast(1).joinToString(" ")
-                            } else {
-                                nameParts[0]
-                            }
-
-                            val lastName = if (nameParts.size > 1) {
-                                nameParts.last()
-                            } else {
-                                ""
-                            }
-
-                            editor.putString("firstName", firstName)
-                            editor.putString("lastName", lastName)
-                        }
-
-                        editor.putString("address1", addressList.value?.get(0)?.address1)
-                        editor.putString("address2", addressList.value?.get(0)?.address2)
-                        editor.putString("city", addressList.value?.get(0)?.city)
-                        editor.putString("state", addressList.value?.get(0)?.state)
-                        editor.putString("countryCode", addressList.value?.get(0)?.countryCode)
-                        editor.putString("postalCode", addressList.value?.get(0)?.postalCode)
-                        editor.putString("email", addressList.value?.get(0)?.email)
-                        editor.putString("phoneNumber", addressList.value?.get(0)?.phoneNumber)
-                        editor.putString("labelType",addressList.value?.get(0)?.labelType)
-                        editor.putString("labelName",addressList.value?.get(0)?.labelName)
-
-                        editor.apply()
-
-                        val mainBottomSheetFragment =
-                            parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
-                        mainBottomSheetFragment?.updateBottomSheet()
-                    }
                     if (_addressList.value?.isEmpty() == true) {
                         editor.putString("firstName", null)
                         editor.putString("lastName", null)

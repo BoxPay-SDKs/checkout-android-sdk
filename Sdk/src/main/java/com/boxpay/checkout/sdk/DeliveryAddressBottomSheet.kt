@@ -616,6 +616,13 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             binding.addressLayout.visibility = View.GONE
         }
 
+        binding.savedAddressCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            if (!isChecked) {
+                binding.savedAddressCheckbox.isChecked = true
+                Toast.makeText(context, "Newly added address will be saved as default.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         binding.spinnerDialCodes.apply {
             // Set up the adapter
             val adapter = CustomArrayAdapter(
@@ -1036,8 +1043,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val country = countrySelectedFromDropDown
             val postalCode = binding.postalCodeEditText.text
             val state = binding.stateEditText.text
-            var PAN = ""
-            var DOB = ""
+            var PAN :String? = null
+            var DOB :String?= null
             if (binding.panEditText.text.toString().isNotEmpty()) {
                 PAN = binding.panEditText.text.toString()
             }

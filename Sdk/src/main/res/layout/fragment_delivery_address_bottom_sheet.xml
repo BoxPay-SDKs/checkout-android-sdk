@@ -687,7 +687,7 @@
                                     android:lineSpacingExtra="-1sp"
                                     android:paddingHorizontal="8dp"
                                     android:paddingVertical="10dp"
-                                    android:text="Office"
+                                    android:text="Work"
                                     android:textColor="#2D2B32"
                                     android:textFontWeight="400"
                                     android:textSize="12sp" />

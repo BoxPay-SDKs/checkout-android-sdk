@@ -827,6 +827,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.recommendedProceedButton.setOnClickListener {
                 if (!binding.loadingRelativeLayout.isVisible) {
+                    recommendedCheckedPosition = if (recommendedCheckedPosition == null)  0 else recommendedCheckedPosition
                     callUIAnalytics(
                         requireContext(),
                         AnalyticsEvents.PAYMENT_INITIATED,

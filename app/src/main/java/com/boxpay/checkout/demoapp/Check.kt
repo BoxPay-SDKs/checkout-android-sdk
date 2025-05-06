@@ -100,7 +100,7 @@ class Check : AppCompatActivity() {
                     configurationOptions = mapOf(
                         ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to false,
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
-                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to false
+                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                     )
                 )
             boxPayCheckout.display()

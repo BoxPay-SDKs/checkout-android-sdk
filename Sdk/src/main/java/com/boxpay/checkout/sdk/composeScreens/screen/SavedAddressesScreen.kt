@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk.composeScreens.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +50,7 @@ fun SavedAddressesScreen(
     selectedCtaColor: Color,
     alreadySavedAddressPostal: String
 ) {
+    val context = LocalContext.current
     val isMoreOptionClicked = remember {
         mutableStateOf(false)
     }
@@ -212,7 +215,11 @@ fun SavedAddressesScreen(
                                  },
             onClickDeleteAddress = {
                 isMoreOptionClicked.value = false
-                isDeleteClicked.value = true
+                if (addressList.size == 1) {
+                    Toast.makeText(context, "Cannot delete. Only one address is saved.",Toast.LENGTH_LONG).show()
+                } else {
+                    isDeleteClicked.value = true
+                }
             },
             onClickSetDefault = { onClickSetDefault(selectedAddress.value) },
             onClickBack = {
