@@ -1737,21 +1737,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val url = "${Base_Session_API_URL}${token}/shoppers/${uniqueRef}/addresses"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val requestBody = JSONObject().apply {
-            val nameParts = binding.fullNameEditText.text.split(" ")
-
-            val firstName = if (nameParts.size > 1) {
-                nameParts.dropLast(1).joinToString(" ")
-            } else {
-                nameParts[0]
-            }
-
-            val lastName = if (nameParts.size > 1) {
-                nameParts.last()
-            } else {
-                ""
-            }
-            put("firstName", firstName)
-            put("lastName", lastName)
+            val fullName = binding.fullNameEditText.text
+            put("name",fullName)
             put("phoneNumber", "$countryCodePhoneNum${binding.mobileNumberEditText.text}")
             put("email", binding.emailEditText.text)
             if (binding.dobEditText.text.toString().isNotEmpty() || convertedDate != null) {
