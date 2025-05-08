@@ -616,6 +616,13 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             binding.addressLayout.visibility = View.GONE
         }
 
+        binding.savedAddressCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            if (!isChecked) {
+                binding.savedAddressCheckbox.isChecked = true
+                Toast.makeText(context, "Newly added address will be saved as default.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         binding.spinnerDialCodes.apply {
             // Set up the adapter
             val adapter = CustomArrayAdapter(
@@ -1036,8 +1043,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val country = countrySelectedFromDropDown
             val postalCode = binding.postalCodeEditText.text
             val state = binding.stateEditText.text
-            var PAN = ""
-            var DOB = ""
+            var PAN :String? = null
+            var DOB :String?= null
             if (binding.panEditText.text.toString().isNotEmpty()) {
                 PAN = binding.panEditText.text.toString()
             }
@@ -1730,21 +1737,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val url = "${Base_Session_API_URL}${token}/shoppers/${uniqueRef}/addresses"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val requestBody = JSONObject().apply {
-            val nameParts = binding.fullNameEditText.text.split(" ")
-
-            val firstName = if (nameParts.size > 1) {
-                nameParts.dropLast(1).joinToString(" ")
-            } else {
-                nameParts[0]
-            }
-
-            val lastName = if (nameParts.size > 1) {
-                nameParts.last()
-            } else {
-                ""
-            }
-            put("firstName", firstName)
-            put("lastName", lastName)
+            val fullName = binding.fullNameEditText.text
+            put("name",fullName)
             put("phoneNumber", "$countryCodePhoneNum${binding.mobileNumberEditText.text}")
             put("email", binding.emailEditText.text)
             if (binding.dobEditText.text.toString().isNotEmpty() || convertedDate != null) {

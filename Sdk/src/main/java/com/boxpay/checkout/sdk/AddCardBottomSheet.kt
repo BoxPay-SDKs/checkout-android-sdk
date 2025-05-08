@@ -1570,6 +1570,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
+                    hideLoadingInButton()
 
                     if (errorMessage?.contains("expired", true) == true) {
                         val callback = SingletonClass.getInstance().getYourObject()

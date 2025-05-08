@@ -106,37 +106,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                     boxPayElements.showPaymentMethods()
                 } else {
                     val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken, configurationOptions = mapOf(
-                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
-                        ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
-                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
-                    ))
-                    checkout.display()
-                }
-            } else if (selectedEnvironment == "sandbox") {
-                if (isUpiEnabled || isCardEnabled) {
-                    val paymentMethod = if (isUpiEnabled && isCardEnabled) {
-                        listOf("upi","card")
-                    } else if (isUpiEnabled) {
-                        listOf("upi")
-                    } else {
-                        listOf("card")
-                    }
-                    val boxPayElements = BoxPayElements(
-                        token,
-                        ::onPaymentResult,
-                        paymentMethod,
-                        configurationOptions = mapOf(
-                            ConfigurationOptions.ENABLE_SANDBOX_ENV to true
-                        )
-                    )
-                    boxPayElements.setContext(this)
-                    boxPayElements.setUPILayoutId(R.id.upiOpenButon)
-                    boxPayElements.setCardLayoutId(R.id.cardOpenButton)
-                    binding.mainContainer.removeAllViews()
-                    boxPayElements.showPaymentMethods()
-                } else {
-                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken, configurationOptions = mapOf(
-                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to false,
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                     ))
@@ -164,8 +134,8 @@ class MerchantDetailsScreen : AppCompatActivity() {
                     boxPayElements.showPaymentMethods()
                 } else {
                     val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken, configurationOptions = mapOf(
-                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to true,
-                        ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to false,
+                        ConfigurationOptions.ENABLE_SANDBOX_ENV to true,
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                     ))
                     checkout.display()

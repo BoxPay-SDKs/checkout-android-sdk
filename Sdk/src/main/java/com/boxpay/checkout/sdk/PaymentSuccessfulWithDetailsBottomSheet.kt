@@ -71,7 +71,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
         binding.apply {
             transactionAmountTextView.text = amount
             transactionIDTextView.text = transactionID
-            if(!orderDetails.isNullOrEmpty() || orderDetails != "null") {
+            if(!orderDetails.isNullOrEmpty() && orderDetails != "null") {
                 tvProduct.text = orderDetails
                 tvProduct.maxLines = 1
                 tvProduct.ellipsize = TextUtils.TruncateAt.END
