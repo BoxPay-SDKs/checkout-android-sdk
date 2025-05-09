@@ -42,6 +42,7 @@ import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
 import com.boxpay.checkout.sdk.utils.openWebView
+import com.boxpay.checkout.sdk.utils.parseFirstAction
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -553,21 +554,21 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
 
-                        val actionObject = Optional.ofNullable(response.getJSONArray("actions"))
-                            .filter { actionsArray -> actionsArray.length() > 0}
-                            .map { actionsArray ->  actionsArray.getJSONObject(0)}
-                            .orElse(null);
-                        val actionType = Optional.ofNullable(actionObject)
-                            .map { action -> action.getString("type") }
-                            .orElse(null);
+                        val parsedAction = parseFirstAction(response)
+                        val actionType = parsedAction.type
+                        val actionObject = parsedAction.jsonObject
 
-                        if (actionType == "html" || actionType == "url") {
-                            openWebViewWrapper(response)
-                        } else if (actionType == "timer") {
-                            val expirySec = actionObject.optInt("expirySec", DEFAULT_UPI_TIMER_IN_SEC)
-                            openUPITimerBottomSheet(expirySec)
-                        } else {
-                            openUPITimerBottomSheet(DEFAULT_UPI_TIMER_IN_SEC) // fallback
+                        when (actionType) {
+                            "html", "url" -> {
+                                openWebViewWithFetchStatusFunctionCall(response)
+                            }
+                            "timer" -> {
+                                val expirySec = actionObject?.optInt("expirySec", DEFAULT_UPI_TIMER_IN_SEC) ?: DEFAULT_UPI_TIMER_IN_SEC
+                                openUPITimerBottomSheet(expirySec)
+                            }
+                            else -> {
+                                openUPITimerBottomSheet(DEFAULT_UPI_TIMER_IN_SEC) // fallback
+                            }
                         }
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
@@ -646,7 +647,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         dismiss()
     }
 
-    fun openWebViewWrapper(response: JSONObject) {
+    fun openWebViewWithFetchStatusFunctionCall(response: JSONObject) {
         openWebView(this, response)
         startFunctionCalls()
     }

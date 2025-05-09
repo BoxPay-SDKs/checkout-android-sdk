@@ -18,6 +18,11 @@ import org.json.JSONObject
 import java.util.Locale
 import kotlin.random.Random
 
+data class ParsedAction(
+    val type: String?,
+    val jsonObject: JSONObject?
+)
+
 fun handleException(
     context: Context,
     message: String = "An error occurred",
@@ -139,6 +144,17 @@ fun generateRandomAlphanumericString(length: Int): String {
         .map(charPool::get)
         .joinToString("")
 }
+
+fun parseFirstAction(response: JSONObject): ParsedAction {
+    val actionObject = response.optJSONArray("actions")
+        ?.takeIf { it.length() > 0 }
+        ?.getJSONObject(0)
+
+    val actionType = actionObject?.optString("type", null)
+
+    return ParsedAction(actionType, actionObject)
+}
+
 
 const val DEFAULT_UPI_TIMER_IN_SEC = 300
 

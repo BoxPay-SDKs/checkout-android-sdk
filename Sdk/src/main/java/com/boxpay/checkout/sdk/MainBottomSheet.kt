@@ -71,6 +71,7 @@ import com.boxpay.checkout.sdk.utils.DEFAULT_UPI_TIMER_IN_SEC
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
 import com.boxpay.checkout.sdk.utils.openWebView
+import com.boxpay.checkout.sdk.utils.parseFirstAction
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -3467,22 +3468,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        val actionObject = Optional.ofNullable(response.getJSONArray("actions"))
-                            .filter { actionsArray -> actionsArray.length() > 0}
-                            .map { actionsArray ->  actionsArray.getJSONObject(0)}
-                            .orElse(null);
-                        val actionType = Optional.ofNullable(actionObject)
-                            .map { action -> action.getString("type") }
-                            .orElse(null);
+                        val parsedAction = parseFirstAction(response)
+                        val actionType = parsedAction.type
+                        val actionObject = parsedAction.jsonObject
 
-                        if (actionType == "html" || actionType == "url") {
-                            openWebView(this, response)
-                            startFunctionCalls()
-                        } else if (actionType == "timer") {
-                            val expirySec = actionObject.optInt("expirySec", DEFAULT_UPI_TIMER_IN_SEC)
-                            openUPITimerBottomSheet(displayName,expirySec)
-                        } else {
-                            openUPITimerBottomSheet(displayName,DEFAULT_UPI_TIMER_IN_SEC) // fallback
+                        when (actionType) {
+                            "html", "url" -> {
+                                openWebViewWithFetchStatusFunctionCall(response)
+                            }
+                            "timer" -> {
+                                val expirySec = actionObject?.optInt("expirySec", DEFAULT_UPI_TIMER_IN_SEC) ?: DEFAULT_UPI_TIMER_IN_SEC
+                                openUPITimerBottomSheet(displayName, expirySec)
+                            }
+                            else -> {
+                                openUPITimerBottomSheet(displayName, DEFAULT_UPI_TIMER_IN_SEC) // fallback
+                            }
                         }
 
                     } else if (status.contains("Approved", ignoreCase = true)) {
@@ -3534,6 +3534,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
+    }
+
+    fun openWebViewWithFetchStatusFunctionCall(response: JSONObject) {
+        openWebView(this, response)
+        startFunctionCalls()
     }
 
     fun showLoadingInButton() {
