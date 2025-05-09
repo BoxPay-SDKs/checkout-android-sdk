@@ -67,11 +67,9 @@ import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
-import com.boxpay.checkout.sdk.utils.DEFAULT_UPI_TIMER_IN_SEC
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
-import com.boxpay.checkout.sdk.utils.openWebView
-import com.boxpay.checkout.sdk.utils.parseFirstAction
+import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -119,8 +117,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var job: Job? = null
     private var isTablet = false
     private var showName = false
-    private var labelType : String? = null
-    private var labelName : String? = null
+    private var labelType: String? = null
+    private var labelName: String? = null
     private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
     private var moreOptionsClicked: Boolean? = null
@@ -274,7 +272,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
-
     private fun showLoadingState() {
         if (!binding.loadingRelativeLayout.isVisible) {
             binding.boxpayLogoLottie.apply {
@@ -326,7 +323,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } catch (e: Exception) {
             // Log specific error if the app is not found
             upiIntentError = e.message
-            callUIAnalytics(requireActivity(), AnalyticsEvents.UPI_APP_NOT_FOUND, "", "UPI","upi app not found")
+            callUIAnalytics(
+                requireActivity(),
+                AnalyticsEvents.UPI_APP_NOT_FOUND,
+                "",
+                "UPI",
+                "upi app not found"
+            )
             PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(
                 parentFragmentManager,
                 "FailureScreen"
@@ -831,7 +834,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.recommendedProceedButton.setOnClickListener {
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    recommendedCheckedPosition = if (recommendedCheckedPosition == null)  0 else recommendedCheckedPosition
+                    recommendedCheckedPosition =
+                        if (recommendedCheckedPosition == null) 0 else recommendedCheckedPosition
                     callUIAnalytics(
                         requireContext(),
                         AnalyticsEvents.PAYMENT_INITIATED,
@@ -1780,7 +1784,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         event: String,
         paymentSubType: String,
         paymentType: String,
-        message:String
+        message: String
     ) {
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
 
@@ -2505,7 +2509,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val itemsArray =
                     if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
-                var productName : String? = null
+                var productName: String? = null
 
                 if (itemsArray != null) {
                     for (i in 0 until itemsArray.length()) {
@@ -2518,13 +2522,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         productName = if (productName.isNullOrEmpty()) {
                             "${itemObject.getString("itemName")} X (x${itemObject.getInt("quantity")})"
                         } else {
-                            "$productName\n${itemObject.getString("itemName")} X (x${itemObject.getInt("quantity")})"
+                            "$productName\n${itemObject.getString("itemName")} X (x${
+                                itemObject.getInt(
+                                    "quantity"
+                                )
+                            })"
                         }
                         totalQuantity += quantity
                     }
                 }
-                editor.putString("orderDetails",productName)
-                editor.putInt("orderDetailsLength",itemsArray?.length() ?: 0)
+                editor.putString("orderDetails", productName)
+                editor.putInt("orderDetailsLength", itemsArray?.length() ?: 0)
                 editor.apply()
 
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
@@ -2684,8 +2692,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("city", null)
                     editor.putString("state", null)
                     editor.putString("postalCode", null)
-                    editor.putString("labelType",null)
-                    editor.putString("labelName",null)
+                    editor.putString("labelType", null)
+                    editor.putString("labelName", null)
                 } else {
                     editor.putString(
                         "postalCode",
@@ -2699,10 +2707,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "city",
                         shopperObject.getJSONObject("deliveryAddress").getString("city")
                     )
-                    labelType = shopperObject.getJSONObject("deliveryAddress").getString("labelType")
-                    labelName = shopperObject.getJSONObject("deliveryAddress").getString("labelName")
-                    editor.putString("labelType",shopperObject.getJSONObject("deliveryAddress").getString("labelType"))
-                    editor.putString("labelName",shopperObject.getJSONObject("deliveryAddress").getString("labelName"))
+                    labelType =
+                        shopperObject.getJSONObject("deliveryAddress").getString("labelType")
+                    labelName =
+                        shopperObject.getJSONObject("deliveryAddress").getString("labelName")
+                    editor.putString(
+                        "labelType",
+                        shopperObject.getJSONObject("deliveryAddress").getString("labelType")
+                    )
+                    editor.putString(
+                        "labelName",
+                        shopperObject.getJSONObject("deliveryAddress").getString("labelName")
+                    )
                     editor.putString("indexCountryCodePhone", countryCode?.second)
                     editor.putString("phoneCode", countryCode?.second)
                     editor.putString(
@@ -3083,10 +3099,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 binding.nameAndMobileTextViewMain.text =
                     if (showShipping && !shopperObject.isNull("deliveryAddress")) {
-                        if (shopperObject.getJSONObject("deliveryAddress").getString("labelName") != "null" && !shopperObject.getJSONObject("deliveryAddress").getString("labelName").isNullOrEmpty()) {
-                                "Deliver to ${shopperObject.getJSONObject("deliveryAddress").getString("labelName")}"
+                        if (shopperObject.getJSONObject("deliveryAddress")
+                                .getString("labelName") != "null" && !shopperObject.getJSONObject("deliveryAddress")
+                                .getString("labelName").isNullOrEmpty()
+                        ) {
+                            "Deliver to ${
+                                shopperObject.getJSONObject("deliveryAddress")
+                                    .getString("labelName")
+                            }"
                         } else {
-                            "Deliver to ${shopperObject.getJSONObject("deliveryAddress").getString("labelType")}"
+                            "Deliver to ${
+                                shopperObject.getJSONObject("deliveryAddress")
+                                    .getString("labelType")
+                            }"
                         }
                     } else if (showPhone && showName) {
                         sharedPreferences.getString(
@@ -3096,7 +3121,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "lastName",
                             ""
                         ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-                    } else if(showName){
+                    } else if (showName) {
                         sharedPreferences.getString(
                             "firstName",
                             ""
@@ -3104,7 +3129,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "lastName",
                             ""
                         )
-                    } else if(showPhone){
+                    } else if (showPhone) {
                         "(${sharedPreferences.getString("phoneNumber", "")})"
                     } else {
                         "Deliver to"
@@ -3225,7 +3250,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     "lastName",
                     ""
                 ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-            } else if(showName){
+            } else if (showName) {
                 sharedPreferences.getString(
                     "firstName",
                     ""
@@ -3468,23 +3493,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        val parsedAction = parseFirstAction(response)
-                        val actionType = parsedAction.type
-                        val actionObject = parsedAction.jsonObject
-
-                        when (actionType) {
-                            "html", "url" -> {
-                                openWebViewWithFetchStatusFunctionCall(response)
-                            }
-                            "timer" -> {
-                                val expirySec = actionObject?.optInt("expirySec", DEFAULT_UPI_TIMER_IN_SEC) ?: DEFAULT_UPI_TIMER_IN_SEC
-                                openUPITimerBottomSheet(displayName, expirySec)
-                            }
-                            else -> {
-                                openUPITimerBottomSheet(displayName, DEFAULT_UPI_TIMER_IN_SEC) // fallback
-                            }
-                        }
-
+                        showWebOrTimerScreen(this, response, displayName, {
+                            startFunctionCalls()
+                        })
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()
@@ -3534,11 +3545,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Add the request to the RequestQueue.
         requestQueue.add(jsonObjectRequest)
-    }
-
-    fun openWebViewWithFetchStatusFunctionCall(response: JSONObject) {
-        openWebView(this, response)
-        startFunctionCalls()
     }
 
     fun showLoadingInButton() {
@@ -3767,13 +3773,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         space.layoutParams = params
 
         container.addView(space)
-    }
-
-    private fun openUPITimerBottomSheet(displayName : String,timerInSec: Int) {
-        val bottomSheetFragment = UPITimerBottomSheet.newInstance(displayName, timerInSec)
-        parentFragmentManager.beginTransaction()
-            .add(bottomSheetFragment, "UPITimerBottomSheet")
-            .commitAllowingStateLoss()
     }
 
     private fun addAccordionView(container: LinearLayout, item: JSONObject) {
