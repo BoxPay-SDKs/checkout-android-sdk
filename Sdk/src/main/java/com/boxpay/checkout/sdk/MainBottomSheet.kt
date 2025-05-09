@@ -3998,7 +3998,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (callbackForDismissing != null) {
                             callbackForDismissing.dismissFunction()
                         }
-                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                        if (isAdded && isResumed && !isStateSaved) {
+                            SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                        }
                     }
                 }
                 sessionTimer?.start()
