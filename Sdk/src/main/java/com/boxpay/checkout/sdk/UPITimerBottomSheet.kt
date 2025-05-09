@@ -192,7 +192,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             bottomsheet.show(parentFragmentManager, "CancellationConfirmation")
         }
         startTimer()
-        startTimerForAPICalls()
+        initiateFetchStatusCall()
 
         var goneOrVisible = false
 
@@ -254,7 +254,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         countdownTimer.start()
     }
 
-    private fun startTimerForAPICalls() {
+    private fun initiateFetchStatusCall() {
         var elapsedTime = 0L
         countdownTimerForAPI = object : CountDownTimer(300000, 3000) {
 

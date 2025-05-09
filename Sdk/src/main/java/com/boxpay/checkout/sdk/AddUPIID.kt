@@ -571,7 +571,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         editor.apply()
 
                         showWebOrTimerScreen(this, response, userVPA, {
-                            startFunctionCalls()
+                            initiateFetchStatusCall()
                         })
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
@@ -650,7 +650,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         dismiss()
     }
 
-    private fun startFunctionCalls() {
+    private fun initiateFetchStatusCall() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 delay(3000)

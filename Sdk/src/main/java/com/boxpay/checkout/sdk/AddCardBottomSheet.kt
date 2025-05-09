@@ -1551,7 +1551,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             handleDccEvents()
                             handleSuccess()
                         } else {
-                            startFunctionCalls()
+                            initiateFetchStatusCall()
                             showLoadingState()
                            openWebView(this, response)
                         }
@@ -1869,7 +1869,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun startFunctionCalls() {
+    private fun initiateFetchStatusCall() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (coroutineContext.isActive) {
                 delay(3000)

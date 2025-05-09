@@ -291,7 +291,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         showLoadingState()
-        startFunctionCalls()
+        initiateFetchStatusCall()
         if (requestCode == 121) {
             isGpayReturned = true
         } else if (requestCode == 122) {
@@ -317,7 +317,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 else -> 123
             }
 
-            startFunctionCalls()
+            initiateFetchStatusCall()
             startActivityForResult(intent, resultCode)
 
         } catch (e: Exception) {
@@ -356,7 +356,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
-    private fun startFunctionCalls() {
+    private fun initiateFetchStatusCall() {
         job?.cancel()
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
@@ -1496,7 +1496,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 imageView.setImageBitmap(bitmap)
                 removeLoadingState()
                 startTimer()
-                startFunctionCalls()
+                initiateFetchStatusCall()
             },
             Response.ErrorListener { /* no response handling */error ->
                 removeLoadingState()
@@ -1863,7 +1863,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun openDefaultUPIIntentBottomSheetFromAndroid(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         try {
-            startFunctionCalls()
+            initiateFetchStatusCall()
             startActivityForResult(intent, 124)
         } catch (_: Exception) {
             removeLoadingState()
@@ -3494,7 +3494,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         editor.putString("status", "RequiresAction")
                         editor.apply()
                         showWebOrTimerScreen(this, response, displayName, {
-                            startFunctionCalls()
+                            initiateFetchStatusCall()
                         })
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
