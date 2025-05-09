@@ -2042,9 +2042,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-        requireActivity().runOnUiThread {
-            windowManager.addView(overlayViewMainBottomSheet, layoutParams)
+        val activity = activity
+        if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+            activity.runOnUiThread {
+                windowManager.addView(overlayViewMainBottomSheet, layoutParams)
+            }
         }
+
     }
 
     private fun removeOverlayFromActivity() {
