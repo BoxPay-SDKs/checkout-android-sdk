@@ -40,7 +40,7 @@ import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
-import com.boxpay.checkout.sdk.utils.openWebView
+import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -52,7 +52,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.util.Locale
-
 
 internal class AddUPIID : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentAddUPIIDBinding
@@ -70,6 +69,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
+
     private var job: Job? = null
 
 
@@ -133,7 +133,12 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             binding.proceedButton.isEnabled = false
 
             binding.editText.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
 
                 }
 
@@ -160,7 +165,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                             if (textNow.contains('@') && (textNow.split('@').getOrNull(1)?.length
                                     ?: 0) >= 2
                             ) {
-                                binding.ll1InvalidUPI.visibility = View.VISIBLE // Show specific error
+                                binding.ll1InvalidUPI.visibility =
+                                    View.VISIBLE // Show specific error
                             } else {
                                 binding.ll1InvalidUPI.visibility =
                                     View.INVISIBLE // Hide error if not matching condition
@@ -185,17 +191,22 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 closeKeyboard(this)
 
 
-                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, "UpiCollect", "Upi")
+                callUIAnalytics(
+                    requireContext(),
+                    AnalyticsEvents.PAYMENT_INITIATED,
+                    "UpiCollect",
+                    "Upi"
+                )
 
-            if (checkString(userVPA!!)) {
-                binding.ll1InvalidUPI.visibility = View.INVISIBLE
-                binding.editText.isEnabled = false
-                validateAPICall(requireContext(), userVPA!!)
-                showLoadingInButton()
-            } else {
-                binding.ll1InvalidUPI.visibility = View.VISIBLE
+                if (checkString(userVPA!!)) {
+                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                    binding.editText.isEnabled = false
+                    validateAPICall(requireContext(), userVPA!!)
+                    showLoadingInButton()
+                } else {
+                    binding.ll1InvalidUPI.visibility = View.VISIBLE
+                }
             }
-        }
 
             binding.root
         } catch (e: Exception) {
@@ -215,6 +226,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         return regex.matches(input)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun validateAPICall(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -428,6 +440,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -473,19 +486,27 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
+                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
                     put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
+                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
+                        put(
+                            "dateOfBirth",
+                            CommonFunctions.formatToISO8601WithCurrentTime(
+                                sharedPreferences.getString(
+                                    "dateOfBirth",
+                                    null
+                                )!!
+                            )
+                        )
                     } else {
                         put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
                     }
                 }
 
-                if (sharedPreferences.getString("panNumberChosen", null) != null){
+                if (sharedPreferences.getString("panNumberChosen", null) != null) {
                     put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                }else{
+                } else {
                     put("panNumber", sharedPreferences.getString("panNumber", null))
                 }
 
@@ -548,14 +569,10 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        val actionsArray = response.getJSONArray("actions")
-                        if (actionsArray.length() > 0) {
-                            openWebView(this, response)
-                            startFunctionCalls()
-                        } else {
-                            openUPITimerBottomSheet()
-                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
-                        }
+
+                        showWebOrTimerScreen(this, response, userVPA, {
+                            initiateFetchStatusCall()
+                        })
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()
@@ -577,7 +594,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         val callback = SingletonClass.getInstance().getYourObject()
                         val callbackForDismissing =
                             SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -633,11 +650,15 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         dismiss()
     }
 
-    private fun startFunctionCalls() {
+    private fun initiateFetchStatusCall() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 delay(3000)
-                fetchStatusAndReason(context!!,"${Base_Session_API_URL}${token}/status", editor) {isSuccess, status ->
+                fetchStatusAndReason(
+                    context!!,
+                    "${Base_Session_API_URL}${token}/status",
+                    editor
+                ) { isSuccess, status ->
                     if (isSuccess) {
                         if (isAdded && isResumed && !isStateSaved) {
                             hideLoadingInButton()
@@ -649,7 +670,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                             )
                             dismiss()
                         }
-                    }  else if (status?.contains("FAILED", ignoreCase = true) == true) {
+                    } else if (status?.contains("FAILED", ignoreCase = true) == true) {
                         if (isAdded && isResumed && !isStateSaved) {
                             hideLoadingInButton()
                             job?.cancel()
@@ -678,12 +699,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
-        binding.textView6.setTextColor(Color.parseColor(
-            sharedPreferences.getString(
-                "buttonTextColor",
-                "#ffffff"
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
             )
-        ))
+        )
         binding.textView6.visibility = View.VISIBLE
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
@@ -694,12 +717,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.textView6.setTextColor(Color.parseColor(
-            sharedPreferences.getString(
-                "buttonTextColor",
-                "#ffffff"
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
             )
-        ))
+        )
         binding.proceedButton.isEnabled = true
     }
 
@@ -725,12 +750,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             )
         )
         binding.ll1InvalidUPI.visibility = View.INVISIBLE
-        binding.textView6.setTextColor(Color.parseColor(
-            sharedPreferences.getString(
-                "buttonTextColor",
-                "#ffffff"
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
             )
-        ))
+        )
     }
 
     private fun disableProceedButton() {
@@ -739,13 +766,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
         binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
-    }
-
-    private fun openUPITimerBottomSheet() {
-        val bottomSheetFragment = UPITimerBottomSheet.newInstance(userVPA)
-        parentFragmentManager.beginTransaction()
-            .add(bottomSheetFragment, "UPITimerBottomSheet")
-            .commitAllowingStateLoss()
     }
 
     fun extractMessageFromErrorResponse(response: String): String? {

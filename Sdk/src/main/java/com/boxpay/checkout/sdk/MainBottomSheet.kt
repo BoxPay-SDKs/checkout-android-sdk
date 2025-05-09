@@ -69,6 +69,7 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -93,6 +94,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.Objects
+import java.util.Optional
 import java.util.TimeZone
 
 
@@ -115,8 +117,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var job: Job? = null
     private var isTablet = false
     private var showName = false
-    private var labelType : String? = null
-    private var labelName : String? = null
+    private var labelType: String? = null
+    private var labelName: String? = null
     private var recommendedCheckedPosition: Int? = null
     private var showEmail = false
     private var moreOptionsClicked: Boolean? = null
@@ -270,7 +272,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
-
     private fun showLoadingState() {
         if (!binding.loadingRelativeLayout.isVisible) {
             binding.boxpayLogoLottie.apply {
@@ -290,7 +291,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         showLoadingState()
-        startFunctionCalls()
+        initiateFetchStatusCall()
         if (requestCode == 121) {
             isGpayReturned = true
         } else if (requestCode == 122) {
@@ -316,13 +317,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 else -> 123
             }
 
-            startFunctionCalls()
+            initiateFetchStatusCall()
             startActivityForResult(intent, resultCode)
 
         } catch (e: Exception) {
             // Log specific error if the app is not found
             upiIntentError = e.message
-            callUIAnalytics(requireActivity(), AnalyticsEvents.UPI_APP_NOT_FOUND, "", "UPI","upi app not found")
+            callUIAnalytics(
+                requireActivity(),
+                AnalyticsEvents.UPI_APP_NOT_FOUND,
+                "",
+                "UPI",
+                "upi app not found"
+            )
             PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(
                 parentFragmentManager,
                 "FailureScreen"
@@ -349,7 +356,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
 
-    private fun startFunctionCalls() {
+    private fun initiateFetchStatusCall() {
         job?.cancel()
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
@@ -827,7 +834,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.recommendedProceedButton.setOnClickListener {
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    recommendedCheckedPosition = if (recommendedCheckedPosition == null)  0 else recommendedCheckedPosition
+                    recommendedCheckedPosition =
+                        if (recommendedCheckedPosition == null) 0 else recommendedCheckedPosition
                     callUIAnalytics(
                         requireContext(),
                         AnalyticsEvents.PAYMENT_INITIATED,
@@ -1488,7 +1496,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 imageView.setImageBitmap(bitmap)
                 removeLoadingState()
                 startTimer()
-                startFunctionCalls()
+                initiateFetchStatusCall()
             },
             Response.ErrorListener { /* no response handling */error ->
                 removeLoadingState()
@@ -1776,7 +1784,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         event: String,
         paymentSubType: String,
         paymentType: String,
-        message:String
+        message: String
     ) {
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
 
@@ -1855,7 +1863,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun openDefaultUPIIntentBottomSheetFromAndroid(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         try {
-            startFunctionCalls()
+            initiateFetchStatusCall()
             startActivityForResult(intent, 124)
         } catch (_: Exception) {
             removeLoadingState()
@@ -2041,9 +2049,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-        requireActivity().runOnUiThread {
-            windowManager.addView(overlayViewMainBottomSheet, layoutParams)
+        val activityContext = activity
+        if (activityContext != null && !activityContext.isFinishing && !activityContext.isDestroyed) {
+            activityContext.runOnUiThread {
+                windowManager.addView(overlayViewMainBottomSheet, layoutParams)
+            }
         }
+
     }
 
     private fun removeOverlayFromActivity() {
@@ -2497,7 +2509,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 val itemsArray =
                     if (orderObject?.optJSONArray("items") != null) orderObject.getJSONArray("items") else null
-                var productName : String? = null
+                var productName: String? = null
 
                 if (itemsArray != null) {
                     for (i in 0 until itemsArray.length()) {
@@ -2510,13 +2522,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         productName = if (productName.isNullOrEmpty()) {
                             "${itemObject.getString("itemName")} X (x${itemObject.getInt("quantity")})"
                         } else {
-                            "$productName\n${itemObject.getString("itemName")} X (x${itemObject.getInt("quantity")})"
+                            "$productName\n${itemObject.getString("itemName")} X (x${
+                                itemObject.getInt(
+                                    "quantity"
+                                )
+                            })"
                         }
                         totalQuantity += quantity
                     }
                 }
-                editor.putString("orderDetails",productName)
-                editor.putInt("orderDetailsLength",itemsArray?.length() ?: 0)
+                editor.putString("orderDetails", productName)
+                editor.putInt("orderDetailsLength", itemsArray?.length() ?: 0)
                 editor.apply()
 
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
@@ -2676,8 +2692,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     editor.putString("city", null)
                     editor.putString("state", null)
                     editor.putString("postalCode", null)
-                    editor.putString("labelType",null)
-                    editor.putString("labelName",null)
+                    editor.putString("labelType", null)
+                    editor.putString("labelName", null)
                 } else {
                     editor.putString(
                         "postalCode",
@@ -2691,10 +2707,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "city",
                         shopperObject.getJSONObject("deliveryAddress").getString("city")
                     )
-                    labelType = shopperObject.getJSONObject("deliveryAddress").getString("labelType")
-                    labelName = shopperObject.getJSONObject("deliveryAddress").getString("labelName")
-                    editor.putString("labelType",shopperObject.getJSONObject("deliveryAddress").getString("labelType"))
-                    editor.putString("labelName",shopperObject.getJSONObject("deliveryAddress").getString("labelName"))
+                    labelType =
+                        shopperObject.getJSONObject("deliveryAddress").getString("labelType")
+                    labelName =
+                        shopperObject.getJSONObject("deliveryAddress").getString("labelName")
+                    editor.putString(
+                        "labelType",
+                        shopperObject.getJSONObject("deliveryAddress").getString("labelType")
+                    )
+                    editor.putString(
+                        "labelName",
+                        shopperObject.getJSONObject("deliveryAddress").getString("labelName")
+                    )
                     editor.putString("indexCountryCodePhone", countryCode?.second)
                     editor.putString("phoneCode", countryCode?.second)
                     editor.putString(
@@ -3075,10 +3099,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 binding.nameAndMobileTextViewMain.text =
                     if (showShipping && !shopperObject.isNull("deliveryAddress")) {
-                        if (shopperObject.getJSONObject("deliveryAddress").getString("labelName") != "null" && !shopperObject.getJSONObject("deliveryAddress").getString("labelName").isNullOrEmpty()) {
-                                "Deliver to ${shopperObject.getJSONObject("deliveryAddress").getString("labelName")}"
+                        if (shopperObject.getJSONObject("deliveryAddress")
+                                .getString("labelName") != "null" && !shopperObject.getJSONObject("deliveryAddress")
+                                .getString("labelName").isNullOrEmpty()
+                        ) {
+                            "Deliver to ${
+                                shopperObject.getJSONObject("deliveryAddress")
+                                    .getString("labelName")
+                            }"
                         } else {
-                            "Deliver to ${shopperObject.getJSONObject("deliveryAddress").getString("labelType")}"
+                            "Deliver to ${
+                                shopperObject.getJSONObject("deliveryAddress")
+                                    .getString("labelType")
+                            }"
                         }
                     } else if (showPhone && showName) {
                         sharedPreferences.getString(
@@ -3088,7 +3121,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "lastName",
                             ""
                         ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-                    } else if(showName){
+                    } else if (showName) {
                         sharedPreferences.getString(
                             "firstName",
                             ""
@@ -3096,7 +3129,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "lastName",
                             ""
                         )
-                    } else if(showPhone){
+                    } else if (showPhone) {
                         "(${sharedPreferences.getString("phoneNumber", "")})"
                     } else {
                         "Deliver to"
@@ -3217,7 +3250,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     "lastName",
                     ""
                 ) + " " + "(${sharedPreferences.getString("phoneNumber", "")})"
-            } else if(showName){
+            } else if (showName) {
                 sharedPreferences.getString(
                     "firstName",
                     ""
@@ -3337,7 +3370,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun postRecommendedInstruments(type: String, instrumentationRef: String, displayName: String) {
-        showLoadingInButton()
+        showLoadingState()
         val requestQueue = Volley.newRequestQueue(context)
 
 
@@ -3460,10 +3493,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        val bottomSheetFragment = UPITimerBottomSheet.newInstance(displayName)
-                        parentFragmentManager.beginTransaction()
-                            .add(bottomSheetFragment, "UPITimerBottomSheet")
-                            .commitAllowingStateLoss()
+                        showWebOrTimerScreen(this, response, displayName, {
+                            initiateFetchStatusCall()
+                        })
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()
@@ -3475,11 +3507,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         )
                     }
                 }
-                hideLoadingInButton()
+                removeLoadingState()
             },
             Response.ErrorListener { error ->
                 // Handle error
-                hideLoadingInButton()
+                removeLoadingState()
                 binding.swipeLoader.visibility = View.GONE
                 binding.swipeScreenAnimation.cancelAnimation()
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
@@ -3977,7 +4009,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (callbackForDismissing != null) {
                             callbackForDismissing.dismissFunction()
                         }
-                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                        if (isAdded && isResumed && !isStateSaved) {
+                            SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                        }
                     }
                 }
                 sessionTimer?.start()

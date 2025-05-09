@@ -10,6 +10,7 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.OTPScreenWebView
+import com.boxpay.checkout.sdk.UPITimerBottomSheet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -139,6 +140,38 @@ fun generateRandomAlphanumericString(length: Int): String {
         .map(charPool::get)
         .joinToString("")
 }
+
+fun showWebOrTimerScreen(fragment: Fragment,response: JSONObject, displayUserId : String , startFetchStatusCall : ()-> Unit) {
+    val actionObject = response.optJSONArray("actions")
+        ?.takeIf { it.length() > 0 }
+        ?.getJSONObject(0)
+
+    val actionType = actionObject?.optString("type", null)
+
+    when (actionType) {
+        "html", "url" -> {
+            openWebView(fragment,response)
+            startFetchStatusCall()
+        }
+        "timer" -> {
+            val expirySec = actionObject?.optInt("expirySec", DEFAULT_UPI_TIMER_IN_SEC) ?: DEFAULT_UPI_TIMER_IN_SEC
+            openUPITimerBottomSheet(displayUserId, expirySec, fragment)
+        }
+        else -> {
+            openUPITimerBottomSheet(displayUserId, DEFAULT_UPI_TIMER_IN_SEC, fragment) // fallback
+        }
+    }
+}
+
+private fun openUPITimerBottomSheet(displayName : String,timerInSec: Int,fragment: Fragment) {
+    val bottomSheetFragment = UPITimerBottomSheet.newInstance(displayName, timerInSec)
+    fragment.childFragmentManager.beginTransaction()
+        .add(bottomSheetFragment, "UPITimerBottomSheet")
+        .commitAllowingStateLoss()
+}
+
+
+const val DEFAULT_UPI_TIMER_IN_SEC = 300
 
 
 
