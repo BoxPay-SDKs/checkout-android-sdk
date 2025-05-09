@@ -530,6 +530,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
                 updateTransactionIDInSharedPreferences(transactionId!!)
+                println("=====response $response")
 
                 if (status.contains("Rejected", ignoreCase = true)) {
                     var cleanedMessage = reason.substringAfter(":")
@@ -550,12 +551,25 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         editor.apply()
                         val actionsArray = response.getJSONArray("actions")
                         if (actionsArray.length() > 0) {
-                            openWebView(this, response)
-                            startFunctionCalls()
+                            val actionObject = actionsArray.getJSONObject(0)
+                            val type = actionObject.getString("type")
+
+                            if (type == "html" || type == "url") {
+                                openWebView(this, response)
+                                startFunctionCalls()
+                            } else if (type == "timer") {
+                                val expirySec = actionObject.optInt("expirySec", 0) // default to 0 if not present
+                                openUPITimerBottomSheet(expirySec)
+                                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                            } else {
+                                openUPITimerBottomSheet(300) // fallback
+                                dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                            }
                         } else {
-                            openUPITimerBottomSheet()
+                            openUPITimerBottomSheet(300) // no actions at all
                             dismissAndMakeButtonsOfMainBottomSheetEnabled()
                         }
+
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()
@@ -741,8 +755,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
     }
 
-    private fun openUPITimerBottomSheet() {
-        val bottomSheetFragment = UPITimerBottomSheet.newInstance(userVPA)
+    private fun openUPITimerBottomSheet(timerInSec: Int) {
+        val bottomSheetFragment = UPITimerBottomSheet.newInstance(userVPA, timerInSec)
         parentFragmentManager.beginTransaction()
             .add(bottomSheetFragment, "UPITimerBottomSheet")
             .commitAllowingStateLoss()

@@ -37,6 +37,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     private var successScreenFullReferencePath: String? = null
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private var virtualPaymentAddress: String? = null
+    private var timerInSec : Int = 0
     var isBottomSheetShown = false
     private lateinit var Base_Session_API_URL: String
     val sharedViewModel: SharedViewModel by activityViewModels()
@@ -46,6 +47,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         requestQueue = Volley.newRequestQueue(requireContext())
         arguments?.let {
             virtualPaymentAddress = it.getString("virtualPaymentAddress")
+            timerInSec = it.getInt("timerInSec")
         }
     }
 
@@ -221,7 +223,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     }
 
     private fun startTimer() {
-        countdownTimer = object : CountDownTimer(300000, 1000) {
+        val timerInMillis = timerInSec * 1000L
+        countdownTimer = object : CountDownTimer(timerInMillis, 1000) {
 
             override fun onTick(millisUntilFinished: Long) {
                 // Update TextView with the remaining time
@@ -231,7 +234,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
                 binding.progressTextView.text = timeString
 
                 // Update ProgressBar
-                val progress = ((millisUntilFinished.toFloat() / 300000) * 100).toInt()
+                val progress = ((millisUntilFinished.toFloat() / timerInMillis) * 100).toInt()
                 binding.circularProgressBar.progress = progress * 1.0f
 //                binding.circularProgressBar.progressMax = 100f
             }
@@ -354,10 +357,11 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     }
 
     companion object {
-        fun newInstance(virtualPaymentAddress: String?): UPITimerBottomSheet {
+        fun newInstance(virtualPaymentAddress: String?, timerInSec : Int): UPITimerBottomSheet {
             val fragment = UPITimerBottomSheet()
             val args = Bundle()
             args.putString("virtualPaymentAddress", virtualPaymentAddress)
+            args.putInt("timerInSec", timerInSec)
             fragment.arguments = args
             return fragment
         }

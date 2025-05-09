@@ -69,6 +69,7 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.openWebView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -3337,7 +3338,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun postRecommendedInstruments(type: String, instrumentationRef: String, displayName: String) {
-        showLoadingInButton()
+        showLoadingState()
         val requestQueue = Volley.newRequestQueue(context)
 
 
@@ -3460,10 +3461,23 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        val bottomSheetFragment = UPITimerBottomSheet.newInstance(displayName)
-                        parentFragmentManager.beginTransaction()
-                            .add(bottomSheetFragment, "UPITimerBottomSheet")
-                            .commitAllowingStateLoss()
+                        val actionsArray = response.getJSONArray("actions")
+                        if (actionsArray.length() > 0) {
+                            val actionObject = actionsArray.getJSONObject(0)
+                            val type = actionObject.getString("type")
+
+                            if (type == "html" || type == "url") {
+                                openWebView(this, response)
+                                startFunctionCalls()
+                            } else if (type == "timer") {
+                                val expirySec = actionObject.optInt("expirySec", 0) // default to 0 if not present
+                                openUPITimerBottomSheet(displayName,expirySec)
+                            } else {
+                                openUPITimerBottomSheet(displayName,300) // fallback
+                            }
+                        } else {
+                            openUPITimerBottomSheet(displayName,300)
+                        }
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()
@@ -3475,11 +3489,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         )
                     }
                 }
-                hideLoadingInButton()
+                removeLoadingState()
             },
             Response.ErrorListener { error ->
                 // Handle error
-                hideLoadingInButton()
+                removeLoadingState()
                 binding.swipeLoader.visibility = View.GONE
                 binding.swipeScreenAnimation.cancelAnimation()
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
@@ -3741,6 +3755,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         space.layoutParams = params
 
         container.addView(space)
+    }
+
+    private fun openUPITimerBottomSheet(displayName : String,timerInSec: Int) {
+        val bottomSheetFragment = UPITimerBottomSheet.newInstance(displayName, timerInSec)
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "UPITimerBottomSheet")
+            .commitAllowingStateLoss()
     }
 
     private fun addAccordionView(container: LinearLayout, item: JSONObject) {
