@@ -140,5 +140,7 @@ fun generateRandomAlphanumericString(length: Int): String {
         .joinToString("")
 }
 
+const val DEFAULT_UPI_TIMER_IN_SEC = 300
+
 
 

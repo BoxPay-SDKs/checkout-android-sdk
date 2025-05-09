@@ -67,6 +67,7 @@ import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.DEFAULT_UPI_TIMER_IN_SEC
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
 import com.boxpay.checkout.sdk.utils.openWebView
@@ -94,6 +95,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.Objects
+import java.util.Optional
 import java.util.TimeZone
 
 
@@ -2042,9 +2044,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
-        val activity = activity
-        if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
-            activity.runOnUiThread {
+        val activityContext = activity
+        if (activityContext != null && !activityContext.isFinishing && !activityContext.isDestroyed) {
+            activityContext.runOnUiThread {
                 windowManager.addView(overlayViewMainBottomSheet, layoutParams)
             }
         }
@@ -3465,23 +3467,24 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        val actionsArray = response.getJSONArray("actions")
-                        if (actionsArray.length() > 0) {
-                            val actionObject = actionsArray.getJSONObject(0)
-                            val type = actionObject.getString("type")
+                        val actionObject = Optional.ofNullable(response.getJSONArray("actions"))
+                            .filter { actionsArray -> actionsArray.length() > 0}
+                            .map { actionsArray ->  actionsArray.getJSONObject(0)}
+                            .orElse(null);
+                        val actionType = Optional.ofNullable(actionObject)
+                            .map { action -> action.getString("type") }
+                            .orElse(null);
 
-                            if (type == "html" || type == "url") {
-                                openWebView(this, response)
-                                startFunctionCalls()
-                            } else if (type == "timer") {
-                                val expirySec = actionObject.optInt("expirySec", 0) // default to 0 if not present
-                                openUPITimerBottomSheet(displayName,expirySec)
-                            } else {
-                                openUPITimerBottomSheet(displayName,300) // fallback
-                            }
+                        if (actionType == "html" || actionType == "url") {
+                            openWebView(this, response)
+                            startFunctionCalls()
+                        } else if (actionType == "timer") {
+                            val expirySec = actionObject.optInt("expirySec", DEFAULT_UPI_TIMER_IN_SEC)
+                            openUPITimerBottomSheet(displayName,expirySec)
                         } else {
-                            openUPITimerBottomSheet(displayName,300)
+                            openUPITimerBottomSheet(displayName,DEFAULT_UPI_TIMER_IN_SEC) // fallback
                         }
+
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()

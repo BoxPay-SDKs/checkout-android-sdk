@@ -37,6 +37,7 @@ import com.boxpay.checkout.sdk.databinding.FragmentAddUPIIDBinding
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.DEFAULT_UPI_TIMER_IN_SEC
 import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
@@ -52,6 +53,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.util.Locale
+import java.util.Optional
 
 
 internal class AddUPIID : BottomSheetDialogFragment() {
@@ -215,6 +217,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         return regex.matches(input)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun validateAPICall(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -428,6 +431,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context, userVPA: String) {
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -548,27 +552,23 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        val actionsArray = response.getJSONArray("actions")
-                        if (actionsArray.length() > 0) {
-                            val actionObject = actionsArray.getJSONObject(0)
-                            val type = actionObject.getString("type")
 
-                            if (type == "html" || type == "url") {
-                                openWebView(this, response)
-                                startFunctionCalls()
-                            } else if (type == "timer") {
-                                val expirySec = actionObject.optInt("expirySec", 0) // default to 0 if not present
-                                openUPITimerBottomSheet(expirySec)
-                                dismissAndMakeButtonsOfMainBottomSheetEnabled()
-                            } else {
-                                openUPITimerBottomSheet(300) // fallback
-                                dismissAndMakeButtonsOfMainBottomSheetEnabled()
-                            }
+                        val actionObject = Optional.ofNullable(response.getJSONArray("actions"))
+                            .filter { actionsArray -> actionsArray.length() > 0}
+                            .map { actionsArray ->  actionsArray.getJSONObject(0)}
+                            .orElse(null);
+                        val actionType = Optional.ofNullable(actionObject)
+                            .map { action -> action.getString("type") }
+                            .orElse(null);
+
+                        if (actionType == "html" || actionType == "url") {
+                            openWebViewWrapper(response)
+                        } else if (actionType == "timer") {
+                            val expirySec = actionObject.optInt("expirySec", DEFAULT_UPI_TIMER_IN_SEC)
+                            openUPITimerBottomSheet(expirySec)
                         } else {
-                            openUPITimerBottomSheet(300) // no actions at all
-                            dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                            openUPITimerBottomSheet(DEFAULT_UPI_TIMER_IN_SEC) // fallback
                         }
-
                     } else if (status.contains("Approved", ignoreCase = true)) {
                         editor.putString("status", "Success")
                         editor.apply()
@@ -644,6 +644,11 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     fun dismissCurrentBottomSheet() {
         dismiss()
+    }
+
+    fun openWebViewWrapper(response: JSONObject) {
+        openWebView(this, response)
+        startFunctionCalls()
     }
 
     private fun startFunctionCalls() {
