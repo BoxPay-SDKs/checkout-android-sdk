@@ -1518,8 +1518,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
-                    var url = ""
-
                     if (status.contains("Rejected", ignoreCase = true) || status.contains(
                             "FAILED",
                             ignoreCase = true
@@ -1553,17 +1551,15 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             handleDccEvents()
                             handleSuccess()
                         } else {
+                            startFunctionCalls()
                             showLoadingState()
                            openWebView(this, response)
-                            startFunctionCalls()
                         }
-
                     }
                     editor.apply()
                 } catch (_: JSONException) {
 
                 }
-
             },
             Response.ErrorListener { error ->
                 // Handle error
@@ -1588,6 +1584,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         if (callbackForDismissing != null) {
                             callbackForDismissing.dismissFunction()
                         }
+                        job?.cancel()
                         SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                     } else {
                         job?.cancel()
@@ -1874,7 +1871,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     private fun startFunctionCalls() {
         job = CoroutineScope(Dispatchers.IO).launch {
-            while (isActive) {
+            while (coroutineContext.isActive) {
                 delay(3000)
                 fetchStatusAndReason(context!!,"${Base_Session_API_URL}${token}/status", editor) {isSuccess, status ->
                     if (isSuccess) {
