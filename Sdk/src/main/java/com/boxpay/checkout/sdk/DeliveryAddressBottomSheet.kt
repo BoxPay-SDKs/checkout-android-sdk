@@ -53,6 +53,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Calendar
 import java.util.Locale
+import androidx.core.graphics.toColorInt
 
 
 class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
@@ -208,7 +209,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     disableProceedButton()
                 }
             } else {
-                Toast.makeText(context, "Address already saved with Home", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Address already saved with Home", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -228,7 +229,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     disableProceedButton()
                 }
             } else {
-                Toast.makeText(context, "Address already saved with Office", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Address already saved with Office", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -258,6 +259,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     "",
                     ""
                 )
+                labelName = s.toString()
                 if (toCheckAllFieldsAreFilled()) {
                     enableProceedButton()
                 } else {
@@ -514,7 +516,23 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         if (!firstTime) {
             labelName = sharedPreferences.getString("labelName","")
             labelType = sharedPreferences.getString("labelType","")
-            binding.otherSaveAddressTextField.setText(labelName)
+            binding.otherSaveAddressTextField.apply {
+                setText(labelName)
+                isEnabled = false
+                isFocusable = false
+                background = ContextCompat.getDrawable(context, R.drawable.edittext_disabled_bg)
+                backgroundTintList = null  // 🔴 This line disables unexpected tints
+                setTextColor("#7F7F7F".toColorInt()) // Optional: grey text
+            }
+            val addressTypeBlockedListener = View.OnClickListener {
+                Toast.makeText(context, "You cannot change the address type for this entry.", Toast.LENGTH_SHORT).show()
+            }
+
+            binding.homeSavedAddress.setOnClickListener(addressTypeBlockedListener)
+            binding.officeSavedAddress.setOnClickListener(addressTypeBlockedListener)
+            binding.otherSavedAddress.setOnClickListener(addressTypeBlockedListener)
+
+
             if (address1 != null) {
                 binding.addressEditText1.setText(address1)
             }
