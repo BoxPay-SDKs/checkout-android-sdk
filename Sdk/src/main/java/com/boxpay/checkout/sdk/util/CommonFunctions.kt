@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk.util
 
+import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
 import java.time.LocalDate
@@ -35,5 +36,21 @@ object CommonFunctions {
         return zonedDateTime.format(formatter)
     }
 
+    fun SharedPreferences.getEffectiveString(
+        chosenKey: String,
+        storedKey: String,
+        validator: (String) -> Boolean = { it.isNotBlank() && it != "null" },
+        formatter: (String) -> String = { it }
+    ): String? {
+        // first, see if the “chosen” value is non-null & non-empty
+        getString(chosenKey, null)
+            ?.takeIf { validator(it) }
+            ?.let { return formatter(it) }
+
+        // otherwise fall back to the stored value
+        return getString(storedKey, null)
+            ?.takeIf { validator(it) }
+            ?.let { formatter(it) }
+    }
 
 }
