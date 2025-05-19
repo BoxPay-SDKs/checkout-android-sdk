@@ -94,7 +94,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.Objects
-import java.util.Optional
 import java.util.TimeZone
 
 
@@ -1029,105 +1028,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
             binding.deliveryAddressConstraintLayout.setOnClickListener() {
-                if ((!binding.loadingRelativeLayout.isVisible) && (isEmailEditable || isPhoneEditable || isNameEditable || showShipping)) {
-                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                            ?.removePrefix(countryCode?.second ?: "")
-                        editor.putString("phoneNumber", confirmPhoneNumber)
-                        editor.putString("phoneCode", countryCode?.second)
-                        editor.putString("countryName", countryCode?.first)
-                        editor.apply()
-                    }
-                    if (customerShopperToken != null && customerShopperToken != "") {
-                        val bottomSheet = SavedAddressBottomSheet()
-                        bottomSheet.setAddressViewAndEditSettings(
-                            viewName = showName,
-                            viewEmail = showEmail,
-                            viewPhone = showPhone,
-                            viewShipping = showShipping,
-                            editPan = isPANEditable,
-                            editDob = isDOBEditable,
-                            editEmail = isEmailEditable,
-                            editPhone = isPhoneEditable,
-                            editName = isNameEditable,
-                            viewDob = showDOB,
-                            viewPan = showPAN
-                        )
-                        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-                            bottomSheet.show(parentFragmentManager, "SavedAddressBottomSheet")
-                        }
-                    } else {
-                        val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                            this,
-                            false,
-                            showName,
-                            showPhone,
-                            showEmail,
-                            showPAN,
-                            showDOB,
-                            showShipping,
-                            isNameEditable,
-                            isPhoneEditable,
-                            isEmailEditable,
-                            isPANEditable,
-                            isDOBEditable
-                        )
-                        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-                            bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheet")
-                        }
-                    }
-                }
+                openSavedOrAddOrEditAddressScreen()
             }
 
-            binding.proceedButton.setOnClickListener() {
-                if (!binding.loadingRelativeLayout.isVisible) {
-                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                            ?.removePrefix(countryCode?.second ?: "")
-                        editor.putString("phoneNumber", confirmPhoneNumber)
-                        editor.putString("countryName", countryCode?.first)
-                        editor.putString("phoneCode", countryCode?.second)
-                        editor.apply()
-                    }
-                    if (customerShopperToken != null && customerShopperToken != "") {
-                        val bottomSheet = SavedAddressBottomSheet()
-                        bottomSheet.setAddressViewAndEditSettings(
-                            viewName = showName,
-                            viewEmail = showEmail,
-                            viewPhone = showPhone,
-                            viewShipping = showShipping,
-                            editPan = isPANEditable,
-                            editDob = isDOBEditable,
-                            editEmail = isEmailEditable,
-                            editPhone = isPhoneEditable,
-                            editName = isNameEditable,
-                            viewDob = showDOB,
-                            viewPan = showPAN
-                        )
-                        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-                            bottomSheet.show(parentFragmentManager, "SavedAddressBottomSheet")
-                        }
-                    } else {
-                        val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                            this,
-                            false,
-                            showName,
-                            showPhone,
-                            showEmail,
-                            showPAN,
-                            showDOB,
-                            showShipping,
-                            isNameEditable,
-                            isPhoneEditable,
-                            isEmailEditable,
-                            isPANEditable,
-                            isDOBEditable
-                        )
-                        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-                            bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheet")
-                        }
-                    }
-                }
+            binding.addAddressButton.setOnClickListener() {
+                openSavedOrAddOrEditAddressScreen()
             }
 
             binding.root
@@ -1357,9 +1262,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 } else {
                     binding.cardView7.visibility = View.GONE
                 }
+                removeLoadingState()
             },
             Response.ErrorListener { /* no response handling */error ->
-                removeLoadingState()
                 removeLoadingState()
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {
                     val errorResponse = String(error.networkResponse.data)
@@ -2772,212 +2677,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         )
                     }
                 }
-                if (shopperObject.isNull("deliveryAddress") && showShipping && orderDetails == null) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
-                    binding.deliveryAddressText.visibility = View.GONE
-                    binding.textView12.visibility = View.GONE
-                    binding.upiLinearLayout.visibility = View.GONE
-                    binding.cardView5.visibility = View.GONE
-                    binding.cardView6.visibility = View.GONE
-                    binding.emiCard.visibility = View.GONE
-                    binding.cardView7.visibility = View.GONE
-                    binding.netBankingConstraint.visibility = View.GONE
-                    binding.bnplConstraint.visibility = View.GONE
-                    binding.cardConstraint.visibility = View.GONE
-                    binding.recommendedCardView.visibility = View.GONE
-                    binding.recommendedLinearLayout.visibility = View.GONE
-                    binding.walletConstraint.visibility = View.GONE
-                    binding.emiConstraint.visibility = View.GONE
-                    binding.linearLayout.visibility = View.GONE
-                    binding.textView111.text = "Order Details"
-                    binding.proceedButton.visibility = View.VISIBLE
-                    priceBreakUpVisible = true
-                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                        this,
-                        false,
-                        showName,
-                        showPhone,
-                        showEmail,
-                        showPAN,
-                        showDOB,
-                        showShipping,
-                        isNameEditable,
-                        isPhoneEditable,
-                        isEmailEditable,
-                        isPANEditable,
-                        isDOBEditable
-                    )
-                    showPriceBreakUp()
-                } else if ((shopperObject.isNull("firstName") || shopperObject.isNull("phoneNumber") || shopperObject.isNull(
-                        "email"
-                    )) && (showName || showEmail || showPhone) && orderDetails == null
-                ) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
-                    binding.deliveryAddressText.visibility = View.GONE
-                    binding.textView12.visibility = View.GONE
-                    binding.upiLinearLayout.visibility = View.GONE
-                    binding.cardView5.visibility = View.GONE
-                    binding.cardView6.visibility = View.GONE
-                    binding.emiCard.visibility = View.GONE
-                    binding.cardView7.visibility = View.GONE
-                    binding.netBankingConstraint.visibility = View.GONE
-                    binding.bnplConstraint.visibility = View.GONE
-                    binding.cardConstraint.visibility = View.GONE
-                    binding.walletConstraint.visibility = View.GONE
-                    binding.emiConstraint.visibility = View.GONE
-                    binding.linearLayout.visibility = View.GONE
-                    binding.textView111.text = "Order Details"
-                    binding.proceedButton.visibility = View.VISIBLE
-                    binding.recommendedCardView.visibility = View.GONE
-                    binding.recommendedLinearLayout.visibility = View.GONE
-                    priceBreakUpVisible = true
-                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                        this,
-                        false,
-                        showName,
-                        showPhone,
-                        showEmail,
-                        showPAN,
-                        showDOB,
-                        showShipping,
-                        isNameEditable,
-                        isPhoneEditable,
-                        isEmailEditable,
-                        isPANEditable,
-                        isDOBEditable
-                    )
-                    showPriceBreakUp()
-                } else if (showPAN && shopperObject.isNull("panNumber")) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
-                    binding.deliveryAddressText.visibility = View.GONE
-                    binding.textView12.visibility = View.GONE
-                    binding.upiLinearLayout.visibility = View.GONE
-                    binding.cardView5.visibility = View.GONE
-                    binding.cardView6.visibility = View.GONE
-                    binding.emiCard.visibility = View.GONE
-                    binding.cardView7.visibility = View.GONE
-                    binding.netBankingConstraint.visibility = View.GONE
-                    binding.bnplConstraint.visibility = View.GONE
-                    binding.cardConstraint.visibility = View.GONE
-                    binding.walletConstraint.visibility = View.GONE
-                    binding.emiConstraint.visibility = View.GONE
-                    binding.linearLayout.visibility = View.GONE
-                    binding.textView111.text = "Order Details"
-                    binding.proceedButton.visibility = View.VISIBLE
-                    binding.recommendedCardView.visibility = View.GONE
-                    binding.recommendedLinearLayout.visibility = View.GONE
-                    priceBreakUpVisible = true
-                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                        this,
-                        false,
-                        showName,
-                        showPhone,
-                        showEmail,
-                        showPAN,
-                        showDOB,
-                        showShipping,
-                        isNameEditable,
-                        isPhoneEditable,
-                        isEmailEditable,
-                        isPANEditable,
-                        isDOBEditable
-                    )
-                    showPriceBreakUp()
-                } else if (showDOB && shopperObject.isNull("dateOfBirth")) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
-                    binding.deliveryAddressText.visibility = View.GONE
-                    binding.textView12.visibility = View.GONE
-                    binding.upiLinearLayout.visibility = View.GONE
-                    binding.cardView5.visibility = View.GONE
-                    binding.cardView6.visibility = View.GONE
-                    binding.emiCard.visibility = View.GONE
-                    binding.cardView7.visibility = View.GONE
-                    binding.netBankingConstraint.visibility = View.GONE
-                    binding.bnplConstraint.visibility = View.GONE
-                    binding.cardConstraint.visibility = View.GONE
-                    binding.walletConstraint.visibility = View.GONE
-                    binding.emiConstraint.visibility = View.GONE
-                    binding.linearLayout.visibility = View.GONE
-                    binding.textView111.text = "Order Details"
-                    binding.proceedButton.visibility = View.VISIBLE
-                    binding.recommendedCardView.visibility = View.GONE
-                    binding.recommendedLinearLayout.visibility = View.GONE
-                    priceBreakUpVisible = true
-                    bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                        this,
-                        false,
-                        showName,
-                        showPhone,
-                        showEmail,
-                        showPAN,
-                        showDOB,
-                        showShipping,
-                        isNameEditable,
-                        isPhoneEditable,
-                        isEmailEditable,
-                        isPANEditable,
-                        isDOBEditable
-                    )
-                    showPriceBreakUp()
-                } else {
-                    binding.textView111.text = "Payment Details"
-                    binding.proceedButton.visibility = View.GONE
-                    if (!shopperObject.isNull("firstName")) {
-                        editor.putString("firstName", shopperObject.getString("firstName"))
-                    }
-                    if (!shopperObject.isNull("panNumber")) {
-                        editor.putString("panNumber", shopperObject.getString("panNumber"))
-                    }
-                    if (!shopperObject.isNull("dateOfBirth")) {
-                        editor.putString("dateOfBirth", shopperObject.getString("dateOfBirth"))
-                    }
-                    if (!shopperObject.isNull("lastName")) {
-                        editor.putString("lastName", shopperObject.getString("lastName"))
-                    }
-                    if (!shopperObject.isNull("gender")) {
-                        editor.putString("gender", shopperObject.getString("gender"))
-                    }
-                    if (!shopperObject.isNull("email")) {
-                        editor.putString("email", shopperObject.getString("email"))
-                    }
-                    if (!shopperObject.isNull("phoneNumber")) {
-                        if (shopperObject.getString("phoneNumber").contains('+')) {
-                            editor.putString(
-                                "phoneNumber",
-                                shopperObject.getString("phoneNumber")
-                            )
-                        } else {
-                            editor.putString(
-                                "phoneNumber",
-                                "+" + shopperObject.getString("phoneNumber")
-                            )
-                        }
-                    }
-                    if (!shopperObject.isNull("deliveryAddress")) {
-                        val deliveryAddress = shopperObject.getJSONObject("deliveryAddress")
-                        if (!deliveryAddress.isNull("address1")) {
-                            editor.putString("address1", deliveryAddress.getString("address1"))
-                        }
-                        if (!deliveryAddress.isNull("address2")) {
-                            editor.putString("address2", deliveryAddress.getString("address2"))
-                        }
-                        if (!deliveryAddress.isNull("countryCode")) {
-                            editor.putString("countryName", countryCode?.first)
-                            editor.putString("indexCountryCodePhone", countryCode?.second)
-                            editor.putString("phoneCode", countryCode?.second)
-                        }
-                        if (!deliveryAddress.isNull("city")) {
-                            editor.putString("city", deliveryAddress.getString("city"))
-                        }
-                        if (!deliveryAddress.isNull("state")) {
-                            editor.putString("state", deliveryAddress.getString("state"))
-                        }
-                        if (!deliveryAddress.isNull("postalCode")) {
-                            editor.putString("postalCode", deliveryAddress.getString("postalCode"))
-                        }
-                    }
-                }
 
+                processShopper(shopperObject, orderDetails, showShipping, showName, showEmail, showPhone, showPAN, showDOB, countryCode, editor)
 
                 if (paymentDetailsObject.isNull("order"))
                     orderSummaryEnable = false
@@ -3294,20 +2995,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
         binding.deliveryAddressText.visibility = View.VISIBLE
-        binding.textView12.visibility = View.VISIBLE
-        binding.upiLinearLayout.visibility = View.VISIBLE
-        binding.cardView5.visibility = View.VISIBLE
-        binding.cardView6.visibility = View.VISIBLE
-        binding.emiCard.visibility = View.VISIBLE
-        binding.cardView7.visibility = View.VISIBLE
-        binding.walletConstraint.visibility = View.VISIBLE
-        binding.emiConstraint.visibility = View.VISIBLE
-        binding.netBankingConstraint.visibility = View.VISIBLE
-        binding.cardConstraint.visibility = View.VISIBLE
-        binding.bnplConstraint.visibility = View.VISIBLE
-        binding.linearLayout.visibility = View.VISIBLE
         binding.textView111.text = "Payment Details"
-        binding.proceedButton.visibility = View.GONE
+        binding.addAddressButton.visibility = View.GONE
         priceBreakUpVisible = false
         hidePriceBreakUp()
         if (recommendedInstrumentationList.isNotEmpty() && binding.upiLinearLayout.isVisible) {
@@ -4136,30 +3825,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 },
                 address = address,
                 onClickChangeAddress = {
-                    if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                        val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                            ?.removePrefix(countryCode?.second ?: "")
-                        editor.putString("phoneNumber", confirmPhoneNumber)
-                        editor.putString("phoneCode", countryCode?.second)
-                        editor.putString("countryName", countryCode?.first)
-                        editor.apply()
-                    }
-                    val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                        this,
-                        false,
-                        showName,
-                        showPhone,
-                        showEmail,
-                        showPAN,
-                        showDOB,
-                        showShipping,
-                        isNameEditable,
-                        isPhoneEditable,
-                        isEmailEditable,
-                        isPANEditable,
-                        isDOBEditable
-                    )
-                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheetOnClick")
+                    openSavedOrAddOrEditAddressScreen()
                 },
                 toShowOnChangeAddressClick = isEmailEditable || isPhoneEditable || isNameEditable || showShipping,
                 toShowAddress = showEmail || showShipping || showPhone || showName,
@@ -4167,4 +3833,180 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             )
         }
     }
+
+    private fun openSavedOrAddOrEditAddressScreen() {
+        if ((!binding.loadingRelativeLayout.isVisible) && (isEmailEditable || isPhoneEditable || isNameEditable || showShipping)) {
+            if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
+                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
+                    ?.removePrefix(countryCode?.second ?: "")
+                editor.putString("phoneNumber", confirmPhoneNumber)
+                editor.putString("phoneCode", countryCode?.second)
+                editor.putString("countryName", countryCode?.first)
+                editor.apply()
+            }
+            if (customerShopperToken != null && customerShopperToken != "") {
+                val bottomSheet = SavedAddressBottomSheet()
+                bottomSheet.setAddressViewAndEditSettings(
+                    viewName = showName,
+                    viewEmail = showEmail,
+                    viewPhone = showPhone,
+                    viewShipping = showShipping,
+                    editPan = isPANEditable,
+                    editDob = isDOBEditable,
+                    editEmail = isEmailEditable,
+                    editPhone = isPhoneEditable,
+                    editName = isNameEditable,
+                    viewDob = showDOB,
+                    viewPan = showPAN
+                )
+                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                    bottomSheet.show(parentFragmentManager, "SavedAddressBottomSheet")
+                }
+            } else {
+                val bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                    this,
+                    false,
+                    showName,
+                    showPhone,
+                    showEmail,
+                    showPAN,
+                    showDOB,
+                    showShipping,
+                    isNameEditable,
+                    isPhoneEditable,
+                    isEmailEditable,
+                    isPANEditable,
+                    isDOBEditable
+                )
+                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheet")
+                }
+            }
+        }
+    }
+
+    private fun showAddressRelatedDataOnScreen() {
+        binding.deliveryAddressConstraintLayout.visibility = View.GONE
+        binding.deliveryAddressText.visibility = View.GONE
+        binding.textView12.visibility = View.GONE
+        binding.upiLinearLayout.visibility = View.GONE
+        binding.cardView5.visibility = View.GONE
+        binding.cardView6.visibility = View.GONE
+        binding.emiCard.visibility = View.GONE
+        binding.cardView7.visibility = View.GONE
+        binding.netBankingConstraint.visibility = View.GONE
+        binding.bnplConstraint.visibility = View.GONE
+        binding.cardConstraint.visibility = View.GONE
+        binding.recommendedCardView.visibility = View.GONE
+        binding.recommendedLinearLayout.visibility = View.GONE
+        binding.walletConstraint.visibility = View.GONE
+        binding.emiConstraint.visibility = View.GONE
+        binding.linearLayout.visibility = View.GONE
+        binding.textView111.text = "Order Details"
+        binding.addAddressButton.visibility = View.VISIBLE
+        priceBreakUpVisible = true
+        bottomSheet = DeliveryAddressBottomSheet.newInstance(
+            this,
+            false,
+            showName,
+            showPhone,
+            showEmail,
+            showPAN,
+            showDOB,
+            showShipping,
+            isNameEditable,
+            isPhoneEditable,
+            isEmailEditable,
+            isPANEditable,
+            isDOBEditable
+        )
+        showPriceBreakUp()
+    }
+
+    private fun processShopper(
+        shopper: JSONObject,
+        orderDetails: String?,
+        showShipping: Boolean,
+        showName: Boolean,
+        showEmail: Boolean,
+        showPhone: Boolean,
+        showPAN: Boolean,
+        showDOB: Boolean,
+        countryCode: Pair<String, String>?,
+        editor: SharedPreferences.Editor
+    ) {
+        // 1. Define clear, self‑documenting flags
+        val needsAddress = shopper.isNull("deliveryAddress") && showShipping && orderDetails == null
+        val needsPersonalInfo = (
+                shopper.isNull("firstName")
+                        || shopper.isNull("phoneNumber")
+                        || shopper.isNull("email")
+                ) && (showName || showPhone || showEmail) && orderDetails == null
+        val needsPan = showPAN && shopper.isNull("panNumber")
+        val needsDob = showDOB && shopper.isNull("dateOfBirth")
+
+        // 2. If *any* required data is missing, stop and show the address/name form
+        if (listOf(needsAddress, needsPersonalInfo, needsPan, needsDob).any { it }) {
+            showAddressRelatedDataOnScreen()
+            return
+        }
+
+        // 3. Otherwise, switch UI to Payment Details
+        binding.textView111.text = "Payment Details"
+        binding.addAddressButton.visibility = View.GONE
+
+        // 4. Persist whatever shopper data *is* present
+        saveShopperToPrefs(shopper, countryCode, editor)
+    }
+
+    private fun saveShopperToPrefs(
+        shopper: JSONObject,
+        countryCode: Pair<String, String>?,
+        editor: SharedPreferences.Editor
+    ) = editor.apply {
+        // Simple list of (JSON‑key to prefs‑key) mappings
+        mapOf(
+            "firstName"     to "firstName",
+            "lastName"      to "lastName",
+            "email"         to "email",
+            "gender"        to "gender",
+            "panNumber"     to "panNumber",
+            "dateOfBirth"   to "dateOfBirth"
+        ).forEach { (jsonKey, prefKey) ->
+            shopper.optString(jsonKey)
+                .takeIf { it.isNotBlank() }
+                ?.let { putString(prefKey, it) }
+        }
+
+        // Phone needs a leading '+' if missing
+        shopper.optString("phoneNumber").takeIf { it.isNotBlank() }?.let { raw ->
+            val normalized = if (raw.startsWith("+")) raw else "+$raw"
+            putString("phoneNumber", normalized)
+        }
+
+        // Delivery address block
+        shopper.optJSONObject("deliveryAddress")?.let { addr ->
+            mapOf(
+                "address1"   to "address1",
+                "address2"   to "address2",
+                "city"       to "city",
+                "state"      to "state",
+                "postalCode" to "postalCode"
+            ).forEach { (jsonKey, prefKey) ->
+                addr.optString(jsonKey)
+                    .takeIf { it.isNotBlank() }
+                    ?.let { putString(prefKey, it) }
+            }
+
+            // countryCode is handled separately
+            countryCode?.let { (country, phoneCode) ->
+                putString("countryName", country)
+                putString("phoneCode", phoneCode)
+                putString("indexCountryCodePhone", phoneCode)
+            }
+        }
+
+        apply()
+    }
+
 }

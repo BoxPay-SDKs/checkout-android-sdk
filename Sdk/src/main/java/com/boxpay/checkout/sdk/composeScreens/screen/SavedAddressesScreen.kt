@@ -157,46 +157,41 @@ fun SavedAddressesScreen(
                     text = "No Saved Addresses"
                 )
             } else {
-                addressList.map {
-                    SavedAddressCard(
-                        modifier = Modifier,
-                        address1 = it.address1,
-                        address2 = it.address2,
-                        city = it.city,
-                        state = it.state,
-                        pinCode = it.postalCode,
-                        number = it.phoneNumber,
-                        selectedCtaColor = selectedCtaColor,
-                        isCurrentlySelected = it.postalCode.equals(alreadySavedAddressPostal, true),
-                        addressIcon = if (it.labelType.equals(
-                                "home",
-                                true
-                            )
-                        ) R.drawable.home_icon else if (it.labelType.equals(
-                                "work",
-                                true
-                            )
-                        ) R.drawable.ic_boxpay_saved_office_address else R.drawable.ic_boxpay_other_saved_address,
-                        label = it.labelName ?: it.labelType ?: "",
-                        onClickEditAddress = {
-                            addressIcon.value = if (it.labelType.equals(
-                                    "home",
-                                    true
-                                )
-                            ) R.drawable.home_icon else if (it.labelType.equals(
-                                    "work",
-                                    true
-                                )
-                            ) R.drawable.ic_boxpay_saved_office_address else R.drawable.ic_boxpay_other_saved_address
-                            selectedAddress.value = it
-                            isMoreOptionClicked.value = true
-                        },
-                        onClickSelectAddress = {
-                            onClickSetDefault(it)
-                        }
-                    )
-                    Spacer(modifier = Modifier.padding(bottom = 20.dp))
-                }
+                addressList
+                    .sortedByDescending { it.postalCode.equals(alreadySavedAddressPostal, ignoreCase = true) }
+                    .map {
+                        SavedAddressCard(
+                            modifier = Modifier,
+                            address1 = it.address1,
+                            address2 = it.address2,
+                            city = it.city,
+                            state = it.state,
+                            pinCode = it.postalCode,
+                            number = it.phoneNumber,
+                            selectedCtaColor = selectedCtaColor,
+                            isCurrentlySelected = it.postalCode.equals(alreadySavedAddressPostal, true),
+                            addressIcon = when {
+                                it.labelType.equals("home", true) -> R.drawable.home_icon
+                                it.labelType.equals("work", true) -> R.drawable.ic_boxpay_saved_office_address
+                                else -> R.drawable.ic_boxpay_other_saved_address
+                            },
+                            label = it.labelName?.takeIf { it.isNotBlank() } ?: it.labelType ?: "",
+                            onClickEditAddress = {
+                                addressIcon.value = when {
+                                    it.labelType.equals("home", true) -> R.drawable.home_icon
+                                    it.labelType.equals("work", true) -> R.drawable.ic_boxpay_saved_office_address
+                                    else -> R.drawable.ic_boxpay_other_saved_address
+                                }
+                                selectedAddress.value = it
+                                isMoreOptionClicked.value = true
+                            },
+                            onClickSelectAddress = {
+                                onClickSetDefault(it)
+                            }
+                        )
+                        Spacer(modifier = Modifier.padding(bottom = 20.dp))
+                    }
+
             }
         }
     }

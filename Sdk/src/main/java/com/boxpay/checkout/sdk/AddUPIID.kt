@@ -200,7 +200,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
                 if (checkString(userVPA!!)) {
                     binding.ll1InvalidUPI.visibility = View.INVISIBLE
-                    binding.editText.isEnabled = false
                     validateAPICall(requireContext(), userVPA!!)
                     showLoadingInButton()
                 } else {
@@ -546,7 +545,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             Response.Listener { response ->
 
                 val status = response.getJSONObject("status").getString("status")
-                binding.editText.isEnabled = true
                 val reason = response.getJSONObject("status").getString("reason")
                 val reasonCode = response.getJSONObject("status").getString("reasonCode")
                 transactionId = response.getString("transactionId").toString()
@@ -684,21 +682,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 333) {
-            if (resultCode == Activity.RESULT_OK) {
-                hideLoadingInButton()
-                job?.cancel()
-                PaymentFailureScreen(
-                    errorMessage = "Please retry using other payment method or try again in sometime"
-                ).show(parentFragmentManager, "FailureScreen")
-            }
-        }
-    }
-
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
+        binding.editText.isEnabled = true
         binding.textView6.setTextColor(
             Color.parseColor(
                 sharedPreferences.getString(
@@ -730,6 +716,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     fun showLoadingInButton() {
         binding.textView6.visibility = View.INVISIBLE
+        binding.editText.isEnabled = false
         binding.progressBar.visibility = View.VISIBLE
         val rotateAnimation =
             ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)

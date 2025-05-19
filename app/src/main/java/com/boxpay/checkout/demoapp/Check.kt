@@ -219,18 +219,6 @@ class Check : AppCompatActivity() {
         queue.add(request)
     }
 
-    fun extractMessageFromErrorResponse(response: String): String? {
-        try {
-            // Parse the JSON string
-            val jsonObject = JSONObject(response)
-            // Retrieve the value associated with the "message" key
-            return jsonObject.getString("message")
-        } catch (e: Exception) {
-            // Handle JSON parsing exception
-        }
-        return null
-    }
-
     private fun enableProceedButton() {
         binding.bottomProceedButtonLayout.isEnabled = true
         binding.proceedButtonBottom.isEnabled = true
