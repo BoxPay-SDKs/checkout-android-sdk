@@ -35,8 +35,8 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentUpiComponentAloneBinding
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.util.CommonFunctions
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
+import com.boxpay.checkout.sdk.utils.formatToISO8601WithCurrentTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -442,7 +442,7 @@ class BoxPayUpiComponent(
                 panNumber = shopperObject.optString("panNumber")
 
                 dob = if (shopperObject.getString("dateOfBirth") != null && shopperObject.getString("dateOfBirth") != "null") {
-                    CommonFunctions.formatToISO8601WithCurrentTime(shopperObject.optString("dateOfBirth"))
+                    formatToISO8601WithCurrentTime(shopperObject.optString("dateOfBirth"))
                 } else {
                     null
                 }

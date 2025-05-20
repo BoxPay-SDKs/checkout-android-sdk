@@ -53,9 +53,9 @@ import com.boxpay.checkout.sdk.databinding.FragmentNetBankingBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.NetbankingDataClass
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.util.CommonFunctions
-import com.boxpay.checkout.sdk.util.CommonFunctions.getEffectiveString
+import com.boxpay.checkout.sdk.utils.getEffectiveString
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
+import com.boxpay.checkout.sdk.utils.formatToISO8601WithCurrentTime
 import com.boxpay.checkout.sdk.utils.handleException
 import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -896,7 +896,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                     chosenKey   = "dateOfBirthChosen",
                     storedKey   = "dateOfBirth",
                     validator   = { it.isNotBlank() && it != "null" },
-                    formatter   = { raw -> CommonFunctions.formatToISO8601WithCurrentTime(raw) }
+                    formatter   = { raw -> formatToISO8601WithCurrentTime(raw) }
                 )?.let { put("dateOfBirth", it) }
 
                 // panNumber: chosen first, otherwise stored

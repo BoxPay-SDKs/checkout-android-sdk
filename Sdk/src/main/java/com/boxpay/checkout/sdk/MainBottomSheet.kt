@@ -66,9 +66,9 @@ import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.util.CommonFunctions
-import com.boxpay.checkout.sdk.util.CommonFunctions.getEffectiveString
+import com.boxpay.checkout.sdk.utils.formatToISO8601WithCurrentTime
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
+import com.boxpay.checkout.sdk.utils.getEffectiveString
 import com.boxpay.checkout.sdk.utils.handleException
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.bumptech.glide.Glide
@@ -561,25 +561,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
-                    put(
-                        "dateOfBirth",
-                        CommonFunctions.formatToISO8601WithCurrentTime(
-                            sharedPreferences.getString(
-                                "dateOfBirth",
-                                null
-                            )!!
-                        )
-                    )
-                }
+                sharedPreferences.getEffectiveString(
+                    chosenKey   = "dateOfBirthChosen",
+                    storedKey   = "dateOfBirth",
+                    validator   = { it.isNotBlank() && it != "null" },
+                    formatter   = { raw -> formatToISO8601WithCurrentTime(raw) }
+                )?.let { put("dateOfBirth", it) }
 
-                if (sharedPreferences.getString("panNumberChosen", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                } else {
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
-                }
+                // panNumber: chosen first, otherwise stored
+                sharedPreferences.getEffectiveString(
+                    chosenKey = "panNumberChosen",
+                    storedKey = "panNumber",
+                    validator = { it.isNotBlank() && it != "null" }
+                )?.let { put("panNumber", it) }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -1354,25 +1348,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
-                    put(
-                        "dateOfBirth",
-                        CommonFunctions.formatToISO8601WithCurrentTime(
-                            sharedPreferences.getString(
-                                "dateOfBirth",
-                                null
-                            )!!
-                        )
-                    )
-                }
+                sharedPreferences.getEffectiveString(
+                    chosenKey   = "dateOfBirthChosen",
+                    storedKey   = "dateOfBirth",
+                    validator   = { it.isNotBlank() && it != "null" },
+                    formatter   = { raw -> formatToISO8601WithCurrentTime(raw) }
+                )?.let { put("dateOfBirth", it) }
 
-                if (sharedPreferences.getString("panNumberChosen", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                } else {
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
-                }
+                // panNumber: chosen first, otherwise stored
+                sharedPreferences.getEffectiveString(
+                    chosenKey = "panNumberChosen",
+                    storedKey = "panNumber",
+                    validator = { it.isNotBlank() && it != "null" }
+                )?.let { put("panNumber", it) }
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
 
@@ -1831,25 +1819,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
-                    put(
-                        "dateOfBirth",
-                        CommonFunctions.formatToISO8601WithCurrentTime(
-                            sharedPreferences.getString(
-                                "dateOfBirth",
-                                null
-                            )!!
-                        )
-                    )
-                }
+                sharedPreferences.getEffectiveString(
+                    chosenKey   = "dateOfBirthChosen",
+                    storedKey   = "dateOfBirth",
+                    validator   = { it.isNotBlank() && it != "null" },
+                    formatter   = { raw -> formatToISO8601WithCurrentTime(raw) }
+                )?.let { put("dateOfBirth", it) }
 
-                if (sharedPreferences.getString("panNumberChosen", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                } else {
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
-                }
+                // panNumber: chosen first, otherwise stored
+                sharedPreferences.getEffectiveString(
+                    chosenKey = "panNumberChosen",
+                    storedKey = "panNumber",
+                    validator = { it.isNotBlank() && it != "null" }
+                )?.let { put("panNumber", it) }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -3124,7 +3106,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     chosenKey   = "dateOfBirthChosen",
                     storedKey   = "dateOfBirth",
                     validator   = { it.isNotBlank() && it != "null" },
-                    formatter   = { raw -> CommonFunctions.formatToISO8601WithCurrentTime(raw) }
+                    formatter   = { raw -> formatToISO8601WithCurrentTime(raw) }
                 )?.let { put("dateOfBirth", it) }
 
                 // panNumber: chosen first, otherwise stored

@@ -1,11 +1,9 @@
 package com.boxpay.checkout.sdk
 
 import android.animation.ObjectAnimator
-import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -36,9 +34,9 @@ import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.FragmentAddUPIIDBinding
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.util.CommonFunctions
-import com.boxpay.checkout.sdk.util.CommonFunctions.getEffectiveString
+import com.boxpay.checkout.sdk.utils.getEffectiveString
 import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
+import com.boxpay.checkout.sdk.utils.formatToISO8601WithCurrentTime
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.handleException
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
@@ -490,7 +488,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     chosenKey   = "dateOfBirthChosen",
                     storedKey   = "dateOfBirth",
                     validator   = { it.isNotBlank() && it != "null" },
-                    formatter   = { raw -> CommonFunctions.formatToISO8601WithCurrentTime(raw) }
+                    formatter   = { raw -> formatToISO8601WithCurrentTime(raw) }
                 )?.let { put("dateOfBirth", it) }
 
                 // panNumber: chosen first, otherwise stored

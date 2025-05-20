@@ -3,7 +3,9 @@ package com.boxpay.checkout.sdk.utils
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.webkit.WebSettings
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
@@ -16,6 +18,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.random.Random
 
@@ -168,6 +175,43 @@ private fun openUPITimerBottomSheet(displayName : String,timerInSec: Int,fragmen
     fragment.childFragmentManager.beginTransaction()
         .add(bottomSheetFragment, "UPITimerBottomSheet")
         .commitAllowingStateLoss()
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun formatToISO8601WithCurrentTime(dateString: String): String {
+    // Define a formatter to parse the input date string with time
+    val dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
+    val dateFormatter = DateTimeFormatter.ISO_DATE
+
+    // Try to parse the input as LocalDateTime
+    val date = try {
+        LocalDateTime.parse(dateString, dateTimeFormatter).toLocalDate()
+    } catch (e: Exception) {
+        // If parsing as LocalDateTime fails, try parsing as LocalDate
+        LocalDate.parse(dateString, dateFormatter)
+    }
+
+    // Create a LocalDateTime with the fixed time set to "00:00:00"
+    val dateTime = LocalDateTime.of(date, LocalTime.MIDNIGHT)
+
+    // Convert LocalDateTime to ZonedDateTime in UTC
+    val zonedDateTime = dateTime.atZone(ZoneOffset.UTC)
+
+    // Format to ISO 8601 with "T00:00:00Z"
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    return zonedDateTime.format(formatter)
+}
+
+fun SharedPreferences.getEffectiveString(
+    chosenKey: String,
+    storedKey: String,
+    validator: (String) -> Boolean = { it.isNotBlank() && it != "null" },
+    formatter: (String) -> String = { it }
+): String? {
+    return listOf(chosenKey, storedKey)
+        .mapNotNull { getString(it, null) }
+        .firstOrNull { validator(it) }
+        ?.let { formatter(it) }
 }
 
 

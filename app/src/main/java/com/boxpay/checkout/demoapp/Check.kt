@@ -185,6 +185,7 @@ class Check : AppCompatActivity() {
       "amountWithoutTaxLocaleFull" : "10"
     }]
   },
+  "frontendBackUrl" : "https://www.boxpay.tech",
   "createShopperToken" : true,
   "expiryDurationSec" : 900
 }"""
