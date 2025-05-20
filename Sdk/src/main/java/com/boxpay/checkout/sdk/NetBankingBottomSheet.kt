@@ -1,7 +1,5 @@
 package com.boxpay.checkout.sdk
 
-import FailureScreenSharedViewModel
-import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
@@ -21,7 +19,6 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.widget.FrameLayout
@@ -53,10 +50,9 @@ import com.boxpay.checkout.sdk.databinding.FragmentNetBankingBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.NetbankingDataClass
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.utils.getEffectiveString
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
-import com.boxpay.checkout.sdk.utils.formatToISO8601WithCurrentTime
-import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -344,13 +340,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             else
                 callPaymentMethodRules(requireContext())
 
-
-            var enabled = false
-
-            val failureScreenSharedViewModelCallback =
-                FailureScreenSharedViewModel(::failurePaymentFunction)
-            FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
-                failureScreenSharedViewModelCallback
             proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
                 if (enableProceedButton) {
                     enableProceedButton()
@@ -369,21 +358,10 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
 
             allBanksAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
-                if (checkPositionObserved == null ||  checkPositionObserved == -1) {
+                if (checkPositionObserved == null || checkPositionObserved == -1) {
                     disableProceedButton()
                 } else {
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                        banksDetailsOriginal[checkPositionObserved].bankBrand,
-                        "NetBanking"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                        banksDetailsOriginal[checkPositionObserved].bankBrand,
-                        "NetBanking"
-                    )
+                    callUiAnalytic()
                     enableProceedButton()
                     checkedPosition = checkPositionObserved
                 }
@@ -454,22 +432,25 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 if (!!liveDataPopularBankSelectedOrNot.value!!) {
                     bankInstrumentTypeValue =
                         banksDetailsOriginal[popularBanksSelectedIndex].bankInstrumentTypeValue
-
                     callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INITIATED,
-                        banksDetailsOriginal[popularBanksSelectedIndex].bankBrand,
-                        "NetBanking"
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "NetBankingBottomSheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                     )
                     checkedPosition = null
                 } else {
                     bankInstrumentTypeValue =
                         banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
                     callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INITIATED,
-                        banksDetailsFiltered[checkedPosition!!].bankBrand,
-                        "NetBanking"
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "NetBankingBottomSheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                     )
                     popularBanksSelectedIndex = -1
                 }
@@ -481,63 +462,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
 
             binding.root
         } catch (e: Exception) {
-            handleException(
-                requireContext(),
-                e.message ?: "",
-                token ?: "",
-                baseUrl ?: "",
-                "Net Banking Bottom Sheet"
-            )
+            callUiAnalyticWithSDKCrashEvent(e.message ?: "")
             null
         }
-    }
-
-    private fun callUIAnalytics(
-        context: Context,
-        event: String,
-        paymentSubType: String,
-        paymentType: String
-    ) {
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
-        val requestQueue = Volley.newRequestQueue(context)
-        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
-        val browserLanguage = Locale.getDefault().toString()
-
-        // Constructing the request body
-        val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, token)
-            put(AnalyticsEvents.UI_EVENT, event)
-
-            // Create eventAttrs JSON object
-            val eventAttrs = JSONObject().apply {
-                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
-                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
-            }
-            put("eventAttrs", eventAttrs)
-
-            // Create browserData JSON object
-            val browserData = JSONObject().apply {
-                put("userAgentHeader", userAgentHeader)
-                put("browserLanguage", browserLanguage)
-            }
-            put("browserData", browserData)
-        }
-
-        // Request a JSONObject response from the provided URL
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
-        }
-
-        // Add the request to the RequestQueue.
-        requestQueue.add(jsonObjectRequest)
     }
 
     private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
@@ -729,18 +656,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                                 popularBanksSelected = true
                                 proceedButtonIsEnabled.value = true
                                 popularBanksSelectedIndex = index
-                                callUIAnalytics(
-                                    requireContext(),
-                                    AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                                    banksDetailsOriginal[popularBanksSelectedIndex].bankBrand,
-                                    "NetBanking"
-                                )
-                                callUIAnalytics(
-                                    requireContext(),
-                                    AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                                    banksDetailsOriginal[popularBanksSelectedIndex].bankBrand,
-                                    "NetBanking"
-                                )
+                                callUiAnalytic()
                             }
                         }
                     }
@@ -810,27 +726,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun createColorAnimation(startColor: Int, endColor: Int): ValueAnimator {
-
-        val layouts = Array<RelativeLayout?>(4) { null }
-        layouts[0] = binding.popularBanksRelativeLayout1
-        layouts[1] = binding.popularBanksRelativeLayout2
-        layouts[2] = binding.popularBanksRelativeLayout3
-        layouts[3] = binding.popularBanksRelativeLayout4
-        return ValueAnimator.ofObject(ArgbEvaluator(), startColor, endColor).apply {
-            duration = 500 // duration in milliseconds
-            interpolator = AccelerateDecelerateInterpolator()
-            repeatCount = ValueAnimator.INFINITE
-            repeatMode = ValueAnimator.REVERSE
-            addUpdateListener { animator ->
-                // Update the background color of all layouts
-                layouts.forEach { layout ->
-                    layout?.setBackgroundColor(animator.animatedValue as Int)
-                }
-            }
-        }
-    }
-
     private fun fetchRelativeLayout(num: Int): RelativeLayout {
 
         val relativeLayout: RelativeLayout = when (num) {
@@ -892,19 +787,9 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                sharedPreferences.getEffectiveString(
-                    chosenKey   = "dateOfBirthChosen",
-                    storedKey   = "dateOfBirth",
-                    validator   = { it.isNotBlank() && it != "null" },
-                    formatter   = { raw -> formatToISO8601WithCurrentTime(raw) }
-                )?.let { put("dateOfBirth", it) }
-
-                // panNumber: chosen first, otherwise stored
-                sharedPreferences.getEffectiveString(
-                    chosenKey = "panNumberChosen",
-                    storedKey = "panNumber",
-                    validator = { it.isNotBlank() && it != "null" }
-                )?.let { put("panNumber", it) }
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -1251,5 +1136,35 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 dismiss()
             }
         }
+    }
+
+    private fun callUiAnalyticWithSDKCrashEvent(message: String) {
+        callUIAnalytics(
+            context = requireContext(),
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = message,
+            screenName = "EmiBottomSheet",
+            uiEvent = AnalyticsEvents.SDK_CRASH
+        )
+    }
+
+    private fun callUiAnalytic() {
+        callUIAnalytics(
+            context = requireContext(),
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "NetBankingBottomSheet",
+            uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
+        )
+        callUIAnalytics(
+            context = requireContext(),
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "NetBankingBottomSheet",
+            uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+        )
     }
 }

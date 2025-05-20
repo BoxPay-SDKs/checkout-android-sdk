@@ -44,10 +44,9 @@ import com.boxpay.checkout.sdk.composeScreens.screen.SelectTenureEmi
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.utils.getEffectiveString
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
-import com.boxpay.checkout.sdk.utils.formatToISO8601WithCurrentTime
-import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -247,18 +246,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                                     },
                                     onClickRadio = {
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                                            "CardlessEMI",
-                                            "EMI"
-                                        )
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                                            "CardlessEMI",
-                                            "EMI"
-                                        )
+                                        callUiAnalytic()
                                         emiViewModel.onClickRadio(it)
                                     },
                                     selectedRadioButton = emiViewModel.selectedOthersOption.value,
@@ -268,18 +256,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                         emiViewModel.onValueChange(it)
                                     },
                                     onClickBank = {
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
+                                        callUiAnalytic()
                                         emiViewModel.onClickBank(it)
                                     },
                                     onClickFilter = { card, filter ->
@@ -287,10 +264,12 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     },
                                     onClickProceedButton = {
                                         callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_INITIATED,
-                                            "CardlessEMI",
-                                            "EMI"
+                                            context = requireContext(),
+                                            token = token ?: "",
+                                            baseUrl = Base_Session_API_URL,
+                                            message = "",
+                                            screenName = "EmiBottomSheet",
+                                            uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                                         )
                                         emiViewModel.showLoaderInButton.value = true
                                         postRequest(context!!)
@@ -307,11 +286,17 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     cardType = emiViewModel.selectedCard.value,
                                     selectedEmi = emiViewModel.selectedEmi.value,
                                     sharedPreferences = sharedPreferences,
-                                    onClickRadio = { duration, amount , code->
+                                    onClickRadio = { duration, amount, code ->
                                         emiViewModel.onClickRadio(duration, amount, code)
                                     },
-                                    onProceed = {percent, low, no, discount, netAmount ->
-                                        emiViewModel.onProceedEmi(percent, low, no, discount, netAmount)
+                                    onProceed = { percent, low, no, discount, netAmount ->
+                                        emiViewModel.onProceedEmi(
+                                            percent,
+                                            low,
+                                            no,
+                                            discount,
+                                            netAmount
+                                        )
                                     },
                                     currencySymbol = sharedPreferences.getString(
                                         "currencySymbol",
@@ -336,48 +321,15 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     expiry = emiViewModel.expiry.value,
                                     cvv = emiViewModel.cvv.value,
                                     onCardNameChange = {
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
+                                        callUiAnalytic()
                                         emiViewModel.onCardNameChange(it)
                                     },
                                     onCardExpiryChange = {
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
+                                        callUiAnalytic()
                                         emiViewModel.onCardExpiryChange(it)
                                     },
                                     onCardNumberChange = {
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
+                                        callUiAnalytic()
                                         emiViewModel.onCardNumberChange(it)
                                         if ((emiViewModel.cardNumber.value?.text?.length
                                                 ?: 0) >= 9 && emiViewModel.cardIcon.value == R.drawable.default_card_icon
@@ -388,26 +340,17 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                         }
                                     },
                                     onCardCvvChange = {
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
-                                        callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
-                                        )
+                                        callUiAnalytic()
                                         emiViewModel.onCardCvvChange(it)
                                     },
                                     onProceedClick = {
                                         callUIAnalytics(
-                                            requireContext(),
-                                            AnalyticsEvents.PAYMENT_INITIATED,
-                                            emiViewModel.selectedCard.value,
-                                            "EMI"
+                                            context = requireContext(),
+                                            token = token ?: "",
+                                            baseUrl = Base_Session_API_URL,
+                                            message = "",
+                                            screenName = "EmiBottomSheet",
+                                            uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                                         )
                                         emiViewModel.showLoaderInButton.value = true
                                         postRequest(context!!)
@@ -529,7 +472,11 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                 lowCostApplied = lowApplicableOffer,
                                 emiList = emptyList(),
                                 cardLessEmiValue = emiMethod.optString("cardlessEmiProviderValue"),
-                                issuerBrand = if (emiCardName.equals("others", true)) "" else emiMethod.optString("issuer")
+                                issuerBrand = if (emiCardName.equals(
+                                        "others",
+                                        true
+                                    )
+                                ) "" else emiMethod.optString("issuer")
                             )
                             val emi = Emi(
                                 duration = emiMethod.optInt("duration"),
@@ -553,27 +500,11 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                         }
                         hideLoader()
                     } catch (e: Exception) {
-                        context?.let {
-                            handleException(
-                                it,
-                                e.message ?: "",
-                                token ?: "",
-                                Base_Session_API_URL,
-                                "Emi Bank Details adding bank"
-                            )
-                        }
+                        callUiAnalyticWithSDKCrashEvent(message = e.message ?: "")
                     }
                 }
             } catch (e: Exception) {
-                context?.let {
-                    handleException(
-                        it,
-                        e.message ?: "",
-                        token ?: "",
-                        Base_Session_API_URL,
-                        "Emi Screen fetching the api details"
-                    )
-                }
+                callUiAnalyticWithSDKCrashEvent(message = e.message ?: "")
             }
 
         }, { error ->
@@ -697,19 +628,9 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                sharedPreferences.getEffectiveString(
-                    chosenKey   = "dateOfBirthChosen",
-                    storedKey   = "dateOfBirth",
-                    validator   = { it.isNotBlank() && it != "null" },
-                    formatter   = { raw -> formatToISO8601WithCurrentTime(raw) }
-                )?.let { put("dateOfBirth", it) }
-
-                // panNumber: chosen first, otherwise stored
-                sharedPreferences.getEffectiveString(
-                    chosenKey = "panNumberChosen",
-                    storedKey = "panNumber",
-                    validator = { it.isNotBlank() && it != "null" }
-                )?.let { put("panNumber", it) }
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -872,15 +793,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             // Retrieve the value associated with the "message" key
             return jsonObject.getString("message")
         } catch (e: Exception) {
-            context?.let {
-                handleException(
-                    it,
-                    e.message ?: "",
-                    token ?: "",
-                    Base_Session_API_URL,
-                    "Emi Screen error message extract"
-                )
-            }
+            callUiAnalyticWithSDKCrashEvent(message = e.message ?: "")
         }
         return null
     }
@@ -897,29 +810,24 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                 val methodEnabled = response.getBoolean("methodEnabled")
                 val issuerName = response.optString("issuerName")
                 if (issuerName == "null") {
-                    emiViewModel.cardNumberErrorText.value = "We couldn't find any EMI plans for this card. Please try using a different card number."
+                    emiViewModel.cardNumberErrorText.value =
+                        "We couldn't find any EMI plans for this card. Please try using a different card number."
                     emiViewModel.isCardNumberEnabled.value = false
-                }else if (!issuerName.equals(emiViewModel.issuerBrand.value) && issuerName != "null") {
-                    emiViewModel.cardNumberErrorText.value = "The card is ${response.optString("issuerTitle")} ${emiViewModel.selectedCard.value}. Please enter a card number that belongs to ${emiViewModel.selectedBank.value?.name} ${emiViewModel.selectedCard.value}"
+                } else if (!issuerName.equals(emiViewModel.issuerBrand.value) && issuerName != "null") {
+                    emiViewModel.cardNumberErrorText.value =
+                        "The card is ${response.optString("issuerTitle")} ${emiViewModel.selectedCard.value}. Please enter a card number that belongs to ${emiViewModel.selectedBank.value?.name} ${emiViewModel.selectedCard.value}"
                     emiViewModel.isCardNumberEnabled.value = false
                 } else {
                     if (!methodEnabled) {
-                        emiViewModel.cardNumberErrorText.value = "This card is not supported for the payment"
+                        emiViewModel.cardNumberErrorText.value =
+                            "This card is not supported for the payment"
                     }
                     emiViewModel.isCardNumberEnabled.value = methodEnabled
                 }
                 emiViewModel.cardIcon.value = emiViewModel.getImageDrawableForItem(currBrand)
                 emiViewModel.isAmexCard.value = currBrand.equals("AmericanExpress", true)
             } catch (e: Exception) {
-                context?.let {
-                    handleException(
-                        it,
-                        e.message ?: "",
-                        token ?: "",
-                        Base_Session_API_URL,
-                        "Emi Screen network call to identify card type"
-                    )
-                }
+                callUiAnalyticWithSDKCrashEvent(message = e.message ?: "")
             }
         }, Response.ErrorListener { _ ->
 
@@ -973,15 +881,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                     }
 
                 } catch (e: JSONException) {
-                    context?.let {
-                        handleException(
-                            it,
-                            e.message ?: "",
-                            token ?: "",
-                            Base_Session_API_URL,
-                            "Emi Screen in fetch status and reason"
-                        )
-                    }
+                    callUiAnalyticWithSDKCrashEvent(message = e.message ?: "")
                 }
             },
             Response.ErrorListener {
@@ -1005,60 +905,17 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun callUIAnalytics(
-        context: Context,
-        event: String,
-        paymentSubType: String,
-        paymentType: String
-    ) {
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
-        val requestQueue = Volley.newRequestQueue(context)
-        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
-        val browserLanguage = Locale.getDefault().toString()
-
-        // Constructing the request body
-        val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, token)
-            put(AnalyticsEvents.UI_EVENT, event)
-
-            // Create eventAttrs JSON object
-            val eventAttrs = JSONObject().apply {
-                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
-                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
-            }
-            put("eventAttrs", eventAttrs)
-
-            // Create browserData JSON object
-            val browserData = JSONObject().apply {
-                put("userAgentHeader", userAgentHeader)
-                put("browserLanguage", browserLanguage)
-            }
-            put("browserData", browserData)
-        }
-
-        // Request a JSONObject response from the provided URL
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { /*no response handling */},
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
-        }
-
-        // Add the request to the RequestQueue.
-        requestQueue.add(jsonObjectRequest)
-    }
-
     private fun handleSuccess() {
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         if (sharedPreferences.getBoolean("isSuccessScreenVisible", true)) {
             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
-            bottomSheet.setIsOfferApplied(emiViewModel.isLowCostSelected.value, emiViewModel.isNoCostSelected.value, emiViewModel.netAmount.value, emiViewModel.discount.value)
+            bottomSheet.setIsOfferApplied(
+                emiViewModel.isLowCostSelected.value,
+                emiViewModel.isNoCostSelected.value,
+                emiViewModel.netAmount.value,
+                emiViewModel.discount.value
+            )
             bottomSheet.show(
                 parentFragmentManager,
                 "PaymentStatusBottomSheetWithDetails"
@@ -1086,5 +943,35 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                 ).show(parentFragmentManager, "FailureScreen")
             }
         }
+    }
+
+    private fun callUiAnalytic() {
+        callUIAnalytics(
+            context = requireContext(),
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "EmiBottomSheet",
+            uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+        )
+        callUIAnalytics(
+            context = requireContext(),
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "EmiBottomSheet",
+            uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
+        )
+    }
+
+    private fun callUiAnalyticWithSDKCrashEvent(message: String) {
+        callUIAnalytics(
+            context = requireContext(),
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = message,
+            screenName = "EmiBottomSheet",
+            uiEvent = AnalyticsEvents.SDK_CRASH
+        )
     }
 }

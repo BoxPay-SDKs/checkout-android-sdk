@@ -1,6 +1,5 @@
 package com.boxpay.checkout.sdk
 
-import FailureScreenSharedViewModel
 import android.animation.ObjectAnimator
 import android.app.Activity
 import android.app.Dialog
@@ -36,10 +35,9 @@ import com.boxpay.checkout.sdk.databinding.FragmentBnplBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.BnplDataClass
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.utils.getEffectiveString
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
-import com.boxpay.checkout.sdk.utils.formatToISO8601WithCurrentTime
-import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -88,10 +86,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         return try {
             requestQueue = Volley.newRequestQueue(context)
             binding = FragmentBnplBottomSheetBinding.inflate(layoutInflater, container, false)
-            val failureScreenSharedViewModelCallback =
-                FailureScreenSharedViewModel(::failurePaymentFunction)
-            FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
-                failureScreenSharedViewModelCallback
 
 
             val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
@@ -155,16 +149,20 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                     disableProceedButton()
                 } else {
                     callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                        bnplDetailOriginal[checkPositionObserved].bnplBrand,
-                        "BNPL"
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "BnplBottomSheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
                     )
                     callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                        bnplDetailOriginal[checkPositionObserved].bnplBrand,
-                        "BNPL"
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "BnplBottomSheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
                     )
                     enableProceedButton()
                     checkedPosition = checkPositionObserved
@@ -177,10 +175,12 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 walletInstrumentTypeValue =
                     walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
                 callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.PAYMENT_INITIATED,
-                    bnplDetailOriginal[checkedPosition!!].bnplBrand,
-                    "BNPL"
+                    context = requireContext(),
+                    token = token ?: "",
+                    baseUrl = Base_Session_API_URL,
+                    message = "",
+                    screenName = "BnplBottomSheet",
+                    uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                 )
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     postRequest(requireContext(), walletInstrumentTypeValue)
@@ -190,12 +190,13 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
             binding.root
         } catch (e: Exception) {
-            handleException(
-                requireContext(),
-                e.message ?: "",
-                token ?: "",
-                baseUrl ?: "",
-                "Bnpl Bottom Sheet"
+            callUIAnalytics(
+                context = requireContext(),
+                token = token ?: "",
+                baseUrl = Base_Session_API_URL,
+                message = "",
+                screenName = "BnplBottomSheet",
+                uiEvent = AnalyticsEvents.SDK_CRASH
             )
             null
         }
@@ -296,20 +297,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         editor.apply()
     }
 
-    fun failurePaymentFunction() {
-
-        // Start a coroutine with a delay of 5 seconds
-        CoroutineScope(Dispatchers.Main).launch {
-            delay(1000) // Delay for 1 seconds
-
-            // Code inside this block will execute after the delay
-            // Code inside this block will execute after the delay
-            val bottomSheet = PaymentFailureScreen()
-            bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
-        }
-
-    }
-
     private fun fetchTransactionDetailsFromSharedPreferences() {
         val sharedPreferences =
             requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
@@ -317,55 +304,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }
-
-    private fun callUIAnalytics(
-        context: Context,
-        event: String,
-        paymentSubType: String,
-        paymentType: String
-    ) {
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
-        val requestQueue = Volley.newRequestQueue(context)
-        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
-        val browserLanguage = Locale.getDefault().toString()
-
-        // Constructing the request body
-        val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, token)
-            put(AnalyticsEvents.UI_EVENT, event)
-
-            // Create eventAttrs JSON object
-            val eventAttrs = JSONObject().apply {
-                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
-                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
-            }
-            put("eventAttrs", eventAttrs)
-
-            // Create browserData JSON object
-            val browserData = JSONObject().apply {
-                put("userAgentHeader", userAgentHeader)
-                put("browserLanguage", browserLanguage)
-            }
-            put("browserData", browserData)
-        }
-
-        // Request a JSONObject response from the provided URL
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
-        }
-
-        // Add the request to the RequestQueue.
-        requestQueue.add(jsonObjectRequest)
-    }
-
 
     private fun fetchBnplDetails() {
         val url = "${Base_Session_API_URL}${token}"
@@ -513,19 +451,9 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                sharedPreferences.getEffectiveString(
-                    chosenKey   = "dateOfBirthChosen",
-                    storedKey   = "dateOfBirth",
-                    validator   = { it.isNotBlank() && it != "null" },
-                    formatter   = { raw -> formatToISO8601WithCurrentTime(raw) }
-                )?.let { put("dateOfBirth", it) }
-
-                // panNumber: chosen first, otherwise stored
-                sharedPreferences.getEffectiveString(
-                    chosenKey = "panNumberChosen",
-                    storedKey = "panNumber",
-                    validator = { it.isNotBlank() && it != "null" }
-                )?.let { put("panNumber", it) }
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
+                }
 
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {

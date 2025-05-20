@@ -6,16 +6,11 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.webkit.WebSettings
 import android.widget.ImageView
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 import coil.decode.SvgDecoder
 import coil.load
-import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.R
 import com.boxpay.checkout.sdk.adapters.NetbankingBanksAdapter.NetBankingAdapterViewHolder
 import com.boxpay.checkout.sdk.adapters.WalletAdapter.WalletAdapterViewHolder
@@ -23,8 +18,6 @@ import com.boxpay.checkout.sdk.databinding.WalletItemBinding
 import com.boxpay.checkout.sdk.dataclasses.BnplDataClass
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
-import org.json.JSONObject
-import java.util.Locale
 
 class BnplAdapters(
     private val walletDetails: ArrayList<BnplDataClass>,
@@ -106,25 +99,9 @@ class BnplAdapters(
                 } else {
                     radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
                 }
-
-
-                val radioButtonColor = sharedPreferences.getString("primaryButtonColor", "#0D8EFF")
-
                 // Set a click listener for the RadioButton
                 binding.root.setOnClickListener {
                     handleRadioButtonClick(adapterPosition, binding.radioButton)
-                    callUIAnalytics(
-                        context,
-                        "PAYMENT_INSTRUMENT_PROVIDED",
-                        walletDetails[position].bnplBrand,
-                        "BNPL"
-                    )
-                    callUIAnalytics(
-                        context,
-                        "PAYMENT_METHOD_SELECTED",
-                        walletDetails[position].bnplBrand,
-                        "BNPL"
-                    )
                 }
 
                 val balloon = createBalloon(context) {
@@ -170,7 +147,7 @@ class BnplAdapters(
         holder.bind(position)
     }
 
-    private fun handleRadioButtonClick(position: Int,imageView : ImageView) {
+    private fun handleRadioButtonClick(position: Int, imageView: ImageView) {
         if (checkedPosition != position) {
             // Change the background of the previously checked RadioButton
             val previousCheckedViewHolder =
@@ -190,7 +167,14 @@ class BnplAdapters(
 
                 // Modify the solid color of the first item (assuming it's a GradientDrawable)
                 val shapeDrawable = layerDrawable.getDrawable(0) as? GradientDrawable
-                shapeDrawable?.setColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#0D8EFF"))) // Change color to red dynamically
+                shapeDrawable?.setColor(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "primaryButtonColor",
+                            "#0D8EFF"
+                        )
+                    )
+                ) // Change color to red dynamically
 
                 // Apply the modified drawable back to the radioButton ImageView
                 imageView.background = layerDrawable
@@ -206,56 +190,6 @@ class BnplAdapters(
             checkedPosition = position
             checkPositionLiveData.value = checkedPosition
         }
-    }
-
-    private fun callUIAnalytics(
-        context: Context,
-        event: String,
-        paymentSubType: String,
-        paymentType: String
-    ) {
-        val environmentFetched = sharedPreferences.getString("environment", "null")
-
-        val requestQueue = Volley.newRequestQueue(context)
-        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
-        val browserLanguage = Locale.getDefault().toString()
-
-        // Constructing the request body
-        val requestBody = JSONObject().apply {
-            put("callerToken", token)
-            put("uiEvent", event)
-
-            // Create eventAttrs JSON object
-            val eventAttrs = JSONObject().apply {
-                put("paymentType", paymentType)
-                put("paymentSubType", paymentSubType)
-            }
-            put("eventAttrs", eventAttrs)
-
-            // Create browserData JSON object
-            val browserData = JSONObject().apply {
-                put("userAgentHeader", userAgentHeader)
-                put("browserLanguage", browserLanguage)
-            }
-            put("browserData", browserData)
-        }
-
-        // Request a JSONObject response from the provided URL
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST,
-            "https://${environmentFetched}apis.boxpay.tech/v0/ui-analytics",
-            requestBody,
-            Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
-        }
-
-        // Add the request to the RequestQueue.
-        requestQueue.add(jsonObjectRequest)
     }
 
     fun deselectSelectedItem() {

@@ -19,4 +19,5 @@ object AnalyticsEvents {
     const val UPI_APP_NOT_FOUND = "UPI_APP_NOT_FOUND"
     const val FAILED_TO_LAUNCH_UPI_INTENT = "FAILED_TO_LAUNCH_UPI_INTENT"
     const val ERROR_GETTING_UPI_URL = "ERROR_GETTING_UPI_URL"
+    const val SDK_CRASH = "SDK_CRASH"
 }

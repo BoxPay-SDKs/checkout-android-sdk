@@ -29,8 +29,9 @@ import com.boxpay.checkout.sdk.composeScreens.components.SavedAddressShimmerScre
 import com.boxpay.checkout.sdk.composeScreens.model.Address
 import com.boxpay.checkout.sdk.composeScreens.screen.SavedAddressesScreen
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
-import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -373,15 +374,14 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
                     isLoading = false
                     hideLoader()
                 } catch (e: Exception) {
-                    context?.let {
-                        handleException(
-                            it,
-                            e.message ?: "",
-                            token ?: "",
-                            Base_Session_API_URL,
-                            "Saved Address Screen fetching the api details"
-                        )
-                    }
+                    callUIAnalytics(
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "NetBankingBottomSheet",
+                        uiEvent = AnalyticsEvents.SDK_CRASH
+                    )
                 }
             }, Response.ErrorListener {
                 hideLoader()
