@@ -132,27 +132,27 @@ class Check : AppCompatActivity() {
     "currencyCode" : "INR"
   },
   "descriptor" : {
-    "line1" : "Some descriptor"
+    "line1" : "Android SDK"
   },
   "shopper": {
-            "firstName": "Ankush",
-            "lastName": "Kashyap",
+            "firstName": "Ishika",
+            "lastName": "Bansal",
             "gender": null,
-            "phoneNumber": "+917777777777",
-            "email": "ankush.kashyap@boxpay.tech",
+            "phoneNumber": "+919911103562",
+            "email": "ishika.bansal@boxpay.tech",
             "uniqueReference": "x123y",
             "deliveryAddress": {
-                "address1": "first line",
-                "address2": "second line",
+                "address1": "wz-5 street no 1",
+                "address2": "ramgarh colony moti nagar",
                 "address3": null,
-                "city": "Chandigarh",
-                "state": "Chandigarh",
+                "city": "New Delhi",
+                "state": "Delhi",
                 "countryCode": "IN",
-                "postalCode": "160002",
+                "postalCode": "110015",
                 "shopperRef": null,
                 "addressRef": null,
                 "labelType": "Other",
-                "labelName": "test",
+                "labelName": "Delhi Home",
                 "name": null,
                 "email": null,
                 "phoneNumber": null
@@ -185,9 +185,6 @@ class Check : AppCompatActivity() {
       "amountWithoutTaxLocaleFull" : "10"
     }]
   },
-  "statusNotifyUrl" : "https://www.boxpay.tech",
-  "frontendReturnUrl" : "https://www.boxpay.tech",
-  "frontendBackUrl" : "https://www.boxpay.tech",
   "createShopperToken" : true,
   "expiryDurationSec" : 900
 }"""
