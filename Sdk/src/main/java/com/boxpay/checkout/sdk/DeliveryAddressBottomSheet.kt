@@ -153,7 +153,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     binding.countryErrorText.visibility = View.VISIBLE
                 } else {
@@ -249,7 +249,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 labelName = s.toString()
                 if (toCheckAllFieldsAreFilled()) {
                     enableProceedButton()
@@ -271,7 +271,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     binding.mobileErrorText.text = "Required"
                     binding.mobileErrorText.visibility = View.VISIBLE
@@ -300,7 +300,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 s?.let {
                     if (it.isNotEmpty()) {
                         if (it.length == 10) {
@@ -348,7 +348,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.countryEditText.setOnItemClickListener { parent, view, position, id ->
             val selectedItem = parent.getItemAtPosition(position).toString()
 
-            callUiAnalytic()
+            logAddressUpdatedEvent()
 
             countrySelectedFromDropDown = selectedItem
             countrySelected = true
@@ -380,7 +380,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         binding.spinnerDialCodes.setOnItemClickListener { parent, view, position, id ->
             val selectedDialCode = parent.getItemAtPosition(position).toString()
-            callUiAnalytic()
+            logAddressUpdatedEvent()
             // Display or use the selected item
             if (!selectedDialCode.contains("no", true)) {
                 countryCodePhoneNum = selectedDialCode
@@ -743,7 +743,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     binding.fullNameErrorTex.visibility = View.VISIBLE
                     binding.fullNameEditText.background =
@@ -775,7 +775,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isMobileNumberValid()
                     binding.mobileNumberEditText.background =
@@ -808,7 +808,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isEmailValid()
                     binding.emailEditText.background =
@@ -837,7 +837,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isPrimaryAddressValid()
                     binding.addressEditText1.background =
@@ -867,7 +867,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 toCheckAllFieldsAreFilled()
             }
 
@@ -891,7 +891,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isPostalValid()
                     binding.postalCodeEditText.background =
@@ -920,7 +920,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isStateValid()
                     binding.stateEditText.background =
@@ -949,7 +949,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUiAnalytic()
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isCityValid()
                     binding.cityEditText.background =
@@ -986,7 +986,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.proceedButton.setOnClickListener() {
-            callUiAnalytic()
+            logAddressUpdatedEvent()
             val fullName = binding.fullNameEditText.text
             val mobileNumber = binding.mobileNumberEditText.text
             val email = binding.emailEditText.text
@@ -1802,7 +1802,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         this.isOfficeAddressSaved = isWorkSaved
     }
 
-    private fun callUiAnalytic() {
+    private fun logAddressUpdatedEvent() {
         callUIAnalytics(
             context = requireContext(),
             token = token ?: "",

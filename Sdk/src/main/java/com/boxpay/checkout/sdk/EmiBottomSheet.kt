@@ -246,7 +246,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                         dismissAndMakeButtonsOfMainBottomSheetEnabled()
                                     },
                                     onClickRadio = {
-                                        callUiAnalytic()
+                                        logEmiBottomSheetUIEvents()
                                         emiViewModel.onClickRadio(it)
                                     },
                                     selectedRadioButton = emiViewModel.selectedOthersOption.value,
@@ -256,7 +256,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                         emiViewModel.onValueChange(it)
                                     },
                                     onClickBank = {
-                                        callUiAnalytic()
+                                        logEmiBottomSheetUIEvents()
                                         emiViewModel.onClickBank(it)
                                     },
                                     onClickFilter = { card, filter ->
@@ -321,15 +321,15 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     expiry = emiViewModel.expiry.value,
                                     cvv = emiViewModel.cvv.value,
                                     onCardNameChange = {
-                                        callUiAnalytic()
+                                        logEmiBottomSheetUIEvents()
                                         emiViewModel.onCardNameChange(it)
                                     },
                                     onCardExpiryChange = {
-                                        callUiAnalytic()
+                                        logEmiBottomSheetUIEvents()
                                         emiViewModel.onCardExpiryChange(it)
                                     },
                                     onCardNumberChange = {
-                                        callUiAnalytic()
+                                        logEmiBottomSheetUIEvents()
                                         emiViewModel.onCardNumberChange(it)
                                         if ((emiViewModel.cardNumber.value?.text?.length
                                                 ?: 0) >= 9 && emiViewModel.cardIcon.value == R.drawable.default_card_icon
@@ -340,7 +340,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                         }
                                     },
                                     onCardCvvChange = {
-                                        callUiAnalytic()
+                                        logEmiBottomSheetUIEvents()
                                         emiViewModel.onCardCvvChange(it)
                                     },
                                     onProceedClick = {
@@ -945,7 +945,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun callUiAnalytic() {
+    private fun logEmiBottomSheetUIEvents() {
         callUIAnalytics(
             context = requireContext(),
             token = token ?: "",

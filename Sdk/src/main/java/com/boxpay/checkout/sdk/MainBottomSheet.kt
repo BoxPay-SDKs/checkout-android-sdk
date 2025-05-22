@@ -509,7 +509,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     @SuppressLint("NewApi")
     private fun getUrlForUPIIntent(appName: String) {
         showLoadingState()
-        callUiAnalytic()
+        logMainBottomSheetUiEvents()
         callUIAnalytics(
             context = context,
             token = token ?: "",
@@ -776,7 +776,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!binding.loadingRelativeLayout.isVisible) {
                     recommendedCheckedPosition = checkedPositon
                     if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
-                        callUiAnalytic()
+                        logMainBottomSheetUiEvents()
                         binding.recommendedProceedButton.visibility = View.VISIBLE
                         binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
                         binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
@@ -852,7 +852,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.addNewUPIIDConstraint.setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     binding.addNewUPIIDConstraint.isEnabled = false
-                    callUiAnalytic()
+                    logMainBottomSheetUiEvents()
                     job?.cancel()
                     openAddUPIIDBottomSheet()
                 }
@@ -883,7 +883,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.cardConstraint.isEnabled = false
-                    callUiAnalytic()
+                    logMainBottomSheetUiEvents()
                     openAddCardBottomSheet()
                 }
             }
@@ -895,7 +895,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.walletConstraint.isEnabled = false
-                    callUiAnalytic()
+                    logMainBottomSheetUiEvents()
                     openWalletBottomSheet()
                 }
             }
@@ -906,7 +906,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.emiConstraint.isEnabled = false
-                    callUiAnalytic()
+                    logMainBottomSheetUiEvents()
                     openEmiBottomSheet()
                 }
             }
@@ -917,7 +917,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.bnplConstraint.isEnabled = false
-                    callUiAnalytic()
+                    logMainBottomSheetUiEvents()
                     openBNPLBottomSheet()
                 }
             }
@@ -929,7 +929,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.netBankingConstraint.isEnabled = false
-                    callUiAnalytic()
+                    logMainBottomSheetUiEvents()
                     openNetBankingBottomSheet()
                 }
             }
@@ -3764,7 +3764,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         apply()
     }
 
-    private fun callUiAnalytic() {
+    private fun logMainBottomSheetUiEvents() {
         callUIAnalytics(
             context = context,
             token = token ?: "",

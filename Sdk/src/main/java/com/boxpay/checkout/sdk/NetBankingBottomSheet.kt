@@ -361,7 +361,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                 if (checkPositionObserved == null || checkPositionObserved == -1) {
                     disableProceedButton()
                 } else {
-                    callUiAnalytic()
+                    logNetBankingBottomSheetUIEvent()
                     enableProceedButton()
                     checkedPosition = checkPositionObserved
                 }
@@ -656,7 +656,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                                 popularBanksSelected = true
                                 proceedButtonIsEnabled.value = true
                                 popularBanksSelectedIndex = index
-                                callUiAnalytic()
+                                logNetBankingBottomSheetUIEvent()
                             }
                         }
                     }
@@ -1149,7 +1149,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         )
     }
 
-    private fun callUiAnalytic() {
+    private fun logNetBankingBottomSheetUIEvent() {
         callUIAnalytics(
             context = requireContext(),
             token = token ?: "",
