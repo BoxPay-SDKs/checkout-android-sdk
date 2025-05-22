@@ -1,35 +1,21 @@
 package com.boxpay.checkout.sdk.utils
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.webkit.WebSettings
-import androidx.fragment.app.Fragment
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.boxpay.checkout.sdk.OTPScreenWebView
-import com.boxpay.checkout.sdk.UPITimerBottomSheet
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
-import kotlin.random.Random
 
-fun handleException(
-    context: Context,
-    message: String = "An error occurred",
-    token: String,
-    baseUrl: String,
-    screenName: String
-) {
-    callUIAnalytics(context, token, baseUrl, message, screenName)
-}
-
-private fun callUIAnalytics(context: Context, token: String, baseUrl: String, message: String, screenName: String) {
+fun callUIAnalytics(context: Context, token: String, baseUrl: String, message: String, screenName: String, uiEvent:String) {
     CoroutineScope(Dispatchers.IO).launch {
         val requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
@@ -37,8 +23,8 @@ private fun callUIAnalytics(context: Context, token: String, baseUrl: String, me
 
         // Constructing the request body
         val requestBody = JSONObject().apply {
-            put("callerToken", token)
-            put("uiEvent", "SDK_CRASH")
+            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.UI_EVENT, uiEvent)
 
             // Create browserData JSON object
             val browserData = JSONObject().apply {
@@ -67,20 +53,6 @@ private fun callUIAnalytics(context: Context, token: String, baseUrl: String, me
         }
         requestQueue.add(jsonObjectRequest)
     }
-}
-
-fun openWebView(fragment: Fragment, response: JSONObject) {
-    val type = response.getJSONArray("actions").getJSONObject(0).getString("type")
-    val url = if (type.contains("html", true)) {
-        response.getJSONArray("actions").getJSONObject(0).getString("htmlPageString")
-    } else {
-        response.getJSONArray("actions").getJSONObject(0).getString("url")
-    }
-
-    val intent = Intent(fragment.context, OTPScreenWebView::class.java)
-    intent.putExtra("url", url)
-    intent.putExtra("type", type)
-    fragment.startActivityForResult(intent, 333)
 }
 
 fun fetchStatusAndReason(context: Context, url: String, editor: SharedPreferences.Editor, callback: (Boolean, String?) -> Unit) {
@@ -132,46 +104,3 @@ fun fetchStatusAndReason(context: Context, url: String, editor: SharedPreference
 
     requestQueue.add(jsonObjectRequest)
 }
-
-fun generateRandomAlphanumericString(length: Int): String {
-    val charPool: List<Char> = ('A'..'Z') + ('a'..'z') + ('0'..'9')
-    return (1..length)
-        .map { Random.nextInt(0, charPool.size) }
-        .map(charPool::get)
-        .joinToString("")
-}
-
-fun showWebOrTimerScreen(fragment: Fragment,response: JSONObject, displayUserId : String , startFetchStatusCall : ()-> Unit) {
-    val actionObject = response.optJSONArray("actions")
-        ?.takeIf { it.length() > 0 }
-        ?.getJSONObject(0)
-
-    val actionType = actionObject?.optString("type", null)
-
-    when (actionType) {
-        "html", "url" -> {
-            openWebView(fragment,response)
-            startFetchStatusCall()
-        }
-        "timer" -> {
-            val expirySec = actionObject?.optInt("expirySec", DEFAULT_UPI_TIMER_IN_SEC) ?: DEFAULT_UPI_TIMER_IN_SEC
-            openUPITimerBottomSheet(displayUserId, expirySec, fragment)
-        }
-        else -> {
-            openUPITimerBottomSheet(displayUserId, DEFAULT_UPI_TIMER_IN_SEC, fragment) // fallback
-        }
-    }
-}
-
-private fun openUPITimerBottomSheet(displayName : String,timerInSec: Int,fragment: Fragment) {
-    val bottomSheetFragment = UPITimerBottomSheet.newInstance(displayName, timerInSec)
-    fragment.childFragmentManager.beginTransaction()
-        .add(bottomSheetFragment, "UPITimerBottomSheet")
-        .commitAllowingStateLoss()
-}
-
-
-const val DEFAULT_UPI_TIMER_IN_SEC = 300
-
-
-

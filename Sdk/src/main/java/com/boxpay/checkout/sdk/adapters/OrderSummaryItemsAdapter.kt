@@ -17,20 +17,21 @@ class OrderSummaryItemsAdapter(
 ) : RecyclerView.Adapter<OrderSummaryItemsAdapter.OrderSummaryViewHolder>() {
     val sharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+
     inner class OrderSummaryViewHolder(private val binding: OrderSummaryItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(position: Int) {
             binding.apply {
-                if(!imagesUrls.isNullOrEmpty() && imagesUrls[position] != "null" && imagesUrls[position].isNotEmpty()) {
+                if (!imagesUrls.isNullOrEmpty() && imagesUrls[position] != "null" && imagesUrls[position].isNotEmpty()) {
                     Picasso.get()
                         .load(imagesUrls[position])
                         .into(binding.itemImage)
                 } else {
-                    binding.itemImage.setImageResource(R.drawable.ic_placeholder_image )
+                    binding.itemImage.setImageResource(R.drawable.ic_placeholder_image)
                 }
-                val currencySymbol = sharedPreferences.getString("currencySymbol","₹")
-                itemPrice.text = currencySymbol+prices[position]
+                val currencySymbol = sharedPreferences.getString("currencySymbol", "₹")
+                itemPrice.text = currencySymbol + prices[position]
                 itemName.text = items[position]
                 itemQty.text = itemQtys[position]
             }

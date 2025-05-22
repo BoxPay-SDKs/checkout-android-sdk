@@ -33,10 +33,11 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentCardComponentAloneBinding
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
+import com.boxpay.checkout.sdk.utils.formatToISO8601WithCurrentTime
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
-import com.boxpay.checkout.sdk.utils.handleException
 import com.simform.customcomponent.SSCustomEdittextOutlinedBorder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -786,7 +787,7 @@ class BoxPayCardComponent(
 
                 dob =
                     if (shopperObject.getString("dateOfBirth") != null && shopperObject.getString("dateOfBirth") != "null") {
-                        CommonFunctions.formatToISO8601WithCurrentTime(shopperObject.optString("dateOfBirth"))
+                        formatToISO8601WithCurrentTime(shopperObject.optString("dateOfBirth"))
                     } else {
                         null
                     }
@@ -964,12 +965,13 @@ class BoxPayCardComponent(
                 updateCardNetwork(brands)
 
             } catch (e: Exception) {
-                handleException(
-                    context,
-                    e.message ?: "",
-                    token ?: "",
-                    BASE_URL,
-                    "BoxPayCardComponent"
+                callUIAnalytics(
+                    context = requireContext(),
+                    token = token ?: "",
+                    baseUrl = BASE_URL,
+                    message = "",
+                    screenName = "boxpayCardComponent",
+                    uiEvent = AnalyticsEvents.SDK_CRASH
                 )
             }
         }, Response.ErrorListener { _ ->

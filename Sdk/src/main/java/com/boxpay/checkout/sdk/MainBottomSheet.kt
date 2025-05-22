@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -66,9 +67,9 @@ import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
-import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -253,13 +254,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 }
             } catch (e: Exception) {
-                handleException(
-                    context,
-                    e.message.toString(),
-                    token ?: "",
-                    baseUrl = Base_Session_API_URL,
-                    "fetchInstalledPackageDetails"
-                )
+                callUiAnalyticWithSdkCrashEvent(e.message ?: "")
             }
 
             withContext(Dispatchers.Main) {
@@ -320,38 +315,30 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             startActivityForResult(intent, resultCode)
 
         } catch (e: Exception) {
-            // Log specific error if the app is not found
             upiIntentError = e.message
+
+            val eventName = if (e is ActivityNotFoundException) {
+                AnalyticsEvents.UPI_APP_NOT_FOUND
+            } else {
+                AnalyticsEvents.FAILED_TO_LAUNCH_UPI_INTENT
+            }
+
             callUIAnalytics(
-                requireActivity(),
-                AnalyticsEvents.UPI_APP_NOT_FOUND,
-                "",
-                "UPI",
-                "upi app not found"
+                context = context,
+                token = token ?: "",
+                baseUrl = Base_Session_API_URL,
+                message = e.message ?: "",
+                screenName = "Main Bottom Sheet in function launchUpiIntent",
+                uiEvent = eventName
             )
+
             PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(
                 parentFragmentManager,
                 "FailureScreen"
             )
             removeLoadingState()
-
-        } catch (e: Exception) {
-            // Log any other error that occurs
-            upiIntentError = e.message
-            callUIAnalytics(
-                requireActivity(),
-                AnalyticsEvents.FAILED_TO_LAUNCH_UPI_INTENT,
-                "",
-                "UPI",
-                "failed to launch Upi Intent"
-            )
-            PaymentFailureScreen(errorMessage = "Please retry using other payment method or try again in sometime").show(
-                parentFragmentManager,
-                "FailureScreen"
-            )
-            removeLoadingState()
-
         }
+
     }
 
 
@@ -521,7 +508,16 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     @SuppressLint("NewApi")
     private fun getUrlForUPIIntent(appName: String) {
-
+        showLoadingState()
+        logMainBottomSheetUiEvents()
+        callUIAnalytics(
+            context = context,
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "Main Bottom Sheet in function getUrlForUpiIntent",
+            uiEvent = AnalyticsEvents.PAYMENT_INITIATED
+        )
         val requestQueue = Volley.newRequestQueue(context)
         val requestBody = JSONObject().apply {
             val browserData = JSONObject().apply {
@@ -560,24 +556,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
-                    put(
-                        "dateOfBirth",
-                        CommonFunctions.formatToISO8601WithCurrentTime(
-                            sharedPreferences.getString(
-                                "dateOfBirth",
-                                null
-                            )!!
-                        )
-                    )
-                }
-
-                if (sharedPreferences.getString("panNumberChosen", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                } else {
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
                 }
 
                 if (shippingEnabled) {
@@ -645,11 +625,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 } catch (e: JSONException) {
                     removeLoadingState()
                     callUIAnalytics(
-                        requireActivity(),
-                        AnalyticsEvents.ERROR_GETTING_UPI_URL,
-                        "",
-                        "UPI",
-                        e.message ?: "upi intent api error $e"
+                        context = context,
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = e.message ?: "",
+                        screenName = "Main Bottom Sheet in function getUrlForUpiIntent in catch block",
+                        uiEvent = AnalyticsEvents.ERROR_GETTING_UPI_URL
                     )
                     PaymentFailureScreen().show(parentFragmentManager, "FailureScreenFromUPIIntent")
                 }
@@ -660,11 +641,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
                     callUIAnalytics(
-                        requireActivity(),
-                        AnalyticsEvents.ERROR_GETTING_UPI_URL,
-                        "",
-                        "UPI",
-                        errorMessage ?: "upi intent api error $errorResponse"
+                        context = context,
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = error.message ?: "",
+                        screenName = "Main Bottom Sheet in function getAllInstalledApps in error response ",
+                        uiEvent = AnalyticsEvents.ERROR_GETTING_UPI_URL
                     )
 
                     if (errorMessage?.contains("expired", true) == true) {
@@ -794,20 +776,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!binding.loadingRelativeLayout.isVisible) {
                     recommendedCheckedPosition = checkedPositon
                     if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
-                        callUIAnalytics(
-                            requireContext(),
-                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                            "UpiCollect",
-                            "UPI",
-                            "payment method selected"
-                        )
-                        callUIAnalytics(
-                            requireContext(),
-                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                            "UpiCollect",
-                            "UPI",
-                            "payment instrument provided"
-                        )
+                        logMainBottomSheetUiEvents()
                         binding.recommendedProceedButton.visibility = View.VISIBLE
                         binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
                         binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
@@ -836,11 +805,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     recommendedCheckedPosition =
                         if (recommendedCheckedPosition == null) 0 else recommendedCheckedPosition
                     callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INITIATED,
-                        "UpiCollect",
-                        "UPI",
-                        "payment initiated"
+                        context = context,
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "Main Bottom Sheet in function click listener on recommendedproceedbutton",
+                        uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                     )
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         postRecommendedInstruments(
@@ -882,27 +852,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.addNewUPIIDConstraint.setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     binding.addNewUPIIDConstraint.isEnabled = false
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                        "UpiCollect",
-                        "Upi",
-                        "instrument provided"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
-                        "",
-                        "Upi",
-                        "category selected"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                        "UpiCollect",
-                        "Upi",
-                        "method selected"
-                    )
+                    logMainBottomSheetUiEvents()
                     job?.cancel()
                     openAddUPIIDBottomSheet()
                 }
@@ -933,20 +883,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.cardConstraint.isEnabled = false
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
-                        "",
-                        "Card",
-                        "card category selected"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                        "",
-                        "Card",
-                        "card method selected"
-                    )
+                    logMainBottomSheetUiEvents()
                     openAddCardBottomSheet()
                 }
             }
@@ -958,13 +895,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.walletConstraint.isEnabled = false
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
-                        "",
-                        "Wallet",
-                        "wallet category selected"
-                    )
+                    logMainBottomSheetUiEvents()
                     openWalletBottomSheet()
                 }
             }
@@ -975,13 +906,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.emiConstraint.isEnabled = false
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
-                        "",
-                        "Emi",
-                        "emi category selected"
-                    )
+                    logMainBottomSheetUiEvents()
                     openEmiBottomSheet()
                 }
             }
@@ -992,13 +917,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.bnplConstraint.isEnabled = false
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
-                        "",
-                        "BuyNowPayLater",
-                        "bnpl category selected"
-                    )
+                    logMainBottomSheetUiEvents()
                     openBNPLBottomSheet()
                 }
             }
@@ -1010,13 +929,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     binding.netBankingConstraint.isEnabled = false
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_CATEGORY_SELECTED,
-                        "",
-                        "NetBanking",
-                        "netbanking category selected"
-                    )
+                    logMainBottomSheetUiEvents()
                     openNetBankingBottomSheet()
                 }
             }
@@ -1032,18 +945,29 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
             binding.addAddressButton.setOnClickListener() {
-                openSavedOrAddOrEditAddressScreen()
+                val bottomSheet = DeliveryAddressBottomSheet.newInstance(
+                    this,
+                    false,
+                    showName,
+                    showPhone,
+                    showEmail,
+                    showPAN,
+                    showDOB,
+                    showShipping,
+                    isNameEditable,
+                    isPhoneEditable,
+                    isEmailEditable,
+                    isPANEditable,
+                    isDOBEditable
+                )
+                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheet")
+                }
             }
 
             binding.root
         } catch (e: Exception) {
-            handleException(
-                requireContext(),
-                e.message ?: "",
-                token ?: "",
-                baseUrlFetched ?: "",
-                "Main Bottom Sheet"
-            )
+            callUiAnalyticWithSdkCrashEvent(e.message ?: "")
             null
         }
     }
@@ -1086,13 +1010,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }, 500)
             }
         } catch (e: Exception) {
-            handleException(
-                context,
-                e.message ?: "",
-                token ?: "",
-                Base_Session_API_URL,
-                "dismissMainSheet"
-            )
+            callUiAnalyticWithSdkCrashEvent(e.message ?: "")
         }
     }
 
@@ -1336,24 +1254,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
-                    put(
-                        "dateOfBirth",
-                        CommonFunctions.formatToISO8601WithCurrentTime(
-                            sharedPreferences.getString(
-                                "dateOfBirth",
-                                null
-                            )!!
-                        )
-                    )
-                }
-
-                if (sharedPreferences.getString("panNumberChosen", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                } else {
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
                 }
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
@@ -1537,35 +1439,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     overlayViewModel.setShowOverlay(false)
-                    showLoadingState()
                     getUrlForUPIIntent("PhonePe")
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                        "UpiIntent",
-                        "Upi",
-                        "phone pe upi selected"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                        "UpiIntent",
-                        "Upi",
-                        "phone pe method selected"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INITIATED,
-                        "UpiIntent",
-                        "Upi",
-                        "phone pe payment initialed"
-                    )
                 }
             }
-
             i++
         }
-
 
         if (UPIAppsAndPackageMap.containsKey("GPay")) {
             val imageView = getPopularImageViewByNum(i)
@@ -1576,35 +1454,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     overlayViewModel.setShowOverlay(false)
-                    showLoadingState()
                     getUrlForUPIIntent("GPay")
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                        "UpiIntent",
-                        "Upi",
-                        "gpay instrument selected"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                        "UpiIntent",
-                        "Upi",
-                        "gpay method selected"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INITIATED,
-                        "UpiIntent",
-                        "Upi",
-                        "gpay payment initiated"
-                    )
                 }
             }
-
             i++
         }
-
 
         if (UPIAppsAndPackageMap.containsKey("Paytm")) {
             val imageView = getPopularImageViewByNum(i)
@@ -1615,32 +1469,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     overlayViewModel.setShowOverlay(false)
-                    showLoadingState()
                     getUrlForUPIIntent("PayTm")
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                        "UpiIntent",
-                        "Upi",
-                        "paytm instrument selected"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                        "UpiIntent",
-                        "Upi",
-                        "paytm method selected"
-                    )
-                    callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INITIATED,
-                        "UpiIntent",
-                        "Upi",
-                        "paytm payment initiated"
-                    )
                 }
             }
-
             i++
         }
 
@@ -1655,84 +1486,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     getUrlForDefaultUPIIntent()
                 }
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                    "UpiIntent",
-                    "Upi",
-                    "other selected"
-                )
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                    "UpiIntent",
-                    "Upi",
-                    "other upi intent method selected"
-                )
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.PAYMENT_INITIATED,
-                    "UpiIntent",
-                    "Upi",
-                    "other upi intent payment initiated"
-                )
             }
         }
 
         if (i == 1 || i < 1) {
             binding.popularUPIAppsConstraint.visibility = View.GONE
         }
-    }
-
-    private fun callUIAnalytics(
-        context: Context,
-        event: String,
-        paymentSubType: String,
-        paymentType: String,
-        message: String
-    ) {
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
-        val requestQueue = Volley.newRequestQueue(context)
-        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
-        val browserLanguage = Locale.getDefault().toString()
-
-        // Constructing the request body
-        val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, token)
-            put(AnalyticsEvents.UI_EVENT, event)
-
-            // Create eventAttrs JSON object
-            val eventAttrs = JSONObject().apply {
-                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
-                put("errorMessage", message)
-                if (!upiIntentError.isNullOrEmpty()) {
-                    put(AnalyticsEvents.UPI_INTENT_ERROR, upiIntentError)
-                }
-
-                if (paymentSubType.isNotBlank())
-                    put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
-            }
-            put("eventAttrs", eventAttrs)
-
-            // Create browserData JSON object
-            val browserData = JSONObject().apply {
-                put("userAgentHeader", userAgentHeader)
-                put("browserLanguage", browserLanguage)
-            }
-            put("browserData", browserData)
-        }
-
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
-        }
-        requestQueue.add(jsonObjectRequest)
     }
 
     private fun getPopularImageViewByNum(num: Int): ImageView {
@@ -1778,6 +1537,30 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getUrlForDefaultUPIIntent() {
+        callUIAnalytics(
+            context = context,
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "Main Bottom Sheet in function getUrlForDefaultUpiIntent",
+            uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
+        )
+        callUIAnalytics(
+            context = context,
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "Main Bottom Sheet in function getUrlForDefaultUpiIntent",
+            uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+        )
+        callUIAnalytics(
+            context = context,
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "Main Bottom Sheet in function getUrlForDefaultUpiIntent",
+            uiEvent = AnalyticsEvents.PAYMENT_INITIATED
+        )
 
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -1813,24 +1596,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
-                    put(
-                        "dateOfBirth",
-                        CommonFunctions.formatToISO8601WithCurrentTime(
-                            sharedPreferences.getString(
-                                "dateOfBirth",
-                                null
-                            )!!
-                        )
-                    )
-                }
-
-                if (sharedPreferences.getString("panNumberChosen", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                } else {
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
                 }
 
                 if (shippingEnabled) {
@@ -2678,7 +2445,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 }
 
-                processShopper(shopperObject, orderDetails, showShipping, showName, showEmail, showPhone, showPAN, showDOB, countryCode, editor)
+                processShopper(
+                    shopperObject,
+                    orderDetails,
+                    showShipping,
+                    showName,
+                    showEmail,
+                    showPhone,
+                    showPAN,
+                    showDOB,
+                    countryCode,
+                    editor
+                )
 
                 if (paymentDetailsObject.isNull("order"))
                     orderSummaryEnable = false
@@ -2872,14 +2650,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
             } catch (e: Exception) {
-
-                handleException(
-                    context,
-                    e.message ?: "",
-                    token ?: "",
-                    Base_Session_API_URL,
-                    "Main bottom sheet in makeSessionCall"
-                )
+                callUiAnalyticWithSdkCrashEvent(e.message ?: "")
                 Toast.makeText(
                     requireContext(),
                     "Invalid token/selected environment.\nPlease press back button and try again",
@@ -3102,26 +2873,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
-                    put(
-                        "dateOfBirth",
-                        CommonFunctions.formatToISO8601WithCurrentTime(
-                            sharedPreferences.getString(
-                                "dateOfBirth",
-                                null
-                            )!!
-                        )
-                    )
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
                 }
-
-                if (sharedPreferences.getString("panNumberChosen", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                } else {
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
-                }
-
                 if (shippingEnabled) {
                     val deliveryAddressObject = JSONObject().apply {
 
@@ -3803,11 +3557,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 },
                 onSwipeComplete = {
                     callUIAnalytics(
-                        requireContext(),
-                        AnalyticsEvents.PAYMENT_INITIATED,
-                        "UpiCollect",
-                        "UPI",
-                        "upi collect payment initiated from swipe cta"
+                        context = context,
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "Main Bottom Sheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                     )
                     binding.swipeScreenAnimation.apply {
                         playAnimation()
@@ -3966,12 +3721,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     ) = editor.apply {
         // Simple list of (JSON‑key to prefs‑key) mappings
         mapOf(
-            "firstName"     to "firstName",
-            "lastName"      to "lastName",
-            "email"         to "email",
-            "gender"        to "gender",
-            "panNumber"     to "panNumber",
-            "dateOfBirth"   to "dateOfBirth"
+            "firstName" to "firstName",
+            "lastName" to "lastName",
+            "email" to "email",
+            "gender" to "gender",
+            "panNumber" to "panNumber",
+            "dateOfBirth" to "dateOfBirth"
         ).forEach { (jsonKey, prefKey) ->
             shopper.optString(jsonKey)
                 .takeIf { it.isNotBlank() }
@@ -3987,10 +3742,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         // Delivery address block
         shopper.optJSONObject("deliveryAddress")?.let { addr ->
             mapOf(
-                "address1"   to "address1",
-                "address2"   to "address2",
-                "city"       to "city",
-                "state"      to "state",
+                "address1" to "address1",
+                "address2" to "address2",
+                "city" to "city",
+                "state" to "state",
                 "postalCode" to "postalCode"
             ).forEach { (jsonKey, prefKey) ->
                 addr.optString(jsonKey)
@@ -4009,4 +3764,41 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         apply()
     }
 
+    private fun logMainBottomSheetUiEvents() {
+        callUIAnalytics(
+            context = context,
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "Main Bottom Sheet",
+            uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
+        )
+        callUIAnalytics(
+            context = context,
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "Main Bottom Sheet",
+            uiEvent = AnalyticsEvents.PAYMENT_CATEGORY_SELECTED
+        )
+        callUIAnalytics(
+            context = context,
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "Main Bottom Sheet",
+            uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+        )
+    }
+
+    private fun callUiAnalyticWithSdkCrashEvent(message: String) {
+        callUIAnalytics(
+            context = context,
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = message,
+            screenName = "Main Bottom Sheet in function dismissMainSheet",
+            uiEvent = AnalyticsEvents.SDK_CRASH
+        )
+    }
 }

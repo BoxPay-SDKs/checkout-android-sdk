@@ -66,9 +66,10 @@ import com.boxpay.checkout.sdk.dataclasses.SessionResponse
 import com.boxpay.checkout.sdk.dataclasses.Shopper
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
+import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -512,8 +513,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         isFirstTimeFillingCardNumber = false
                     }
                 }
-
-                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, cardNetworkName.ifEmpty { "" }, "Card")
+                callUIAnalytics(
+                    context = requireContext(),
+                    token = token ?: "",
+                    baseUrl = Base_Session_API_URL,
+                    message = "",
+                    screenName = "AddCardBottomSheet",
+                    uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+                )
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -635,7 +642,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     proceedButtonIsEnabled.value = false
                 }
 
-                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, cardNetworkName.ifEmpty { "" }, "Card")
+                callUIAnalytics(
+                    context = requireContext(),
+                    token = token ?: "",
+                    baseUrl = Base_Session_API_URL,
+                    message = "",
+                    screenName = "AddCardBottomSheet",
+                    uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+                )
                 enableProceedButton()
             }
 
@@ -750,7 +764,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             proceedButtonIsEnabled.value = false
                         }
                     }
-                    callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, cardNetworkName.ifEmpty { "" }, "Card")
+                    callUIAnalytics(
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "AddCardBottomSheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+                    )
                 } else {
                     isCardCVVValid = false
                     proceedButtonIsEnabled.value = false
@@ -803,7 +824,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     binding.nameOnCardErrorLayout.visibility = View.INVISIBLE
                     proceedButtonIsEnabled.value = false
                 }
-                callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED, cardNetworkName.ifEmpty { "" }, "Card")
+                callUIAnalytics(
+                    context = requireContext(),
+                    token = token ?: "",
+                    baseUrl = Base_Session_API_URL,
+                    message = "",
+                    screenName = "AddCardBottomSheet",
+                    uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+                )
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -824,7 +852,14 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.editTextCardCVV.setTransformationMethod(AsteriskPasswordTransformationMethod())
 
         binding.proceedButton.setOnClickListener {
-            callUIAnalytics(requireContext(), AnalyticsEvents.PAYMENT_INITIATED, cardNetworkName.ifEmpty { "" }, "Card")
+            callUIAnalytics(
+                context = requireContext(),
+                token = token ?: "",
+                baseUrl = Base_Session_API_URL,
+                message = "",
+                screenName = "AddCardBottomSheet",
+                uiEvent = AnalyticsEvents.PAYMENT_INITIATED
+            )
             removeErrors()
             cardNumber = deformatCardNumber(binding.editTextCardNumber.text.toString())
             cardExpiryYYYY_MM = addDashInsteadOfSlash(binding.editTextCardValidity.text.toString())
@@ -870,7 +905,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardNumber.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
-                binding.cardNumberLayout.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
+                binding.cardNumberLayout.background =
+                    AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                 val cardNumber = removeSpaces(binding.editTextCardNumber.text.toString())
                 if (!(isValidCardNumberByLuhn(cardNumber) && isValidCardNumberLength(cardNumber))) {
                     binding.ll1InvalidCardNumber.visibility = View.VISIBLE
@@ -889,7 +925,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         binding.editTextCardValidity.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
-                binding.editTextCardValidity.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
+                binding.editTextCardValidity.background =
+                    AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                 val cardValidity = binding.editTextCardValidity.text.toString()
                 try {
                     if (!(isValidExpirationDate(
@@ -921,7 +958,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.editTextCardCVV.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
                 try {
-                    binding.cvvLayout.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
+                    binding.cvvLayout.background =
+                        AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                     val cardCVV = binding.editTextCardCVV.text.toString()
                     if (!isValidCVC(cardCVV.toInt())) {
                         binding.invalidCVV.visibility = View.VISIBLE
@@ -947,7 +985,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
         binding.editTextNameOnCard.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
-                binding.editTextNameOnCard.background = AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
+                binding.editTextNameOnCard.background =
+                    AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                 if (binding.editTextNameOnCard.text.isNullOrEmpty()) {
                     isNameOnCardValid = false
                     binding.nameOnCardErrorLayout.visibility = View.VISIBLE
@@ -1353,55 +1392,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         editor.apply()
     }
 
-    private fun callUIAnalytics(
-        context: Context,
-        event: String,
-        paymentSubType: String,
-        paymentType: String
-    ) {
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
-        val requestQueue = Volley.newRequestQueue(context)
-        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        val browserLanguage = Locale.getDefault().toString()
-
-        // Constructing the request body
-        val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, token)
-            put(AnalyticsEvents.UI_EVENT, event)
-
-            // Create eventAttrs JSON object
-            val eventAttrs = JSONObject().apply {
-                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
-                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
-            }
-            put("eventAttrs", eventAttrs)
-
-            // Create browserData JSON object
-            val browserData = JSONObject().apply {
-                put("userAgentHeader", userAgentHeader)
-                put("browserLanguage", browserLanguage)
-            }
-            put("browserData", browserData)
-        }
-
-        // Request a JSONObject response from the provided URL
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
-        }
-
-        // Add the request to the RequestQueue.
-        requestQueue.add(jsonObjectRequest)
-
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun postRequest(context: Context) {
         job?.cancel()
@@ -1454,24 +1444,8 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
-                    put(
-                        "dateOfBirth",
-                        CommonFunctions.formatToISO8601WithCurrentTime(
-                            sharedPreferences.getString(
-                                "dateOfBirth",
-                                null
-                            )!!
-                        )
-                    )
-                }
-
-                if (sharedPreferences.getString("panNumberChosen", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                } else if (sharedPreferences.getString("panNumber", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
                 }
 
                 if (shippingEnabled) {
@@ -1553,7 +1527,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         } else {
                             initiateFetchStatusCall()
                             showLoadingState()
-                           openWebView(this, response)
+                            openWebView(this, response)
                         }
                     }
                     editor.apply()
@@ -1873,7 +1847,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         job = CoroutineScope(Dispatchers.IO).launch {
             while (coroutineContext.isActive) {
                 delay(3000)
-                fetchStatusAndReason(context!!,"${Base_Session_API_URL}${token}/status", editor) {isSuccess, status ->
+                fetchStatusAndReason(
+                    context!!,
+                    "${Base_Session_API_URL}${token}/status",
+                    editor
+                ) { isSuccess, status ->
                     if (isSuccess) {
                         if (isAdded && isResumed && !isStateSaved) {
                             removeLoadingState()
@@ -1886,7 +1864,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                             )
                             dismiss()
                         }
-                    }  else if (status?.contains("FAILED", ignoreCase = true) == true) {
+                    } else if (status?.contains("FAILED", ignoreCase = true) == true) {
                         if (isAdded && isResumed && !isStateSaved) {
                             removeLoadingState()
                             hideLoadingInButton()
@@ -1934,7 +1912,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
 class CvvBottomSheetDialogFragment(
     private val selectedColorBottomSheet: androidx.compose.ui.graphics.Color,
-    private val selectedTextColor : androidx.compose.ui.graphics.Color
+    private val selectedTextColor: androidx.compose.ui.graphics.Color
 ) : BottomSheetDialogFragment() {
 
     override fun onCreateView(
@@ -1960,7 +1938,8 @@ class CvvBottomSheetDialogFragment(
 
     override fun onStart() {
         super.onStart()
-        val bottomSheet = dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        val bottomSheet =
+            dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
         bottomSheet?.let {
             val behavior = BottomSheetBehavior.from(it)
             behavior.state = BottomSheetBehavior.STATE_EXPANDED

@@ -2,9 +2,10 @@ package com.boxpay.checkout.sdk
 
 import android.content.Context
 import android.widget.Toast
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.ConfigurationOptions
-import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 
 class BoxPayElements(
     private val token: String,
@@ -126,7 +127,14 @@ class BoxPayElements(
             }
 
         } catch (e: Exception) {
-            handleException(context!!, e.message ?: "", token ,sessionUrl , "Boxpayelements")
+            callUIAnalytics(
+                context = context!!,
+                token = token ?: "",
+                baseUrl = sessionUrl,
+                message = "",
+                screenName = "BnplBottomSheet",
+                uiEvent = AnalyticsEvents.SDK_CRASH
+            )
         }
     }
 

@@ -1,7 +1,5 @@
 package com.boxpay.checkout.sdk
 
-import FailureScreenSharedViewModel
-import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
@@ -21,7 +19,6 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebSettings
 import android.widget.FrameLayout
@@ -52,9 +49,9 @@ import com.boxpay.checkout.sdk.databinding.FragmentWalletBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.WalletDataClass
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
-import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -269,7 +266,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                                     )
                                 // Set background for the clicked constraint layout
                                 relativeLayout.setBackgroundResource(R.drawable.selected_popular_item_bg)
-                                val primaryButtonColorString = sharedPreferences.getString("primaryButtonColor", "#000000") ?: "#000000"
+                                val primaryButtonColorString =
+                                    sharedPreferences.getString("primaryButtonColor", "#000000")
+                                        ?: "#000000"
                                 val strokeColor = Color.parseColor(primaryButtonColorString)
 
                                 val shapeDrawable = relativeLayout.background as? GradientDrawable
@@ -278,16 +277,20 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                                 proceedButtonIsEnabled.value = true
                                 popularWalletsSelectedIndex = index
                                 callUIAnalytics(
-                                    requireContext(),
-                                    AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                                    walletDetailsOriginal[popularWalletsSelectedIndex].walletBrand,
-                                    "Wallet"
+                                    context = requireContext(),
+                                    token = token ?: "",
+                                    baseUrl = Base_Session_API_URL,
+                                    message = "",
+                                    screenName = "WalletBottomSheet",
+                                    uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
                                 )
                                 callUIAnalytics(
-                                    requireContext(),
-                                    AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                                    walletDetailsOriginal[popularWalletsSelectedIndex].walletBrand,
-                                    "Wallet"
+                                    context = requireContext(),
+                                    token = token ?: "",
+                                    baseUrl = Base_Session_API_URL,
+                                    message = "",
+                                    screenName = "WalletBottomSheet",
+                                    uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
                                 )
                             }
                         }
@@ -406,286 +409,209 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
 
         Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
         // Inflate the layout for this fragment
-       return try {
-           requestQueue = Volley.newRequestQueue(context)
-           binding = FragmentWalletBottomSheetBinding.inflate(layoutInflater, container, false)
+        return try {
+            requestQueue = Volley.newRequestQueue(context)
+            binding = FragmentWalletBottomSheetBinding.inflate(layoutInflater, container, false)
+
+            requestQueue = Volley.newRequestQueue(context)
 
 
-           val failureScreenSharedViewModelCallback =
-               FailureScreenSharedViewModel(::failurePaymentFunction)
-           FailureScreenCallBackSingletonClass.getInstance().callBackFunctions =
-               failureScreenSharedViewModelCallback
+            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+            if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
+                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
 
-           requestQueue = Volley.newRequestQueue(context)
-
-
-           val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-           if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
-               requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-           }
-
-           val screenHeight = requireContext().resources.displayMetrics.heightPixels
-           val percentageOfScreenHeight = 0.45 // 70%
-           val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
+            val screenHeight = requireContext().resources.displayMetrics.heightPixels
+            val percentageOfScreenHeight = 0.45 // 70%
+            val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
 
-           val layoutParams = binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
-           layoutParams.height = desiredHeight
-           binding.nestedScrollView.layoutParams = layoutParams
+            val layoutParams =
+                binding.nestedScrollView.layoutParams as ConstraintLayout.LayoutParams
+            layoutParams.height = desiredHeight
+            binding.nestedScrollView.layoutParams = layoutParams
 
-           fetchTransactionDetailsFromSharedPreferences()
-           walletDetailsOriginal = arrayListOf()
+            fetchTransactionDetailsFromSharedPreferences()
+            walletDetailsOriginal = arrayListOf()
 
 
-           allWalletAdapter = WalletAdapter(
-               walletDetailsFiltered,
-               binding.walletsRecyclerView,
-               liveDataPopularWalletSelectedOrNot,
-               requireContext(),
-               binding.searchView,
-               token.toString(),
-               progressBarVisible
-           )
-           binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-           binding.walletsRecyclerView.adapter = allWalletAdapter
+            allWalletAdapter = WalletAdapter(
+                walletDetailsFiltered,
+                binding.walletsRecyclerView,
+                liveDataPopularWalletSelectedOrNot,
+                requireContext(),
+                binding.searchView,
+                token.toString(),
+                progressBarVisible
+            )
+            binding.walletsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            binding.walletsRecyclerView.adapter = allWalletAdapter
 
-           disableProceedButton()
+            disableProceedButton()
 
-           if (!shippingEnabled)
-               fetchWalletDetails()
-           else
-               callPaymentMethodRules(requireContext())
+            if (!shippingEnabled)
+                fetchWalletDetails()
+            else
+                callPaymentMethodRules(requireContext())
 
-        binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
-            SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                if (query.isEmpty()) {
-                    removeRecyclerViewFromBelowEditText()
+            binding.searchView.setOnQueryTextListener(/*listener (comment) */ object :
+                SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    if (query.isEmpty()) {
+                        removeRecyclerViewFromBelowEditText()
+                    } else {
+                        makeRecyclerViewJustBelowEditText()
+                    }
+                    searchQuery = query
+                    filterWallets(query)
+                    disableProceedButton()
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String): Boolean {
+                    if (newText.isEmpty()) {
+                        removeRecyclerViewFromBelowEditText()
+                    } else {
+                        makeRecyclerViewJustBelowEditText()
+                    }
+                    searchQuery = newText
+                    filterWallets(newText)
+                    disableProceedButton()
+                    return true
+                }
+            })
+            val focusedDrawable = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 16f // Adjust the corner radius
+                setStroke(
+                    4, Color.parseColor(
+                        sharedPreferences.getString(
+                            "primaryButtonColor",
+                            "#000000"
+                        )
+                    )
+                ) // Set border thickness and color
+                setColor(Color.TRANSPARENT) // Background color inside the border
+            }
+            val unfocusedDrawable = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 16f // Adjust the corner radius
+                setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
+                setColor(Color.TRANSPARENT) // Background color inside the border
+            }
+            binding.searchView.setOnQueryTextFocusChangeListener { view, b ->
+                if (b) {
+                    binding.searchView.background = focusedDrawable
                 } else {
-                    makeRecyclerViewJustBelowEditText()
+                    binding.searchView.background = unfocusedDrawable
                 }
-                searchQuery = query
-                filterWallets(query)
-                disableProceedButton()
-                return true
             }
 
-            override fun onQueryTextChange(newText: String): Boolean {
-                if (newText.isEmpty()) {
-                    removeRecyclerViewFromBelowEditText()
+            binding.backButton.setOnClickListener() {
+                if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
+                    dismissAndMakeButtonsOfMainBottomSheetEnabled()
+                }
+            }
+
+            binding.proceedButton.isEnabled = false
+
+            proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
+                if (enableProceedButton) {
+                    enableProceedButton()
                 } else {
-                    makeRecyclerViewJustBelowEditText()
+                    disableProceedButton()
                 }
-                searchQuery = newText
-                filterWallets(newText)
-                disableProceedButton()
-                return true
-            }
-        })
-        val focusedDrawable = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 16f // Adjust the corner radius
-            setStroke(4, Color.parseColor(
-                sharedPreferences.getString(
-                    "primaryButtonColor",
-                    "#000000"
-                )
-            )) // Set border thickness and color
-            setColor(Color.TRANSPARENT) // Background color inside the border
-        }
-        val unfocusedDrawable = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 16f // Adjust the corner radius
-            setStroke(4, R.drawable.edittext_bg) // Set border thickness and color
-            setColor(Color.TRANSPARENT) // Background color inside the border
-        }
-        binding.searchView.setOnQueryTextFocusChangeListener { view, b ->
-            if (b) {
-                binding.searchView.background = focusedDrawable
-            } else {
-                binding.searchView.background = unfocusedDrawable
-            }
-        }
+            })
 
-           binding.backButton.setOnClickListener() {
-               if (!binding.progressBar.isVisible && !binding.loaderCardView.isVisible) {
-                   dismissAndMakeButtonsOfMainBottomSheetEnabled()
-               }
-           }
+            allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
+                if (checkPositionObserved == null || checkPositionObserved == -1) {
+                    disableProceedButton()
+                } else {
+                    callUIAnalytics(
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "WalletBottomSheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
+                    )
+                    callUIAnalytics(
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "WalletBottomSheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+                    )
+                    enableProceedButton()
+                    checkedPosition = checkPositionObserved
+                }
+            })
 
-           binding.proceedButton.isEnabled = false
+            binding.proceedButton.setOnClickListener() {
+                showLoadingInButton()
+                var walletInstrumentTypeValue = ""
+                if (!!liveDataPopularWalletSelectedOrNot.value!!) {
+                    walletInstrumentTypeValue =
+                        walletDetailsOriginal[popularWalletsSelectedIndex].instrumentTypeValue
+                    callUIAnalytics(
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "WalletBottomSheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_INITIATED
+                    )
+                    checkedPosition = null
+                } else {
+                    walletInstrumentTypeValue =
+                        walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
+                    callUIAnalytics(
+                        context = requireContext(),
+                        token = token ?: "",
+                        baseUrl = Base_Session_API_URL,
+                        message = "",
+                        screenName = "WalletBottomSheet",
+                        uiEvent = AnalyticsEvents.PAYMENT_INITIATED
+                    )
+                    popularWalletsSelectedIndex = -1
+                }
 
-           proceedButtonIsEnabled.observe(this, Observer { enableProceedButton ->
-               if (enableProceedButton) {
-                   enableProceedButton()
-               } else {
-                   disableProceedButton()
-               }
-           })
-
-           allWalletAdapter.checkPositionLiveData.observe(this, Observer { checkPositionObserved ->
-               if (checkPositionObserved == null || checkPositionObserved == -1) {
-                   disableProceedButton()
-               } else {
-                   callUIAnalytics(
-                       requireContext(),
-                       AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                       walletDetailsOriginal[checkPositionObserved].walletBrand,
-                       "Wallet"
-                   )
-                   callUIAnalytics(
-                       requireContext(),
-                       AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                       walletDetailsOriginal[checkPositionObserved].walletBrand,
-                       "Wallet"
-                   )
-                   enableProceedButton()
-                   checkedPosition = checkPositionObserved
-               }
-           })
-
-           binding.proceedButton.setOnClickListener() {
-               showLoadingInButton()
-               var walletInstrumentTypeValue = ""
-               if (!!liveDataPopularWalletSelectedOrNot.value!!) {
-                   walletInstrumentTypeValue =
-                       walletDetailsOriginal[popularWalletsSelectedIndex].instrumentTypeValue
-                   callUIAnalytics(
-                       requireContext(),
-                       AnalyticsEvents.PAYMENT_INITIATED,
-                       walletDetailsOriginal[popularWalletsSelectedIndex].walletBrand,
-                       "Wallet"
-                   )
-                   checkedPosition = null
-               } else {
-                   walletInstrumentTypeValue =
-                       walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
-                   callUIAnalytics(
-                       requireContext(),
-                       AnalyticsEvents.PAYMENT_INITIATED,
-                       walletDetailsOriginal[checkedPosition!!].walletBrand,
-                       "Wallet"
-                   )
-                   popularWalletsSelectedIndex = -1
-               }
-
-               binding.errorField.visibility = View.GONE
-               if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                   postRequest(requireContext(), walletInstrumentTypeValue)
-               }
-           }
-
-           liveDataPopularWalletSelectedOrNot.observe(this, Observer {
-               if (it) {
-                   allWalletAdapter.deselectSelectedItem()
-               } else {
-                   unselectItemsInPopularLayout()
-               }
-           })
-           binding.textView19.setOnClickListener() {
-               if (!binding.progressBar.isVisible) {
-                   val imm =
-                       requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                   imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
-               }
-           }
-           binding.searchView.setOnCloseListener() {
-               true
-           }
-           binding.root
-       } catch (e: Exception) {
-           handleException(
-               requireContext(),
-               e.message ?: "",
-               token ?: "",
-               baseUrl ?: "",
-               "Walllet Bottom Sheet"
-           )
-           null
-       }
-    }
-
-    private fun callUIAnalytics(
-        context: Context,
-        event: String,
-        paymentSubType: String,
-        paymentType: String
-    ) {
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
-        val requestQueue = Volley.newRequestQueue(context)
-        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
-        val browserLanguage = Locale.getDefault().toString()
-
-        // Constructing the request body
-        val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, token)
-            put(AnalyticsEvents.UI_EVENT, event)
-
-            // Create eventAttrs JSON object
-            val eventAttrs = JSONObject().apply {
-                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
-                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
-            }
-            put("eventAttrs", eventAttrs)
-
-            // Create browserData JSON object
-            val browserData = JSONObject().apply {
-                put("userAgentHeader", userAgentHeader)
-                put("browserLanguage", browserLanguage)
-            }
-            put("browserData", browserData)
-        }
-
-        // Request a JSONObject response from the provided URL
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
-        }
-
-        // Add the request to the RequestQueue.
-        requestQueue.add(jsonObjectRequest)
-    }
-
-    private fun createColorAnimation(startColor: Int, endColor: Int): ValueAnimator {
-
-        val layouts = Array<RelativeLayout?>(4) { null }
-        layouts[0] = binding.popularItemRelativeLayout1
-        layouts[1] = binding.popularItemRelativeLayout2
-        layouts[2] = binding.popularItemRelativeLayout3
-        layouts[3] = binding.popularItemRelativeLayout4
-        return ValueAnimator.ofObject(ArgbEvaluator(), startColor, endColor).apply {
-            duration = 500 // duration in milliseconds
-            interpolator = AccelerateDecelerateInterpolator()
-            repeatCount = ValueAnimator.INFINITE
-            repeatMode = ValueAnimator.REVERSE
-            addUpdateListener { animator ->
-                // Update the background color of all layouts
-                layouts.forEach { layout ->
-                    layout?.setBackgroundColor(animator.animatedValue as Int)
+                binding.errorField.visibility = View.GONE
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    postRequest(requireContext(), walletInstrumentTypeValue)
                 }
             }
+
+            liveDataPopularWalletSelectedOrNot.observe(this, Observer {
+                if (it) {
+                    allWalletAdapter.deselectSelectedItem()
+                } else {
+                    unselectItemsInPopularLayout()
+                }
+            })
+            binding.textView19.setOnClickListener() {
+                if (!binding.progressBar.isVisible) {
+                    val imm =
+                        requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(binding.searchView.windowToken, 0)
+                }
+            }
+            binding.searchView.setOnCloseListener() {
+                true
+            }
+            binding.root
+        } catch (e: Exception) {
+            callUIAnalytics(
+                context = requireContext(),
+                token = token ?: "",
+                baseUrl = Base_Session_API_URL,
+                message = "",
+                screenName = "WalletBottomSheet",
+                uiEvent = AnalyticsEvents.SDK_CRASH
+            )
+            null
         }
-    }
-
-    fun failurePaymentFunction() {
-
-        // Start a coroutine with a delay of 5 seconds
-        CoroutineScope(Dispatchers.Main).launch {
-            delay(1000) // Delay for 1 seconds
-
-            // Code inside this block will execute after the delay
-            // Code inside this block will execute after the delay
-            val bottomSheet = PaymentFailureScreen()
-            bottomSheet.show(parentFragmentManager, "PaymentFailureScreen")
-        }
-
     }
 
     private fun fetchWalletDetails() {
@@ -725,9 +651,9 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 walletDetailsOriginal = ArrayList(walletDetailsOriginal.sortedBy { it.walletBrand })
 
                 // Print the filtered wallet payment methods
-                if (walletDetailsOriginal.size < 5){
+                if (walletDetailsOriginal.size < 5) {
                     binding.searchView.visibility = View.GONE
-                }else{
+                } else {
                     binding.searchView.visibility = View.VISIBLE
                 }
                 showAllWallets()
@@ -937,16 +863,8 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()){
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                }else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()){
-                    put("dateOfBirth", CommonFunctions.formatToISO8601WithCurrentTime(sharedPreferences.getString("dateOfBirth", null)!!))
-                }
-
-                if (sharedPreferences.getString("panNumberChosen", null) != null){
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                }else{
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
                 }
 
                 if (shippingEnabled) {
@@ -1031,7 +949,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
 
-                    if (errorMessage?.contains("expired",true) == true) {
+                    if (errorMessage?.contains("expired", true) == true) {
                         val callback = SingletonClass.getInstance().getYourObject()
                         val callbackForDismissing =
                             SingletonForDismissMainSheet.getInstance().getYourObject()
@@ -1092,12 +1010,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.textView6.setTextColor(Color.parseColor(
-            sharedPreferences.getString(
-                "buttonTextColor",
-                "#ffffff"
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
             )
-        ))
+        )
     }
 
 
@@ -1112,12 +1032,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     fun hideLoadingInButton() {
         binding.progressBar.visibility = View.INVISIBLE
         progressBarVisible.value = false
-        binding.textView6.setTextColor(Color.parseColor(
-            sharedPreferences.getString(
-                "buttonTextColor",
-                "#ffffff"
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
             )
-        ))
+        )
         binding.textView6.visibility = View.VISIBLE
         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
         binding.proceedButtonRelativeLayout.setBackgroundColor(
@@ -1128,12 +1050,14 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 )
             )
         )
-        binding.textView6.setTextColor(Color.parseColor(
-            sharedPreferences.getString(
-                "buttonTextColor",
-                "#ffffff"
+        binding.textView6.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
             )
-        ))
+        )
         binding.proceedButton.isEnabled = true
     }
 
@@ -1273,6 +1197,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
             }
         }
     }
+
     private fun showLoadingState() {
         binding.boxPayLogoLottieAnimation.apply {
             playAnimation()

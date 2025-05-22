@@ -19,7 +19,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.webkit.WebSettings
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Filter
@@ -31,8 +30,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import com.airbnb.lottie.LottieDrawable
-import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
@@ -42,6 +41,7 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentDeliveryAddressBottomSheetBinding
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -53,7 +53,6 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Calendar
 import java.util.Locale
-import androidx.core.graphics.toColorInt
 
 
 class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
@@ -87,8 +86,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isDOBEditable = true
     private var isDobSelected = false
     private var isPANFilled = false
-    private var isHomeAddressSaved : Boolean = false
-    private var isOfficeAddressSaved : Boolean = false
+    private var isHomeAddressSaved: Boolean = false
+    private var isOfficeAddressSaved: Boolean = false
     private lateinit var inputMethodManager: InputMethodManager
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -154,12 +153,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     binding.countryErrorText.visibility = View.VISIBLE
                 } else {
@@ -209,7 +203,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     disableProceedButton()
                 }
             } else {
-                Toast.makeText(context, "Address already saved with Home", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Address already saved with Home", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
@@ -229,7 +224,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     disableProceedButton()
                 }
             } else {
-                Toast.makeText(context, "Address already saved with Office", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Address already saved with Office", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
@@ -253,12 +249,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 labelName = s.toString()
                 if (toCheckAllFieldsAreFilled()) {
                     enableProceedButton()
@@ -280,12 +271,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     binding.mobileErrorText.text = "Required"
                     binding.mobileErrorText.visibility = View.VISIBLE
@@ -314,12 +300,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 s?.let {
                     if (it.isNotEmpty()) {
                         if (it.length == 10) {
@@ -367,12 +348,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.countryEditText.setOnItemClickListener { parent, view, position, id ->
             val selectedItem = parent.getItemAtPosition(position).toString()
 
-            callUIAnalytics(
-                requireContext(),
-                AnalyticsEvents.ADDRESS_UPDATED,
-                "",
-                ""
-            )
+            logAddressUpdatedEvent()
 
             countrySelectedFromDropDown = selectedItem
             countrySelected = true
@@ -404,12 +380,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         binding.spinnerDialCodes.setOnItemClickListener { parent, view, position, id ->
             val selectedDialCode = parent.getItemAtPosition(position).toString()
-            callUIAnalytics(
-                requireContext(),
-                AnalyticsEvents.ADDRESS_UPDATED,
-                "",
-                ""
-            )
+            logAddressUpdatedEvent()
             // Display or use the selected item
             if (!selectedDialCode.contains("no", true)) {
                 countryCodePhoneNum = selectedDialCode
@@ -514,8 +485,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         maxPhoneLength = phoneLength.second
 
         if (!firstTime) {
-            labelName = sharedPreferences.getString("labelName","")
-            labelType = sharedPreferences.getString("labelType","")
+            labelName = sharedPreferences.getString("labelName", "")
+            labelType = sharedPreferences.getString("labelType", "")
             binding.otherSaveAddressTextField.apply {
                 setText(labelName)
                 isEnabled = false
@@ -525,7 +496,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 setTextColor("#7F7F7F".toColorInt()) // Optional: grey text
             }
             val addressTypeBlockedListener = View.OnClickListener {
-                Toast.makeText(context, "You cannot change the address type for this entry.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "You cannot change the address type for this entry.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
 
             binding.homeSavedAddress.setOnClickListener(addressTypeBlockedListener)
@@ -544,12 +519,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 binding.cityEditText.setText(city)
             }
 
-            if (labelType.equals("other",true)) {
+            if (labelType.equals("other", true)) {
                 binding.otherSavedAddress.background = focusedDrawable
                 binding.otherSaveAddressTextField.visibility = View.VISIBLE
-            } else if (labelType.equals("home",true)) {
+            } else if (labelType.equals("home", true)) {
                 binding.homeSavedAddress.background = focusedDrawable
-            } else if (labelType.equals("work",true)){
+            } else if (labelType.equals("work", true)) {
                 binding.officeSavedAddress.background = focusedDrawable
             }
 
@@ -637,7 +612,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.savedAddressCheckbox.setOnCheckedChangeListener { _, isChecked ->
             if (!isChecked) {
                 binding.savedAddressCheckbox.isChecked = true
-                Toast.makeText(context, "Newly added address will be saved as default.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "Newly added address will be saved as default.",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -764,12 +743,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     binding.fullNameErrorTex.visibility = View.VISIBLE
                     binding.fullNameEditText.background =
@@ -801,12 +775,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isMobileNumberValid()
                     binding.mobileNumberEditText.background =
@@ -839,12 +808,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isEmailValid()
                     binding.emailEditText.background =
@@ -873,12 +837,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isPrimaryAddressValid()
                     binding.addressEditText1.background =
@@ -908,12 +867,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 toCheckAllFieldsAreFilled()
             }
 
@@ -937,12 +891,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isPostalValid()
                     binding.postalCodeEditText.background =
@@ -971,12 +920,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isStateValid()
                     binding.stateEditText.background =
@@ -1005,12 +949,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.ADDRESS_UPDATED,
-                    "",
-                    ""
-                )
+                logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
                     isCityValid()
                     binding.cityEditText.background =
@@ -1047,12 +986,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.proceedButton.setOnClickListener() {
-            callUIAnalytics(
-                requireContext(),
-                AnalyticsEvents.ADDRESS_UPDATED,
-                "",
-                ""
-            )
+            logAddressUpdatedEvent()
             val fullName = binding.fullNameEditText.text
             val mobileNumber = binding.mobileNumberEditText.text
             val email = binding.emailEditText.text
@@ -1061,8 +995,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val country = countrySelectedFromDropDown
             val postalCode = binding.postalCodeEditText.text
             val state = binding.stateEditText.text
-            var PAN :String? = null
-            var DOB :String?= null
+            var PAN: String? = null
+            var DOB: String? = null
             if (binding.panEditText.text.toString().isNotEmpty()) {
                 PAN = binding.panEditText.text.toString()
             }
@@ -1102,8 +1036,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             editor.putString("indexCountryCodePhone", indexCountryCodePhone)
             editor.putString("panNumber", PAN)
             editor.putString("dateOfBirth", DOB)
-            editor.putString("labelType",labelType)
-            editor.putString("labelName",labelName)
+            editor.putString("labelType", labelType)
+            editor.putString("labelName", labelName)
 
 
             editor.apply()
@@ -1424,7 +1358,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val isPostalCodeFilled = !binding.postalCodeEditText.text.isNullOrBlank()
         val isStateFilled = !binding.stateEditText.text.isNullOrBlank()
         val isCityFilled = !binding.cityEditText.text.isNullOrBlank()
-        val isMobileNumberValid = binding.mobileNumberEditText.text.length in minPhoneLength..maxPhoneLength
+        val isMobileNumberValid =
+            binding.mobileNumberEditText.text.length in minPhoneLength..maxPhoneLength
         val isEmailValid = binding.emailEditText.text.matches(emailRegex)
         val isCountryValid = countrySelected && binding.countryEditText.text.isNotEmpty()
         val isDialCodeValid = binding.spinnerDialCodes.text.isNotEmpty() &&
@@ -1442,12 +1377,14 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                         isMobileNumberValid && isEmailValid && isDialCodeValid &&
                         isPANValid && isDOBSelected && isLabelValid && isCheckboxChecked
             }
+
             isShippingEnabled -> {
                 isFullNameFilled && isMobileNumberFilled && isEmailFilled && isAddressFilled &&
                         isPostalCodeFilled && isStateFilled && isCityFilled && isCountryValid &&
                         isMobileNumberValid && isEmailValid && isDialCodeValid &&
                         isPANValid && isDOBSelected && isCheckboxChecked
             }
+
             else -> {
                 isFullNameFilled && isMobileNumberFilled && isEmailFilled &&
                         isMobileNumberValid && isEmailValid && isDialCodeValid &&
@@ -1455,7 +1392,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             }
         }
     }
-
 
 
     private fun readJsonFromAssets(context: Context, fileName: String): String {
@@ -1697,54 +1633,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         queue.add(jsonObjectAll)
     }
 
-    private fun callUIAnalytics(
-        context: Context,
-        event: String,
-        paymentSubType: String,
-        paymentType: String
-    ) {
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
-        val requestQueue = Volley.newRequestQueue(context)
-        val userAgentHeader = WebSettings.getDefaultUserAgent(context)
-        val browserLanguage = Locale.getDefault().toString()
-
-        // Constructing the request body
-        val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, token)
-            put(AnalyticsEvents.UI_EVENT, event)
-
-            // Create eventAttrs JSON object
-            val eventAttrs = JSONObject().apply {
-                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
-                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
-            }
-            put("eventAttrs", eventAttrs)
-
-            // Create browserData JSON object
-            val browserData = JSONObject().apply {
-                put("userAgentHeader", userAgentHeader)
-                put("browserLanguage", browserLanguage)
-            }
-            put("browserData", browserData)
-        }
-
-        // Request a JSONObject response from the provided URL
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
-        }
-
-        // Add the request to the RequestQueue.
-        requestQueue.add(jsonObjectRequest)
-    }
-
     fun dismissCurrentBottomSheet() {
         dismiss()
     }
@@ -1756,7 +1644,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val requestBody = JSONObject().apply {
             val fullName = binding.fullNameEditText.text
-            put("name",fullName)
+            put("name", fullName)
             put("phoneNumber", "$countryCodePhoneNum${binding.mobileNumberEditText.text}")
             put("email", binding.emailEditText.text)
             if (binding.dobEditText.text.toString().isNotEmpty() || convertedDate != null) {
@@ -1779,8 +1667,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             put("state", binding.stateEditText.text)
             put("countryCode", selectedCountryName)
             put("postalCode", binding.postalCodeEditText.text)
-            put("addressRef",
-                if (labelType.equals("other",true)) "$labelType-$labelName" else "$labelType"
+            put(
+                "addressRef",
+                if (labelType.equals("other", true)) "$labelType-$labelName" else "$labelType"
             )
             put("labelType", labelType)
             put("labelName", labelName)
@@ -1857,8 +1746,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             put("state", binding.stateEditText.text)
             put("countryCode", selectedCountryName)
             put("postalCode", binding.postalCodeEditText.text)
-            put("addressRef",
-                if (labelType.equals("other",true)) "$labelType-$labelName" else "$labelType"
+            put(
+                "addressRef",
+                if (labelType.equals("other", true)) "$labelType-$labelName" else "$labelType"
             )
             put("labelType", labelType)
             put("labelName", labelName)
@@ -1910,6 +1800,17 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     fun setClickOfHomeAndWork(isHomeSaved: Boolean, isWorkSaved: Boolean) {
         this.isHomeAddressSaved = isHomeSaved
         this.isOfficeAddressSaved = isWorkSaved
+    }
+
+    private fun logAddressUpdatedEvent() {
+        callUIAnalytics(
+            context = requireContext(),
+            token = token ?: "",
+            baseUrl = Base_Session_API_URL,
+            message = "",
+            screenName = "DeliveryAddressBottomSheet",
+            uiEvent = AnalyticsEvents.ADDRESS_UPDATED
+        )
     }
 }
 

@@ -1,11 +1,9 @@
 package com.boxpay.checkout.sdk
 
 import android.animation.ObjectAnimator
-import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -36,10 +34,10 @@ import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.databinding.FragmentAddUPIIDBinding
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.util.CommonFunctions
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
-import com.boxpay.checkout.sdk.utils.handleException
+import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -75,8 +73,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
@@ -134,10 +131,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             binding.editText.addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
+                    s: CharSequence?, start: Int, count: Int, after: Int
                 ) {
 
                 }
@@ -145,16 +139,20 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     if (!binding.progressBar.isVisible) {
                         callUIAnalytics(
-                            requireContext(),
-                            AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED,
-                            "UpiCollect",
-                            "Upi"
+                            context = requireContext(),
+                            token = token ?: "",
+                            baseUrl = Base_Session_API_URL,
+                            message = "",
+                            screenName = "AddUpiId",
+                            uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
                         )
                         callUIAnalytics(
-                            requireContext(),
-                            AnalyticsEvents.PAYMENT_METHOD_SELECTED,
-                            "UpiCollect",
-                            "Upi"
+                            context = requireContext(),
+                            token = token ?: "",
+                            baseUrl = Base_Session_API_URL,
+                            message = "",
+                            screenName = "AddUpiId",
+                            uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
                         )
                         val textNow = s.toString()
                         if (textNow.isNotBlank() && textNow.matches(Regex("[a-zA-Z0-9.\\-_]{2,256}@[a-zA-Z]{3,64}"))) {
@@ -189,15 +187,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             binding.proceedButton.setOnClickListener() {
                 userVPA = binding.editText.text.toString()
                 closeKeyboard(this)
-
-
                 callUIAnalytics(
-                    requireContext(),
-                    AnalyticsEvents.PAYMENT_INITIATED,
-                    "UpiCollect",
-                    "Upi"
+                    context = requireContext(),
+                    token = token ?: "",
+                    baseUrl = Base_Session_API_URL,
+                    message = "",
+                    screenName = "AddUpiId",
+                    uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                 )
-
                 if (checkString(userVPA!!)) {
                     binding.ll1InvalidUPI.visibility = View.INVISIBLE
                     validateAPICall(requireContext(), userVPA!!)
@@ -209,12 +206,13 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             binding.root
         } catch (e: Exception) {
-            handleException(
-                requireContext(),
-                e.message ?: "",
-                token ?: "",
-                baseUrl ?: "",
-                "Add Upi ID Bottom Sheet"
+            callUIAnalytics(
+                context = requireContext(),
+                token = token ?: "",
+                baseUrl = Base_Session_API_URL,
+                message = "",
+                screenName = "AddUpiId",
+                uiEvent = AnalyticsEvents.SDK_CRASH
             )
             null
         }
@@ -241,7 +239,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         val baseUrl = sharedPreferences.getString("baseUrl", "null")
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://" + baseUrl + "/v0/platform/vpa-validation", requestBody,
+            Method.POST,
+            "https://" + baseUrl + "/v0/platform/vpa-validation",
+            requestBody,
             Response.Listener { response ->
                 try {
                     val statusUserVPA = response.getBoolean("vpaValid")
@@ -325,10 +325,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 setBackgroundDrawable(
                     ColorDrawable(
                         Color.argb(
-                            128,
-                            0,
-                            0,
-                            0
+                            128, 0, 0, 0
                         )
                     )
                 ) // Semi-transparent black background
@@ -408,11 +405,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 //        binding.editTextText.requestFocus()
     }
 
-//    private fun fetchOTPAutomatically(){
-//        val smsReceiver = otpFetcher(requireContext())
-//        smsReceiver.onReceive()
-//    }
-
 
     override fun onDismiss(dialog: DialogInterface) {
         (parentFragment as? MainBottomSheet)?.removeOverlayFromCurrentBottomSheet()
@@ -478,35 +470,16 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             val shopperObject = JSONObject().apply {
                 put("email", sharedPreferences.getString("email", null))
                 put("firstName", sharedPreferences.getString("firstName", null))
-                if (sharedPreferences.getString("gender", null) == null)
-                    put("gender", JSONObject.NULL)
-                else
-                    put("gender", sharedPreferences.getString("gender", null))
+                if (sharedPreferences.getString("gender", null) == null) put(
+                    "gender",
+                    JSONObject.NULL
+                )
+                else put("gender", sharedPreferences.getString("gender", null))
                 put("lastName", sharedPreferences.getString("lastName", null))
                 put("phoneNumber", sharedPreferences.getString("phoneNumber", null))
                 put("uniqueReference", sharedPreferences.getString("uniqueReference", null))
-                if (sharedPreferences.getString("dateOfBirthChosen", "")!!.isNotEmpty()) {
-                    put("dateOfBirth", sharedPreferences.getString("dateOfBirthChosen", null))
-                } else if (sharedPreferences.getString("dateOfBirth", "")!!.isNotEmpty()) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        put(
-                            "dateOfBirth",
-                            CommonFunctions.formatToISO8601WithCurrentTime(
-                                sharedPreferences.getString(
-                                    "dateOfBirth",
-                                    null
-                                )!!
-                            )
-                        )
-                    } else {
-                        put("dateOfBirth", sharedPreferences.getString("dateOfBirth", null))
-                    }
-                }
-
-                if (sharedPreferences.getString("panNumberChosen", null) != null) {
-                    put("panNumber", sharedPreferences.getString("panNumberChosen", null))
-                } else {
-                    put("panNumber", sharedPreferences.getString("panNumber", null))
+                getDOBAndPanEffectiveEntry(sharedPreferences).forEach { (key, value) ->
+                    put(key, value)
                 }
 
                 if (shippingEnabled) {
@@ -541,7 +514,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, Base_Session_API_URL + token, requestBody,
+            Method.POST,
+            Base_Session_API_URL + token,
+            requestBody,
             Response.Listener { response ->
 
                 val status = response.getJSONObject("status").getString("status")
@@ -559,8 +534,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                             "Please retry using other payment method or try again in sometime"
                     }
                     PaymentFailureScreen(errorMessage = cleanedMessage).show(
-                        parentFragmentManager,
-                        "FailureScreen"
+                        parentFragmentManager, "FailureScreen"
                     )
                 } else {
 
@@ -577,8 +551,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                         bottomSheet.show(
-                            parentFragmentManager,
-                            "PaymentStatusBottomSheetWithDetails"
+                            parentFragmentManager, "PaymentStatusBottomSheetWithDetails"
                         )
                         dismiss()
                     }
@@ -599,9 +572,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                         if (callback != null) {
                             callback.onPaymentResult(
                                 PaymentResultObject(
-                                    "Expired",
-                                    transactionId ?: "",
-                                    transactionId ?: ""
+                                    "Expired", transactionId ?: "", transactionId ?: ""
                                 )
                             )
                         }
@@ -621,8 +592,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
                 if (sharedPreferences.getString(
-                        "shopperToken",
-                        ""
+                        "shopperToken", ""
                     ) != null && sharedPreferences.getString("shopperToken", "") != ""
                 ) {
                     headers["Authorization"] =
@@ -653,9 +623,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             while (isActive) {
                 delay(3000)
                 fetchStatusAndReason(
-                    context!!,
-                    "${Base_Session_API_URL}${token}/status",
-                    editor
+                    context!!, "${Base_Session_API_URL}${token}/status", editor
                 ) { isSuccess, status ->
                     if (isSuccess) {
                         if (isAdded && isResumed && !isStateSaved) {
@@ -663,8 +631,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                             job?.cancel()
                             val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                             bottomSheet.show(
-                                parentFragmentManager,
-                                "PaymentStatusBottomSheetWithDetails"
+                                parentFragmentManager, "PaymentStatusBottomSheetWithDetails"
                             )
                             dismiss()
                         }
@@ -688,8 +655,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         binding.textView6.setTextColor(
             Color.parseColor(
                 sharedPreferences.getString(
-                    "buttonTextColor",
-                    "#ffffff"
+                    "buttonTextColor", "#ffffff"
                 )
             )
         )
@@ -698,16 +664,14 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         binding.proceedButtonRelativeLayout.setBackgroundColor(
             Color.parseColor(
                 sharedPreferences.getString(
-                    "primaryButtonColor",
-                    "#000000"
+                    "primaryButtonColor", "#000000"
                 )
             )
         )
         binding.textView6.setTextColor(
             Color.parseColor(
                 sharedPreferences.getString(
-                    "buttonTextColor",
-                    "#ffffff"
+                    "buttonTextColor", "#ffffff"
                 )
             )
         )
@@ -718,8 +682,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         binding.textView6.visibility = View.INVISIBLE
         binding.editText.isEnabled = false
         binding.progressBar.visibility = View.VISIBLE
-        val rotateAnimation =
-            ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
+        val rotateAnimation = ObjectAnimator.ofFloat(binding.progressBar, "rotation", 0f, 360f)
         rotateAnimation.duration = 3000 // Set the duration of the rotation in milliseconds
         rotateAnimation.repeatCount = ObjectAnimator.INFINITE // Set to repeat indefinitely
         binding.proceedButton.isEnabled = false
@@ -740,8 +703,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         binding.textView6.setTextColor(
             Color.parseColor(
                 sharedPreferences.getString(
-                    "buttonTextColor",
-                    "#ffffff"
+                    "buttonTextColor", "#ffffff"
                 )
             )
         )
@@ -776,54 +738,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             imm?.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
-
-    private fun callUIAnalytics(
-        context: Context,
-        event: String,
-        paymentSubType: String,
-        paymentType: String
-    ) {
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-        val requestQueue = Volley.newRequestQueue(context)
-        val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-        val browserLanguage = Locale.getDefault().toString()
-
-        // Constructing the request body
-        val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, token)
-            put(AnalyticsEvents.UI_EVENT, event)
-
-            // Create eventAttrs JSON object
-            val eventAttrs = JSONObject().apply {
-                put(AnalyticsEvents.PAYMENT_TYPE, paymentType)
-                put(AnalyticsEvents.PAYMENT_SUB_TYPE, paymentSubType)
-            }
-            put("eventAttrs", eventAttrs)
-
-            // Create browserData JSON object
-            val browserData = JSONObject().apply {
-                put("userAgentHeader", userAgentHeader)
-                put("browserLanguage", browserLanguage)
-            }
-            put("browserData", browserData)
-        }
-
-        // Request a JSONObject response from the provided URL
-        val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
-        }
-
-        // Add the request to the RequestQueue.
-        requestQueue.add(jsonObjectRequest)
-    }
-
 
     companion object {
         fun newInstance(
