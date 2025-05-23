@@ -70,6 +70,8 @@ import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -296,10 +298,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
         viewModel = ViewModelProvider(this).get(DismissViewModel::class.java)
 
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
-
-
+        Base_Session_API_URL = getSessionApiUrl(requireContext())
         fetchTransactionDetailsFromSharedPreferences()
         val sessionViewModel = SessionViewModel(requireActivity())
         sessionViewModel.createCheckoutSession(token!!).observe(this) { response ->
@@ -515,8 +514,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 }
                 callUIAnalytics(
                     context = requireContext(),
-                    token = token ?: "",
-                    baseUrl = Base_Session_API_URL,
                     message = "",
                     screenName = "AddCardBottomSheet",
                     uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
@@ -644,8 +641,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
                 callUIAnalytics(
                     context = requireContext(),
-                    token = token ?: "",
-                    baseUrl = Base_Session_API_URL,
                     message = "",
                     screenName = "AddCardBottomSheet",
                     uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
@@ -766,8 +761,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     }
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "AddCardBottomSheet",
                         uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
@@ -826,8 +819,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 }
                 callUIAnalytics(
                     context = requireContext(),
-                    token = token ?: "",
-                    baseUrl = Base_Session_API_URL,
                     message = "",
                     screenName = "AddCardBottomSheet",
                     uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
@@ -854,8 +845,6 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         binding.proceedButton.setOnClickListener {
             callUIAnalytics(
                 context = requireContext(),
-                token = token ?: "",
-                baseUrl = Base_Session_API_URL,
                 message = "",
                 screenName = "AddCardBottomSheet",
                 uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -1381,7 +1370,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        token = sharedPreferences.getString("token", "empty")
+        token = getSessionToken(requireContext())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }

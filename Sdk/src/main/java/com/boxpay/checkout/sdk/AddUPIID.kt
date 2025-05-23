@@ -38,6 +38,9 @@ import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.fetchStatusAndReason
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getSessionToken
+import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -79,12 +82,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
 
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
+        Base_Session_API_URL = getSessionApiUrl(requireContext())
         return try {
             binding = FragmentAddUPIIDBinding.inflate(inflater, container, false)
-//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO
-
 
             val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
 
@@ -140,16 +140,12 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     if (!binding.progressBar.isVisible) {
                         callUIAnalytics(
                             context = requireContext(),
-                            token = token ?: "",
-                            baseUrl = Base_Session_API_URL,
                             message = "",
                             screenName = "AddUpiId",
                             uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
                         )
                         callUIAnalytics(
                             context = requireContext(),
-                            token = token ?: "",
-                            baseUrl = Base_Session_API_URL,
                             message = "",
                             screenName = "AddUpiId",
                             uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
@@ -189,8 +185,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 closeKeyboard(this)
                 callUIAnalytics(
                     context = requireContext(),
-                    token = token ?: "",
-                    baseUrl = Base_Session_API_URL,
                     message = "",
                     screenName = "AddUpiId",
                     uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -208,8 +202,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         } catch (e: Exception) {
             callUIAnalytics(
                 context = requireContext(),
-                token = token ?: "",
-                baseUrl = Base_Session_API_URL,
                 message = "",
                 screenName = "AddUpiId",
                 uiEvent = AnalyticsEvents.SDK_CRASH
@@ -291,7 +283,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        token = sharedPreferences.getString("token", "empty")
+        token = getSessionToken(requireContext())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }
@@ -591,12 +583,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                if (sharedPreferences.getString(
-                        "shopperToken", ""
-                    ) != null && sharedPreferences.getString("shopperToken", "") != ""
-                ) {
-                    headers["Authorization"] =
-                        "Session ${sharedPreferences.getString("shopperToken", "")}"
+                if (getShopperToken(context).isNotEmpty()) {
+                    headers["Authorization"] = "Session ${getShopperToken(requireContext())}"
                 }
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION

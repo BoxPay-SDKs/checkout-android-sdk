@@ -22,6 +22,8 @@ import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.SharedViewModel
 import com.boxpay.checkout.sdk.databinding.FragmentUPITimerBottomSheetBinding
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -173,14 +175,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
 
-
-        val sharedPreferences =
-            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-
-
-        val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
-        Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
+        Base_Session_API_URL = getSessionApiUrl(requireContext())
 
         fetchTransactionDetailsFromSharedPreferences()
 
@@ -217,7 +212,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     private fun fetchTransactionDetailsFromSharedPreferences() {
         val sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        token = sharedPreferences.getString("token", "empty")
+        token = getSessionToken(requireContext())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }

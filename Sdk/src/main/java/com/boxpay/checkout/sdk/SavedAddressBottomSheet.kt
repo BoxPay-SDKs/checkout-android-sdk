@@ -32,6 +32,8 @@ import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -205,9 +207,8 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
 
         bottomSheetBehavior?.maxHeight = desiredHeight
         binding.textView.text = "Your Addresses"
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
 
-        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
+        Base_Session_API_URL = getSessionApiUrl(requireContext())
         fetchTransactionDetailsFromSharedPreferences()
 
         lifecycleScope.launchWhenStarted {
@@ -376,8 +377,6 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
                 } catch (e: Exception) {
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "NetBankingBottomSheet",
                         uiEvent = AnalyticsEvents.SDK_CRASH
@@ -397,9 +396,9 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        token = sharedPreferences.getString("token", "empty")
+        token = getShopperToken(requireContext())
         uniqueRef = sharedPreferences.getString("uniqueReference", null)
-        customerShopperToken = sharedPreferences.getString("shopperToken", "")
+        customerShopperToken = getShopperToken(requireContext())
         fetchAddressDetails()
     }
 

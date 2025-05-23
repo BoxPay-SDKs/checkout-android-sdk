@@ -42,6 +42,9 @@ import com.boxpay.checkout.sdk.databinding.FragmentDeliveryAddressBottomSheetBin
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getSessionToken
+import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -135,11 +138,10 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-        val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
-        token = sharedPreferences.getString("token", "empty")
+        token = getSessionToken(requireContext())
         uniqueRef = sharedPreferences.getString("uniqueReference", null)
-        customerShopperToken = sharedPreferences.getString("shopperToken", "")
-        Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
+        customerShopperToken = getShopperToken(requireContext())
+        Base_Session_API_URL = getSessionApiUrl(requireContext())
 
         if (customerShopperToken != null && customerShopperToken != "" && isShippingEnabled) {
             binding.saveAddressLayout.visibility = View.VISIBLE
@@ -1805,8 +1807,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private fun logAddressUpdatedEvent() {
         callUIAnalytics(
             context = requireContext(),
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = "",
             screenName = "DeliveryAddressBottomSheet",
             uiEvent = AnalyticsEvents.ADDRESS_UPDATED

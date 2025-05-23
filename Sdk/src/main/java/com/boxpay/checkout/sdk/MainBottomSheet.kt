@@ -70,6 +70,9 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getSessionToken
+import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -77,7 +80,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
-import com.mixpanel.android.mpmetrics.MixpanelAPI
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -150,7 +152,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var itemQty = mutableListOf<String>()
     private var imagesUrls = mutableListOf<String>()
     private var prices = mutableListOf<String>()
-    private lateinit var Base_Session_API_URL: String
     var queue: RequestQueue? = null
     private lateinit var countdownTimer: CountDownTimer
     var sessionTimer: CountDownTimer? = null
@@ -166,7 +167,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var firstLoad: Boolean = true
     private var productSummary: String? = null
     private var orderDetails: String? = null
-    private var upiIntentError: String? = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -315,8 +315,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             startActivityForResult(intent, resultCode)
 
         } catch (e: Exception) {
-            upiIntentError = e.message
-
             val eventName = if (e is ActivityNotFoundException) {
                 AnalyticsEvents.UPI_APP_NOT_FOUND
             } else {
@@ -325,8 +323,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             callUIAnalytics(
                 context = context,
-                token = token ?: "",
-                baseUrl = Base_Session_API_URL,
                 message = e.message ?: "",
                 screenName = "Main Bottom Sheet in function launchUpiIntent",
                 uiEvent = eventName
@@ -347,7 +343,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 delay(3000)
-                fetchStatusAndReason("${Base_Session_API_URL}${token}/status")
+                fetchStatusAndReason("${getSessionApiUrl(context)}${token}/status")
                 // Delay for 4 seconds
             }
         }
@@ -512,8 +508,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         logMainBottomSheetUiEvents()
         callUIAnalytics(
             context = context,
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = "",
             screenName = "Main Bottom Sheet in function getUrlForUpiIntent",
             uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -592,7 +586,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, Base_Session_API_URL + token, requestBody,
+            Method.POST, getSessionApiUrl(context) + token, requestBody,
             Response.Listener { response ->
 
                 try {
@@ -626,8 +620,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     removeLoadingState()
                     callUIAnalytics(
                         context = context,
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = e.message ?: "",
                         screenName = "Main Bottom Sheet in function getUrlForUpiIntent in catch block",
                         uiEvent = AnalyticsEvents.ERROR_GETTING_UPI_URL
@@ -642,8 +634,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
                     callUIAnalytics(
                         context = context,
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = error.message ?: "",
                         screenName = "Main Bottom Sheet in function getAllInstalledApps in error response ",
                         uiEvent = AnalyticsEvents.ERROR_GETTING_UPI_URL
@@ -683,15 +673,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         fetchTransactionDetailsFromSharedPreferences()
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        val baseUrlFetched = sharedPreferences.getString("baseUrl", "null")
-        Base_Session_API_URL = "https://${baseUrlFetched}/v0/checkout/sessions/"
-        val mp =
-            MixpanelAPI.getInstance(requireActivity(), "76ea8537c5f272d43cd09d1756b189f8", true)
-        mp.identify(token ?: "12345678", true)
-        mp.people.set("name", token ?: "")
-        val props = JSONObject()
-        props.put("Initialized", ":MainBottomSheet")
-        mp.track("MainScreen", props)
         return try {
             binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
             showLoadingState()
@@ -806,8 +787,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         if (recommendedCheckedPosition == null) 0 else recommendedCheckedPosition
                     callUIAnalytics(
                         context = context,
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "Main Bottom Sheet in function click listener on recommendedproceedbutton",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -1082,7 +1061,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val jsonArrayRequest = object : JsonArrayRequest(
             Method.GET,
-            "$Base_Session_API_URL$token/payment-methods?customerCountryCode=$countryName",
+            "${getSessionApiUrl(context)}$token/payment-methods?customerCountryCode=$countryName",
             null,
             Response.Listener { response ->
                 for (i in 0 until response.length()) {
@@ -1288,7 +1267,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
 
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, Base_Session_API_URL + token, requestBody,
+            Method.POST, getSessionApiUrl(context) + token, requestBody,
             Response.Listener { response ->
 
                 transactionId = response.getString("transactionId").toString()
@@ -1342,7 +1321,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         uniqueReference = sharedPreferences.getString("uniqueReference", null)
         val jsonObjectRequest = object : JsonArrayRequest(
             Method.GET,
-            Base_Session_API_URL + token + "/shoppers/$uniqueReference/recommended-instruments",
+            getSessionApiUrl(context) + token + "/shoppers/$uniqueReference/recommended-instruments",
             null,
             Response.Listener { response ->
                 try {
@@ -1537,34 +1516,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getUrlForDefaultUPIIntent() {
-        callUIAnalytics(
-            context = context,
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
-            message = "",
-            screenName = "Main Bottom Sheet in function getUrlForDefaultUpiIntent",
-            uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
-        )
-        callUIAnalytics(
-            context = context,
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
-            message = "",
-            screenName = "Main Bottom Sheet in function getUrlForDefaultUpiIntent",
-            uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
-        )
-        callUIAnalytics(
-            context = context,
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
-            message = "",
-            screenName = "Main Bottom Sheet in function getUrlForDefaultUpiIntent",
-            uiEvent = AnalyticsEvents.PAYMENT_INITIATED
-        )
-
+        logMainBottomSheetUiEvents()
         val requestQueue = Volley.newRequestQueue(context)
-
-
         // Constructing the request body
         val requestBody = JSONObject().apply {
             val browserData = JSONObject().apply {
@@ -1632,7 +1585,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, Base_Session_API_URL + token, requestBody,
+            Method.POST, getSessionApiUrl(context) + token, requestBody,
             Response.Listener { response ->
 
                 // Handle response
@@ -1726,8 +1679,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             activityContext.runOnUiThread {
                 windowManager.addView(overlayViewMainBottomSheet, layoutParams)
             }
+        } else {
+            callUIAnalytics(
+                context,
+                "Activity context is null not able to add the overlay above the activity",
+                "MainBottomSheet",
+                AnalyticsEvents.SDK_CRASH
+            )
         }
-
     }
 
     private fun removeOverlayFromActivity() {
@@ -1942,7 +1901,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun makeSessionDataCall() {
 
-        val url = "${Base_Session_API_URL}${token}"
+        val url = "${getSessionApiUrl(context)}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = object : JsonObjectRequest(Method.GET, url, null, { response ->
 
@@ -2681,8 +2640,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun fetchTransactionDetailsFromSharedPreferences() {
         val sharedPreferences =
             requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        token = sharedPreferences.getString("token", "empty")
-        customerShopperToken = sharedPreferences.getString("shopperToken", "")
+        token = getSessionToken(context)
+        customerShopperToken = getShopperToken(context)
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }
@@ -2812,22 +2771,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         return Pair(fullName, code)
     }
 
-    fun loadCountryCodes(countryCodeJson: JSONObject): Array<String> {
-        val isdCodes = mutableSetOf<String>()
-
-        // Iterate through each country and extract the isdCode
-        countryCodeJson.keys().forEach { key ->
-            val countryDetails = countryCodeJson.getJSONObject(key)
-            val isdCode = countryDetails.getString("isdCode")
-            isdCodes.add(isdCode)
-        }
-
-        // Sort ISD codes in ascending order
-        val sorted = isdCodes.sorted()
-
-        return sorted.toTypedArray()
-    }
-
     @RequiresApi(Build.VERSION_CODES.O)
     fun postRecommendedInstruments(type: String, instrumentationRef: String, displayName: String) {
         showLoadingState()
@@ -2908,7 +2851,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, Base_Session_API_URL + token, requestBody,
+            Method.POST, getSessionApiUrl(context) + token, requestBody,
             Response.Listener { response ->
 
                 binding.swipeLoader.visibility = View.GONE
@@ -3009,18 +2952,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Start the animation
         rotateAnimation.start()
-    }
-
-
-    fun hideLoadingInButton() {
-        binding.progress.visibility = View.INVISIBLE
-        binding.proceedtext.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                android.R.color.white
-            )
-        )
-        binding.proceedtext.visibility = View.VISIBLE
     }
 
     private fun parseAndRenderProductSummary(jsonString: String) {
@@ -3558,8 +3489,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 onSwipeComplete = {
                     callUIAnalytics(
                         context = context,
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "Main Bottom Sheet",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -3767,24 +3696,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun logMainBottomSheetUiEvents() {
         callUIAnalytics(
             context = context,
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = "",
             screenName = "Main Bottom Sheet",
             uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
         )
         callUIAnalytics(
             context = context,
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = "",
             screenName = "Main Bottom Sheet",
             uiEvent = AnalyticsEvents.PAYMENT_CATEGORY_SELECTED
         )
         callUIAnalytics(
             context = context,
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = "",
             screenName = "Main Bottom Sheet",
             uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
@@ -3794,8 +3717,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun callUiAnalyticWithSdkCrashEvent(message: String) {
         callUIAnalytics(
             context = context,
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = message,
             screenName = "Main Bottom Sheet in function dismissMainSheet",
             uiEvent = AnalyticsEvents.SDK_CRASH

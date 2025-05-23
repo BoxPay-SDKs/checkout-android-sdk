@@ -129,8 +129,6 @@ class BoxPayElements(
         } catch (e: Exception) {
             callUIAnalytics(
                 context = context!!,
-                token = token ?: "",
-                baseUrl = sessionUrl,
                 message = "",
                 screenName = "BnplBottomSheet",
                 uiEvent = AnalyticsEvents.SDK_CRASH
