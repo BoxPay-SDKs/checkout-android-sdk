@@ -47,6 +47,8 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -265,8 +267,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     onClickProceedButton = {
                                         callUIAnalytics(
                                             context = requireContext(),
-                                            token = token ?: "",
-                                            baseUrl = Base_Session_API_URL,
                                             message = "",
                                             screenName = "EmiBottomSheet",
                                             uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -346,8 +346,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                                     onProceedClick = {
                                         callUIAnalytics(
                                             context = requireContext(),
-                                            token = token ?: "",
-                                            baseUrl = Base_Session_API_URL,
                                             message = "",
                                             screenName = "EmiBottomSheet",
                                             uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -379,9 +377,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
-        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
+        Base_Session_API_URL = getSessionApiUrl(requireContext())
 
         if (emiViewModel.emiBankList.value.cards.isEmpty()) {
             fetchTransactionDetailsFromSharedPreferences()
@@ -392,7 +388,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        token = sharedPreferences.getString("token", "empty")
+        token = getSessionToken(requireContext())
     }
 
     private fun showLoadingState() {
@@ -948,16 +944,12 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     private fun logEmiBottomSheetUIEvents() {
         callUIAnalytics(
             context = requireContext(),
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = "",
             screenName = "EmiBottomSheet",
             uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
         )
         callUIAnalytics(
             context = requireContext(),
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = "",
             screenName = "EmiBottomSheet",
             uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
@@ -967,8 +959,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     private fun callUiAnalyticWithSDKCrashEvent(message: String) {
         callUIAnalytics(
             context = requireContext(),
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = message,
             screenName = "EmiBottomSheet",
             uiEvent = AnalyticsEvents.SDK_CRASH

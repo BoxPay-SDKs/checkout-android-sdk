@@ -9,6 +9,7 @@ import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.ConfigurationOptions
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
+import com.boxpay.checkout.sdk.utils.getAnalyticsUrl
 
 class BoxPayCheckout(
     private val context: Context,
@@ -35,16 +36,12 @@ class BoxPayCheckout(
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     private var editor: SharedPreferences.Editor = sharedPreferences.edit()
 
-    private var BASE_URL: String? = null
-
     fun display() {
         if (configurationOptions != null) {
             if (configurationOptions[ConfigurationOptions.ENABLE_SANDBOX_ENV] == true) {
                 editor.putString("baseUrl", "test-apis.boxpay.tech")
-                this.BASE_URL = "test-apis.boxpay.tech"
             } else {
                 editor.putString("baseUrl", "apis.boxpay.in")
-                this.BASE_URL = "apis.boxpay.in"
             }
             editor.putBoolean(
                 "isSuccessScreenVisible",
@@ -53,15 +50,17 @@ class BoxPayCheckout(
         } else {
             editor.putBoolean("isSuccessScreenVisible", false)
             editor.putString("baseUrl", "apis.boxpay.in")
-            this.BASE_URL = "apis.boxpay.in"
         }
         editor.apply()
+
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()!!
+        Thread.setDefaultUncaughtExceptionHandler(SDKCrashHandler(context,
+            token, getAnalyticsUrl(context), defaultHandler))
+
         try {
-            if (!token.isNullOrEmpty()) {
+            if (token.isNotEmpty()) {
                 callUIAnalytics(
                     context = context,
-                    token = token,
-                    baseUrl = this.BASE_URL ?: "",
                     message = "",
                     screenName = "BoxPayCheckout",
                     uiEvent = AnalyticsEvents.CHECKOUT_LOADED
@@ -71,9 +70,7 @@ class BoxPayCheckout(
             } else {
                 callUIAnalytics(
                     context = context,
-                    token = token,
-                    baseUrl = this.BASE_URL ?: "",
-                    message = "Token added is either null or empty",
+                    message = "Token is null or empty",
                     screenName = "BoxPayCheckout",
                     uiEvent = AnalyticsEvents.SDK_CRASH
                 )
@@ -81,8 +78,6 @@ class BoxPayCheckout(
         } catch (e: Exception) {
             callUIAnalytics(
                 context = context,
-                token = token,
-                baseUrl = this.BASE_URL ?: "",
                 message = e.message ?: "",
                 screenName = "BoxPayCheckout",
                 uiEvent = AnalyticsEvents.SDK_CRASH
@@ -93,12 +88,9 @@ class BoxPayCheckout(
     private fun openBottomSheet() {
         try {
             initializingCallBackFunctions()
-
             if (context is Activity) {
-                val activity =
-                    context as AppCompatActivity // or FragmentActivity, depending on your activity type
+                val activity = context as AppCompatActivity
                 val fragmentManager = activity.supportFragmentManager
-                // Now you can use fragmentManager
                 val bottomSheet = MainBottomSheet()
                 bottomSheet.setContext(activity.applicationContext)
                 bottomSheet.loadQrDirect(configurationOptions?.get(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD) == true)
@@ -107,8 +99,6 @@ class BoxPayCheckout(
         } catch (e: Exception) {
             callUIAnalytics(
                 context = context,
-                token = token,
-                baseUrl = this.BASE_URL ?: "",
                 message = e.message ?: "",
                 screenName = "BoxPayCheckout",
                 uiEvent = AnalyticsEvents.SDK_CRASH

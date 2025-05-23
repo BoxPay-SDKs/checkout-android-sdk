@@ -52,6 +52,8 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -278,16 +280,12 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                                 popularWalletsSelectedIndex = index
                                 callUIAnalytics(
                                     context = requireContext(),
-                                    token = token ?: "",
-                                    baseUrl = Base_Session_API_URL,
                                     message = "",
                                     screenName = "WalletBottomSheet",
                                     uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
                                 )
                                 callUIAnalytics(
                                     context = requireContext(),
-                                    token = token ?: "",
-                                    baseUrl = Base_Session_API_URL,
                                     message = "",
                                     screenName = "WalletBottomSheet",
                                     uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
@@ -405,9 +403,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-
-        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
+        Base_Session_API_URL = getSessionApiUrl(requireContext())
         // Inflate the layout for this fragment
         return try {
             requestQueue = Volley.newRequestQueue(context)
@@ -529,16 +525,12 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "WalletBottomSheet",
                         uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
                     )
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "WalletBottomSheet",
                         uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
@@ -556,8 +548,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         walletDetailsOriginal[popularWalletsSelectedIndex].instrumentTypeValue
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "WalletBottomSheet",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -568,8 +558,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
                         walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "WalletBottomSheet",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -604,8 +592,6 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
         } catch (e: Exception) {
             callUIAnalytics(
                 context = requireContext(),
-                token = token ?: "",
-                baseUrl = Base_Session_API_URL,
                 message = "",
                 screenName = "WalletBottomSheet",
                 uiEvent = AnalyticsEvents.SDK_CRASH
@@ -1075,7 +1061,7 @@ internal class WalletBottomSheet : BottomSheetDialogFragment() {
     private fun fetchTransactionDetailsFromSharedPreferences() {
         val sharedPreferences =
             requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        token = sharedPreferences.getString("token", "empty")
+        token = getShopperToken(requireContext())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }

@@ -1,5 +1,6 @@
 package com.boxpay.checkout.sdk.utils
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import java.time.LocalDate
@@ -40,4 +41,27 @@ fun generateRandomAlphanumericString(length: Int): String {
         .map { Random.nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")
+}
+
+private fun getBaseUrl(context: Context): String {
+    val sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+    return sharedPreferences.getString("baseUrl", null) ?: "apis.boxpay.in"
+}
+
+fun getSessionApiUrl(context: Context): String {
+    return "https://${getBaseUrl(context)}/v0/checkout/sessions/"
+}
+
+fun getAnalyticsUrl(context: Context): String {
+    return "https://${getBaseUrl(context)}/v0/ui-analytics"
+}
+
+fun getSessionToken(context: Context) : String {
+    val sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+    return sharedPreferences.getString("token", null) ?: ""
+}
+
+fun getShopperToken(context: Context) : String {
+    val sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
+    return sharedPreferences.getString("shopperToken", null) ?: ""
 }

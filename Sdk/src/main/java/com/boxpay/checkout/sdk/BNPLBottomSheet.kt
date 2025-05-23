@@ -38,6 +38,8 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -81,8 +83,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
+        Base_Session_API_URL = getSessionApiUrl(requireContext())
         return try {
             requestQueue = Volley.newRequestQueue(context)
             binding = FragmentBnplBottomSheetBinding.inflate(layoutInflater, container, false)
@@ -150,16 +151,12 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "BnplBottomSheet",
                         uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
                     )
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "BnplBottomSheet",
                         uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
@@ -176,8 +173,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                     walletDetailsFiltered[checkedPosition!!].instrumentTypeValue
                 callUIAnalytics(
                     context = requireContext(),
-                    token = token ?: "",
-                    baseUrl = Base_Session_API_URL,
                     message = "",
                     screenName = "BnplBottomSheet",
                     uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -192,8 +187,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
         } catch (e: Exception) {
             callUIAnalytics(
                 context = requireContext(),
-                token = token ?: "",
-                baseUrl = Base_Session_API_URL,
                 message = "",
                 screenName = "BnplBottomSheet",
                 uiEvent = AnalyticsEvents.SDK_CRASH
@@ -300,7 +293,7 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
     private fun fetchTransactionDetailsFromSharedPreferences() {
         val sharedPreferences =
             requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        token = sharedPreferences.getString("token", "empty")
+        token = getSessionToken(requireContext())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }

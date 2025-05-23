@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.webkit.WebSettings
 import com.android.volley.DefaultRetryPolicy
+import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
@@ -15,43 +16,55 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.Locale
 
-fun callUIAnalytics(context: Context, token: String, baseUrl: String, message: String, screenName: String, uiEvent:String) {
+fun callUIAnalytics(
+    context: Context,
+    message: String,
+    screenName: String,
+    uiEvent: String
+) {
+    val queue: RequestQueue = Volley.newRequestQueue(context)
+
     CoroutineScope(Dispatchers.IO).launch {
-        val requestQueue = Volley.newRequestQueue(context)
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
         val browserLanguage = Locale.getDefault().toString()
 
-        // Constructing the request body
+        // Construct the request body
         val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, token)
+            put(AnalyticsEvents.CALLER_TOKEN, getSessionToken(context))
             put(AnalyticsEvents.UI_EVENT, uiEvent)
 
-            // Create browserData JSON object
             val browserData = JSONObject().apply {
                 put("userAgentHeader", userAgentHeader)
                 put("browserLanguage", browserLanguage)
             }
+
             val eventAttrs = JSONObject().apply {
                 put("errorMessage", message)
                 put("screenName", screenName)
             }
-            put("eventAttrs", eventAttrs)
 
+            put("eventAttrs", eventAttrs)
             put("browserData", browserData)
         }
 
-        // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, "https://${baseUrl}/v0/ui-analytics", requestBody,
-            Response.Listener { /*no response handling */ },
-            Response.ErrorListener { /*no response handling */ }) {}.apply {
-            // Set retry policy
-            val timeoutMs = 100000 // Timeout in milliseconds
-            val maxRetries = 0 // Max retry attempts
-            val backoffMultiplier = 1.0f // Backoff multiplier
-            retryPolicy = DefaultRetryPolicy(timeoutMs, maxRetries, backoffMultiplier)
+            Method.POST,
+            getAnalyticsUrl(context),
+            requestBody,
+            Response.Listener { _ ->
+            },
+            Response.ErrorListener { _ ->
+            }
+        ) {}.apply {
+            retryPolicy = DefaultRetryPolicy(
+                100_000, // timeout in milliseconds
+                0,       // no retries
+                1.0f     // backoff multiplier
+            )
         }
-        requestQueue.add(jsonObjectRequest)
+
+        // Enqueue the request
+        queue.add(jsonObjectRequest)
     }
 }
 

@@ -967,8 +967,6 @@ class BoxPayCardComponent(
             } catch (e: Exception) {
                 callUIAnalytics(
                     context = requireContext(),
-                    token = token ?: "",
-                    baseUrl = BASE_URL,
                     message = "",
                     screenName = "boxpayCardComponent",
                     uiEvent = AnalyticsEvents.SDK_CRASH

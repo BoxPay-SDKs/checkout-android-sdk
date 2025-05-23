@@ -53,6 +53,8 @@ import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
+import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -298,8 +300,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         editor = sharedPreferences.edit()
-        val baseUrl = sharedPreferences.getString("baseUrl", "null")
-        Base_Session_API_URL = "https://${baseUrl}/v0/checkout/sessions/"
+        Base_Session_API_URL = getSessionApiUrl(requireContext())
         return try {
             binding = FragmentNetBankingBottomSheetBinding.inflate(layoutInflater, container, false)
 
@@ -434,8 +435,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         banksDetailsOriginal[popularBanksSelectedIndex].bankInstrumentTypeValue
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "NetBankingBottomSheet",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -446,8 +445,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
                         banksDetailsFiltered[checkedPosition!!].bankInstrumentTypeValue
                     callUIAnalytics(
                         context = requireContext(),
-                        token = token ?: "",
-                        baseUrl = Base_Session_API_URL,
                         message = "",
                         screenName = "NetBankingBottomSheet",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -1006,7 +1003,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private fun fetchTransactionDetailsFromSharedPreferences() {
 
 
-        token = sharedPreferences.getString("token", "empty")
+        token = getShopperToken(requireContext())
 
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
@@ -1141,8 +1138,6 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private fun callUiAnalyticWithSDKCrashEvent(message: String) {
         callUIAnalytics(
             context = requireContext(),
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = message,
             screenName = "EmiBottomSheet",
             uiEvent = AnalyticsEvents.SDK_CRASH
@@ -1152,16 +1147,12 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private fun logNetBankingBottomSheetUIEvent() {
         callUIAnalytics(
             context = requireContext(),
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = "",
             screenName = "NetBankingBottomSheet",
             uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
         )
         callUIAnalytics(
             context = requireContext(),
-            token = token ?: "",
-            baseUrl = Base_Session_API_URL,
             message = "",
             screenName = "NetBankingBottomSheet",
             uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
