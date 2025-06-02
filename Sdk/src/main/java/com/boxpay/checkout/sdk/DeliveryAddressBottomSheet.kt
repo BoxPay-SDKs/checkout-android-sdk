@@ -1612,7 +1612,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun getPostalCodeDetails() {
-        val url = "${Base_Session_API_URL}${token}/postal-codes"
+        val postalCodeValue = binding.postalCodeEditText.text.toString()
+        val url = "${Base_Session_API_URL}${token}/postal-codes?postalCode=${postalCodeValue}&countryCode=IN"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll = object : JsonObjectRequest(Method.GET, url, null, { response ->
 
@@ -1624,14 +1625,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 // no op
             }
 
-        }, Response.ErrorListener { /*no response handling */ }) {
-            override fun getParams(): MutableMap<String, String> {
-                val params = HashMap<String, String>()
-                params["postalCode"] = binding.postalCodeEditText.text.toString()
-                params["countryCode"] = "IN"
-                return params
-            }
-        }
+        }, Response.ErrorListener { }){}
         queue.add(jsonObjectAll)
     }
 

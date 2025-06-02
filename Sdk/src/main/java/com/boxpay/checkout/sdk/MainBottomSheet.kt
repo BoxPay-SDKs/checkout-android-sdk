@@ -924,24 +924,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
             binding.addAddressButton.setOnClickListener() {
-                val bottomSheet = DeliveryAddressBottomSheet.newInstance(
-                    this,
-                    false,
-                    showName,
-                    showPhone,
-                    showEmail,
-                    showPAN,
-                    showDOB,
-                    showShipping,
-                    isNameEditable,
-                    isPhoneEditable,
-                    isEmailEditable,
-                    isPANEditable,
-                    isDOBEditable
-                )
-                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-                    bottomSheet.show(parentFragmentManager, "DeliveryAddressBottomSheet")
-                }
+                openSavedOrAddOrEditAddressScreen()
             }
 
             binding.root
@@ -1055,6 +1038,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun callPaymentMethodRules(context: Context) {
+        showLoadingState()
         val requestQueue = Volley.newRequestQueue(context)
 
         val countryName = sharedPreferences.getString("countryCode", null)
@@ -1108,7 +1092,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (upiAvailable) {
                     binding.cardView4.visibility = View.VISIBLE
-
+                    binding.upiLinearLayout.visibility = View.VISIBLE
 
                     if (upiCollectMethod) {
                         binding.addNewUPIIDConstraint.visibility = View.VISIBLE
@@ -1132,30 +1116,35 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 if (cardsMethod) {
                     binding.cardView5.visibility = View.VISIBLE
+                    binding.cardConstraint.visibility = View.VISIBLE
                 } else {
                     binding.cardView5.visibility = View.GONE
                 }
 
                 if (walletMethods) {
                     binding.cardView6.visibility = View.VISIBLE
+                    binding.walletConstraint.visibility = View.VISIBLE
                 } else {
                     binding.cardView6.visibility = View.GONE
                 }
 
                 if (emiMethod) {
                     binding.emiCard.visibility = View.VISIBLE
+                    binding.emiConstraint.visibility = View.VISIBLE
                 } else {
                     binding.emiCard.visibility = View.GONE
                 }
 
                 if (bnplMethod) {
                     binding.cardView9.visibility = View.VISIBLE
+                    binding.bnplConstraint.visibility = View.VISIBLE
                 } else {
                     binding.cardView9.visibility = View.GONE
                 }
 
                 if (netBankingMethods) {
                     binding.cardView7.visibility = View.VISIBLE
+                    binding.netBankingConstraint.visibility = View.VISIBLE
                 } else {
                     binding.cardView7.visibility = View.GONE
                 }
@@ -3453,15 +3442,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         )
                     )
                 ),
-                amount = "${
-                    sharedPreferences.getString(
-                        "currencySymbol",
-                        "₹"
-                    ) ?: ""
-                }${
-                    sharedPreferences.getString("amount", "empty")
-                        ?: ""
-                }",
+                amount = sharedPreferences.getString("amount", "empty") ?: "",
+                currencySymbol = sharedPreferences.getString(
+                    "currencySymbol",
+                    "₹"
+                ) ?: "",
                 lastUsedUpi = recommendedInstrumentationList[0].second,
                 onClickMoreOptions = {
                     moreOptionsClicked = true

@@ -1533,7 +1533,8 @@ fun SwipeToPayButton(
     buttonColor: Color,
     buttontextColor: Color,
     height: Dp = 48.dp,
-    amount: String
+    amount: String,
+    currencySymbol: String
 ) {
     val swipePosition = remember { mutableStateOf(0f) }
     val buttonWidth = remember { mutableStateOf(0) }
@@ -1556,13 +1557,39 @@ fun SwipeToPayButton(
 
         // Center Text with fading effect
         Text(
-            text = "Swipe to Pay $amount",
-            color = buttontextColor.copy(alpha = textAlpha), // Apply fading effect
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = defaultFontFamily
-            ),
+            text = buildAnnotatedString {
+                append(
+                    AnnotatedString(
+                        text = "Swipe to Pay ",
+                        spanStyle = SpanStyle(
+                            fontSize = 16.sp,
+                            fontFamily = defaultFontFamily,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                )
+                append(
+                    AnnotatedString(
+                        text = currencySymbol,
+                        spanStyle = SpanStyle(
+                            fontSize = 16.sp,
+                            fontFamily = interFontFamily,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                )
+                append(
+                    AnnotatedString(
+                        text = amount,
+                        spanStyle = SpanStyle(
+                            fontSize = 16.sp,
+                            fontFamily = defaultFontFamily,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                )
+            },
+            color = buttontextColor.copy(alpha = textAlpha),
             modifier = Modifier.align(Alignment.Center)
         )
 
@@ -1616,6 +1643,7 @@ fun RecommendedScreen(
     buttonColor: Color,
     buttontextColor: Color,
     amount: String,
+    currencySymbol: String,
     lastUsedUpi: String,
     onClickMoreOptions: () -> Unit,
     onSwipeComplete: () -> Unit,
@@ -1713,13 +1741,39 @@ fun RecommendedScreen(
                     )
                 }
                 Text(
-                    text = "Pay $amount",
+                    text = buildAnnotatedString {
+                        append(
+                            AnnotatedString(
+                                text = "Pay ",
+                                spanStyle = SpanStyle(
+                                    fontSize = 18.sp,
+                                    fontFamily = defaultFontFamily,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        )
+                        append(
+                            AnnotatedString(
+                                text = currencySymbol,
+                                spanStyle = SpanStyle(
+                                    fontSize = 18.sp,
+                                    fontFamily = interFontFamily,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        )
+                        append(
+                            AnnotatedString(
+                                text = amount,
+                                spanStyle = SpanStyle(
+                                    fontSize = 18.sp,
+                                    fontFamily = defaultFontFamily,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            )
+                        )
+                    },
                     color = Color(0xFF2D2B32),
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = defaultFontFamily
-                    ),
                     modifier = Modifier.constrainAs(paymentTitle) {
                         start.linkTo(parent.start, 16.dp)
                         if (toShowAddress) {
@@ -1856,7 +1910,8 @@ fun RecommendedScreen(
                             width = Dimension.fillToConstraints
                         }
                         .padding(bottom = 18.dp),
-                    amount = amount
+                    amount = amount,
+                    currencySymbol = currencySymbol
                 )
             }
         }
