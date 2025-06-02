@@ -54,7 +54,7 @@ import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl
-import com.boxpay.checkout.sdk.utils.getShopperToken
+import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -1003,7 +1003,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
     private fun fetchTransactionDetailsFromSharedPreferences() {
 
 
-        token = getShopperToken(requireContext())
+        token = getSessionToken(requireContext())
 
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")

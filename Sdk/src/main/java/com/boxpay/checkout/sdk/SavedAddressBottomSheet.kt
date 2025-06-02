@@ -33,6 +33,7 @@ import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl
+import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -333,7 +334,7 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
                             )
                         }
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
 
                 }
             }
@@ -345,7 +346,7 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
         val url = "${Base_Session_API_URL}${token}/shoppers/${uniqueRef}/addresses"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll =
-            object : JsonArrayRequest(Request.Method.GET, url, null, Response.Listener { response ->
+            object : JsonArrayRequest(Method.GET, url, null, Response.Listener { response ->
                 try {
                     val gson = Gson()
                     val addressListType = object : TypeToken<List<Address>>() {}.type
@@ -396,7 +397,7 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        token = getShopperToken(requireContext())
+        token = getSessionToken(requireContext())
         uniqueRef = sharedPreferences.getString("uniqueReference", null)
         customerShopperToken = getShopperToken(requireContext())
         fetchAddressDetails()
@@ -407,7 +408,7 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
         val url = "${Base_Session_API_URL}${token}/shoppers/${uniqueRef}/addresses/$addressRef"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
         val jsonObjectAll =
-            object : JsonObjectRequest(Request.Method.DELETE, url, null, Response.Listener {
+            object : JsonObjectRequest(Method.DELETE, url, null, Response.Listener {
                 fetchAddressDetails()
             }, Response.ErrorListener { error ->
                 if (error is VolleyError && error.networkResponse != null && error.networkResponse.data != null) {

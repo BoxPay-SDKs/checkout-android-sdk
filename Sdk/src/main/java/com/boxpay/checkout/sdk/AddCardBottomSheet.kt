@@ -950,7 +950,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     binding.cvvLayout.background =
                         AppCompatResources.getDrawable(context!!, R.drawable.edittext_bg)
                     val cardCVV = binding.editTextCardCVV.text.toString()
-                    if (!isValidCVC(cardCVV.toInt())) {
+                    if (!isValidCVC(cardCVV)) {
                         binding.invalidCVV.visibility = View.VISIBLE
                         if (binding.editTextCardCVV.text.isNullOrEmpty()) {
                             binding.textView8.text = "Enter CVV"
@@ -1158,10 +1158,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         return result
     }
 
-    private fun isValidCVC(inputCVC: Int): Boolean {
-        val stringInputCVC = inputCVC.toString()
-        val result: Boolean = ((stringInputCVC.length >= 3) &&
-                (stringInputCVC.length <= 4))
+    private fun isValidCVC(inputCVC: String): Boolean {
+        val result: Boolean = ((inputCVC.length >= 3) &&
+                (inputCVC.length <= 4))
 
         if (!result)
             proceedButtonIsEnabled.value = false
@@ -1804,7 +1803,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         return (binding.nameOnCardErrorLayout.visibility == View.INVISIBLE || binding.nameOnCardErrorLayout.visibility == View.GONE) && (binding.ll1InvalidCardNumber.visibility == View.INVISIBLE || binding.ll1InvalidCardNumber.visibility == View.GONE) && (binding.invalidCardValidity.visibility == View.INVISIBLE || binding.invalidCardValidity.visibility == View.GONE) && (binding.invalidCVV.visibility == View.INVISIBLE || binding.invalidCVV.visibility == View.GONE) && binding.editTextCardCVV.text.isNotEmpty() && binding.editTextCardValidity.text.isNotEmpty() && binding.editTextNameOnCard.text.isNotEmpty() && binding.editTextCardNumber.text.isNotEmpty() && isValidCardNumberByLuhn(
             binding.editTextCardNumber.text.toString().replace("\\s".toRegex(), "")
         ) && isValidCVC(
-            binding.editTextCardCVV.text.toString().toInt()
+            binding.editTextCardCVV.text.toString()
         ) && binding.editTextCardValidity.text.length == 5 && isValidExpirationDate(
             binding.editTextCardValidity.text.toString().substring(0, 2),
             binding.editTextCardValidity.text.toString().substring(3, 5)
