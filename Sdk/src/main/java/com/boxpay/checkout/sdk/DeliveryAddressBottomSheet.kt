@@ -31,6 +31,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
+import androidx.core.view.isVisible
 import com.airbnb.lottie.LottieDrawable
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -161,15 +162,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.countryErrorText.visibility = View.INVISIBLE
                 }
-                if (isValidCountryName(countryCodeJson)) {
-                    if (toCheckAllFieldsAreFilled()) {
-                        enableProceedButton()
-                    } else {
-                        disableProceedButton()
-                    }
-                } else {
-                    disableProceedButton()
-                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -199,11 +191,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 binding.otherSaveAddressTextField.text = null
                 binding.otherSaveAddressTextField.visibility = View.GONE
                 labelType = "Home"
-                if (toCheckAllFieldsAreFilled()) {
-                    enableProceedButton()
-                } else {
-                    disableProceedButton()
-                }
             } else {
                 Toast.makeText(context, "Address already saved with Home", Toast.LENGTH_SHORT)
                     .show()
@@ -220,11 +207,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 binding.otherSaveAddressTextField.text = null
                 binding.otherSaveAddressTextField.visibility = View.GONE
                 labelType = "Work"
-                if (toCheckAllFieldsAreFilled()) {
-                    enableProceedButton()
-                } else {
-                    disableProceedButton()
-                }
             } else {
                 Toast.makeText(context, "Address already saved with Office", Toast.LENGTH_SHORT)
                     .show()
@@ -239,11 +221,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
             binding.otherSaveAddressTextField.visibility = View.VISIBLE
             labelType = "Other"
-            if (toCheckAllFieldsAreFilled()) {
-                enableProceedButton()
-            } else {
-                disableProceedButton()
-            }
         }
 
         binding.otherSaveAddressTextField.addTextChangedListener(object : TextWatcher {
@@ -253,11 +230,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 logAddressUpdatedEvent()
                 labelName = s.toString()
-                if (toCheckAllFieldsAreFilled()) {
-                    enableProceedButton()
-                } else {
-                    disableProceedButton()
-                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -279,15 +251,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     binding.mobileErrorText.visibility = View.VISIBLE
                 } else {
                     binding.mobileErrorText.visibility = View.INVISIBLE
-                }
-                if (inValidPhoneCode(countryCodeJson)) {
-                    if (toCheckAllFieldsAreFilled()) {
-                        enableProceedButton()
-                    } else {
-                        disableProceedButton()
-                    }
-                } else {
-                    disableProceedButton()
                 }
             }
 
@@ -312,28 +275,20 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                                 isPANFilled = true
                                 editor.putString("panNumberChosen", it.toString())
                                 editor.apply()
-                                if (toCheckAllFieldsAreFilled()) {
-                                    enableProceedButton()
-                                } else {
-                                    disableProceedButton()
-                                }
                             } else {
                                 binding.panErrorText.text = "Invalid PAN Number"
                                 binding.panErrorText.visibility = View.VISIBLE
                                 isPANFilled = false
-                                disableProceedButton()
                             }
                         } else {
                             binding.panErrorText.text = "PAN must be 10 characters"
                             binding.panErrorText.visibility = View.VISIBLE
                             isPANFilled = false
-                            disableProceedButton()
                         }
                     } else {
                         binding.panErrorText.text = "Required"
                         binding.panErrorText.visibility = View.VISIBLE
                         isPANFilled = false
-                        disableProceedButton()
                     }
                 }
             }
@@ -365,9 +320,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             minPhoneLength = phoneLength.first
             maxPhoneLength = phoneLength.second
             if (binding.mobileNumberEditText.text.isNotEmpty()) {
-                if (isMobileNumberValid() && toCheckAllFieldsAreFilled()) {
-                    enableProceedButton()
-                }
+                isMobileNumberValid()
             }
             if (countryCodePhoneNum.equals("+91", true)) {
                 binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
@@ -403,9 +356,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 if (binding.postalCodeEditText.text.isNotEmpty()) {
                     isPostalValid()
                 }
-                if (isMobileNumberValid()) {
-                    enableProceedButton()
-                }
+                isMobileNumberValid()
             }
         }
 
@@ -442,7 +393,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val countryName = sharedPreferences.getString("countryName", "India")
 
         binding.backButton.setOnClickListener() {
-            if (binding.proceedButton.isEnabled) {
+            if (!binding.mobileErrorText.isVisible && binding.mobileNumberEditText.text.toString().isNotEmpty()) {
                 editor.putString(
                     "phoneNumber",
                     "$countryCodePhoneNum${binding.mobileNumberEditText.text}"
@@ -478,9 +429,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             if (binding.postalCodeEditText.text.isNotEmpty()) {
                 isPostalValid()
             }
-            if (isMobileNumberValid()) {
-                enableProceedButton()
-            }
+            isMobileNumberValid()
         }
         phoneLength = getMinMaxLength(countryCodeJson, indexCountryPhone ?: countryCodePhoneNum)
         minPhoneLength = phoneLength.first
@@ -569,11 +518,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.emailEditText.isEnabled = isEmailEditable
         countryCodePhoneNum = indexCountryPhone ?: "+91"
         countrySelected = true
-        if (toCheckAllFieldsAreFilled()) {
-            enableProceedButton()
-        } else {
-            disableProceedButton()
-        }
+        enableProceedButton()
 
         if (!isNameEnabled && !isShippingEnabled) {
             binding.fullNameLayout.visibility = View.GONE
@@ -668,9 +613,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                         binding.spinnerDialCodes.setText(countryCodePhoneNum)
                         binding.spinnerDialCodes.dismissDropDown()
                     }
-                    if (isMobileNumberValid()) {
-                        enableProceedButton()
-                    }
+                    isMobileNumberValid()
                 }
             }
         }
@@ -712,9 +655,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                         minPhoneLength = phoneLength.first
                         maxPhoneLength = phoneLength.second
                         if (binding.mobileNumberEditText.text.isNotEmpty()) {
-                            if (isMobileNumberValid()) {
-                                enableProceedButton()
-                            }
+                            isMobileNumberValid()
                         }
                         if (countryCodePhoneNum.equals("+91", true)) {
                             binding.postalCodeEditText.inputType = InputType.TYPE_CLASS_NUMBER
@@ -755,11 +696,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     binding.fullNameEditText.background =
                         ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
                 }
-                if (toCheckAllFieldsAreFilled()) {
-                    enableProceedButton()
-                } else {
-                    disableProceedButton()
-                }
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -785,11 +721,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.mobileNumberEditText.background =
                         ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
-                    if (isMobileNumberValid()) {
-                        if (toCheckAllFieldsAreFilled()) {
-                            enableProceedButton()
-                        }
-                    }
+                    isMobileNumberValid()
                 }
 
             }
@@ -818,11 +750,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.emailEditText.background =
                         ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
-                    if (isEmailValid()) {
-                        if (toCheckAllFieldsAreFilled()) {
-                            enableProceedButton()
-                        }
-                    }
+                    isEmailValid()
                 }
             }
 
@@ -847,11 +775,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.addressEditText1.background =
                         ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
-                    if (isPrimaryAddressValid()) {
-                        if (toCheckAllFieldsAreFilled()) {
-                            enableProceedButton()
-                        }
-                    }
+                    isPrimaryAddressValid()
                 }
             }
 
@@ -901,11 +825,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.postalCodeEditText.background =
                         ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
-                    if (isPostalValid()) {
-                        if (toCheckAllFieldsAreFilled()) {
-                            enableProceedButton()
-                        }
-                    }
+                    isPostalValid()
                 }
             }
 
@@ -930,11 +850,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.stateEditText.background =
                         ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
-                    if (isStateValid()) {
-                        if (toCheckAllFieldsAreFilled()) {
-                            enableProceedButton()
-                        }
-                    }
+                    isStateValid()
                 }
             }
 
@@ -959,11 +875,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 } else {
                     binding.cityEditText.background =
                         ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
-                    if (isCityValid()) {
-                        if (toCheckAllFieldsAreFilled()) {
-                            enableProceedButton()
-                        }
-                    }
+                    isCityValid()
                 }
             }
 
@@ -988,80 +900,88 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
 
         binding.proceedButton.setOnClickListener() {
-            logAddressUpdatedEvent()
-            val fullName = binding.fullNameEditText.text
-            val mobileNumber = binding.mobileNumberEditText.text
-            val email = binding.emailEditText.text
-            val address1 = binding.addressEditText1.text
-            val address2 = binding.addressEditText2.text
-            val country = countrySelectedFromDropDown
-            val postalCode = binding.postalCodeEditText.text
-            val state = binding.stateEditText.text
-            var PAN: String? = null
-            var DOB: String? = null
-            if (binding.panEditText.text.toString().isNotEmpty()) {
-                PAN = binding.panEditText.text.toString()
-            }
-            if (binding.dobEditText.text.toString().isNotEmpty()) {
-                DOB = if (convertedDate != null) {
-                    convertedDate!!
-                } else {
-                    convertDateFormat(extractDateFromTimestamp(binding.dobEditText.text.toString()))!!
+            if(toCheckAllFieldsAreFilled()) {
+                logAddressUpdatedEvent()
+                val fullName = binding.fullNameEditText.text
+                val mobileNumber = binding.mobileNumberEditText.text
+                val email = binding.emailEditText.text
+                val address1 = binding.addressEditText1.text
+                val address2 = binding.addressEditText2.text
+                val country = countrySelectedFromDropDown
+                val postalCode = binding.postalCodeEditText.text
+                val state = binding.stateEditText.text
+                var PAN: String? = null
+                var DOB: String? = null
+                if (binding.panEditText.text.toString().isNotEmpty()) {
+                    PAN = binding.panEditText.text.toString()
                 }
-            }
-            val city = binding.cityEditText.text
-            val nameParts = fullName.split(" ")
+                if (binding.dobEditText.text.toString().isNotEmpty()) {
+                    DOB = if (convertedDate != null) {
+                        convertedDate!!
+                    } else {
+                        convertDateFormat(extractDateFromTimestamp(binding.dobEditText.text.toString()))!!
+                    }
+                }
+                val city = binding.cityEditText.text
+                val nameParts = fullName.split(" ")
 
-            val firstName = if (nameParts.size > 1) {
-                nameParts.dropLast(1).joinToString(" ")
+                val firstName = if (nameParts.size > 1) {
+                    nameParts.dropLast(1).joinToString(" ")
+                } else {
+                    nameParts[0]
+                }
+
+                val lastName = if (nameParts.size > 1) {
+                    nameParts.last()
+                } else {
+                    ""
+                }
+                editor.putString("address1", address1.toString())
+                editor.putString("address2", address2.toString())
+                editor.putString("city", city.toString())
+                editor.putString("state", state.toString())
+                editor.putString("countryCode", selectedCountryName)
+                editor.putString("postalCode", postalCode.toString())
+                editor.putString("firstName", firstName)
+                editor.putString("lastName", lastName)
+                editor.putString("email", email.toString())
+                editor.putString("phoneNumber", "$countryCodePhoneNum$mobileNumber")
+                editor.putString("phoneCode", countryCodePhoneNum)
+                editor.putString("countryName", country.toString())
+                editor.putString("indexCountryCodePhone", indexCountryCodePhone)
+                editor.putString("panNumber", PAN)
+                editor.putString("dateOfBirth", DOB)
+                editor.putString("labelType", labelType)
+                editor.putString("labelName", labelName)
+
+
+                editor.apply()
+
+                if (customerShopperToken != null && customerShopperToken != "" && isShippingEnabled && firstTime) {
+                    postSavedAddress()
+                } else if (customerShopperToken != null && customerShopperToken != "" && isShippingEnabled && !firstTime) {
+                    updateSavedAddress()
+                } else {
+                    callback?.updateBottomSheet()
+                    dismiss()
+                }
             } else {
-                nameParts[0]
-            }
-
-            val lastName = if (nameParts.size > 1) {
-                nameParts.last()
-            } else {
-                ""
-            }
-            editor.putString("address1", address1.toString())
-            editor.putString("address2", address2.toString())
-            editor.putString("city", city.toString())
-            editor.putString("state", state.toString())
-            editor.putString("countryCode", selectedCountryName)
-            editor.putString("postalCode", postalCode.toString())
-            editor.putString("firstName", firstName)
-            editor.putString("lastName", lastName)
-            editor.putString("email", email.toString())
-            editor.putString("phoneNumber", "$countryCodePhoneNum$mobileNumber")
-            editor.putString("phoneCode", countryCodePhoneNum)
-            editor.putString("countryName", country.toString())
-            editor.putString("indexCountryCodePhone", indexCountryCodePhone)
-            editor.putString("panNumber", PAN)
-            editor.putString("dateOfBirth", DOB)
-            editor.putString("labelType", labelType)
-            editor.putString("labelName", labelName)
-
-
-            editor.apply()
-
-            if (customerShopperToken != null && customerShopperToken != "" && isShippingEnabled && firstTime) {
-                postSavedAddress()
-            } else if (customerShopperToken != null && customerShopperToken != "" && isShippingEnabled && !firstTime) {
-                updateSavedAddress()
-            } else {
-                callback?.updateBottomSheet()
-                dismiss()
+                isValidPAN(binding.panEditText.text.toString())
+                isEmailValid()
+                isPrimaryAddressValid()
+                isPostalValid()
+                isCityValid()
+                isStateValid()
+                isMobileNumberValid()
             }
         }
 
         if (toCheckAllFieldsAreFilled()) {
             binding.textView.text =
                 if (isShippingEnabled) "Edit Address" else "Edit Personal Details"
-            enableProceedButton()
         } else {
             binding.textView.text =
                 if (isShippingEnabled) "Add New Address" else "Add Personal Details"
-            disableProceedButton()
         }
 
         return binding.root
@@ -1125,11 +1045,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 val formattedDate = formatDate(selectedYear, selectedMonth, selectedDay)
                 editText.setText(formattedDate)
                 isDobSelected = true
-                if (toCheckAllFieldsAreFilled()) {
-                    enableProceedButton()
-                } else {
-                    disableProceedButton()
-                }
                 binding.dobErrorText.visibility = View.INVISIBLE
                 convertedDate = convertDateFormat(formattedDate)
                 editor.putString("dateOfBirthChosen", convertToISO8601(formattedDate, 0, 0, 0))
@@ -1219,16 +1134,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         // Format the LocalDateTime to ISO 8601 string
         return isoFormatter.format(localDateTime)
     }
-
-
-    private fun disableProceedButton() {
-        binding.textView6.visibility = View.VISIBLE
-        binding.proceedButton.isEnabled = false
-        binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-        binding.proceedButton.setBackgroundResource(R.drawable.disable_button)
-        binding.textView6.setTextColor(Color.parseColor("#ADACB0"))
-    }
-
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
@@ -1492,26 +1397,24 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         return Pair(10, 10)
     }
 
-    fun isMobileNumberValid(): Boolean {
+    fun isMobileNumberValid() {
         val mobileNumber = binding.mobileNumberEditText.text
         if (mobileNumber.length !in minPhoneLength..maxPhoneLength || !mobileNumber.matches(
                 numberRegex
             )
         ) {
-            disableProceedButton()
             binding.mobileErrorText.text = if (mobileNumber.isEmpty()) {
                 "Required"
             } else {
                 "Mobile number must be $maxPhoneLength digits"
             }
             binding.mobileErrorText.visibility = View.VISIBLE
-            return false
+        } else {
+            binding.mobileErrorText.visibility = View.INVISIBLE
         }
-        binding.mobileErrorText.visibility = View.INVISIBLE
-        return true
     }
 
-    fun isEmailValid(): Boolean {
+    fun isEmailValid() {
         val email = binding.emailEditText.text
         if (!email.matches(emailRegex)) {
             binding.emailErrorText.text = if (email.isEmpty()) {
@@ -1520,14 +1423,12 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 "Invalid Email"
             }
             binding.emailErrorText.visibility = View.VISIBLE
-            disableProceedButton()
-            return false
+        } else  {
+            binding.emailErrorText.visibility = View.INVISIBLE
         }
-        binding.emailErrorText.visibility = View.INVISIBLE
-        return true
     }
 
-    fun isPostalValid(): Boolean {
+    fun isPostalValid() {
         val postalCode = binding.postalCodeEditText.text
         if (!countryCodePhoneNum.equals("+91", true) && postalCode.isEmpty()) {
             binding.postalCodeErrorText.text = if (postalCode.isEmpty()) {
@@ -1536,57 +1437,46 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 ""
             }
             binding.postalCodeErrorText.visibility = View.VISIBLE
-            disableProceedButton()
-            return false
         }
-        if (countryCodePhoneNum.equals("+91", true) && postalCode.length != 6) {
+        else if (countryCodePhoneNum.equals("+91", true) && postalCode.length != 6) {
             binding.postalCodeErrorText.text = if (postalCode.isEmpty()) {
                 "Required"
             } else {
                 "Zip/Postal code must be 6 digits"
             }
             binding.postalCodeErrorText.visibility = View.VISIBLE
-            disableProceedButton()
-            return false
         }
-        if (countryCodePhoneNum.equals("+91", true) && postalCode.length == 6) {
+        else if (countryCodePhoneNum.equals("+91", true) && postalCode.length == 6) {
             getPostalCodeDetails()
+            binding.postalCodeErrorText.visibility = View.INVISIBLE
         }
-        binding.postalCodeErrorText.visibility = View.INVISIBLE
-        return true
     }
 
-    fun isPrimaryAddressValid(): Boolean {
+    fun isPrimaryAddressValid() {
         val primaryAddress = binding.addressEditText1.text
         if (primaryAddress.isEmpty()) {
-            disableProceedButton()
             binding.address1ErrorText.visibility = View.VISIBLE
-            return false
+        } else {
+            binding.address1ErrorText.visibility = View.INVISIBLE
         }
-        binding.address1ErrorText.visibility = View.INVISIBLE
-        return true
     }
 
-    fun isStateValid(): Boolean {
+    fun isStateValid() {
         val primaryAddress = binding.stateEditText.text
         if (primaryAddress.isEmpty()) {
-            disableProceedButton()
             binding.stateErrorText.visibility = View.VISIBLE
-            return false
+        } else {
+            binding.stateErrorText.visibility = View.INVISIBLE
         }
-        binding.stateErrorText.visibility = View.INVISIBLE
-        return true
     }
 
-    fun isCityValid(): Boolean {
+    fun isCityValid() {
         val primaryAddress = binding.cityEditText.text
         if (primaryAddress.isEmpty()) {
-            disableProceedButton()
             binding.cityErrortext.visibility = View.VISIBLE
-            return false
+        } else {
+            binding.cityErrortext.visibility = View.INVISIBLE
         }
-        binding.cityErrortext.visibility = View.INVISIBLE
-        return true
     }
 
     fun inValidPhoneCode(countryCodeJson: JSONObject): Boolean {
@@ -1594,17 +1484,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             val countryDetails = countryCodeJson.getJSONObject(key)
             val code = countryDetails.getString("isdCode")
             if (code.equals(binding.spinnerDialCodes.text)) {
-                return true
-            }
-        }
-        return false
-    }
-
-    fun isValidCountryName(countryCodeJson: JSONObject): Boolean {
-        countryCodeJson.keys().forEach { key ->
-            val countryDetails = countryCodeJson.getJSONObject(key)
-            val code = countryDetails.getString("isdCode")
-            if (code.equals(binding.countryEditText.text.toString())) {
                 return true
             }
         }
