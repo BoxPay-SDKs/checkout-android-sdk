@@ -634,12 +634,6 @@
                                 android:layout_height="wrap_content"
                                 android:orientation="horizontal">
 
-                                <CheckBox
-                                    android:id="@+id/savedAddressCheckbox"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:checked="true"/>
-
                                 <TextView
                                     android:id="@+id/saveAddressText"
                                     android:layout_width="wrap_content"
@@ -728,6 +722,17 @@
                                 android:textColorHint="#7F7D83"
                                 android:textSize="14sp"
                                 tools:ignore="TouchTargetSizeCheck" />
+                            <TextView
+                                android:id="@+id/otherSavedAddressErrorText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="Required"
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
 
 
                         </LinearLayout>

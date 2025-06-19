@@ -517,6 +517,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         binding.mobileNumberEditText.isEnabled = isPhoneEditable
         binding.emailEditText.isEnabled = isEmailEditable
         countryCodePhoneNum = indexCountryPhone ?: "+91"
+        countrySelectedFromDropDown =
+            setCountryNameUsingPhoneCode(countryCodeJson, countryCodePhoneNum)
+        binding.countryEditText.setText(countrySelectedFromDropDown)
         countrySelected = true
         enableProceedButton()
 
@@ -554,17 +557,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
         if (!isShippingEnabled) {
             binding.addressLayout.visibility = View.GONE
-        }
-
-        binding.savedAddressCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            if (!isChecked) {
-                binding.savedAddressCheckbox.isChecked = true
-                Toast.makeText(
-                    context,
-                    "Newly added address will be saved as default.",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
         }
 
         binding.spinnerDialCodes.apply {
@@ -688,13 +680,13 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 logAddressUpdatedEvent()
                 if (s?.isEmpty() == true) {
-                    binding.fullNameErrorTex.visibility = View.VISIBLE
+                    isFullNameValid()
                     binding.fullNameEditText.background =
                         ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
                 } else {
-                    binding.fullNameErrorTex.visibility = View.INVISIBLE
                     binding.fullNameEditText.background =
                         ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
+                    isFullNameValid()
                 }
             }
 
@@ -973,6 +965,8 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 isCityValid()
                 isStateValid()
                 isMobileNumberValid()
+                isFullNameValid()
+                isOthersTextFieldValid()
             }
         }
 
@@ -1275,27 +1269,26 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         val isDOBSelected = isDobSelected
         val isLabelValid = !labelType.isNullOrBlank() &&
                 (!labelType.equals("other", true) || !labelName.isNullOrEmpty())
-        val isCheckboxChecked = binding.savedAddressCheckbox.isChecked
 
         return when {
             isShippingEnabled && !customerShopperToken.isNullOrEmpty() -> {
                 isFullNameFilled && isMobileNumberFilled && isEmailFilled && isAddressFilled &&
                         isPostalCodeFilled && isStateFilled && isCityFilled && isCountryValid &&
                         isMobileNumberValid && isEmailValid && isDialCodeValid &&
-                        isPANValid && isDOBSelected && isLabelValid && isCheckboxChecked
+                        isPANValid && isDOBSelected && isLabelValid
             }
 
             isShippingEnabled -> {
                 isFullNameFilled && isMobileNumberFilled && isEmailFilled && isAddressFilled &&
                         isPostalCodeFilled && isStateFilled && isCityFilled && isCountryValid &&
                         isMobileNumberValid && isEmailValid && isDialCodeValid &&
-                        isPANValid && isDOBSelected && isCheckboxChecked
+                        isPANValid && isDOBSelected
             }
 
             else -> {
                 isFullNameFilled && isMobileNumberFilled && isEmailFilled &&
                         isMobileNumberValid && isEmailValid && isDialCodeValid &&
-                        isPANValid && isDOBSelected && isCheckboxChecked
+                        isPANValid && isDOBSelected
             }
         }
     }
@@ -1467,6 +1460,24 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             binding.stateErrorText.visibility = View.VISIBLE
         } else {
             binding.stateErrorText.visibility = View.INVISIBLE
+        }
+    }
+
+    fun isFullNameValid() {
+        val fullName = binding.fullNameEditText.text
+        if (fullName.isEmpty()) {
+            binding.fullNameErrorTex.visibility = View.VISIBLE
+        } else {
+            binding.fullNameErrorTex.visibility = View.INVISIBLE
+        }
+    }
+
+    fun isOthersTextFieldValid() {
+        val otherTextField = binding.otherSaveAddressTextField.text
+        if (otherTextField.isEmpty() && labelType == "Other") {
+            binding.otherSavedAddressErrorText.visibility = View.VISIBLE
+        } else {
+            binding.otherSavedAddressErrorText.visibility = View.INVISIBLE
         }
     }
 
