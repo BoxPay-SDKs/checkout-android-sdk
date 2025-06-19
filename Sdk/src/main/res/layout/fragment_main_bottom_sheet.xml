@@ -1010,7 +1010,8 @@
                                         <ImageView
                                             android:id="@+id/popularUPIImageView1"
                                             android:layout_width="40dp"
-                                            android:layout_height="40dp" />
+                                            android:layout_height="40dp"
+                                            android:background="@drawable/loading_state"/>
 
                                         <TextView
                                             android:id="@+id/popularUPITextView1"
@@ -1034,7 +1035,8 @@
                                         <ImageView
                                             android:id="@+id/popularUPIImageView2"
                                             android:layout_width="40dp"
-                                            android:layout_height="40dp" />
+                                            android:layout_height="40dp"
+                                            android:background="@drawable/loading_state"/>
 
                                         <TextView
                                             android:id="@+id/popularUPITextView2"
@@ -1058,7 +1060,8 @@
                                         <ImageView
                                             android:id="@+id/popularUPIImageView3"
                                             android:layout_width="40dp"
-                                            android:layout_height="40dp" />
+                                            android:layout_height="40dp"
+                                            android:background="@drawable/loading_state"/>
 
                                         <TextView
                                             android:id="@+id/popularUPITextView3"

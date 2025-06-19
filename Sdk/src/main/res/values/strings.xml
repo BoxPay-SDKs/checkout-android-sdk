@@ -279,4 +279,6 @@
     <string name="cvv_placeholder">Enter CVV</string>
     <string name="card_name_text">Name on the Card</string>
     <string name="card_name_placeholder">Enter name on the card</string>
+    <string name="view_more_items"><u>View More Items</u></string>
+    <string name="view_less_items"><u>View Less Items</u></string>
 </resources>

@@ -330,7 +330,7 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
                                         )
                                     )
                                 ),
-                                alreadySavedAddressPostal = sharedPreferences.getString("postalCode","") ?: ""
+                                alreadySavedAddressPostal = sharedPreferences.getString("labelName","")?.takeIf { it.isNotBlank() } ?: sharedPreferences.getString("labelType","") ?: ""
                             )
                         }
                     }

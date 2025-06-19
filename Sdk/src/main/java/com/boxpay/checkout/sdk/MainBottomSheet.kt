@@ -1403,6 +1403,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
             imageView.setImageResource(R.drawable.phonepe_logo)
+            imageView.setBackgroundResource(0)
             textView.text = "PhonePe"
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
@@ -1417,6 +1418,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
             imageView.setImageResource(R.drawable.google_pay_seeklogo)
+            imageView.setBackgroundResource(0)
             textView.text = "GPay"
 
             getPopularConstraintLayoutByNum(i).setOnClickListener() {
@@ -1432,6 +1434,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
             imageView.setImageResource(R.drawable.paytm_upi_logo)
+            imageView.setBackgroundResource(0)
             textView.text = "Paytm"
 
             getPopularConstraintLayoutByNum(i).setOnClickListener() {

@@ -169,7 +169,7 @@ fun SavedAddressesScreen(
                             pinCode = it.postalCode,
                             number = it.phoneNumber,
                             selectedCtaColor = selectedCtaColor,
-                            isCurrentlySelected = it.postalCode.equals(alreadySavedAddressPostal, true),
+                            isCurrentlySelected = (it.labelName?.takeIf { it.isNotBlank() } ?: it.labelType ?: "").equals(alreadySavedAddressPostal, true),
                             addressIcon = when {
                                 it.labelType.equals("home", true) -> R.drawable.home_icon
                                 it.labelType.equals("work", true) -> R.drawable.ic_boxpay_saved_office_address

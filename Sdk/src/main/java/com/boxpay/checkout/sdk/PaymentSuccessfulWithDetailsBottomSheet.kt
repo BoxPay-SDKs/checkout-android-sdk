@@ -97,11 +97,11 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 if (!isViewMoreExpanded) {
                     tvProduct.maxLines = 1
                     tvProduct.ellipsize = TextUtils.TruncateAt.END
-                    viewMoreTextView.text = "View More Items"
+                    viewMoreTextView.setText(R.string.view_more_items)
                 } else {
                     tvProduct.maxLines = Integer.MAX_VALUE
                     tvProduct.ellipsize = null
-                    viewMoreTextView.text = "View Less Items"
+                    viewMoreTextView.setText(R.string.view_less_items)
                 }
             }
             proceedButtonRelativeLayout.setBackgroundColor(Color.parseColor(sharedPreferences.getString("primaryButtonColor","#000000")))
