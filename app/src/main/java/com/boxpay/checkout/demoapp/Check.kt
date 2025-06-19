@@ -183,23 +183,6 @@ class Check : AppCompatActivity() {
       "discountedAmount" : null,
       "amountWithoutTaxLocale" : "10",
       "amountWithoutTaxLocaleFull" : "10"
-    },{
-      "id" : "test",
-      "itemName" : "La Fille Regular Solid Handheld Bag Blue",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://assetscdn1.paytm.com/images/catalog/product/B/BA/BAGLAFILLE-BLUEINTO887307A255D05/1563381583133_0..jpg",
-      "categories" : null,
-      "amountWithoutTax" : 500,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
     }]
   },
   "frontendBackUrl" : "https://www.boxpay.tech",
