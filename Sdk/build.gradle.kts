@@ -91,7 +91,7 @@ dependencies {
     implementation("io.coil-kt:coil-svg:2.2.2")
     implementation("androidx.activity:activity-compose:1.5.1")
     implementation("com.github.simformsolutions:SSCustomEditTextOutLineBorder:1.0.16")
-
+    implementation("com.github.BoxPay-SDKs.cross-platform-sdk:cross-platform-sdk:1.0.0-beta19")
 }
 
 
