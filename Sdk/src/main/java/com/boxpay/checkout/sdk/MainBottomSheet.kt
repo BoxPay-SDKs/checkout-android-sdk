@@ -10,7 +10,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
-import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.PixelFormat
@@ -74,6 +73,8 @@ import com.boxpay.checkout.sdk.utils.getSessionApiUrl
 import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
+import com.boxpaybridge.android.UPIAppDetectorAndroid
+import com.boxpaybridge.shared.UPIService
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -115,7 +116,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var recommendedInstrumentationList = mutableListOf<Pair<String, String>>()
     private var uniqueReference: String? = null
     private var successScreenFullReferencePath: String? = null
-    private var UPIAppsAndPackageMap: MutableMap<String, String> = mutableMapOf()
     private var job: Job? = null
     private var isTablet = false
     private var showName = false
@@ -167,6 +167,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var firstLoad: Boolean = true
     private var productSummary: String? = null
     private var orderDetails: String? = null
+    private var installedApps : List<String> = emptyList()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -199,8 +200,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             }
             coroutine.invokeOnCompletion {
-                val packageManager = requireContext().packageManager
-                getAllInstalledApps(packageManager)
+                val upiDetector = UPIAppDetectorAndroid(context)
+                val upiService = UPIService(upiDetector)
+                installedApps = upiService.getAvailableApps()
+                populatePopularUPIApps()
             }
             firstLoad = false
         } else {
@@ -232,39 +235,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         isSuccessful = true
         dismiss()
     }
-
-    private fun getAllInstalledApps(packageManager: PackageManager) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val upiAppPackages = setOf(
-                "com.google.android.apps.nbu.paisa.user", // GPay
-                "com.phonepe.app",                        // PhonePe
-                "net.one97.paytm"                         // Paytm
-            )
-
-            val tempMap = mutableMapOf<String, String>()
-
-            try {
-                val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
-
-                for (app in apps) {
-                    val appName = packageManager.getApplicationLabel(app).toString()
-
-                    if (upiAppPackages.contains(app.packageName)) {
-                        tempMap[appName] = app.packageName
-                    }
-                }
-            } catch (e: Exception) {
-                callUiAnalyticWithSdkCrashEvent(e.message ?: "")
-            }
-
-            withContext(Dispatchers.Main) {
-                UPIAppsAndPackageMap.clear()
-                UPIAppsAndPackageMap.putAll(tempMap)
-                populatePopularUPIApps()
-            }
-        }
-    }
-
 
     private fun showLoadingState() {
         if (!binding.loadingRelativeLayout.isVisible) {
@@ -1399,7 +1369,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun populatePopularUPIApps() {
         var i = 1
-        if (UPIAppsAndPackageMap.containsKey("PhonePe")) {
+        if (installedApps.contains("phonepe")) {
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
             imageView.setImageResource(R.drawable.phonepe_logo)
@@ -1414,7 +1384,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             i++
         }
 
-        if (UPIAppsAndPackageMap.containsKey("GPay")) {
+        if (installedApps.contains("gpay")) {
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
             imageView.setImageResource(R.drawable.google_pay_seeklogo)
@@ -1430,7 +1400,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             i++
         }
 
-        if (UPIAppsAndPackageMap.containsKey("Paytm")) {
+        if (installedApps.contains("paytm")) {
             val imageView = getPopularImageViewByNum(i)
             val textView = getPopularTextViewByNum(i)
             imageView.setImageResource(R.drawable.paytm_upi_logo)
@@ -1748,7 +1718,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView20.typeface =
             ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
 
-        if (UPIAppsAndPackageMap.isNotEmpty()) {
+        if (installedApps.isNotEmpty()) {
             binding.popularUPIAppsConstraint.visibility = View.VISIBLE
         }
     }
