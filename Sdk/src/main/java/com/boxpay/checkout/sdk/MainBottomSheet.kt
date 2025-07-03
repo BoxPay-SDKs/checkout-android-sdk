@@ -73,10 +73,10 @@ import com.boxpay.checkout.sdk.utils.getSessionApiUrl
 import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
-import com.boxpaybridge.android.UPIAppDetectorAndroid
-import com.boxpaybridge.shared.UPIService
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.crossplatform.android.UPIAppDetectorAndroid
+import com.crossplatform.sdk.UPIService
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
