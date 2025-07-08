@@ -162,36 +162,6 @@
                         android:textColor="#B9232F"
                         android:textSize="12sp" />
                 </RelativeLayout>
-
-                <!-- Save UPI Section -->
-                <RelativeLayout
-                    android:id="@+id/save_upi_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:visibility="gone"> <!-- You toggle this in Kotlin -->
-
-                    <ImageView
-                        android:id="@+id/checkbox"
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_centerVertical="true"
-                        android:layout_alignParentStart="true"
-                        android:background="@drawable/check_box_bg" />
-
-                    <TextView
-                        android:id="@+id/textView3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_toEndOf="@+id/checkbox"
-                        android:layout_marginStart="4dp"
-                        android:layout_centerVertical="true"
-                        android:fontFamily="@font/poppins"
-                        android:gravity="center_vertical"
-                        android:text="Save UPI ID for future usage"
-                        android:textColor="#2D2B32"
-                        android:textSize="14sp" />
-                </RelativeLayout>
             </LinearLayout>
 
 

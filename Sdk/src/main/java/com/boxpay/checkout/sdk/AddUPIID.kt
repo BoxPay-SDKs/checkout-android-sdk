@@ -8,7 +8,6 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -25,7 +24,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.android.volley.VolleyError
@@ -68,7 +66,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     private lateinit var editor: SharedPreferences.Editor
     private var transactionId: String? = null
     private var shippingEnabled: Boolean = false
-    private var isCheckBoxClicked : Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -96,27 +93,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
             binding.progressBar.visibility = View.INVISIBLE
-            binding.checkbox.setOnClickListener() {
-                if (!binding.progressBar.isVisible) {
-                    if (!isCheckBoxClicked) {
-                        val backgroundDrawable = GradientDrawable().apply {
-                            shape = GradientDrawable.RECTANGLE
-                            cornerRadius = 16f // adjust corner radius as needed
-                            setColor(Color.parseColor(
-                                sharedPreferences.getString("primaryButtonColor", "#000000")
-                            )) // background color
-                        }
-                        binding.checkbox.background = backgroundDrawable
-                        binding.checkbox.setImageResource(R.drawable.checkbox) // image overlay
 
-                        isCheckBoxClicked = true
-                    } else {
-                        binding.checkbox.setImageResource(R.drawable.check_box_bg)
-                        binding.checkbox.setBackgroundColor(Color.TRANSPARENT)
-                        isCheckBoxClicked = false
-                    }
-                }
-            }
 
             fetchTransactionDetailsFromSharedPreferences()
 
@@ -288,7 +265,6 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     }
 
     private fun updateScreenView() {
-        binding.saveUpiLayout.isVisible = !shopperToken.isNullOrBlank()
         binding.proceedButton.isEnabled = false
         binding.ll1InvalidUPI.visibility = View.GONE
     }
@@ -462,7 +438,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 }
                 put("upi", upiObject)
                 if(!shopperToken.isNullOrEmpty()) {
-                    put("saveInstrument", isCheckBoxClicked)
+                    put("saveInstrument", true)
                 }
             }
             put("instrumentDetails", instrumentDetailsObject)
