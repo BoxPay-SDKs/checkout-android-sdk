@@ -24,7 +24,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.MutableLiveData
 import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Response
 import com.android.volley.VolleyError
@@ -60,7 +59,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     private var overlayViewCurrentBottomSheet: View? = null
     private lateinit var Base_Session_API_URL: String
     private var token: String? = null
-    private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
+    private var shopperToken : String? = null
     private var successScreenFullReferencePath: String? = null
     private var userVPA: String? = null
     private lateinit var sharedPreferences: SharedPreferences
@@ -92,42 +91,17 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             }
 
-
-            var checked = false
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
             binding.progressBar.visibility = View.INVISIBLE
-            binding.imageView3.setOnClickListener() {
-                if (!binding.progressBar.isVisible) {
-                    if (!checked) {
-                        binding.imageView3.setImageResource(R.drawable.checkbox)
-                        checked = true
-                    } else {
-                        binding.imageView3.setImageResource(0)
-                        checked = false
-                    }
-                }
-            }
-
-
-
-
 
 
             fetchTransactionDetailsFromSharedPreferences()
-
-
-            //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-            //testing purpose
-
-            //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
             binding.backButton.setOnClickListener() {
                 if (!binding.progressBar.isVisible) {
                     dismissAndMakeButtonsOfMainBottomSheetEnabled()
                 }
             }
-            binding.proceedButton.isEnabled = false
 
             binding.editText.addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(
@@ -163,7 +137,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                                     View.VISIBLE // Show specific error
                             } else {
                                 binding.ll1InvalidUPI.visibility =
-                                    View.INVISIBLE // Hide error if not matching condition
+                                    View.GONE // Hide error if not matching condition
                             }
                         }
                     }
@@ -174,11 +148,10 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     if (textNow.isBlank()) {
                         binding.proceedButtonRelativeLayout.isEnabled = false
                         binding.proceedButtonRelativeLayout.setBackgroundResource(R.drawable.disable_button)
-                        binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                        binding.ll1InvalidUPI.visibility = View.GONE
                     }
                 }
             })
-            binding.ll1InvalidUPI.visibility = View.INVISIBLE
 
             binding.proceedButton.setOnClickListener() {
                 userVPA = binding.editText.text.toString()
@@ -190,7 +163,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                 )
                 if (checkString(userVPA!!)) {
-                    binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                    binding.ll1InvalidUPI.visibility = View.GONE
                     validateAPICall(requireContext(), userVPA!!)
                     showLoadingInButton()
                 } else {
@@ -210,7 +183,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
         }
     }
 
-    fun checkString(input: String): Boolean {
+    private fun checkString(input: String): Boolean {
         val regex = Regex(".+@.+")
         return regex.matches(input)
     }
@@ -239,7 +212,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     val statusUserVPA = response.getBoolean("vpaValid")
 
                     if (statusUserVPA) {
-                        binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                        binding.ll1InvalidUPI.visibility = View.GONE
                         postRequest(requireContext(), userVPA)
                     } else {
                         binding.ll1InvalidUPI.visibility = View.VISIBLE
@@ -251,7 +224,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             },
             Response.ErrorListener { error ->
 
-                binding.ll1InvalidUPI.visibility = View.INVISIBLE
+                binding.ll1InvalidUPI.visibility = View.GONE
                 postRequest(requireContext(), userVPA)
 
             }) {
@@ -284,8 +257,16 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
         token = getSessionToken(requireContext())
+        shopperToken = getShopperToken(requireContext())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
+
+        updateScreenView()
+    }
+
+    private fun updateScreenView() {
+        binding.proceedButton.isEnabled = false
+        binding.ll1InvalidUPI.visibility = View.GONE
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -456,6 +437,9 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                     put("shopperVpa", userVPA)
                 }
                 put("upi", upiObject)
+                if(!shopperToken.isNullOrEmpty()) {
+                    put("saveInstrument", true)
+                }
             }
             put("instrumentDetails", instrumentDetailsObject)
 
@@ -583,8 +567,8 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
-                if (getShopperToken(context).isNotEmpty()) {
-                    headers["Authorization"] = "Session ${getShopperToken(requireContext())}"
+                if (!shopperToken.isNullOrEmpty()) {
+                    headers["Authorization"] = "Session $shopperToken"
                 }
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
@@ -687,7 +671,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             )
         )
-        binding.ll1InvalidUPI.visibility = View.INVISIBLE
+        binding.ll1InvalidUPI.visibility = View.GONE
         binding.textView6.setTextColor(
             Color.parseColor(
                 sharedPreferences.getString(
