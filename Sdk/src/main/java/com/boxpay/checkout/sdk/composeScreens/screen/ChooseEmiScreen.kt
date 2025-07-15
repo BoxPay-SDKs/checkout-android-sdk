@@ -96,7 +96,6 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import com.boxpay.checkout.sdk.R
 import com.boxpay.checkout.sdk.composeScreens.components.BankRow
-import com.boxpay.checkout.sdk.composeScreens.components.CardSecureRow
 import com.boxpay.checkout.sdk.composeScreens.components.CvvBottomSheet
 import com.boxpay.checkout.sdk.composeScreens.components.EmiAmountDetails
 import com.boxpay.checkout.sdk.composeScreens.components.ErrorRow
@@ -1234,12 +1233,12 @@ fun AddCardDetailsScreen(
                 errorText = "Invalid CVV"
             )
         }
-        CardSecureRow(
-            modifier = Modifier.constrainAs(footerEnd) {
-                end.linkTo(parent.end, 16.dp)
-                top.linkTo(cardNameInput.bottom, 14.dp)
-            }
-        )
+//        CardSecureRow(
+//            modifier = Modifier.constrainAs(footerEnd) {
+//                end.linkTo(parent.end, 16.dp)
+//                top.linkTo(cardNameInput.bottom, 14.dp)
+//            }
+//        )
         Button(
             enabled = allDetailsValid,
             onClick = { if (!showLoadingInButton) onProceedClick() },
@@ -1651,8 +1650,20 @@ fun RecommendedScreen(
     onClickChangeAddress: () -> Unit,
     toShowOnChangeAddressClick: Boolean,
     toShowAddress: Boolean,
-    toShowPersonal: Boolean
+    toShowPersonal: Boolean,
+    logoUrl: String
 ) {
+    val context = LocalContext.current
+    val imageLoader = ImageLoader.Builder(context)
+        .components {
+            add(SvgDecoder.Factory())
+        }
+        .build()
+
+    val painter = rememberAsyncImagePainter(
+        model = logoUrl,
+        imageLoader = imageLoader
+    )
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
         Card(
             modifier = Modifier
@@ -1863,7 +1874,7 @@ fun RecommendedScreen(
                     .size(32.dp)
                     .background(Color.White, RoundedCornerShape(4.dp))) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_upi),
+                        painter = painter,
                         contentDescription = "",
                         modifier = Modifier
                             .align(Alignment.Center)

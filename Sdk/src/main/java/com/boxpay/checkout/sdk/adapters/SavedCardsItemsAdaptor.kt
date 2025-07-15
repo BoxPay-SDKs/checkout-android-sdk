@@ -14,16 +14,16 @@ import androidx.recyclerview.widget.RecyclerView
 import coil.decode.SvgDecoder
 import coil.load
 import com.boxpay.checkout.sdk.R
-import com.boxpay.checkout.sdk.databinding.RecommendedRowItemBinding
-import com.boxpay.checkout.sdk.dataclasses.SavedRecommended
+import com.boxpay.checkout.sdk.databinding.SavedCardsRowItemBinding
+import com.boxpay.checkout.sdk.dataclasses.SavedCard
 
-class RecommendedItemsAdapter(
-    private val items: MutableList<SavedRecommended>,
+class SavedCardsItemsAdaptor(
+    private val items: MutableList<SavedCard>,
     private val recyclerView: RecyclerView,
     private val context: Context
-) : RecyclerView.Adapter<RecommendedItemsAdapter.RecommendedItemsViewHolder>() {
+) : RecyclerView.Adapter<SavedCardsItemsAdaptor.SavedCardsItemViewHolder>() {
     var checkPositionLiveData =
-        MutableLiveData(0)
+        MutableLiveData(RecyclerView.NO_POSITION)
     private var sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
 
@@ -34,13 +34,11 @@ class RecommendedItemsAdapter(
         }
     }
 
-    inner class RecommendedItemsViewHolder(val binding: RecommendedRowItemBinding) :
+    inner class SavedCardsItemViewHolder(val binding: SavedCardsRowItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(position: Int) {
             val radioButtonDrawable = binding.radioButton.background
-            val isLastPosition = position == items.size - 1
-            binding.divider.visibility = if (isLastPosition) View.GONE else View.VISIBLE
 
             // Check if the background drawable is a LayerDrawable
             if (radioButtonDrawable is LayerDrawable) {
@@ -59,9 +57,6 @@ class RecommendedItemsAdapter(
 
                 // Apply the modified drawable back to the radioButton ImageView
                 binding.radioButton.background = layerDrawable
-            }
-            if (position != 0) {
-                binding.belowTextImage.visibility = View.GONE
             }
             if (position == checkPositionLiveData.value) {
                 if (radioButtonDrawable is LayerDrawable) {
@@ -85,8 +80,13 @@ class RecommendedItemsAdapter(
                 binding.radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
             }
             binding.apply {
-                binding.recomededItemText.text = items[position].displayValue
-                recomendedLogo.load(items[position].logoUrl){
+                if(items[position].cardHolderName == null) {
+                    savedCardHolderName.visibility = View.GONE
+                } else {
+                    savedCardHolderName.text = items[position].cardHolderName
+                }
+                savedCardNumber.text = items[position].cardNumber
+                savedCardLogo.load(items[position].cardIcon){
                     decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
                     size(70, 70)
                 }
@@ -97,9 +97,9 @@ class RecommendedItemsAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecommendedItemsViewHolder {
-        return RecommendedItemsViewHolder(
-            RecommendedRowItemBinding.inflate(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SavedCardsItemViewHolder {
+        return SavedCardsItemViewHolder(
+            SavedCardsRowItemBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
                 false
@@ -111,7 +111,7 @@ class RecommendedItemsAdapter(
         return items.size
     }
 
-    override fun onBindViewHolder(holder: RecommendedItemsViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: SavedCardsItemViewHolder, position: Int) {
         holder.bind(position)
     }
 
@@ -121,7 +121,7 @@ class RecommendedItemsAdapter(
             val previousCheckedViewHolder =
                 recyclerView.findViewHolderForAdapterPosition(
                     checkPositionLiveData.value ?: 0
-                ) as? RecommendedItemsViewHolder
+                ) as? SavedCardsItemViewHolder
             previousCheckedViewHolder?.binding?.radioButton?.setBackgroundResource(
                 R.drawable.custom_radio_unchecked
             )
@@ -152,7 +152,7 @@ class RecommendedItemsAdapter(
 
 //             Change the background of the clicked RadioButton
             val clickedViewHolder =
-                recyclerView.findViewHolderForAdapterPosition(position) as? RecommendedItemsViewHolder
+                recyclerView.findViewHolderForAdapterPosition(position) as? SavedCardsItemViewHolder
             clickedViewHolder?.binding?.radioButton?.setBackgroundResource(
                 R.drawable.custom_radio_checked
             )

@@ -747,7 +747,8 @@ fun CvvBottomSheet(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF000000).copy(0.8f)).clickable { onClickBack() },
+            .background(Color(0xFF000000).copy(0.8f))
+            .clickable { onClickBack() },
         contentAlignment = Alignment.BottomCenter
     ) {
         Column(
@@ -967,5 +968,103 @@ fun ErrorRow(modifier: Modifier, errorText: String) {
             modifier = Modifier
                 .padding(start = 2.dp)
         )
+    }
+}
+
+@Composable
+fun KnowMoreBottomSheet(
+    selectedColor:Color,
+    selectedTextColor: Color,
+    onClickBack: () -> Unit,
+    instructions: List<Pair<Int, String>>
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF000000).copy(0.8f))
+            .clickable { onClickBack() },
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .background(Color.White)
+                .clickable(enabled = false) {
+                    // no op
+                }
+        ) {
+            Text(
+                text = "RBI Guidelines",
+                style = TextStyle(
+                    fontFamily = defaultFontFamily,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight(600)
+                ),
+                color = Color(0xFF2D2B32),
+                modifier = Modifier
+                    .padding(start = 16.dp, top = 20.dp)
+            )
+            Text(
+                text = "As per the new RBI guidelines, we can no longer store your card information with us.",
+                style = TextStyle(
+                    fontFamily = defaultFontFamily,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight(400)
+                ),
+                color = Color(0xFF2D2B32),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 12.dp, end = 16.dp)
+            )
+            instructions.map {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 28.dp, start = 16.dp, end = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = it.first),
+                        contentDescription = ""
+                    )
+                    Text(
+                        text = it.second,
+                        style = TextStyle(
+                            fontFamily = defaultFontFamily,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(400)
+                        ),
+                        color = Color(0xFF4F4D55),
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                    )
+                }
+            }
+            Button(
+                onClick = { onClickBack() },
+                modifier = Modifier
+                    .padding(top = 40.dp, start = 16.dp, end = 16.dp, bottom = 20.dp)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = selectedColor
+                )
+            ) {
+                Text(
+                    text = "Got it",
+                    style = TextStyle(
+                        fontFamily = defaultFontFamily,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight(600)
+                    ),
+                    color = selectedTextColor,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }

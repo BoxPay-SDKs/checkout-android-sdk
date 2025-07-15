@@ -122,13 +122,13 @@ class Check : AppCompatActivity() {
   "context" : {
     "countryCode" : "IN",
     "legalEntity" : {
-      "code" : "razorpay"
+      "code" : "payu"
     },
     "orderId" : "test12"
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "65000",
+    "amount" : "550",
     "currencyCode" : "INR"
   },
   "descriptor" : {
@@ -140,7 +140,7 @@ class Check : AppCompatActivity() {
             "gender": null,
             "phoneNumber": "+919911103562",
             "email": "ishika.bansal@boxpay.tech",
-            "uniqueReference": "x123y",
+            "uniqueReference": "123y",
             "deliveryAddress": {
                 "address1": "wz-5 street no 1",
                 "address2": "ramgarh colony moti nagar",
