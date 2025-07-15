@@ -3,6 +3,7 @@ package com.boxpay.checkout.sdk.utils
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import org.json.JSONArray
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -65,3 +66,10 @@ fun getShopperToken(context: Context) : String {
     val sharedPreferences = context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
     return sharedPreferences.getString("shopperToken", null) ?: ""
 }
+
+fun getValueAtIndexByKey(jsonArray: JSONArray, key: String, index:Int) : String? {
+    return jsonArray.optJSONObject(index).optString(key)
+}
+
+fun String?.clean(): String? =
+    this?.trim()?.takeIf { it.isNotEmpty() && it.lowercase() != "null" }

@@ -64,16 +64,19 @@ import com.boxpay.checkout.sdk.adapters.SavedCardsItemsAdaptor
 import com.boxpay.checkout.sdk.composeScreens.screen.RecommendedScreen
 import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.SavedCard
+import com.boxpay.checkout.sdk.dataclasses.SavedRecommended
 import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
+import com.boxpay.checkout.sdk.utils.clean
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl
 import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.boxpay.checkout.sdk.utils.getShopperToken
+import com.boxpay.checkout.sdk.utils.getValueAtIndexByKey
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -115,8 +118,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var overlayViewCurrentBottomSheet: View? = null
     private var token: String? = null
     private var customerShopperToken: String? = null
-    private var recommendedInstrumentationList = mutableListOf<Pair<String, String>>()
-    private var savedCardsInstumentationList = mutableListOf<SavedCard>()
+    private var recommendedInstrumentationList = mutableListOf<SavedRecommended>()
+    private var savedCardsInstrumentationList = mutableListOf<SavedCard>()
     private var uniqueReference: String? = null
     private var successScreenFullReferencePath: String? = null
     private var job: Job? = null
@@ -702,7 +705,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
 
             val savedCardsInstrumentAdaptor = SavedCardsItemsAdaptor(
-                savedCardsInstumentationList, binding.savedCardsRecyclerView,context
+                savedCardsInstrumentationList, binding.savedCardsRecyclerView,context
             )
             binding.savedCardsRecyclerView.layoutManager = LinearLayoutManager(context)
             binding.savedCardsRecyclerView.adapter = savedCardsInstrumentAdaptor
@@ -765,7 +768,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             savedCardsInstrumentAdaptor.checkPositionLiveData.observe(viewLifecycleOwner) { checkedPositon ->
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    println("==========checkedpositoiin $checkedPositon")
                     savedCardsCheckedPosition = checkedPositon
                     if (savedCardsCheckedPosition != null && savedCardsCheckedPosition != RecyclerView.NO_POSITION) {
                         binding.recommendedProceedButton.visibility = View.VISIBLE
@@ -793,24 +795,28 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.recommendedProceedButton.setOnClickListener {
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    if (binding.recomendedRecyclerView.isVisible){
-                    recommendedCheckedPosition =
-                        if (recommendedCheckedPosition == null) 0 else recommendedCheckedPosition
                     callUIAnalytics(
                         context = context,
                         message = "",
                         screenName = "Main Bottom Sheet in function click listener on recommendedproceedbutton",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                     )
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        postRecommendedInstruments(
-                            "upi/collect",
-                            recommendedInstrumentationList[recommendedCheckedPosition!!].first,
-                            recommendedInstrumentationList[recommendedCheckedPosition!!].second
-                        )
-                    }
+                    if (binding.recomendedRecyclerView.isVisible) {
+                        recommendedCheckedPosition = recommendedCheckedPosition ?: 0
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            postRecommendedInstruments(
+                                if(recommendedInstrumentationList[recommendedCheckedPosition!!].type.equals("upi", true))"upi/collect" else "card/token",
+                                recommendedInstrumentationList[recommendedCheckedPosition!!].instrumentationRef ?: "",
+                                recommendedInstrumentationList[recommendedCheckedPosition!!].displayValue ?: ""
+                            )
+                        }
                     } else {
-                        // todo add api call for saved cards
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            postRecommendedInstruments(
+                                "card/token",
+                                savedCardsInstrumentationList[savedCardsCheckedPosition!!].instrumentationRef ?: ""
+                            )
+                        }
                     }
                 }
             }
@@ -888,10 +894,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     hideRecommendedOptions()
                     upiOptionsShown = false
                     hideUPIOptions()
-                    if (savedCardsInstumentationList.isEmpty()) {
+                    if (savedCardsInstrumentationList.isEmpty()) {
                         binding.cardConstraint.isEnabled = false
                         logMainBottomSheetUiEvents()
-                        openAddCardBottomSheet()
                         openAddCardBottomSheet()
                     } else {
                         showCardOptions()
@@ -1359,39 +1364,34 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     // Map each element in the JSONArray
                     if (jsonArray != emptyArray<Objects>()) {
                         (0 until minOf(2, jsonArray.length())).map { index ->
-                            val instrumentationRef =
-                                jsonArray.getJSONObject(index)
-                                    .getString("instrumentRef")
-                            val displayValue =
-                                jsonArray.getJSONObject(index)
-                                    .getString("displayValue")
-                            val pair = Pair(
-                                instrumentationRef, displayValue
-                            )
-                            recommendedInstrumentationList.add(pair)
-                        }
-                        val savedCardsList = listOf(
-                            SavedCard(
-                                cardIcon = R.drawable.ic_boxpay_mastercard,
-                                cardNumber = "***9959 | Secured",
-                                cardHolderName = "Vedant  Axis Sapphiro",
-                                instrumentationRef = ""
-                            ),
-                            SavedCard(
-                                cardIcon = R.drawable.ic_boxpay_visa,
-                                cardNumber = "****2002 | Secured",
-                                cardHolderName = "Raina Kotak Debit",
-                                instrumentationRef = ""
-                            ),
-                            SavedCard(
-                                cardIcon = R.drawable.ic_boxpay_visa,
-                                cardNumber = "**** 3411 | Secured",
-                                cardHolderName = "Axis Credit Card",
-                                instrumentationRef = ""
-                            )
-                        )
-                        savedCardsList.map {
-                            savedCardsInstumentationList.add(it)
+                            val instrumentType = getValueAtIndexByKey(jsonArray, "type", index)
+                            val instrumentationRef = getValueAtIndexByKey(jsonArray, "instrumentRef", index)
+                            val displayValue = getValueAtIndexByKey(jsonArray, "displayValue", index)
+                            val logoUrl = getValueAtIndexByKey(jsonArray, "logoUrl", index)
+                            if(recommendedInstrumentationList.size < 2) {
+                                recommendedInstrumentationList.add(SavedRecommended(
+                                    instrumentationRef = instrumentationRef,
+                                    displayValue = displayValue,
+                                    logoUrl = logoUrl,
+                                    type = instrumentType
+                                ))
+                            }
+                            if(instrumentType.equals("card", true)) {
+                                val cardIssuer = getValueAtIndexByKey(jsonArray, "issuer", index)
+                                val cardHolderName = getValueAtIndexByKey(jsonArray, "holderName", index)
+                                val cardType = getValueAtIndexByKey(jsonArray, "classification", index)
+                                val issuer     = cardIssuer.clean()
+                                val holderName = cardHolderName.clean()
+                                val displayHolder = listOfNotNull(holderName, issuer)
+                                    .joinToString(" ")
+                                    .ifBlank { null }
+                                savedCardsInstrumentationList.add(SavedCard(
+                                    cardHolderName = displayHolder,
+                                    cardNumber = cardType?.takeIf { it.isNotBlank() }?.let { "$displayValue | $it" } ?: displayValue ,
+                                    instrumentationRef = instrumentationRef,
+                                    cardIcon = logoUrl
+                                ))
+                            }
                         }
                         if (recommendedInstrumentationList.isNotEmpty() && binding.upiLinearLayout.isVisible) {
                             binding.recommendedCardView.visibility = View.VISIBLE
@@ -2864,7 +2864,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun postRecommendedInstruments(type: String, instrumentationRef: String, displayName: String) {
+    fun postRecommendedInstruments(type: String, instrumentationRef: String, displayName: String? = null) {
         showLoadingState()
         val requestQueue = Volley.newRequestQueue(context)
 
@@ -2891,10 +2891,17 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val instrumentDetailsObject = JSONObject().apply {
                 put("type", type)
 
-                val upiObject = JSONObject().apply {
-                    put("instrumentRef", instrumentationRef)
-                }
-                put("upi", upiObject)
+               if(type.contains("upi", true)) {
+                   val upiObject = JSONObject().apply {
+                       put("instrumentRef", instrumentationRef)
+                   }
+                   put("upi", upiObject)
+               } else {
+                   val savedCardObject = JSONObject().apply {
+                       put("instrumentRef", instrumentationRef)
+                   }
+                   put("savedCard", savedCardObject)
+               }
             }
             put("instrumentDetails", instrumentDetailsObject)
 
@@ -2971,7 +2978,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     if (status.contains("RequiresAction", ignoreCase = true)) {
                         editor.putString("status", "RequiresAction")
                         editor.apply()
-                        showWebOrTimerScreen(this, response, displayName, {
+                        showWebOrTimerScreen(this, response, displayName ?: "", {
                             initiateFetchStatusCall()
                         })
                     } else if (status.contains("Approved", ignoreCase = true)) {
@@ -3456,9 +3463,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 sessionTimer = object : CountDownTimer(timeDifference, 1000) {
 
                     override fun onTick(millisUntilFinished: Long) {
-                        val secondsRemaining = millisUntilFinished / 1000 // Convert milliseconds to seconds
-                        val minutesRemaining = secondsRemaining / 60
-                        println("Time remaining: $minutesRemaining : $secondsRemaining  minute(s)")
+                        // no changes required
                     }
 
                     override fun onFinish() {
@@ -3552,7 +3557,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     "currencySymbol",
                     "₹"
                 ) ?: "",
-                lastUsedUpi = recommendedInstrumentationList[0].second,
+                lastUsedUpi = recommendedInstrumentationList[0].displayValue ?: "",
+                logoUrl = recommendedInstrumentationList[0].logoUrl ?: "",
                 onClickMoreOptions = {
                     moreOptionsClicked = true
                     binding.linearLayoutMain.visibility = View.VISIBLE
@@ -3591,9 +3597,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.swipeLoader.visibility = View.VISIBLE
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         postRecommendedInstruments(
-                            "upi/collect",
-                            recommendedInstrumentationList[0].first,
-                            recommendedInstrumentationList[0].second
+                            if(recommendedInstrumentationList[0].type.equals("upi", true))"upi/collect" else "card/token",
+                            recommendedInstrumentationList[0].instrumentationRef ?: "",
+                            recommendedInstrumentationList[0].displayValue ?: ""
                         )
                     }
                 },

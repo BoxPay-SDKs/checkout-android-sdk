@@ -11,11 +11,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
+import coil.decode.SvgDecoder
+import coil.load
 import com.boxpay.checkout.sdk.R
 import com.boxpay.checkout.sdk.databinding.RecommendedRowItemBinding
+import com.boxpay.checkout.sdk.dataclasses.SavedRecommended
 
 class RecommendedItemsAdapter(
-    private val items: MutableList<Pair<String, String>>,
+    private val items: MutableList<SavedRecommended>,
     private val recyclerView: RecyclerView,
     private val context: Context
 ) : RecyclerView.Adapter<RecommendedItemsAdapter.RecommendedItemsViewHolder>() {
@@ -82,7 +85,11 @@ class RecommendedItemsAdapter(
                 binding.radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
             }
             binding.apply {
-                binding.recomededItemText.text = items[position].second
+                binding.recomededItemText.text = items[position].displayValue
+                recomendedLogo.load(items[position].logoUrl){
+                    decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
+                    size(70, 70)
+                }
             }
             binding.root.setOnClickListener {
                 handleRadioButtonClick(adapterPosition, binding.radioButton)

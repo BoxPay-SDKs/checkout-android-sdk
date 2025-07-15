@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.lifecycle.MutableLiveData
@@ -79,11 +80,15 @@ class SavedCardsItemsAdaptor(
                 binding.radioButton.setBackgroundResource(R.drawable.custom_radio_unchecked)
             }
             binding.apply {
-                savedCardHolderName.text = items[position].cardHolderName
+                if(items[position].cardHolderName == null) {
+                    savedCardHolderName.visibility = View.GONE
+                } else {
+                    savedCardHolderName.text = items[position].cardHolderName
+                }
                 savedCardNumber.text = items[position].cardNumber
                 savedCardLogo.load(items[position].cardIcon){
                     decoderFactory{result,options,_ -> SvgDecoder(result.source,options) }
-                    size(80, 80)
+                    size(70, 70)
                 }
             }
             binding.root.setOnClickListener {

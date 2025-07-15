@@ -74,6 +74,7 @@ import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl
 import com.boxpay.checkout.sdk.utils.getSessionToken
+import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -100,8 +101,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private lateinit var viewModel: DismissViewModel
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private lateinit var Base_Session_API_URL: String
-    private lateinit var requestQueue: RequestQueue
     private var token: String? = null
+    private var shopperToken:String? = null
+    private var isSavedCheckboxClicked : Boolean = false
     private var cardNumber: String? = null
     private var cardExpiryYYYY_MM: String? = null
     private var job: Job? = null
@@ -450,23 +452,17 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
         }
         proceedButtonIsEnabled.value = false
 
-        var checked = false
         binding.progressBar.visibility = View.INVISIBLE
         binding.ll1InvalidCardNumber.visibility = View.INVISIBLE
         binding.invalidCardValidity.visibility = View.INVISIBLE
         binding.invalidCVV.visibility = View.INVISIBLE
-        binding.saveCardLinearLayout.setOnClickListener {
+
+        binding.savedCheckbox.setOnClickListener {
             if (!binding.progressBar.isVisible) {
-                if (!checked) {
-                    binding.imageView3.setImageResource(R.drawable.checkbox)
-                    checked = true
-                } else {
-                    binding.imageView3.setImageResource(0)
-                    checked = false
-                }
+                isSavedCheckboxClicked = !isSavedCheckboxClicked
             }
         }
-
+        binding.saveCardRow.isVisible = !shopperToken.isNullOrEmpty()
 
         binding.backButton.setOnClickListener {
             if (!binding.progressBar.isVisible && !binding.loadingLayout.isVisible) {
@@ -833,8 +829,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 val textNow = s.toString()
                 if (textNow.isBlank()) {
                     isNameOnCardValid = false
-                    binding.nameOnCardErrorLayout.visibility = View.INVISIBLE
+                    binding.nameOnCardErrorLayout.visibility = View.VISIBLE
                     proceedButtonIsEnabled.value = false
+                } else {
+                    isNameOnCardValid = true
+                    binding.nameOnCardErrorLayout.visibility = View.GONE
                 }
                 callUIAnalytics(
                     context = requireContext(),
@@ -842,20 +841,11 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     screenName = "AddCardBottomSheet",
                     uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
                 )
+                enableProceedButton()
             }
 
             override fun afterTextChanged(s: Editable?) {
-
-                val textNow = s.toString()
-                if (textNow.isBlank()) {
-                    isNameOnCardValid = false
-                    binding.nameOnCardErrorLayout.visibility = View.VISIBLE
-                    proceedButtonIsEnabled.value = false
-                } else {
-                    isNameOnCardValid = true
-                    binding.nameOnCardErrorLayout.visibility = View.INVISIBLE
-                }
-                enableProceedButton()
+                // no changes required
             }
         })
 
@@ -1400,6 +1390,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
         token = getSessionToken(requireContext())
+        shopperToken = getShopperToken(requireContext())
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }
@@ -1451,6 +1442,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     // Replace with the actual shopper VPA value
                 }
                 put("card", cardObject)
+                if(!shopperToken.isNullOrEmpty()) {
+                    put("saveInstrument", isSavedCheckboxClicked)
+                }
             }
             put("instrumentDetails", instrumentDetailsObject)
 
@@ -1589,6 +1583,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
                 headers["X-Request-Id"] = generateRandomAlphanumericString(10)
+                if (!shopperToken.isNullOrEmpty()) {
+                    headers["Authorization"] = "Session $shopperToken"
+                }
                 headers["X-Client-Connector-Name"] = "Android SDK"
                 headers["X-Client-Connector-Version"] = BuildConfig.SDK_VERSION
                 return headers

@@ -51,6 +51,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/poppins"
             android:gravity="center"
+            android:layout_marginStart="12dp"
             android:textColor="#4F4D55"
             android:visibility="visible"
             android:text="***9959 | Secured"
@@ -58,7 +59,7 @@
             android:textSize="12sp"
             app:layout_constraintTop_toBottomOf="@+id/savedCardHolderName"
             app:layout_constraintBottom_toBottomOf="@+id/savedCardLogo"
-            app:layout_constraintStart_toStartOf="@+id/savedCardHolderName" />
+            app:layout_constraintStart_toEndOf="@+id/savedCardLogo" />
         <View
             android:id="@+id/divider"
             android:layout_width="match_parent"

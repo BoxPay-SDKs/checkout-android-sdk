@@ -1650,8 +1650,20 @@ fun RecommendedScreen(
     onClickChangeAddress: () -> Unit,
     toShowOnChangeAddressClick: Boolean,
     toShowAddress: Boolean,
-    toShowPersonal: Boolean
+    toShowPersonal: Boolean,
+    logoUrl: String
 ) {
+    val context = LocalContext.current
+    val imageLoader = ImageLoader.Builder(context)
+        .components {
+            add(SvgDecoder.Factory())
+        }
+        .build()
+
+    val painter = rememberAsyncImagePainter(
+        model = logoUrl,
+        imageLoader = imageLoader
+    )
     Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
         Card(
             modifier = Modifier
@@ -1862,7 +1874,7 @@ fun RecommendedScreen(
                     .size(32.dp)
                     .background(Color.White, RoundedCornerShape(4.dp))) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_upi),
+                        painter = painter,
                         contentDescription = "",
                         modifier = Modifier
                             .align(Alignment.Center)
