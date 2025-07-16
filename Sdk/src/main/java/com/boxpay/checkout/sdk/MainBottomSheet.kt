@@ -61,6 +61,7 @@ import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.OrderSummaryItemsAdapter
 import com.boxpay.checkout.sdk.adapters.RecommendedItemsAdapter
 import com.boxpay.checkout.sdk.adapters.SavedCardsItemsAdaptor
+import com.boxpay.checkout.sdk.adapters.SavedUpiItemsAdaptor
 import com.boxpay.checkout.sdk.composeScreens.screen.RecommendedScreen
 import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.SavedCard
@@ -120,6 +121,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var customerShopperToken: String? = null
     private var recommendedInstrumentationList = mutableListOf<SavedRecommended>()
     private var savedCardsInstrumentationList = mutableListOf<SavedCard>()
+    private var savedUpiInstrumentationList = mutableListOf<SavedRecommended>()
     private var uniqueReference: String? = null
     private var successScreenFullReferencePath: String? = null
     private var job: Job? = null
@@ -128,6 +130,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var labelType: String? = null
     private var labelName: String? = null
     private var recommendedCheckedPosition: Int? = null
+    private var savedUpiCheckedPosition : Int? = null
     private var savedCardsCheckedPosition :Int? = null
     private var showEmail = false
     private var moreOptionsClicked: Boolean? = null
@@ -699,7 +702,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
             val recommendedInstrumentsAdapter = RecommendedItemsAdapter(
-                recommendedInstrumentationList, binding.recomendedRecyclerView, requireContext()
+                recommendedInstrumentationList, requireContext()
             )
             binding.recomendedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
             binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
@@ -709,6 +712,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             )
             binding.savedCardsRecyclerView.layoutManager = LinearLayoutManager(context)
             binding.savedCardsRecyclerView.adapter = savedCardsInstrumentAdaptor
+
+            val savedUpiInstrumentAdaptor = SavedUpiItemsAdaptor(
+                savedUpiInstrumentationList, requireContext()
+            )
+            binding.savedUpiRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            binding.savedUpiRecyclerView.adapter = savedUpiInstrumentAdaptor
 
             binding.orderSummaryConstraintLayout.setOnClickListener { // Toggle visibility of the price break-up card
                 if (!binding.loadingRelativeLayout.isVisible) {
@@ -727,10 +736,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     upiOptionsShown = false
                     hideUPIOptions()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
+                    savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
                     if (binding.recomendedOptionsLinearLayout.isVisible) {
-                        recommendedInstrumentsAdapter.checkPositionLiveData.value =
-                            RecyclerView.NO_POSITION
                         hideRecommendedOptions()
                     } else {
                         showRecommendedOptions()
@@ -743,24 +751,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     recommendedCheckedPosition = checkedPositon
                     if (recommendedCheckedPosition != null && recommendedCheckedPosition != RecyclerView.NO_POSITION) {
                         logMainBottomSheetUiEvents()
-                        binding.recommendedProceedButton.visibility = View.VISIBLE
-                        binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-                        binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
-                            Color.parseColor(
-                                sharedPreferences.getString(
-                                    "primaryButtonColor",
-                                    "#000000"
-                                )
-                            )
-                        )
-                        binding.proceedtext.setTextColor(
-                            Color.parseColor(
-                                sharedPreferences.getString(
-                                    "buttonTextColor",
-                                    "#ffffff"
-                                )
-                            )
-                        )
+                        enableRecommendedProceedButton()
                         binding.recommendedProceedButton.isEnabled = true
                     }
                 }
@@ -770,24 +761,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!binding.loadingRelativeLayout.isVisible) {
                     savedCardsCheckedPosition = checkedPositon
                     if (savedCardsCheckedPosition != null && savedCardsCheckedPosition != RecyclerView.NO_POSITION) {
-                        binding.recommendedProceedButton.visibility = View.VISIBLE
-                        binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
-                        binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
-                            Color.parseColor(
-                                sharedPreferences.getString(
-                                    "primaryButtonColor",
-                                    "#000000"
-                                )
-                            )
-                        )
-                        binding.proceedtext.setTextColor(
-                            Color.parseColor(
-                                sharedPreferences.getString(
-                                    "buttonTextColor",
-                                    "#ffffff"
-                                )
-                            )
-                        )
+                        logMainBottomSheetUiEvents()
+                        enableRecommendedProceedButton()
+                        binding.recommendedProceedButton.isEnabled = true
+                    }
+                }
+            }
+
+            savedUpiInstrumentAdaptor.checkPositionLiveData.observe(viewLifecycleOwner) { checkedPositon ->
+                if (!binding.loadingRelativeLayout.isVisible) {
+                    savedUpiCheckedPosition = checkedPositon
+                    if (savedUpiCheckedPosition != null && savedUpiCheckedPosition != RecyclerView.NO_POSITION) {
+                        logMainBottomSheetUiEvents()
+                        enableRecommendedProceedButton()
                         binding.recommendedProceedButton.isEnabled = true
                     }
                 }
@@ -801,6 +787,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         screenName = "Main Bottom Sheet in function click listener on recommendedproceedbutton",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
                     )
+                    binding.recommendedProceedButton.visibility = View.GONE
                     if (binding.recomendedRecyclerView.isVisible) {
                         recommendedCheckedPosition = recommendedCheckedPosition ?: 0
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -810,7 +797,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 recommendedInstrumentationList[recommendedCheckedPosition!!].displayValue ?: ""
                             )
                         }
-                    } else {
+                    } else if (binding.savedUpiRecyclerView.isVisible) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            postRecommendedInstruments(
+                                "upi/collect",
+                                savedUpiInstrumentationList[savedUpiCheckedPosition!!].instrumentationRef ?: "",
+                                savedUpiInstrumentationList[savedUpiCheckedPosition!!].displayValue ?: ""
+                            )
+                        }
+                    }else {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             postRecommendedInstruments(
                                 "card/token",
@@ -835,8 +830,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
             binding.upiLinearLayout.setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
-                        RecyclerView.NO_POSITION
+                    recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
@@ -889,8 +883,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.cardConstraint.setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
-                        RecyclerView.NO_POSITION
+                    recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
+                    savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     upiOptionsShown = false
                     hideUPIOptions()
@@ -907,10 +901,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.walletConstraint.setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
-                        RecyclerView.NO_POSITION
+                    recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
+                    savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
                     binding.walletConstraint.isEnabled = false
                     logMainBottomSheetUiEvents()
@@ -920,10 +914,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.emiConstraint.setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
-                        RecyclerView.NO_POSITION
+                    recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
+                    savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
                     binding.emiConstraint.isEnabled = false
                     logMainBottomSheetUiEvents()
@@ -933,10 +927,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.bnplConstraint.setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
-                        RecyclerView.NO_POSITION
+                    recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
+                    savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
                     binding.bnplConstraint.isEnabled = false
                     logMainBottomSheetUiEvents()
@@ -947,8 +941,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             binding.netBankingConstraint.setOnClickListener() {
                 if (!binding.loadingRelativeLayout.isVisible) {
-                    recommendedInstrumentsAdapter.checkPositionLiveData.value =
-                        RecyclerView.NO_POSITION
+                    recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
+                    savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
@@ -979,6 +973,30 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
     }
 
+    private fun enableRecommendedProceedButton() {
+        binding.recommendedProceedButton.visibility = View.VISIBLE
+        binding.recommendedProceedButtonRelativeLayout.setBackgroundResource(R.drawable.button_bg)
+        binding.recommendedProceedButtonRelativeLayout.setBackgroundColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "primaryButtonColor",
+                    "#000000"
+                )
+            )
+        )
+        binding.proceedtext.setTextColor(
+            Color.parseColor(
+                sharedPreferences.getString(
+                    "buttonTextColor",
+                    "#ffffff"
+                )
+            )
+        )
+    }
+
+    fun disableRecommendedProceedButton() {
+
+    }
     fun dismissMainSheet() {
         dismissThroughAnotherBottomSheet = true
         try {
@@ -1359,35 +1377,50 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             null,
             Response.Listener { response ->
                 try {
-                    val jsonArray = response
-
-                    // Map each element in the JSONArray
-                    if (jsonArray != emptyArray<Objects>()) {
-                        (0 until minOf(2, jsonArray.length())).map { index ->
-                            val instrumentType = getValueAtIndexByKey(jsonArray, "type", index)
-                            val instrumentationRef = getValueAtIndexByKey(jsonArray, "instrumentRef", index)
-                            val displayValue = getValueAtIndexByKey(jsonArray, "displayValue", index)
-                            val logoUrl = getValueAtIndexByKey(jsonArray, "logoUrl", index)
-                            if(recommendedInstrumentationList.size < 2) {
-                                recommendedInstrumentationList.add(SavedRecommended(
-                                    instrumentationRef = instrumentationRef,
-                                    displayValue = displayValue,
-                                    logoUrl = logoUrl,
-                                    type = instrumentType
-                                ))
+                    if (response != emptyArray<Objects>()) {
+                        (0 until response.length()).map { index ->
+                            val instrumentType = getValueAtIndexByKey(response, "type", index)
+                            val instrumentationRef =
+                                getValueAtIndexByKey(response, "instrumentRef", index)
+                            val displayValue =
+                                getValueAtIndexByKey(response, "displayValue", index)
+                            val logoUrl = getValueAtIndexByKey(response, "logoUrl", index)
+                            if (recommendedInstrumentationList.size < 2) {
+                                recommendedInstrumentationList.add(
+                                    SavedRecommended(
+                                        instrumentationRef = instrumentationRef,
+                                        displayValue = displayValue,
+                                        logoUrl = logoUrl,
+                                        type = instrumentType
+                                    )
+                                )
                             }
-                            if(instrumentType.equals("card", true)) {
-                                val cardIssuer = getValueAtIndexByKey(jsonArray, "issuer", index)
-                                val cardHolderName = getValueAtIndexByKey(jsonArray, "holderName", index)
-                                val cardType = getValueAtIndexByKey(jsonArray, "classification", index)
-                                val issuer     = cardIssuer.clean()
+                            if (instrumentType.equals("upi", true)) {
+                                savedUpiInstrumentationList.add(
+                                    SavedRecommended(
+                                        instrumentationRef = instrumentationRef,
+                                        displayValue = displayValue,
+                                        logoUrl = logoUrl,
+                                        type = instrumentType
+                                    )
+                                )
+                            }
+                            if (instrumentType.equals("card", true)) {
+                                val cardIssuer = getValueAtIndexByKey(response, "issuer", index)
+                                val cardHolderName =
+                                    getValueAtIndexByKey(response, "holderName", index)
+                                val cardType =
+                                    getValueAtIndexByKey(response, "classification", index)
+                                val issuer = cardIssuer.clean()
                                 val holderName = cardHolderName.clean()
                                 val displayHolder = listOfNotNull(holderName, issuer)
                                     .joinToString(" ")
                                     .ifBlank { null }
-                                savedCardsInstrumentationList.add(SavedCard(
+                                savedCardsInstrumentationList.add(
+                                    SavedCard(
                                     cardHolderName = displayHolder,
-                                    cardNumber = cardType?.takeIf { it.isNotBlank() }?.let { "$displayValue | $it" } ?: displayValue ,
+                                    cardNumber = cardType?.takeIf { it.isNotBlank() }
+                                        ?.let { "$displayValue | $it" } ?: displayValue,
                                     instrumentationRef = instrumentationRef,
                                     cardIcon = logoUrl
                                 ))
@@ -1813,6 +1846,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         if (installedApps.isNotEmpty()) {
             binding.popularUPIAppsConstraint.visibility = View.VISIBLE
+        }
+
+        if (savedUpiInstrumentationList.isNotEmpty()) {
+            binding.savedUpiRecyclerView.visibility = View.VISIBLE
         }
     }
 

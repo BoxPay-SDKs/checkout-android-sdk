@@ -977,6 +977,16 @@
                                 android:visibility="gone"
                                 android:weightSum="2">
 
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/savedUpiRecyclerView"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:paddingStart="14dp"
+                                    android:paddingEnd="14dp"
+                                    android:scrollbars="vertical"
+                                    android:visibility="gone"/>
+
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:id="@+id/popularUPIAppsConstraint"
                                     android:layout_width="match_parent"

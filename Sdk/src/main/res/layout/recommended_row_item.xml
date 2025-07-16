@@ -52,7 +52,7 @@
             android:fontFamily="@font/poppins"
             android:gravity="center"
             android:textColor="#0D8EFF"
-            android:visibility="visible"
+            android:visibility="gone"
             android:text="Last Used"
             android:textSize="10sp"
             android:background="@drawable/recommended_drawable_last_used"

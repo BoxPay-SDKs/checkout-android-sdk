@@ -16,12 +16,12 @@ import com.boxpay.checkout.sdk.R
 import com.boxpay.checkout.sdk.databinding.RecommendedRowItemBinding
 import com.boxpay.checkout.sdk.dataclasses.SavedRecommended
 
-class RecommendedItemsAdapter(
+class SavedUpiItemsAdaptor(
     private val items: MutableList<SavedRecommended>,
     context: Context
-) : RecyclerView.Adapter<RecommendedItemsAdapter.RecommendedItemsViewHolder>() {
+) : RecyclerView.Adapter<SavedUpiItemsAdaptor.SavedUpiItemViewHolder>() {
 
-    var checkPositionLiveData = MutableLiveData(0)
+    var checkPositionLiveData = MutableLiveData(RecyclerView.NO_POSITION)
 
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
@@ -32,7 +32,7 @@ class RecommendedItemsAdapter(
             handleRadioButtonClick(value)
         }
 
-    inner class RecommendedItemsViewHolder(val binding: RecommendedRowItemBinding) :
+    inner class SavedUpiItemViewHolder(val binding: RecommendedRowItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         init {
@@ -70,8 +70,8 @@ class RecommendedItemsAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecommendedItemsViewHolder {
-        return RecommendedItemsViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SavedUpiItemViewHolder {
+        return SavedUpiItemViewHolder(
             RecommendedRowItemBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
@@ -84,7 +84,7 @@ class RecommendedItemsAdapter(
         return items.size
     }
 
-    override fun onBindViewHolder(holder: RecommendedItemsViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: SavedUpiItemViewHolder, position: Int) {
         holder.bind(position)
     }
 
