@@ -1406,21 +1406,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 )
                             }
                             if (instrumentType.equals("card", true)) {
-                                val cardIssuer = getValueAtIndexByKey(response, "issuer", index)
-                                val cardHolderName =
-                                    getValueAtIndexByKey(response, "holderName", index)
-                                val cardType =
-                                    getValueAtIndexByKey(response, "classification", index)
-                                val issuer = cardIssuer.clean()
-                                val holderName = cardHolderName.clean()
-                                val displayHolder = listOfNotNull(holderName, issuer)
-                                    .joinToString(" ")
-                                    .ifBlank { null }
+                                val cardHolderName = getValueAtIndexByKey(response, "cardNickName", index)
+
                                 savedCardsInstrumentationList.add(
                                     SavedCard(
-                                    cardHolderName = displayHolder,
-                                    cardNumber = cardType?.takeIf { it.isNotBlank() }
-                                        ?.let { "$displayValue | $it" } ?: displayValue,
+                                    cardHolderName = cardHolderName.takeIf { !it.isNullOrEmpty() && it != "null" },
+                                    cardNumber = displayValue,
                                     instrumentationRef = instrumentationRef,
                                     cardIcon = logoUrl
                                 ))
