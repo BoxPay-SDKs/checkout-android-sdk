@@ -109,6 +109,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     private var job: Job? = null
     private var cvv: String? = null
     private var cardHolderName: String? = null
+    private var cardNickName : String? = null
     private var proceedButtonIsEnabled = MutableLiveData<Boolean>()
     private var isCardNumberValid: Boolean = false
     private var isCardValidityValid: Boolean = false
@@ -463,6 +464,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
         }
         binding.saveCardRow.isVisible = !shopperToken.isNullOrEmpty()
+        binding.nickNameLayout.isVisible = !shopperToken.isNullOrEmpty()
 
         binding.backButton.setOnClickListener {
             if (!binding.progressBar.isVisible && !binding.loadingLayout.isVisible) {
@@ -849,6 +851,31 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
         })
 
+        binding.editTextNickNameOnCard.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+                callUIAnalytics(
+                    context = requireContext(),
+                    message = "",
+                    screenName = "AddCardBottomSheet",
+                    uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
+                )
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                // no changes required
+            }
+        })
+
         binding.editTextCardCVV.setTransformationMethod(AsteriskPasswordTransformationMethod())
 
         binding.proceedButton.setOnClickListener {
@@ -866,6 +893,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
             cvv = binding.editTextCardCVV.text.toString()
             cardHolderName = binding.editTextNameOnCard.text.toString()
+            cardNickName = binding.editTextNickNameOnCard.text.toString()
             var anyFieldEmpty = false
 
             if (cardNumber.isNullOrEmpty()) {
@@ -1438,6 +1466,10 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     put("expiry", cardExpiryYYYY_MM)
                     put("cvc", cvv)
                     put("holderName", cardHolderName)
+
+                    if(!shopperToken.isNullOrEmpty()) {
+                        put("nickName", cardNickName)
+                    }
 
                     // Replace with the actual shopper VPA value
                 }

@@ -118,7 +118,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:visibility="gone"
+                            android:visibility="invisible"
                             app:layout_constraintStart_toStartOf="@+id/editTextNameOnCard"
                             app:layout_constraintTop_toBottomOf="@+id/editTextNameOnCard">
 
@@ -142,6 +142,48 @@
                                 android:textSize="12sp" />
                         </LinearLayout>
 
+                        <LinearLayout
+                            android:id="@+id/nickNameLayout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            app:layout_constraintStart_toStartOf="@+id/nameOnCardErrorLayout"
+                            app:layout_constraintTop_toBottomOf="@+id/nameOnCardErrorLayout">
+
+                            <TextView
+                                android:id="@+id/nickNameOnCard"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="Card NickName (for easy identification)"
+                                android:textColor="#2D2B32"/>
+
+                            <EditText
+                                android:id="@+id/editTextNickNameOnCard"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/edittext_bg"
+                                android:fontFamily="@font/poppins"
+                                android:layout_marginStart="2dp"
+                                android:layout_marginEnd="2dp"
+                                android:gravity="center_vertical"
+                                android:hint="Enter nick name on the card"
+                                android:inputType="text"
+                                android:paddingStart="12dp"
+                                android:paddingTop="10dp"
+                                android:paddingBottom="10dp"
+                                android:textColor="#000000"
+                                android:textColorHint="#7F7D83"
+                                android:textSize="14sp"
+                                app:layout_constraintStart_toStartOf="@+id/nameOnCard"
+                                app:layout_constraintTop_toBottomOf="@+id/nameOnCard"
+                                tools:ignore="TouchTargetSizeCheck" />
+                        </LinearLayout>
+
 
                         <LinearLayout
                             android:id="@+id/ll_loader_dcc_and_info"
@@ -149,8 +191,8 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             android:visibility="visible"
-                            app:layout_constraintStart_toStartOf="@+id/nameOnCardErrorLayout"
-                            app:layout_constraintTop_toBottomOf="@+id/nameOnCardErrorLayout">
+                            app:layout_constraintStart_toStartOf="@+id/nickNameLayout"
+                            app:layout_constraintTop_toBottomOf="@+id/nickNameLayout">
 
 
                             <FrameLayout
