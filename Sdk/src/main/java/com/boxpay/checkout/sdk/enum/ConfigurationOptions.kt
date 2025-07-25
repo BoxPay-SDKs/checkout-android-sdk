@@ -1,4 +1,4 @@
-package com.boxpay.checkout.sdk.utils
+package com.boxpay.checkout.sdk.enum
 
 enum class ConfigurationOptions() {
     SHOW_UPI_QR_ON_LOAD,

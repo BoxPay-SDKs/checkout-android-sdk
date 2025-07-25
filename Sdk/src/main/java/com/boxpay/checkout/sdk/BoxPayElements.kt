@@ -4,7 +4,7 @@ import android.content.Context
 import android.widget.Toast
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.utils.ConfigurationOptions
+import com.boxpay.checkout.sdk.enum.ConfigurationOptions
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 
 class BoxPayElements(

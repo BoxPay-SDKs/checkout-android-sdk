@@ -202,8 +202,6 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
         val screenHeight = requireContext().resources.displayMetrics.heightPixels
         val percentageOfScreenHeight = 0.90 // 70%
         val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
-        val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
-        val countryCodeJson = JSONObject(jsonString)
 
 
         bottomSheetBehavior?.maxHeight = desiredHeight
@@ -255,15 +253,6 @@ internal class SavedAddressBottomSheet : BottomSheetDialogFragment(), UpdateMain
                                     editor.putString("labelName",address?.labelName)
 
                                     editor.apply()
-                                    countryCode = getCountryName(
-                                        countryCodeJson,
-                                        if (sharedPreferences.getString("phoneNumber","")?.contains('+') == true) {
-                                            sharedPreferences.getString("phoneNumber","") ?: ""
-                                        } else {
-                                            "+" + sharedPreferences.getString("phoneNumber","")
-                                        }
-                                    )
-
                                     val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
                                         ?.removePrefix(countryCode?.second ?: "")
                                     editor.putString("phoneNumber", confirmPhoneNumber)
