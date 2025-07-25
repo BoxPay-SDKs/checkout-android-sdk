@@ -95,7 +95,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var convertedDate: String? = null
     val emailRegex =
         "^(?!.*\\.\\.)(?!.*\\.\\@)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$".toRegex()
-    val numberRegex = "^[0-9]+$".toRegex()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -956,12 +955,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                                         binding.mobileErrorText.text = "Invalid phone number"
                                         binding.mobileErrorText.visibility = View.VISIBLE
                                         binding.mobileNumberEditText.background =
-                                            ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
-                                    }
-                                    message.contains("address1", true) -> {
-                                        binding.address1ErrorText.text = "Address is required"
-                                        binding.address1ErrorText.visibility = View.VISIBLE
-                                        binding.addressEditText1.background =
                                             ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
                                     }
                                 }
