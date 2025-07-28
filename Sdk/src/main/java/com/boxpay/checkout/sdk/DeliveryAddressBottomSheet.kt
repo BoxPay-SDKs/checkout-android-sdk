@@ -57,6 +57,7 @@ import java.time.format.DateTimeParseException
 import java.util.Calendar
 import java.util.Locale
 import androidx.core.graphics.drawable.toDrawable
+import com.boxpay.checkout.sdk.dataclasses.DeliveryAddressErrorHandlingData
 import com.boxpay.checkout.sdk.utils.dpToPx
 
 
@@ -917,6 +918,15 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
 
     private fun toCheckValidityThroughAPI(callback: (isValid: Boolean) -> Unit) {
+        val fieldMetaMap = mapOf(
+            "email" to DeliveryAddressErrorHandlingData(binding.emailErrorText, binding.emailEditText, "Invalid Email"),
+            "phoneNumber" to DeliveryAddressErrorHandlingData(binding.mobileErrorText, binding.mobileNumberEditText, "Invalid phone number"),
+            "deliveryAddress.address1" to DeliveryAddressErrorHandlingData(binding.address1ErrorText, binding.addressEditText1, "Address required"),
+            "deliveryAddress.city" to DeliveryAddressErrorHandlingData(binding.cityErrortext, binding.cityEditText, "City required"),
+            "deliveryAddress.state" to DeliveryAddressErrorHandlingData(binding.stateErrorText, binding.stateEditText, "State required"),
+            "deliveryAddress.postalCode" to DeliveryAddressErrorHandlingData(binding.postalCodeErrorText, binding.postalCodeEditText, "Postal Code required")
+        )
+        var errorViewInFocus : EditText? = null
         val url = "${Base_Session_API_URL}shoppers/validations"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
 
@@ -924,6 +934,15 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
             put("phoneNumber", binding.ccpPhoneNumber.fullNumberWithPlus)
             put("email", binding.emailEditText.text)
             put("uniqueReference", uniqueRef)
+            val deliveryAddressJsonObject = JSONObject().apply {
+                put("address1", binding.addressEditText1.text)
+                put("address2", binding.addressEditText2.text)
+                put("city", binding.cityEditText.text)
+                put("state", binding.stateEditText.text)
+                put("postalCode", binding.postalCodeEditText.text)
+                put("countryCode", selectedCountryNameCode)
+            }
+            put("deliveryAddress", deliveryAddressJsonObject)
         }
 
         val jsonObjectAll = object : JsonObjectRequest(Method.POST, url, requestBody, { response ->
@@ -943,24 +962,23 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                             for (i in 0 until fieldErrors.length()) {
                                 val errorObj = fieldErrors.getJSONObject(i)
                                 val message = errorObj.optString("message", "")
+                                val fieldName = message.substringBefore(":").trim()
+                                val errorMessage = message.substringAfter(":").trim()
 
-                                when {
-                                    message.contains("email", true) -> {
-                                        binding.emailErrorText.text = "Invalid Email"
-                                        binding.emailErrorText.visibility = View.VISIBLE
-                                        binding.emailEditText.background =
-                                            ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
-                                    }
-                                    message.contains("phoneNumber", true) -> {
-                                        binding.mobileErrorText.text = "Invalid phone number"
-                                        binding.mobileErrorText.visibility = View.VISIBLE
-                                        binding.mobileNumberEditText.background =
-                                            ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
-                                    }
+                                fieldMetaMap[fieldName]?.let { meta ->
+                                    meta.errorTextView.text = if(fieldName.contains("phoneNumber", true)) errorMessage else meta.defaultMessage
+                                    meta.errorTextView.visibility = View.VISIBLE
+                                    meta.editTextField.background = ContextCompat.getDrawable(requireContext(), R.drawable.error_red_border)
+                                    if (errorViewInFocus == null) errorViewInFocus = meta.editTextField
                                 }
                             }
                         }
-                        Toast.makeText(context, "Please check, mandatory fields are not valid", Toast.LENGTH_SHORT).show()
+                        errorViewInFocus?.let { errorField ->
+                            binding.scrollView.post {
+                                binding.scrollView.smoothScrollTo(0, errorField.top)
+                                errorField.requestFocus()
+                            }
+                        }
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
