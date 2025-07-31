@@ -11,7 +11,7 @@ import com.boxpay.checkout.demoapp.databinding.ActivityMerchantDetailsScreenBind
 import com.boxpay.checkout.sdk.BoxPayCheckout
 import com.boxpay.checkout.sdk.BoxPayElements
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.utils.ConfigurationOptions
+import com.boxpay.checkout.sdk.enum.ConfigurationOptions
 
 class MerchantDetailsScreen : AppCompatActivity() {
 

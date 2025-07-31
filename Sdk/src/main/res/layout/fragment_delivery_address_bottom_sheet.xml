@@ -69,6 +69,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/textView">
 
                 <androidx.core.widget.NestedScrollView
+                    android:id="@+id/scroll_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scrollbars="vertical">
@@ -160,18 +161,16 @@
                                 android:layout_marginEnd="2dp"
                                 android:background="@drawable/edittext_bg">
 
-                                <com.boxpay.checkout.sdk.adapters.InstantAutoComplete
-                                    android:id="@+id/spinner_dial_codes"
-                                    android:layout_width="44dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center"
-                                    android:layout_marginStart="4dp"
-                                    android:background="#ffffffff"
-                                    android:dropDownAnchor="@+id/mobileNumberLinearLayout"
-                                    android:dropDownWidth="75dp"
-                                    android:inputType="number"
-                                    android:textSize="14sp"
-                                    tools:ignore="TouchTargetSizeCheck" />
+                                <com.hbb20.CountryCodePicker
+                                    android:id="@+id/ccp_phone_number"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    app:ccpDialog_keyboardAutoPopup="false"
+                                    app:ccp_showFlag="false"
+                                    app:ccp_showNameCode="false"
+                                    app:ccp_textSize="16sp"
+                                    app:ccp_textGravity="RIGHT"
+                                    app:ccp_autoFormatNumber="true"/>
 
                                 <EditText
                                     android:id="@+id/mobileNumberEditText"
@@ -375,23 +374,18 @@
                                 android:text="Country*"
                                 android:textColor="@android:color/black" />
 
-                            <com.boxpay.checkout.sdk.adapters.InstantAutoComplete
-                                android:id="@+id/countryEditText"
+                            <com.hbb20.CountryCodePicker
+                                android:id="@+id/ccp_country"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="2dp"
-                                android:layout_marginTop="4dp"
-                                android:layout_marginEnd="2dp"
+                                android:layout_height="match_parent"
                                 android:background="@drawable/edittext_bg"
-                                android:fontFamily="@font/poppins"
-                                android:gravity="center_vertical"
-                                android:hint="Country"
-                                android:inputType="text"
-                                android:padding="8dp"
-                                android:textColor="#000000"
-                                android:textColorHint="#7F7D83"
-                                android:textSize="14sp"
-                                tools:ignore="TouchTargetSizeCheck" />
+                                app:ccpDialog_keyboardAutoPopup="false"
+                                app:ccp_showFlag="true"
+                                app:ccp_showNameCode="false"
+                                app:ccp_textSize="16sp"
+                                app:ccp_textGravity="LEFT"
+                                app:ccp_showPhoneCode="false"
+                                app:ccp_showFullName="true"/>
 
                             <TextView
                                 android:id="@+id/countryErrorText"

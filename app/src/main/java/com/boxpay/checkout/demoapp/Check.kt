@@ -17,7 +17,7 @@ import com.boxpay.checkout.sdk.BoxPayCheckout
 import com.boxpay.checkout.sdk.BoxPayElements
 import com.boxpay.checkout.sdk.BuildConfig
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.utils.ConfigurationOptions
+import com.boxpay.checkout.sdk.enum.ConfigurationOptions
 import org.json.JSONObject
 
 class Check : AppCompatActivity() {

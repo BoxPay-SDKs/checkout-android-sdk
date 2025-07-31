@@ -759,8 +759,6 @@ class BoxPayCardComponent(
                         )
                     }
                 }
-                val jsonString = readJsonFromAssets(context!!, "countryCodes.json")
-                val countryCodeJson = JSONObject(jsonString)
                 val merchantDetailsObject = response.getJSONObject("merchantDetails")
                 val checkoutThemeObject = merchantDetailsObject.getJSONObject("checkoutTheme")
                 selectedColor = checkoutThemeObject.getString("headerColor")
@@ -780,7 +778,6 @@ class BoxPayCardComponent(
                     city = deliveryAddress.optString("city")
                     state = deliveryAddress.optString("state")
                     countryCode = deliveryAddress.optString("countryCode")
-                    countryName = getCountryName(countryCodeJson, countryCode ?: "IN")
                     postalCode = deliveryAddress.optString("postalCode")
                 }
                 panNumber = shopperObject.optString("panNumber")

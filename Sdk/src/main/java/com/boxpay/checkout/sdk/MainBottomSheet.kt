@@ -71,7 +71,6 @@ import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
-import com.boxpay.checkout.sdk.utils.clean
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl
@@ -144,7 +143,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     var upiOptionsShown = false
     private var toLoadQrDirect: Boolean? = null
     private var priceBreakUpVisible = false
-    var countryCode: Pair<String, String>? = null
     private var upiAvailable = false
     private var upiCollectMethod = false
     private var upiIntentMethod = false
@@ -2407,37 +2405,23 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.blackLine.visibility = View.GONE
                 }
 
-                val jsonString = readJsonFromAssets(requireContext(), "countryCodes.json")
-                val countryCodeJson = JSONObject(jsonString)
                 val shopperObject = paymentDetailsObject.getJSONObject("shopper")
-                countryCode = getCountryName(
-                    countryCodeJson,
-                    if (shopperObject.getString("phoneNumber").contains('+')) {
-                        shopperObject.getString("phoneNumber")
-                    } else {
-                        "+" + shopperObject.getString("phoneNumber")
-                    }
-                )
-                editor.putString("countryName", countryCode?.first)
                 editor.putString("amount", formattedAmount)
                 editor.putString("merchantId", response.getString("merchantId"))
                 editor.putString(
                     "countryCode",
-                    paymentDetailsObject.getJSONObject("context").getString("countryCode")
+                    paymentDetailsObject.optJSONObject("context")?.optString("countryCode")
                 )
                 editor.putString(
                     "legalEntity",
-                    paymentDetailsObject.getJSONObject("context").getJSONObject("legalEntity")
-                        .getString("code")
+                    paymentDetailsObject.optJSONObject("context")?.optJSONObject("legalEntity")?.optString("code")
                 )
+                editor.putString("uniqueReference", shopperObject.optString("uniqueReference"))
 
-                if (!shopperObject.isNull("uniqueReference")) {
-                    editor.putString("uniqueReference", shopperObject.getString("uniqueReference"))
-                }
                 if (shopperObject.isNull("deliveryAddress")) {
                     editor.putString("address1", null)
                     editor.putString("address2", null)
-                    editor.putString("countryName", null)
+                    editor.putString("countryCode", null)
                     editor.putString("indexCountryCodePhone", null)
                     editor.putString("phoneCode", null)
                     editor.putString("city", null)
@@ -2448,37 +2432,35 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 } else {
                     editor.putString(
                         "postalCode",
-                        shopperObject.getJSONObject("deliveryAddress").getString("postalCode")
+                        shopperObject.optJSONObject("deliveryAddress")?.optString("postalCode")
                     )
                     editor.putString(
                         "state",
-                        shopperObject.getJSONObject("deliveryAddress").getString("state")
+                        shopperObject.optJSONObject("deliveryAddress")?.optString("state")
                     )
                     editor.putString(
                         "city",
-                        shopperObject.getJSONObject("deliveryAddress").getString("city")
+                        shopperObject.optJSONObject("deliveryAddress")?.optString("city")
                     )
                     labelType =
-                        shopperObject.getJSONObject("deliveryAddress").getString("labelType")
+                        shopperObject.optJSONObject("deliveryAddress")?.optString("labelType")
                     labelName =
-                        shopperObject.getJSONObject("deliveryAddress").getString("labelName")
+                        shopperObject.optJSONObject("deliveryAddress")?.optString("labelName")
                     editor.putString(
                         "labelType",
-                        shopperObject.getJSONObject("deliveryAddress").getString("labelType")
+                        shopperObject.optJSONObject("deliveryAddress")?.optString("labelType")
                     )
                     editor.putString(
                         "labelName",
-                        shopperObject.getJSONObject("deliveryAddress").getString("labelName")
+                        shopperObject.optJSONObject("deliveryAddress")?.optString("labelName")
                     )
-                    editor.putString("indexCountryCodePhone", countryCode?.second)
-                    editor.putString("phoneCode", countryCode?.second)
                     editor.putString(
                         "address2",
-                        shopperObject.getJSONObject("deliveryAddress").getString("address2")
+                        shopperObject.optJSONObject("deliveryAddress")?.optString("address2")
                     )
                     editor.putString(
                         "address1",
-                        shopperObject.getJSONObject("deliveryAddress").getString("address1")
+                        shopperObject.optJSONObject("deliveryAddress")?.optString("address1")
                     )
                 }
                 if (shopperObject.isNull("firstName")) {
@@ -2532,9 +2514,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     showEmail,
                     showPhone,
                     showPAN,
-                    showDOB,
-                    countryCode,
-                    editor
+                    showDOB
                 )
 
                 if (paymentDetailsObject.isNull("order"))
@@ -2838,10 +2818,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.addressTextViewMain.text = sharedPreferences.getString("email", "")
         }
         binding.cardView8.visibility = View.VISIBLE
-        countryCode = Pair(
-            sharedPreferences.getString("countryName", "") ?: "",
-            sharedPreferences.getString("phoneCode", null) ?: ""
-        )
 
         binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
         binding.deliveryAddressText.visibility = View.VISIBLE
@@ -2865,30 +2841,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
 
         callPaymentMethodRules(requireContext())
+        binding.textView12.visibility = View.VISIBLE
 
-    }
-
-    private fun readJsonFromAssets(context: Context, fileName: String): String {
-        val assetManager = context.assets
-        val inputStream = assetManager.open(fileName)
-        val bufferedReader = inputStream.bufferedReader()
-        return bufferedReader.use { it.readText() }
-    }
-
-    private fun getCountryName(
-        countryCodeJson: JSONObject,
-        phoneNumber: String
-    ): Pair<String, String> {
-        var fullName = ""
-        var code = ""
-        countryCodeJson.keys().forEach { key ->
-            val countryDetails = countryCodeJson.getJSONObject(key)
-            if (phoneNumber.startsWith(countryDetails.getString("isdCode"))) {
-                code = countryDetails.getString("isdCode")
-                fullName = countryDetails.getString("fullName")
-            }
-        }
-        return Pair(fullName, code)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -3644,14 +3598,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun openSavedOrAddOrEditAddressScreen() {
         if ((!binding.loadingRelativeLayout.isVisible) && (isEmailEditable || isPhoneEditable || isNameEditable || showShipping)) {
-            if (!sharedPreferences.getString("phoneNumber", "").isNullOrEmpty()) {
-                val confirmPhoneNumber = sharedPreferences.getString("phoneNumber", "")
-                    ?.removePrefix(countryCode?.second ?: "")
-                editor.putString("phoneNumber", confirmPhoneNumber)
-                editor.putString("phoneCode", countryCode?.second)
-                editor.putString("countryName", countryCode?.first)
-                editor.apply()
-            }
             if (customerShopperToken != null && customerShopperToken != "") {
                 val bottomSheet = SavedAddressBottomSheet()
                 bottomSheet.setAddressViewAndEditSettings(
@@ -3740,8 +3686,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         showPhone: Boolean,
         showPAN: Boolean,
         showDOB: Boolean,
-        countryCode: Pair<String, String>?,
-        editor: SharedPreferences.Editor
     ) {
         // 1. Define clear, self‑documenting flags
         val needsAddress = shopper.isNull("deliveryAddress") && showShipping && orderDetails == null
@@ -3762,14 +3706,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         // 3. Otherwise, switch UI to Payment Details
         binding.textView111.text = "Payment Details"
         binding.addAddressButton.visibility = View.GONE
-
-        // 4. Persist whatever shopper data *is* present
-        saveShopperToPrefs(shopper, countryCode, editor)
     }
 
     private fun saveShopperToPrefs(
         shopper: JSONObject,
-        countryCode: Pair<String, String>?,
         editor: SharedPreferences.Editor
     ) = editor.apply {
         // Simple list of (JSON‑key to prefs‑key) mappings
@@ -3804,13 +3744,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 addr.optString(jsonKey)
                     .takeIf { it.isNotBlank() }
                     ?.let { putString(prefKey, it) }
-            }
-
-            // countryCode is handled separately
-            countryCode?.let { (country, phoneCode) ->
-                putString("countryName", country)
-                putString("phoneCode", phoneCode)
-                putString("indexCountryCodePhone", phoneCode)
             }
         }
 

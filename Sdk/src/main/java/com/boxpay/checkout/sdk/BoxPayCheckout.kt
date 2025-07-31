@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.sdk.ViewModels.CallBackFunctions
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.utils.ConfigurationOptions
+import com.boxpay.checkout.sdk.enum.ConfigurationOptions
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.getAnalyticsUrl
 
