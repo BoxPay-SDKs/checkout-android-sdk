@@ -18,7 +18,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.sdk.databinding.FragmentPaymentSuccessfulWithDetailsBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.DCCResponse
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -137,6 +139,12 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 }
             }
              proceedButton.setOnClickListener(){
+                 callUIAnalytics(
+                     context = requireContext(),
+                     message = "",
+                     screenName = "PaymentSuccessScreenClicked",
+                     uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
+                 )
                  val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
                  mainBottomSheetFragment?.dismissTheSheetAfterSuccess()
                  dismiss()

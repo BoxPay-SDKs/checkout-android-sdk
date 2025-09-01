@@ -12,6 +12,8 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentPaymentFailureScreenBinding
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -48,6 +50,12 @@ internal class PaymentFailureScreen(val function: () -> Unit = {}, val errorMess
             )
         )
         binding.retryButton.setOnClickListener(){
+            callUIAnalytics(
+                context = requireContext(),
+                message = errorMessage,
+                screenName = "PaymentFailedScreenDisplayed",
+                uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
+            )
             function()
             dismiss()
         }

@@ -1245,6 +1245,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun postRequestForQRCode(context: Context) {
 
         val requestQueue = Volley.newRequestQueue(context)
+        logMainBottomSheetUiEvents()
+        callUIAnalytics(
+            context = context,
+            message = "",
+            screenName = "Main Bottom Sheet in function postRequestForQRCode",
+            uiEvent = AnalyticsEvents.PAYMENT_INITIATED
+        )
 
 
         // Constructing the request body
