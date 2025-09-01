@@ -1921,6 +1921,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             dialog.setCancelable(!binding.progressBar.isVisible)
 
+            dialog.setCanceledOnTouchOutside(false)
+
             dialog.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
                     // Prevent dialog from being dismissed if loader is active

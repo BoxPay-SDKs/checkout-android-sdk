@@ -146,6 +146,7 @@ internal class NetBankingBottomSheet : BottomSheetDialogFragment() {
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
             dialog.setCancelable(!binding.progressBar.isVisible && !binding.loaderCardView.isVisible)
+            dialog.setCanceledOnTouchOutside(false)
 
             dialog.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {

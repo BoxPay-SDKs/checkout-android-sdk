@@ -102,6 +102,7 @@ internal class SessionExpireScreen(val function: () -> Unit = {}) :
             val percentageOfScreenHeight = 0.7 // 90%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
             bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+            dialog.setCanceledOnTouchOutside(false)
 
             bottomSheetBehavior?.maxHeight = desiredHeight
             bottomSheetBehavior?.isDraggable = false

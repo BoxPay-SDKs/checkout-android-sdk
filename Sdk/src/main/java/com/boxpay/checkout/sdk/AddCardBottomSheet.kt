@@ -48,7 +48,6 @@ import coil.load
 import coil.size.Scale
 import com.airbnb.lottie.LottieDrawable
 import com.android.volley.DefaultRetryPolicy
-import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
@@ -790,11 +789,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 if (isAmericanExpressCard.value == true) {
                     if (textNow.length == 4) {
                         binding.editTextNameOnCard.requestFocus()
-                        binding.editTextNameOnCard.requestFocus()
                     }
                 } else {
                     if (textNow.length == 3) {
-                        binding.editTextNameOnCard.requestFocus()
                         binding.editTextNameOnCard.requestFocus()
                     }
                 }
@@ -835,7 +832,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                     proceedButtonIsEnabled.value = false
                 } else {
                     isNameOnCardValid = true
-                    binding.nameOnCardErrorLayout.visibility = View.GONE
+                    binding.nameOnCardErrorLayout.visibility = View.INVISIBLE
                 }
                 callUIAnalytics(
                     context = requireContext(),
@@ -1301,6 +1298,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
             }
 
             dialog.setCancelable(!binding.progressBar.isVisible && !binding.loadingLayout.isVisible)
+            dialog.setCanceledOnTouchOutside(false)
 
             dialog.setOnKeyListener { _, keyCode, _ ->
                 if (keyCode == KeyEvent.KEYCODE_BACK && binding.progressBar.isVisible) {
