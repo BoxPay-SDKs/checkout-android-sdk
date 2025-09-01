@@ -992,9 +992,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         )
     }
 
-    fun disableRecommendedProceedButton() {
-
-    }
     fun dismissMainSheet() {
         dismissThroughAnotherBottomSheet = true
         try {
@@ -1073,6 +1070,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.qrCodeTimer.text = "00:00"
                 binding.refreshButton.visibility = View.VISIBLE
                 job?.cancel()
+                callUIAnalytics(
+                    context = context,
+                    message = "",
+                    screenName = "Main Bottom Sheet - QR timer finished",
+                    uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
+                )
                 blurImageView()
             }
         }

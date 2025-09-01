@@ -142,7 +142,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                  callUIAnalytics(
                      context = requireContext(),
                      message = "",
-                     screenName = "PaymentSuccessScreenClicked",
+                     screenName = "PaymentSuccessScreenProceedClicked",
                      uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
                  )
                  val mainBottomSheetFragment = parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet

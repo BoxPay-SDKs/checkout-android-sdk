@@ -39,7 +39,7 @@ internal class SessionExpireScreen(val function: () -> Unit = {}) :
             callUIAnalytics(
                 context = requireContext(),
                 message = "Session Expired",
-                screenName = "Session Expired Screen Visible",
+                screenName = "Session Expired Screen Proceed Clicked",
                 uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
             )
             val callback =  SingletonClass.getInstance().getYourObject()

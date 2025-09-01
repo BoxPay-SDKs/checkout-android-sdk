@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentPaymentFailureScreenBinding
 import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
@@ -53,7 +52,7 @@ internal class PaymentFailureScreen(val function: () -> Unit = {}, val errorMess
             callUIAnalytics(
                 context = requireContext(),
                 message = errorMessage,
-                screenName = "PaymentFailedScreenDisplayed",
+                screenName = "PaymentFailedScreenProceedClicked",
                 uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
             )
             function()
