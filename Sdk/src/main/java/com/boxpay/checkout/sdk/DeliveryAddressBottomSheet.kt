@@ -805,6 +805,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     bottomSheet.layoutParams = layoutParams
                 }
                 bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                dialog.setCanceledOnTouchOutside(false)
 
                 bottomSheetBehavior?.isDraggable = false
                 bottomSheetBehavior?.isHideable = false
