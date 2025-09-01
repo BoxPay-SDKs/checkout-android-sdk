@@ -10,7 +10,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.boxpay.checkout.sdk.databinding.FragmentSessionExpireBinding
+import com.boxpay.checkout.sdk.enum.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -34,6 +36,12 @@ internal class SessionExpireScreen(val function: () -> Unit = {}) :
         // Inflate the layout for this fragment
         binding = FragmentSessionExpireBinding.inflate(layoutInflater, container, false)
         binding.retryButton.setOnClickListener() {
+            callUIAnalytics(
+                context = requireContext(),
+                message = "Session Expired",
+                screenName = "Session Expired Screen Proceed Clicked",
+                uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
+            )
             val callback =  SingletonClass.getInstance().getYourObject()
             if(callback != null){
                 val transactionId = sharedPreferences.getString("transactionId","").toString()
