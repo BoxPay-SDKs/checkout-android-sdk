@@ -1843,7 +1843,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView20.typeface =
             ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
 
-        if (installedApps.isNotEmpty()) {
+        if (installedApps.isNotEmpty() && upiIntentMethod) {
             binding.popularUPIAppsConstraint.visibility = View.VISIBLE
         }
 
