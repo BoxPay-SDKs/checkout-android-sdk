@@ -51,9 +51,11 @@ fun callUIAnalytics(
             Method.POST,
             getAnalyticsUrl(context),
             requestBody,
-            Response.Listener { _ ->
+            Response.Listener { response ->
+                print("========$response")
             },
-            Response.ErrorListener { _ ->
+            Response.ErrorListener { error ->
+                print("======$error")
             }
         ) {}.apply {
             retryPolicy = DefaultRetryPolicy(
