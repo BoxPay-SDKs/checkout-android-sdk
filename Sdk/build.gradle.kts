@@ -27,6 +27,21 @@ android {
             )
         }
     }
+    signingConfigs {
+        create("release") {
+            val keystorePath: String? = System.getenv("KEYSTORE_PATH")
+            val storePassword: String? = System.getenv("STORE_PASSWORD")
+            val keyAlias: String? = System.getenv("KEY_ALIAS")
+            val keyPassword: String? = System.getenv("KEY_PASSWORD")
+
+            if (keystorePath != null) {
+                storeFile = file(keystorePath)
+                storePassword?.let { this.storePassword = it }
+                keyAlias?.let { this.keyAlias = it }
+                keyPassword?.let { this.keyPassword = it }
+            }
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
