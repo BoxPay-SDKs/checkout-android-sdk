@@ -80,11 +80,6 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                 llProductName.visibility = View.VISIBLE
             }
 
-            if (isLowCostApplied || isNoCostApplied) {
-                offerDiscount.text = if (isNoCostApplied) "No Cost EMI Discount" else "Low Cost EMI Discount"
-                offerContainer.visibility = View.VISIBLE
-            }
-
             if (orderDetailsLength > 1) {
                 viewMoreTextView.setTextColor(Color.parseColor(
                     sharedPreferences.getString(
@@ -185,10 +180,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                     if (amount.isNotEmpty() && currencyType.isNotEmpty() && !isLowCostApplied && !isNoCostApplied){
                         transactionAmountTextView.text = "$currencyType $amount"
                     }
-                if (amount.isNotEmpty() && currencyType.isNotEmpty() && (isLowCostApplied || isNoCostApplied)) {
-                    transactionAmountTextView.text = "$currencyType $subtotalAmount"
-                    offerDiscountAmount.text = "-$currencyType $discountAmount"
-                    subTotalAmount.text = "$currencyType $amount"
+                if (amount.isNotEmpty() && currencyType.isNotEmpty()) {
+                    transactionAmountTextView.text = "$currencyType $amount"
                 }
             }
         }

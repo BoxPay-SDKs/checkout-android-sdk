@@ -345,9 +345,9 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                 sharedPreferences.getString("primaryButtonColor", "#000000")
             )
         )
+        binding.cvvStoreLayout.isVisible = !shopperToken.isNullOrEmpty()
         binding.radioButton1.setOnClickListener {
             if (binding.radioButton1.isChecked) {
-                binding.radioButton2.isChecked = false
                 isCurrencySelected = true
                 proceedButtonIsEnabled.value = true
                 enableProceedButton()
@@ -1857,7 +1857,7 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun allFieldsAreValid(): Boolean {
-        return (binding.nameOnCardErrorLayout.visibility == View.INVISIBLE || binding.nameOnCardErrorLayout.visibility == View.GONE) && (binding.ll1InvalidCardNumber.visibility == View.INVISIBLE || binding.ll1InvalidCardNumber.visibility == View.GONE) && (binding.invalidCardValidity.visibility == View.INVISIBLE || binding.invalidCardValidity.visibility == View.GONE) && (binding.invalidCVV.visibility == View.INVISIBLE || binding.invalidCVV.visibility == View.GONE) && binding.editTextCardCVV.text.isNotEmpty() && binding.editTextCardValidity.text.isNotEmpty() && binding.editTextNameOnCard.text.isNotEmpty() && binding.editTextCardNumber.text.isNotEmpty() && isValidCardNumberByLuhn(
+        return (binding.nameOnCardErrorLayout.visibility == View.INVISIBLE || binding.nameOnCardErrorLayout.visibility == View.GONE) && (binding.ll1InvalidCardNumber.visibility == View.INVISIBLE || binding.ll1InvalidCardNumber.visibility == View.GONE) && (binding.invalidCardValidity.visibility == View.INVISIBLE || binding.invalidCardValidity.visibility == View.GONE) && (binding.invalidCVV.visibility == View.INVISIBLE || binding.invalidCVV.visibility == View.GONE) && binding.editTextCardCVV.text.isNotEmpty() && binding.editTextCardValidity.text.isNotEmpty() && binding.editTextNameOnCard.text.isNotEmpty() && binding.editTextCardNumber.text?.isNotEmpty() == true && isValidCardNumberByLuhn(
             binding.editTextCardNumber.text.toString().replace("\\s".toRegex(), "")
         ) && isValidCVC(
             binding.editTextCardCVV.text.toString()

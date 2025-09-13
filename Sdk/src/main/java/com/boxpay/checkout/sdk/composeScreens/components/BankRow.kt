@@ -68,8 +68,9 @@ fun BankRow(
             add(SvgDecoder.Factory())
         }
         .build()
+    val tagName = if(isNoCostApplied && isLowCostApplied) "NO & LOW COST EMI" else if(isNoCostApplied) "NO COST EMI" else "LOW COST EMI"
     ConstraintLayout(modifier) {
-        val (icon, name, noCostTag, arrowIcon, lowCostTag) = createRefs()
+        val (icon, name, arrowIcon, filterTag) = createRefs()
 
         Image(
             painter = rememberAsyncImagePainter(
@@ -109,28 +110,13 @@ fun BankRow(
             maxLines = 2
         )
         FilterTag(
-            text = "NO COST EMI",
+            text = tagName,
             modifier = Modifier
-                .constrainAs(noCostTag) {
+                .constrainAs(filterTag) {
                     start.linkTo(icon.end, 8.dp)
                     top.linkTo(name.bottom, 4.dp)
 
-                    visibility = if (isNoCostApplied) Visibility.Visible else Visibility.Gone
-                }
-                .padding(bottom = 10.dp)
-        )
-        FilterTag(
-            text = "LOW COST EMI",
-            modifier = Modifier
-                .constrainAs(lowCostTag) {
-                    if (isNoCostApplied) {
-                        start.linkTo(noCostTag.end, 8.dp)
-                    } else {
-                        start.linkTo(icon.end, 8.dp)
-                    }
-                    top.linkTo(name.bottom, 4.dp)
-
-                    visibility = if (isLowCostApplied) Visibility.Visible else Visibility.Gone
+                    visibility = if (isNoCostApplied || isLowCostApplied) Visibility.Visible else Visibility.Gone
                 }
                 .padding(bottom = 10.dp)
         )
@@ -954,7 +940,6 @@ fun ErrorRow(modifier: Modifier, errorText: String) {
             painter = painterResource(id = R.drawable.error_outline),
             contentDescription = "",
             modifier = Modifier
-                .padding(top = 4.dp)
                 .size(12.dp)
         )
         Text(
