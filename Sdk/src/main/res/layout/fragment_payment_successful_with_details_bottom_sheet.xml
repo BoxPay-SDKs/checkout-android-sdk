@@ -407,82 +407,6 @@
 
 
                     </LinearLayout>
-                    <LinearLayout
-                        android:id="@+id/offerContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:visibility="gone"
-                        android:orientation="vertical">
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="5dp"
-                            android:layout_marginTop="10dp"
-                            android:background="@drawable/dotted_line" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:orientation="horizontal"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:weightSum="2">
-
-                            <TextView
-                                android:id="@+id/subTotal"
-                                android:layout_width="0dp"
-                                android:layout_weight="1"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/poppins"
-                                android:text="Subtotal"
-                                android:textColor="#4F4D55"
-                                android:textSize="12sp" />
-
-                            <TextView
-                                android:id="@+id/subTotalAmount"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/inter_medium"
-                                android:text="₹599.00"
-                                android:layout_weight="1"
-                                android:gravity="end"
-                                android:textColor="#000000"
-                                android:textSize="12sp" />
-
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:orientation="horizontal"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:weightSum="2">
-
-                            <TextView
-                                android:id="@+id/offerDiscount"
-                                android:layout_width="0dp"
-                                android:layout_weight="1"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/poppins"
-                                android:text="No Cost EMI Discount"
-                                android:textColor="#4F4D55"
-                                android:textSize="12sp" />
-
-                            <TextView
-                                android:id="@+id/offerDiscountAmount"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/inter_medium"
-                                android:text="₹599.00"
-                                android:layout_weight="1"
-                                android:gravity="end"
-                                android:textColor="#2DA94F"
-                                android:textSize="12sp" />
-
-
-                        </LinearLayout>
-
-                    </LinearLayout>
 
 
                     <View
@@ -504,7 +428,7 @@
                             android:layout_weight="1"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/poppins"
-                            android:text="Total Transaction Amount"
+                            android:text="Total Amount Paid"
                             android:textColor="#4F4D55"
                             android:textSize="12sp" />
 

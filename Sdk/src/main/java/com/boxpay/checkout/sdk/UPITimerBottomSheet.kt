@@ -3,6 +3,7 @@ package com.boxpay.checkout.sdk
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -43,6 +44,7 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
     var isBottomSheetShown = false
     private lateinit var Base_Session_API_URL: String
     val sharedViewModel: SharedViewModel by activityViewModels()
+    private var sharedPreferences : SharedPreferences? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -176,6 +178,8 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
         }
 
         Base_Session_API_URL = getSessionApiUrl(requireContext())
+        sharedPreferences =
+            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
 
         fetchTransactionDetailsFromSharedPreferences()
 
@@ -206,15 +210,30 @@ internal class UPITimerBottomSheet : BottomSheetDialogFragment(),
             dismiss()
         }
 
+        val brandColor = Color.parseColor(
+            sharedPreferences?.getString(
+                "primaryButtonColor",
+                "#000000"
+            )
+        )
+        binding.cancelPaymentTextView.setTextColor(
+            brandColor
+        )
+
+        binding.circularProgressBar.apply {
+            progressBarColorStart = brandColor
+            progressBarColorEnd = brandColor
+        }
+
+        binding.progressTextView.setTextColor(brandColor)
+
         return binding.root
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        val sharedPreferences =
-            requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         token = getSessionToken(requireContext())
         successScreenFullReferencePath =
-            sharedPreferences.getString("successScreenFullReferencePath", "empty")
+            sharedPreferences?.getString("successScreenFullReferencePath", "empty")
     }
 
     private fun startTimer() {

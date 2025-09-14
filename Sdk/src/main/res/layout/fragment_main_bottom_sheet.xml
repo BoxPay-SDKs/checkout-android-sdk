@@ -72,11 +72,12 @@
                 android:paddingBottom="12dp">
 
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:id="@+id/constraintLayout123"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bottom_sheet_bg"
+                    android:orientation="vertical"
                     android:paddingBottom="10dp">
 
                     <androidx.cardview.widget.CardView
@@ -87,10 +88,7 @@
                         android:layout_marginEnd="16dp"
                         android:background="@android:color/white"
                         android:visibility="visible"
-                        app:cardCornerRadius="10dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
+                        app:cardCornerRadius="10dp">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/orderSummaryConstraintLayout"
@@ -322,11 +320,8 @@
                         android:layout_marginTop="16dp"
                         android:layout_marginEnd="16dp"
                         android:background="@android:color/white"
-                        android:visibility="visible"
-                        app:cardCornerRadius="10dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardView3">
+                        android:visibility="gone"
+                        app:cardCornerRadius="10dp">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/recurringMainCard"
@@ -661,10 +656,7 @@
                         android:layout_marginEnd="16dp"
                         android:background="@android:color/white"
                         android:visibility="gone"
-                        app:cardCornerRadius="10dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardView8">
+                        app:cardCornerRadius="10dp">
 
                         <LinearLayout
                             android:id="@+id/container"
@@ -687,9 +679,7 @@
                         android:textSize="14sp"
                         android:textColor="#020815"
                         android:textFontWeight="600"
-                        android:visibility="visible"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardviewRecurring" />
+                        android:visibility="visible"/>
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cardView8"
@@ -700,10 +690,7 @@
                         android:layout_marginEnd="16dp"
                         android:background="@android:color/white"
                         android:visibility="visible"
-                        app:cardCornerRadius="10dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/deliveryAddressText">
+                        app:cardCornerRadius="10dp">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/deliveryAddressConstraintLayout"
@@ -745,11 +732,13 @@
                                 android:id="@+id/right_arrow"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
                                 android:layout_marginEnd="12dp"
+                                android:layout_marginTop="12dp"
                                 android:src="@drawable/rightarrow"
+                                app:layout_constrainedHeight="true"
                                 app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintTop_toTopOf="parent" />
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"/>
 
                             <TextView
                                 android:id="@+id/addressTextViewMain"
@@ -760,7 +749,6 @@
                                 android:text="123 Lorem ipsum lorem ipsum lorem ipsum lorem ipsum\nGurgaon, Haryana,12001"
                                 android:textColor="#4F4D55"
                                 android:textSize="14sp"
-                                android:paddingTop="2dp"
                                 android:maxLines="1"
                                 android:textFontWeight="600"
                                 app:layout_constrainedWidth="true"
@@ -768,7 +756,7 @@
                                 app:layout_constraintHorizontal_bias="0.03"
                                 app:layout_constraintStart_toStartOf="@+id/nameAndMobileTextViewMain"
                                 app:layout_constraintEnd_toStartOf="@+id/right_arrow"
-                                app:layout_constraintTop_toBottomOf="@+id/right_arrow" />
+                                app:layout_constraintTop_toBottomOf="@+id/nameAndMobileTextViewMain" />
 
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -785,22 +773,18 @@
                         android:textSize="14sp"
                         android:textColor="#020815"
                         android:textFontWeight="600"
-                        android:visibility="visible"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/scrollCard" />
+                        android:visibility="visible" />
 
                     <androidx.cardview.widget.CardView
                         android:id="@+id/recommendedCardView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="8dp"
                         android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
                         android:visibility="gone"
-                        app:cardCornerRadius="8dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/textView12">
+                        app:cardCornerRadius="8dp">
 
                         <LinearLayout
                             android:id="@+id/recommendedLinearLayout"
@@ -883,13 +867,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="8dp"
                         android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
                         android:visibility="visible"
-                        app:cardCornerRadius="8dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/recommendedCardView">
+                        app:cardCornerRadius="8dp">
 
                         <LinearLayout
                             android:id="@+id/upiLinearLayout"
@@ -990,7 +972,8 @@
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:id="@+id/popularUPIAppsConstraint"
                                     android:layout_width="match_parent"
-                                    android:layout_height="wrap_content">
+                                    android:layout_height="wrap_content"
+                                    android:visibility="gone">
 
                                     <TextView
                                         android:id="@+id/popularAppsTextView"
@@ -1297,13 +1280,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="12dp"
                         android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginTop="8dp"
                         android:visibility="visible"
-                        app:cardCornerRadius="8dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardView4">
+                        app:cardCornerRadius="8dp">
 
                         <LinearLayout
                             android:id="@+id/cardLinearLayout"
@@ -1445,13 +1426,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="12dp"
                         android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginTop="8dp"
                         android:visibility="visible"
-                        app:cardCornerRadius="8dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/cardView5">
+                        app:cardCornerRadius="8dp">
 
 
                         <androidx.constraintlayout.widget.ConstraintLayout
@@ -1530,16 +1509,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
-                        android:layout_marginTop="12dp"
                         android:layout_marginEnd="16dp"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginTop="8dp"
                         android:visibility="visible"
-                        app:cardCornerRadius="8dp"
-                        app:layout_constrainedHeight="true"
-                        app:layout_constraintBottom_toTopOf="@+id/emiCard"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/cardView6">
+                        app:cardCornerRadius="8dp">
 
 
                         <androidx.constraintlayout.widget.ConstraintLayout
@@ -1568,7 +1542,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
                                 android:fontFamily="@font/poppins"
-                                android:text="Net Banking"
+                                android:text="NetBanking"
                                 android:textColor="#1D1D1D"
                                 android:textSize="16sp"
                                 app:layout_constraintBottom_toBottomOf="@+id/imageView37"
@@ -1619,14 +1593,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginTop="8dp"
                         android:visibility="gone"
-                        app:cardCornerRadius="8dp"
-                        app:layout_constrainedHeight="true"
-                        app:layout_constraintBottom_toTopOf="@+id/cardView9"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/cardView7">
+                        app:cardCornerRadius="8dp">
 
 
                         <androidx.constraintlayout.widget.ConstraintLayout
@@ -1713,13 +1683,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginTop="8dp"
                         android:visibility="gone"
-                        app:cardCornerRadius="8dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/emiCard">
+                        app:cardCornerRadius="8dp">
 
 
                         <androidx.constraintlayout.widget.ConstraintLayout
@@ -1780,12 +1747,7 @@
                         android:layout_marginBottom="8dp"
                         android:clickable="true"
                         android:visibility="gone"
-                        app:cardCornerRadius="7dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/cardviewRecurring"
-                        tools:ignore="NotSibling">
+                        app:cardCornerRadius="7dp">
 
                         <RelativeLayout
                             android:id="@+id/proceedButtonRelativeLayout"
@@ -1816,7 +1778,7 @@
                         </RelativeLayout>
                     </androidx.cardview.widget.CardView>
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
 
                 <RelativeLayout
                     android:id="@+id/loadingRelativeLayout"

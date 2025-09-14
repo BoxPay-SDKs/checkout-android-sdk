@@ -279,7 +279,7 @@ fun ChooseEmiScreen(
                             "others",
                             true
                         )
-                    ) "Search for other EMI options" else "Search for bank",
+                    ) "Search for other EMI options" else "Search for Banks",
                     style = TextStyle(
                         fontFamily = defaultFontFamily,
                         fontSize = 16.sp,

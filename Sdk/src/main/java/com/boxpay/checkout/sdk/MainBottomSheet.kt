@@ -890,6 +890,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         binding.cardConstraint.isEnabled = false
                         logMainBottomSheetUiEvents()
                         openAddCardBottomSheet()
+                    } else if(binding.savedCardsLinearLayout.isVisible) {
+                        hideCardOptions()
                     } else {
                         showCardOptions()
                     }
@@ -1857,7 +1859,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.savedCardsLinearLayout.visibility = View.VISIBLE
         binding.textView29.typeface =
             ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
-        binding.recommendedCardView.visibility = View.VISIBLE
         if (savedCardsCheckedPosition != RecyclerView.NO_POSITION && savedCardsCheckedPosition !=  null){
             binding.recommendedProceedButtonRelativeLayout.visibility = View.VISIBLE
             binding.recommendedProceedButton.visibility = View.VISIBLE
@@ -1880,6 +1881,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             )
             binding.recommendedProceedButton.isEnabled = true
         }
+    }
+
+    private fun hideCardOptions() {
+        binding.cardConstraint.setBackgroundColor(Color.parseColor("#FFFFFF"))
+        binding.savedCardsLinearLayout.visibility = View.GONE
+        binding.textView29.typeface =
+            ResourcesCompat.getFont(requireContext(), R.font.poppins)
+        binding.recommendedCardView.visibility = View.VISIBLE
     }
 
 
@@ -2230,10 +2239,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
 
                 if (showEmail || showShipping || showPhone || showName) {
-                    binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+                    binding.cardView8.visibility = View.VISIBLE
                     binding.deliveryAddressText.visibility = View.VISIBLE
                 } else {
-                    binding.deliveryAddressConstraintLayout.visibility = View.GONE
+                    binding.cardView8.visibility = View.GONE
                     binding.deliveryAddressText.visibility = View.GONE
                 }
                 binding.nameAndMobileTextViewMain.visibility =
@@ -2723,7 +2732,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             } catch (e: Exception) {
                 callUiAnalyticWithSdkCrashEvent(e.message ?: "")
                 Toast.makeText(
-                    requireContext(),
+                    context,
                     "Invalid token/selected environment.\nPlease press back button and try again",
                     Toast.LENGTH_LONG
                 ).show()
@@ -2831,7 +2840,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
         binding.cardView8.visibility = View.VISIBLE
 
-        binding.deliveryAddressConstraintLayout.visibility = View.VISIBLE
+        binding.cardView8.visibility = View.VISIBLE
         binding.deliveryAddressText.visibility = View.VISIBLE
         binding.textView111.text = "Payment Details"
         binding.addAddressButton.visibility = View.GONE
@@ -3610,7 +3619,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun openSavedOrAddOrEditAddressScreen() {
         if ((!binding.loadingRelativeLayout.isVisible) && (isEmailEditable || isPhoneEditable || isNameEditable || showShipping)) {
-            if (customerShopperToken != null && customerShopperToken != "") {
+            if (customerShopperToken != null && customerShopperToken != "" && showShipping) {
                 val bottomSheet = SavedAddressBottomSheet()
                 bottomSheet.setAddressViewAndEditSettings(
                     viewName = showName,
@@ -3652,7 +3661,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun showAddressRelatedDataOnScreen() {
-        binding.deliveryAddressConstraintLayout.visibility = View.GONE
+        binding.cardView8.visibility = View.GONE
         binding.deliveryAddressText.visibility = View.GONE
         binding.textView12.visibility = View.GONE
         binding.upiLinearLayout.visibility = View.GONE

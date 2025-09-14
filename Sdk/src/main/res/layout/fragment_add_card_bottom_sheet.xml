@@ -87,7 +87,7 @@
                             android:fontFamily="@font/poppins"
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
-                            android:text="Name on card"
+                            android:text="Name on card*"
                             android:textColor="#2D2B32"
                             app:layout_constraintStart_toStartOf="@+id/linearlayout44"
                             app:layout_constraintTop_toBottomOf="@+id/linearlayout44" />
@@ -434,7 +434,7 @@
                                     android:fontFamily="@font/poppins"
                                     android:gravity="center_vertical"
                                     android:lineSpacingExtra="-1sp"
-                                    android:text="Expiry"
+                                    android:text="Expiry*"
                                     android:textColor="#2D2B32" />
 
                                 <EditText
@@ -509,7 +509,7 @@
                                     android:fontFamily="@font/poppins"
                                     android:gravity="center_vertical"
                                     android:lineSpacingExtra="-1sp"
-                                    android:text="CVV"
+                                    android:text="CVV*"
                                     android:paddingStart="2dp"
                                     android:textColor="#2D2B32" />
 
@@ -636,7 +636,7 @@
                             android:fontFamily="@font/poppins"
                             android:gravity="center_vertical"
                             android:lineSpacingExtra="-1sp"
-                            android:text="Card Number"
+                            android:text="Card Number*"
                             android:textColor="#2D2B32"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/textView2" />
@@ -663,11 +663,12 @@
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toBottomOf="@+id/texthead_Enter_UPI">
 
-                                <EditText
+                                <com.boxpay.checkout.sdk.utils.NoPasteEditText
                                     android:id="@+id/edit_text_card_number"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
+                                    android:importantForAutofill="noExcludeDescendants"
                                     android:background="@drawable/white_bg_edittext"
                                     android:fontFamily="@font/poppins"
                                     android:gravity="center_vertical"

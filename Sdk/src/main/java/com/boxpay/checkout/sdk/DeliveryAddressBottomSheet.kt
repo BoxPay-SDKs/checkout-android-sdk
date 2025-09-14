@@ -57,6 +57,7 @@ import java.time.format.DateTimeParseException
 import java.util.Calendar
 import java.util.Locale
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.isVisible
 import com.boxpay.checkout.sdk.dataclasses.DeliveryAddressErrorHandlingData
 import com.boxpay.checkout.sdk.utils.dpToPx
 
@@ -92,6 +93,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
     private var isHomeAddressSaved: Boolean = false
     private var isOfficeAddressSaved: Boolean = false
     private lateinit var inputMethodManager: InputMethodManager
+    private val panRegex = "^[A-Z]{5}[0-9]{4}[A-Z]$".toRegex()
 
     private var convertedDate: String? = null
     val emailRegex =
@@ -149,6 +151,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 binding.otherSaveAddressTextField.text = null
                 binding.otherSaveAddressTextField.visibility = View.GONE
                 labelType = "Home"
+                isSavedAddressLabelValid()
             } else {
                 Toast.makeText(context, "Address already saved with Home", Toast.LENGTH_SHORT)
                     .show()
@@ -186,6 +189,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 binding.otherSaveAddressTextField.text = null
                 binding.otherSaveAddressTextField.visibility = View.GONE
                 labelType = "Work"
+                isSavedAddressLabelValid()
             } else {
                 Toast.makeText(context, "Address already saved with Office", Toast.LENGTH_SHORT)
                     .show()
@@ -200,6 +204,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 AppCompatResources.getDrawable(context!!, R.drawable.saved_address_background)
             binding.otherSaveAddressTextField.visibility = View.VISIBLE
             labelType = "Other"
+            isSavedAddressLabelValid()
         }
 
         binding.ccpCountry.setDialogEventsListener(object : CountryCodePicker.DialogEventsListener {
@@ -241,31 +246,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 logAddressUpdatedEvent()
-                s?.let {
-                    if (it.isNotEmpty()) {
-                        if (it.length == 10) {
-                            if (isValidPAN(it.toString())) {
-                                binding.panErrorText.text = ""
-                                binding.panErrorText.visibility = View.INVISIBLE
-                                isPANFilled = true
-                                editor.putString("panNumberChosen", it.toString())
-                                editor.apply()
-                            } else {
-                                binding.panErrorText.text = "Invalid PAN Number"
-                                binding.panErrorText.visibility = View.VISIBLE
-                                isPANFilled = false
-                            }
-                        } else {
-                            binding.panErrorText.text = "PAN must be 10 characters"
-                            binding.panErrorText.visibility = View.VISIBLE
-                            isPANFilled = false
-                        }
-                    } else {
-                        binding.panErrorText.text = "Required"
-                        binding.panErrorText.visibility = View.VISIBLE
-                        isPANFilled = false
-                    }
-                }
+                isPanValid()
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -417,6 +398,15 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         if (!isShippingEnabled) {
             binding.addressLayout.visibility = View.GONE
         }
+
+        toCheckAllFieldsAreFilled { isAllValid ->
+            if (isAllValid) {
+                binding.textView.text =
+                    if (isShippingEnabled) "Edit Address" else "Edit Personal Details"
+            } else {
+                binding.textView.text =
+                    if (isShippingEnabled) "Add New Address" else "Add Personal Details"            }
+        }
         binding.fullNameEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 // no changes required
@@ -438,9 +428,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 logAddressUpdatedEvent()
-                binding.mobileErrorText.visibility = View.INVISIBLE
-                binding.mobileNumberEditText.background =
-                    ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
+                isMobileNumberValid()
             }
 
             override fun afterTextChanged(s: Editable?) {
@@ -611,7 +599,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                         dismiss()
                     }
                 } else {
-                    isValidPAN(binding.panEditText.text.toString())
+                    isPanValid()
                     isEmailValid()
                     isPrimaryAddressValid()
                     isPostalValid()
@@ -619,17 +607,11 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                     isStateValid()
                     isFullNameValid()
                     isOthersTextFieldValid()
+                    isSavedAddressLabelValid()
+                    isMobileNumberValid()
+                    isDOBValid()
                 }
             }
-        }
-
-        toCheckAllFieldsAreFilled { isAllValid ->
-            if (isAllValid) {
-                binding.textView.text =
-                    if (isShippingEnabled) "Edit Address" else "Edit Personal Details"
-            } else {
-                binding.textView.text =
-                    if (isShippingEnabled) "Add New Address" else "Add Personal Details"            }
         }
 
         return binding.root
@@ -657,10 +639,6 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         )
     }
 
-    fun isValidPAN(pan: String): Boolean {
-        val panRegex = "^[A-Z]{5}[0-9]{4}[A-Z]$".toRegex()
-        return panRegex.matches(pan)
-    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun extractDateFromTimestamp(timestamp: String): String {
@@ -693,7 +671,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
                 val formattedDate = formatDate(selectedYear, selectedMonth, selectedDay)
                 editText.setText(formattedDate)
                 isDobSelected = true
-                binding.dobErrorText.visibility = View.INVISIBLE
+                isDOBValid()
                 convertedDate = convertDateFormat(formattedDate)
                 editor.putString("dateOfBirthChosen", convertToISO8601(formattedDate, 0, 0, 0))
                 editor.apply()
@@ -992,6 +970,9 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         queue.add(jsonObjectAll)
     }
 
+    fun isSavedAddressLabelValid() {
+        binding.savedAddressLabelErrorText.isVisible = labelType == null
+    }
 
     fun isEmailValid() {
         val email = binding.emailEditText.text
@@ -1041,6 +1022,36 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
+    fun isPanValid() {
+        val panNumber = binding.panEditText.text?.toString() ?: ""
+        if (panNumber.isNotEmpty() && panNumber.length == 10 &&  panRegex.matches(panNumber)) {
+            binding.panErrorText.visibility = View.INVISIBLE
+            binding.panEditText.background =
+                ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
+            isPANFilled = true
+            editor.putString("panNumberChosen", panNumber.toString())
+            editor.apply()
+        } else {
+            isPANFilled = !isPANFilled
+            binding.panErrorText.text = if (panNumber.length == 10) "Invalid PAN Number" else if(panNumber.length != 10) "PAN must be 10 characters" else "Required"
+            binding.panErrorText.visibility = View.VISIBLE
+            binding.panEditText.background =
+                ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
+        }
+    }
+
+    fun isDOBValid() {
+        if(isDobSelected) {
+            binding.dobErrorText.visibility = View.INVISIBLE
+            binding.dobEditText.background =
+                ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
+        } else {
+            binding.dobErrorText.visibility = View.VISIBLE
+            binding.dobEditText.background =
+                ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
+        }
+    }
+
     fun isPrimaryAddressValid() {
         val primaryAddress = binding.addressEditText1.text
         if (primaryAddress.isEmpty()) {
@@ -1063,6 +1074,20 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         } else {
             binding.stateErrorText.visibility = View.INVISIBLE
             binding.stateEditText.background =
+                ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
+        }
+    }
+
+    fun isMobileNumberValid() {
+        val mobileNumber = binding.mobileNumberEditText.text
+        if (mobileNumber.isEmpty()) {
+            binding.mobileErrorText.text = "Required"
+            binding.mobileErrorText.visibility = View.VISIBLE
+            binding.mobileNumberEditText.background =
+                ContextCompat.getDrawable(context!!, R.drawable.error_red_border)
+        } else {
+            binding.mobileErrorText.visibility = View.INVISIBLE
+            binding.mobileNumberEditText.background =
                 ContextCompat.getDrawable(context!!, R.drawable.edittext_bg)
         }
     }

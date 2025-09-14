@@ -82,7 +82,7 @@
                         android:paddingStart="14dp"
                         android:paddingTop="20dp"
                         android:paddingEnd="14dp"
-                        android:paddingBottom="30dp">
+                        android:paddingBottom="20dp">
 
                         <LinearLayout
                             android:id="@id/fullNameLayout"
@@ -271,7 +271,7 @@
                                 android:text="PAN*"
                                 android:textColor="@android:color/black" />
 
-                            <EditText
+                            <com.boxpay.checkout.sdk.utils.NoPasteEditText
                                 android:id="@+id/panEditText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -635,7 +635,7 @@
                                     android:fontFamily="@font/poppins"
                                     android:gravity="center_vertical"
                                     android:lineSpacingExtra="-1sp"
-                                    android:text="Save address as"
+                                    android:text="Save address as*"
                                     android:textColor="#2D2B32" />
                             </LinearLayout>
 
@@ -697,6 +697,17 @@
                                     android:textFontWeight="400"
                                     android:textSize="12sp" />
                             </LinearLayout>
+                            <TextView
+                                android:id="@+id/savedAddressLabelErrorText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/poppins"
+                                android:gravity="center_vertical"
+                                android:lineSpacingExtra="-1sp"
+                                android:text="Required"
+                                android:textColor="#ffff4d4f"
+                                android:visibility="invisible" />
 
                             <EditText
                                 android:id="@+id/otherSaveAddressTextField"
@@ -726,7 +737,7 @@
                                 android:lineSpacingExtra="-1sp"
                                 android:text="Required"
                                 android:textColor="#ffff4d4f"
-                                android:visibility="invisible" />
+                                android:visibility="gone" />
 
 
                         </LinearLayout>

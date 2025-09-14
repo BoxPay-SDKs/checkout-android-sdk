@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -152,36 +153,87 @@ fun MoreOptionsSavedAddress(
                         )
                     }
                 },
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = 4.dp, bottom = 10.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(
-                text = "Edit",
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    fontFamily = defaultFontFamily,
-                    fontWeight = FontWeight.Normal
-                ),
-                color = Color(0xFF2D2B32),
+            Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(top = 8.dp)
                     .fillMaxWidth()
-                    .background(Color.White, RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .background(
+                        Color.White,
+                        RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                    )
                     .padding(12.dp)
                     .clickable {
                         onClickEditAddress()
-                    },
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "Set as Default",
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    fontFamily = defaultFontFamily,
-                    fontWeight = FontWeight.Normal
-                ),
-                color = Color(0xFF2D2B32),
+                    }
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_edit_details),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(20.dp)
+                )
+                Text(
+                    text = "Edit",
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        fontFamily = defaultFontFamily,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = Color(0xFF2D2B32),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Image(
+                    painter = painterResource(id = R.drawable.ic_boxpay_chevron_right),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(20.dp)
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .fillMaxWidth()
+                    .background(
+                        Color.White
+                    )
+                    .padding(12.dp)
+                    .clickable {
+                        onClickSetDefault()
+                    }
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_boxpay_deliver_location),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(20.dp)
+                )
+                Text(
+                    text = "Set as Default",
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        fontFamily = defaultFontFamily,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = Color(0xFF2D2B32),
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Image(
+                    painter = painterResource(id = R.drawable.ic_boxpay_chevron_right),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(20.dp)
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .padding(top = 2.dp)
                     .fillMaxWidth()
@@ -191,26 +243,33 @@ fun MoreOptionsSavedAddress(
                     )
                     .padding(12.dp)
                     .clickable {
-                        onClickSetDefault()
-                    },
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "Delete address",
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    fontFamily = defaultFontFamily,
-                    fontWeight = FontWeight.Normal
-                ),
-                color = Color(0xFFFF4D4F),
-                modifier = Modifier
-                    .padding(top = 12.dp)
-                    .fillMaxWidth()
-                    .clickable {
                         onClickDeleteAddress()
-                    },
-                textAlign = TextAlign.Center
-            )
+                    }
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_boxpay_delete),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(20.dp)
+                )
+                Text(
+                    text = "Delete address",
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        fontFamily = defaultFontFamily,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = Color(0xFF2D2B32),
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Image(
+                    painter = painterResource(id = R.drawable.ic_boxpay_chevron_right),
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(20.dp)
+                )
+            }
         }
     }
 }
