@@ -2442,8 +2442,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (shopperObject.isNull("deliveryAddress")) {
                     editor.putString("address1", null)
                     editor.putString("address2", null)
-                    editor.putString("countryCode", null)
-                    editor.putString("indexCountryCodePhone", null)
                     editor.putString("phoneCode", null)
                     editor.putString("city", null)
                     editor.putString("state", null)
