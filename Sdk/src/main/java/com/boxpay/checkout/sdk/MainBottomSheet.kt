@@ -706,7 +706,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
 
             val savedCardsInstrumentAdaptor = SavedCardsItemsAdaptor(
-                savedCardsInstrumentationList, binding.savedCardsRecyclerView,context
+                savedCardsInstrumentationList,context
             )
             binding.savedCardsRecyclerView.layoutManager = LinearLayoutManager(context)
             binding.savedCardsRecyclerView.adapter = savedCardsInstrumentAdaptor
@@ -1897,6 +1897,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.upiOptionsLinearLayout.visibility = View.GONE
         binding.textView20.typeface = ResourcesCompat.getFont(requireContext(), R.font.poppins)
         binding.popularUPIAppsConstraint.visibility = View.GONE
+        if (savedUpiInstrumentationList.isNotEmpty()) {
+            binding.savedUpiRecyclerView.visibility = View.GONE
+        }
         binding.imageView12.animate()
             .rotation(0f)
             .setDuration(500) // Set the duration of the animation in milliseconds
