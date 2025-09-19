@@ -41,6 +41,7 @@ import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl
 import com.boxpay.checkout.sdk.utils.getSessionToken
+import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -492,8 +493,6 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
 
                 try {
                     val status = response.getJSONObject("status").getString("status")
-                    var url = ""
-                    // Loop through the actions array to find the URL
 
                     if (status.equals("Approved")) {
                         val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
@@ -507,27 +506,11 @@ internal class BNPLBottomSheet : BottomSheetDialogFragment() {
                                 .length() != 0
                         ) {
                             showLoadingState()
-                            val type =
-                                response.getJSONArray("actions").getJSONObject(0).getString("type")
-                            if (status.contains("RequiresAction", ignoreCase = true)) {
+                           if (status.contains("RequiresAction", ignoreCase = true)) {
                                 editor.putString("status", "RequiresAction")
-                            }
-                            if (type.contains("html", true)) {
-                                url = response
-                                    .getJSONArray("actions")
-                                    .getJSONObject(0)
-                                    .getString("htmlPageString")
-                            } else {
-                                url = response
-                                    .getJSONArray("actions")
-                                    .getJSONObject(0)
-                                    .getString("url")
-                            }
-                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                            intent.putExtra("url", url)
-                            intent.putExtra("type", type)
+                           }
+                            openWebView(this, response)
                             startFunctionCalls()
-                            startActivityForResult(intent, 333)
                         } else {
                             PaymentFailureScreen(
                                 errorMessage = "Please retry using other payment method or try again in sometime"

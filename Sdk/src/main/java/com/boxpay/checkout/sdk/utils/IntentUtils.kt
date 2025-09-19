@@ -8,6 +8,7 @@ import org.json.JSONObject
 
 fun openWebView(fragment: Fragment, response: JSONObject) {
     val type = response.getJSONArray("actions").getJSONObject(0).getString("type")
+    val transactionRequest = response.getJSONArray("actions").getJSONObject(0).optJSONObject("data")?.optString("txnreq")
     val url = if (type.contains("html", true)) {
         response.getJSONArray("actions").getJSONObject(0).getString("htmlPageString")
     } else {
@@ -17,6 +18,7 @@ fun openWebView(fragment: Fragment, response: JSONObject) {
     val intent = Intent(fragment.context, OTPScreenWebView::class.java)
     intent.putExtra("url", url)
     intent.putExtra("type", type)
+    intent.putExtra("transactionRequest", transactionRequest)
     fragment.startActivityForResult(intent, 333)
 }
 

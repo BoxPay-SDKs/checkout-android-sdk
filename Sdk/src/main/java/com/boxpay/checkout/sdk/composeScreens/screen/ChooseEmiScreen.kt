@@ -930,9 +930,7 @@ fun AddCardDetailsScreen(
                 .height(48.dp)
                 .border(
                     1.dp,
-                    if (cardNumber?.text?.isEmpty() == true || isCardNumberEnabled == false) Color(
-                        0xFFB9232F
-                    ) else Color(0xFFD9D9D9),
+                    Color(0xFFD9D9D9),
                     RoundedCornerShape(8.dp)
                 ),
             shape = RoundedCornerShape(8.dp),
