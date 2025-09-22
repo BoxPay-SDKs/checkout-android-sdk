@@ -27,6 +27,7 @@ import com.boxpay.checkout.sdk.databinding.ActivityOtpscreenWebViewBinding
 import com.google.android.gms.auth.api.phone.SmsRetriever
 import kotlinx.coroutines.Job
 import org.json.JSONException
+import java.net.URLEncoder
 import java.util.regex.Pattern
 
 
@@ -77,6 +78,7 @@ internal class OTPScreenWebView() : AppCompatActivity() {
         requestQueue = Volley.newRequestQueue(this)
         val receivedType = intent.getStringExtra("type")
         val receivedUrl = intent.getStringExtra("url")
+        val receivedTransactionRequest = intent.getStringExtra("transactionRequest")
 
         if (receivedType?.contains("html", true) == true) {
             val htmlUrl = receivedUrl?.replace("\\\"", "\"")
@@ -92,7 +94,10 @@ internal class OTPScreenWebView() : AppCompatActivity() {
                 null
             )
         } else {
-            binding.webViewForOtpValidation.loadUrl(receivedUrl.toString())
+            binding.webViewForOtpValidation.postUrl(
+                receivedUrl.toString(),
+                if(receivedTransactionRequest.isNullOrEmpty()) ByteArray(0) else ("txnreq=" + URLEncoder.encode(receivedTransactionRequest, "UTF-8")).toByteArray(Charsets.UTF_8)
+            )
         }
 
         binding.webViewForOtpValidation.settings.domStorageEnabled = true

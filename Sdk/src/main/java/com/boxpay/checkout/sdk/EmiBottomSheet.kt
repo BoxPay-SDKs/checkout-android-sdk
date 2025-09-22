@@ -49,6 +49,7 @@ import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl
 import com.boxpay.checkout.sdk.utils.getSessionToken
+import com.boxpay.checkout.sdk.utils.openWebView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -672,7 +673,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                     transactionId = response.getString("transactionId").toString()
                     updateTransactionIDInSharedPreferences(transactionId!!)
 
-                    var url = ""
 
                     if (status.contains("Rejected", ignoreCase = true)) {
                         var cleanedMessage = reason.substringAfter(":")
@@ -687,21 +687,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                         )
                         emiViewModel.showLoaderInButton.value = false
                     } else {
-                        val type =
-                            response.getJSONArray("actions").getJSONObject(0).getString("type")
                         if (status.contains("RequiresAction", ignoreCase = true)) {
                             editor.putString("status", "RequiresAction")
-                        }
-                        if (type.contains("html", true)) {
-                            url = response
-                                .getJSONArray("actions")
-                                .getJSONObject(0)
-                                .getString("htmlPageString")
-                        } else {
-                            url = response
-                                .getJSONArray("actions")
-                                .getJSONObject(0)
-                                .getString("url")
                         }
 
                         if (status.contains("Approved", ignoreCase = true)) {
@@ -714,11 +701,8 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                         } else {
                             emiViewModel.showLoaderInButton.value = false
                             showLoadingState()
-                            val intent = Intent(requireContext(), OTPScreenWebView::class.java)
-                            intent.putExtra("url", url)
-                            intent.putExtra("type", type)
                             startFunctionCalls()
-                            startActivityForResult(intent, 333)
+                            openWebView(this, response)
                         }
                     }
                     editor.apply()
