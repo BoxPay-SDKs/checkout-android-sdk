@@ -3474,19 +3474,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         val callback = SingletonClass.getInstance().getYourObject()
                         val callbackForDismissing =
                             SingletonForDismissMainSheet.getInstance().getYourObject()
-                        if (callback != null) {
-                            callback.onPaymentResult(
-                                PaymentResultObject(
-                                    "Expired",
-                                    transactionId ?: "",
-                                    transactionId ?: ""
-                                )
-                            )
-                        }
-                        if (callbackForDismissing != null) {
-                            callbackForDismissing.dismissFunction()
-                        }
                         if (isAdded && isResumed && !isStateSaved) {
+                            if (callbackForDismissing != null) {
+                                callbackForDismissing.dismissFunction()
+                            }
+                            if (callback != null) {
+                                callback.onPaymentResult(
+                                    PaymentResultObject(
+                                        "Expired",
+                                        transactionId ?: "",
+                                        transactionId ?: ""
+                                    )
+                                )
+                            }
                             SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                         }
                     }

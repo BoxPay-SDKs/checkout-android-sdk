@@ -36,12 +36,6 @@ internal class SessionExpireScreen(val function: () -> Unit = {}) :
         // Inflate the layout for this fragment
         binding = FragmentSessionExpireBinding.inflate(layoutInflater, container, false)
         binding.retryButton.setOnClickListener() {
-            callUIAnalytics(
-                context = requireContext(),
-                message = "Session Expired",
-                screenName = "Session Expired Screen Proceed Clicked",
-                uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
-            )
             val callback =  SingletonClass.getInstance().getYourObject()
             if(callback != null){
                 val transactionId = sharedPreferences.getString("transactionId","").toString()
