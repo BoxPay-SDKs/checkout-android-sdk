@@ -52,6 +52,7 @@ class BoxPayCheckout(
             editor.putString("baseUrl", "apis.boxpay.in")
         }
         editor.apply()
+        putTransactionDetailsInSharedPreferences()
 
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()!!
         Thread.setDefaultUncaughtExceptionHandler(SDKCrashHandler(context,
@@ -61,11 +62,10 @@ class BoxPayCheckout(
             if (token.isNotEmpty()) {
                 callUIAnalytics(
                     context = context,
-                    message = "",
+                    message = "checkout loaded",
                     screenName = "BoxPayCheckout",
                     uiEvent = AnalyticsEvents.CHECKOUT_LOADED
                 )
-                putTransactionDetailsInSharedPreferences()
                 openBottomSheet()
             } else {
                 callUIAnalytics(

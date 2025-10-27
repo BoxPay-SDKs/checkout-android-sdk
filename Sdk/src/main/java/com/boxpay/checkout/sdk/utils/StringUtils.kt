@@ -73,3 +73,7 @@ fun getValueAtIndexByKey(jsonArray: JSONArray, key: String, index:Int) : String?
 
 fun String?.clean(): String? =
     this?.trim()?.takeIf { it.isNotEmpty() && it.lowercase() != "null" }
+
+fun getAppName(context: Context): String {
+    return context.applicationInfo.loadLabel(context.packageManager).toString()
+}
