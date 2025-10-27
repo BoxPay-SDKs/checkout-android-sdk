@@ -23,6 +23,7 @@ fun callUIAnalytics(
     uiEvent: String
 ) {
     val queue: RequestQueue = Volley.newRequestQueue(context)
+    val token = getSessionToken(context)
 
     CoroutineScope(Dispatchers.IO).launch {
         val userAgentHeader = WebSettings.getDefaultUserAgent(context)
@@ -30,7 +31,7 @@ fun callUIAnalytics(
 
         // Construct the request body
         val requestBody = JSONObject().apply {
-            put(AnalyticsEvents.CALLER_TOKEN, getSessionToken(context))
+            put(AnalyticsEvents.CALLER_TOKEN, token.ifEmpty { "${getAppName(context)} app name" })
             put(AnalyticsEvents.UI_EVENT, uiEvent)
 
             val browserData = JSONObject().apply {
@@ -39,7 +40,7 @@ fun callUIAnalytics(
             }
 
             val eventAttrs = JSONObject().apply {
-                put("errorMessage", message)
+                put("errorMessage", if(token.isEmpty()) "$message extra message - token is '$token' which is not valid " else message)
                 put("screenName", screenName)
             }
 
