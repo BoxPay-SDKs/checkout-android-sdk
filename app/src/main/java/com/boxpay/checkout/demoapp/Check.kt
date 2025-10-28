@@ -160,31 +160,7 @@ class Check : AppCompatActivity() {
             "dateOfBirth": "2023-07-17T12:34:56Z",
             "panNumber": "CTGPA2222D"
         },
-  "order" : {
-    "originalAmount" : 500,
-    "shippingAmount" : 50,
-    "voucherCode" : "VOUCHER",
-    "taxAmount" :100,
-    "totalAmountWithoutTax" : 550,
-    "items" : [ {
-      "id" : "test",
-      "itemName" : "La Fille Regular Solid Handheld Bag Blue",
-      "description" : "testProduct",
-      "quantity" : 1,
-      "manufacturer" : null,
-      "brand" : null,
-      "color" : null,
-      "productUrl" : null,
-      "imageUrl" : "https://assetscdn1.paytm.com/images/catalog/product/B/BA/BAGLAFILLE-BLUEINTO887307A255D05/1563381583133_0..jpg",
-      "categories" : null,
-      "amountWithoutTax" : 500,
-      "taxAmount" : 76.27,
-      "taxPercentage" : null,
-      "discountedAmount" : null,
-      "amountWithoutTaxLocale" : "10",
-      "amountWithoutTaxLocaleFull" : "10"
-    }]
-  },
+  "order" : null,
   "frontendBackUrl" : "https://www.boxpay.tech",
   "createShopperToken" : true,
   "expiryDurationSec" : 900

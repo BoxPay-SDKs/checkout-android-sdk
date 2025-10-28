@@ -668,6 +668,31 @@
 
                     </androidx.cardview.widget.CardView>
 
+                    <LinearLayout
+                        android:id="@+id/instantOfferCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/instantOfferText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="Offers &amp; Payments"
+                            android:textSize="14sp"
+                            android:textColor="#020815"
+                            android:textFontWeight="600"/>
+
+                        <androidx.compose.ui.platform.ComposeView
+                            android:id="@+id/offerCardComposeView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+                    </LinearLayout>
+
                     <TextView
                         android:id="@+id/deliveryAddressText"
                         android:layout_width="wrap_content"
