@@ -40,7 +40,7 @@ fun callUIAnalytics(
             }
 
             val eventAttrs = JSONObject().apply {
-                put("errorMessage", if(token.isEmpty()) "$message extra message - token is '$token' which is not valid " else message)
+                put("errorMessage", if(token.isEmpty()) "token is '$token'" else message)
                 put("screenName", screenName)
             }
 
