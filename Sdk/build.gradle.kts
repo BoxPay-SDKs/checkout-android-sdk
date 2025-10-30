@@ -13,7 +13,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
-        buildConfigField("String", "SDK_VERSION", "\"1.2.11-beta5\"")
+        buildConfigField("String", "SDK_VERSION", "\"1.2.11-beta6\"")
 
         android.buildFeatures.buildConfig = true
     }
