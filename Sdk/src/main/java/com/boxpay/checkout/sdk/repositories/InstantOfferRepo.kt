@@ -14,34 +14,30 @@ import retrofit2.Response
 
 class InstantOfferRepo (val context: Context) {
     private val apiService = RetrofitInstance.getApi(context)
-    private val getInstantOffersResponseLiveData = MutableLiveData<GetInstantOffersResponse?>()
-    private val applyInstantOffersResponseLiveData = MutableLiveData<ApplyInstantOfferResponse?>()
 
-    fun getInstantOffer(instantOffersRequest: GetInstantOffersRequest) {
-        apiService.getInstantOffers(instantOffersRequest = instantOffersRequest, token = getSessionToken(context = context)).enqueue(object : Callback<GetInstantOffersResponse> {
-            override fun onResponse(call: Call<GetInstantOffersResponse>, response: Response<GetInstantOffersResponse>) {
-                if (response.isSuccessful && response.body() != null) {
-                    getInstantOffersResponseLiveData.postValue(response.body())
-                }
-            }
-
-            override fun onFailure(call: Call<GetInstantOffersResponse>, t: Throwable) {
-                getInstantOffersResponseLiveData.postValue(null)
-            }
-        })
+    fun getInstantOffer(instantOffersRequest: GetInstantOffersRequest) : List<GetInstantOffersResponse>? {
+        return try {
+            val response = apiService.getInstantOffers(
+                instantOffersRequest = instantOffersRequest,
+                token = getSessionToken(context)
+            ).execute()
+            if (response.isSuccessful) response.body() else null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
-    fun applyInstantOffers(applyInstantOfferRequest: ApplyInstantOfferRequest) {
-        apiService.applyInstantOffers(applyInstantOfferRequest = applyInstantOfferRequest, token = getSessionToken(context = context)).enqueue(object : Callback<ApplyInstantOfferResponse> {
-            override fun onResponse(call: Call<ApplyInstantOfferResponse>, response: Response<ApplyInstantOfferResponse>) {
-                if (response.isSuccessful && response.body() != null) {
-                    applyInstantOffersResponseLiveData.postValue(response.body())
-                }
-            }
-
-            override fun onFailure(call: Call<ApplyInstantOfferResponse>, t: Throwable) {
-                applyInstantOffersResponseLiveData.postValue(null)
-            }
-        })
+    fun applyInstantOffers(applyInstantOfferRequest: ApplyInstantOfferRequest) : ApplyInstantOfferResponse? {
+        return try {
+            val response = apiService.applyInstantOffers(
+                applyInstantOfferRequest = applyInstantOfferRequest,
+                token = getSessionToken(context)
+            ).execute()
+            if (response.isSuccessful) response.body() else null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }

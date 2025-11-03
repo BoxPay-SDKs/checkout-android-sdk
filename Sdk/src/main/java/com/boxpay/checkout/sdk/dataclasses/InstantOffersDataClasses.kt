@@ -9,6 +9,7 @@ data class GetInstantOffersRequest(
 
 data class GetInstantOffersResponse(
     val title : String?,
+    val description: String?,
     val terms : String?,
     val type : String?,
     val code : String?,

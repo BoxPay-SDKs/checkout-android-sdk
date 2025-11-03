@@ -26,7 +26,7 @@ interface ApiInterface {
     fun getInstantOffers(
         @Body instantOffersRequest: GetInstantOffersRequest,
         @Path("token") token: String
-    ) : Call<GetInstantOffersResponse>
+    ) : Call<List<GetInstantOffersResponse>>
 
     @POST(ApiUrls.APPLY_INSTANT_OFFER)
     fun applyInstantOffers(
