@@ -34,7 +34,7 @@ import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
 import com.boxpay.checkout.sdk.adapters.BnplAdapters
 import com.boxpay.checkout.sdk.databinding.FragmentBnplBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.BnplDataClass
-import com.boxpay.checkout.sdk.constant.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString

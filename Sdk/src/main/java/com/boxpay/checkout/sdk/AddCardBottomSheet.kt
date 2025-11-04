@@ -65,7 +65,7 @@ import com.boxpay.checkout.sdk.dataclasses.LegalEntity
 import com.boxpay.checkout.sdk.dataclasses.Money
 import com.boxpay.checkout.sdk.dataclasses.SessionResponse
 import com.boxpay.checkout.sdk.dataclasses.Shopper
-import com.boxpay.checkout.sdk.constant.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.fetchStatusAndReason

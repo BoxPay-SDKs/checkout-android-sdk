@@ -28,7 +28,7 @@ import com.boxpay.checkout.sdk.composeScreens.components.SavedAddressShimmerScre
 import com.boxpay.checkout.sdk.composeScreens.model.Address
 import com.boxpay.checkout.sdk.composeScreens.screen.SavedAddressesScreen
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
-import com.boxpay.checkout.sdk.constant.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl

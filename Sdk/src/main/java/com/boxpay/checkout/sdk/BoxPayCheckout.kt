@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.sdk.ViewModels.CallBackFunctions
-import com.boxpay.checkout.sdk.constant.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.constant.ConfigurationOptions
+import com.boxpay.checkout.sdk.constants.ConfigurationOptions
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.getAnalyticsUrl
 

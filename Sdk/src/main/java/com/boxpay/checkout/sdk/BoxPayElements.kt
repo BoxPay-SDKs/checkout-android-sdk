@@ -2,9 +2,9 @@ package com.boxpay.checkout.sdk
 
 import android.content.Context
 import android.widget.Toast
-import com.boxpay.checkout.sdk.constant.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.constant.ConfigurationOptions
+import com.boxpay.checkout.sdk.constants.ConfigurationOptions
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 
 class BoxPayElements(
