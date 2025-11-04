@@ -42,7 +42,7 @@ import com.boxpay.checkout.sdk.composeScreens.screen.ChooseEmiScreen
 import com.boxpay.checkout.sdk.composeScreens.screen.EmiShimmerScreen
 import com.boxpay.checkout.sdk.composeScreens.screen.SelectTenureEmi
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
-import com.boxpay.checkout.sdk.enum.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString

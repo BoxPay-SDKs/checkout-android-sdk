@@ -8,7 +8,7 @@ import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import com.boxpay.checkout.sdk.enum.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -38,7 +38,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentDeliveryAddressBottomSheetBinding
-import com.boxpay.checkout.sdk.enum.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl

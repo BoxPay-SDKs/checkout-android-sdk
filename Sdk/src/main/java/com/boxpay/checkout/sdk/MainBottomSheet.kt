@@ -67,7 +67,7 @@ import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.SavedCard
 import com.boxpay.checkout.sdk.dataclasses.SavedRecommended
 import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
-import com.boxpay.checkout.sdk.enum.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
