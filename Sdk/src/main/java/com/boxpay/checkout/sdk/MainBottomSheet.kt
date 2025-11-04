@@ -37,6 +37,9 @@ import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -55,6 +58,7 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.CallbackForDismissMainSheet
+import com.boxpay.checkout.sdk.ViewModels.InstantOfferViewModel
 import com.boxpay.checkout.sdk.ViewModels.OverlayViewModel
 import com.boxpay.checkout.sdk.ViewModels.SingletonClassForLoadingState
 import com.boxpay.checkout.sdk.ViewModels.SingletonForDismissMainSheet
@@ -62,8 +66,10 @@ import com.boxpay.checkout.sdk.adapters.OrderSummaryItemsAdapter
 import com.boxpay.checkout.sdk.adapters.RecommendedItemsAdapter
 import com.boxpay.checkout.sdk.adapters.SavedCardsItemsAdaptor
 import com.boxpay.checkout.sdk.adapters.SavedUpiItemsAdaptor
+import com.boxpay.checkout.sdk.composeScreens.components.ApplyCouponCard
 import com.boxpay.checkout.sdk.composeScreens.screen.RecommendedScreen
 import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
+import com.boxpay.checkout.sdk.dataclasses.FetchPaymentMethodPostOffer
 import com.boxpay.checkout.sdk.dataclasses.SavedCard
 import com.boxpay.checkout.sdk.dataclasses.SavedRecommended
 import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
@@ -251,6 +257,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 repeatCount = LottieDrawable.INFINITE // This makes the animation repeat infinitely
             }
             binding.loadingRelativeLayout.visibility = View.VISIBLE
+            binding.recommendedProceedButton.visibility = View.GONE
         }
     }
 
@@ -258,6 +265,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun removeLoadingState() {
         binding.loadingRelativeLayout.visibility = View.GONE
         binding.boxpayLogoLottie.cancelAnimation()
+        if(binding.recommendedCardView.isVisible) {
+            binding.recommendedProceedButton.visibility = View.VISIBLE
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -2045,6 +2055,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val url = "${getSessionApiUrl(context)}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        var offerType : String? = null
+        var offerMinAmount : Int? = null
+        var offerCurrencyCode : String? = null
+        var offerMaxAmount : Int? = null
         val jsonObjectAll = object : JsonObjectRequest(Method.GET, url, null, { response ->
 
             try {
@@ -2082,7 +2096,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
 
-                val totalAmount = paymentDetailsObject.getJSONObject("money").getString("amount")
+                val totalAmount = paymentDetailsObject.getJSONObject("money").getInt("amount")
+                offerMinAmount = totalAmount
 
                 val formattedAmount =
                     paymentDetailsObject.getJSONObject("money").getString("amountLocaleFull")
@@ -2095,7 +2110,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (orderObject == null) {
                     binding.itemsInOrderRecyclerView.visibility = View.GONE
                     binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
-                    binding.totalValueRelativeLayout.visibility = View.GONE
                 } else {
                     binding.orderSummaryConstraintLayout.setPadding(0, 16, 0, 16)
                 }
@@ -2267,6 +2281,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 var currencySymbol = moneyObject.getString("currencySymbol")
                 val currencyCode = moneyObject.getString("currencyCode")
+                offerCurrencyCode = currencyCode
                 if (currencySymbol == "")
                     currencySymbol = "₹"
 
@@ -2351,13 +2366,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 )
                 editor.apply()
 
-                binding.unopenedTotalValue.text = "${currencySymbol}${formattedAmount}"
                 if (totalQuantity == 0) {
-                    binding.numberOfItems.text = "Total"
-                } else if (totalQuantity == 1)
+                    binding.numberOfItems.visibility = View.GONE
+                    binding.unopenedTotalValue.visibility = View.GONE
+                    binding.textView18.visibility = View.VISIBLE
+                    binding.ItemsPrice.visibility = View.VISIBLE
+                } else if (totalQuantity == 1) {
+                    binding.unopenedTotalValue.text = "${currencySymbol}${formattedAmount}"
                     binding.numberOfItems.text = "${totalQuantity} item"
-                else
+                } else {
                     binding.numberOfItems.text = "${totalQuantity} items"
+                    binding.unopenedTotalValue.text = "${currencySymbol}${formattedAmount}"
+                }
                 binding.ItemsPrice.text = "${currencySymbol}${formattedAmount}"
 
                 if (originalAmount != null && originalAmount != "0" && originalAmount != "null") {
@@ -2542,9 +2562,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (paymentDetailsObject.isNull("order"))
                     orderSummaryEnable = false
 
-                if (!orderSummaryEnable && !totalAmount.isNullOrEmpty()) {
+                if (!orderSummaryEnable && !formattedAmount.isNullOrEmpty()) {
                     binding.textView9.text = "Payment Summary"
-                    binding.numberOfItems.text = "Total"
                 }
 
                 editor.apply()
@@ -2573,6 +2592,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     for (i in 0 until paymentMethodsArray.length()) {
                         val paymentMethod = paymentMethodsArray.getJSONObject(i)
                         val paymentMethodName = paymentMethod.getString("type")
+                        val paymentMethodOffers = paymentMethod.optJSONArray("applicableOffers")
+                        if(offerType.isNullOrEmpty() && paymentMethodOffers != null && paymentMethodOffers.length() != 0) {
+                            val firstOffer = paymentMethodOffers.getJSONObject(0)
+                            val discountObj = firstOffer.optJSONObject("discount")
+
+                            offerType = firstOffer.optString("type", "")
+                            offerMaxAmount = if (discountObj?.isNull("maxAmount") == true) {
+                                offerMinAmount
+                            } else {
+                                discountObj?.optInt("maxAmount") ?: offerMinAmount
+                            }
+                        }
                         if (paymentMethodName == "Upi") {
                             val brand = paymentMethod.getString("brand")
                             if (brand == "UpiCollect") {
@@ -2608,53 +2639,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             netBankingMethods = true
                         }
                     }
-
-                    if (upiAvailable) {
-                        binding.cardView4.visibility = View.VISIBLE
-
-                        if (upiCollectMethod) {
-                            binding.addNewUPIIDConstraint.visibility = View.VISIBLE
-                        }
-                        if (upiQRMethod) {
-                            if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == true) {
-                                binding.textView21.visibility = View.GONE
-                                binding.imageView10.visibility = View.GONE
-                                showQRCode()
-                            } else if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == false) {
-                                binding.textView21.visibility = View.GONE
-                                binding.imageView10.visibility = View.GONE
-                            }
-                            binding.UPIQRConstraint.visibility = View.VISIBLE
-                        }
-                    } else {
-                        binding.cardView4.visibility = View.GONE
-                    }
-
-                    if (cardsMethod) {
-                        binding.cardView5.visibility = View.VISIBLE
-                    } else {
-                        binding.cardView5.visibility = View.GONE
-                    }
-                    if (walletMethods) {
-                        binding.cardView6.visibility = View.VISIBLE
-                    } else {
-                        binding.cardView6.visibility = View.GONE
-                    }
-                    if (emiMethod) {
-                        binding.emiCard.visibility = View.VISIBLE
-                    } else {
-                        binding.emiCard.visibility = View.GONE
-                    }
-                    if (bnplMethod) {
-                        binding.cardView9.visibility = View.VISIBLE
-                    } else {
-                        binding.cardView9.visibility = View.GONE
-                    }
-                    if (netBankingMethods) {
-                        binding.cardView7.visibility = View.VISIBLE
-                    } else {
-                        binding.cardView7.visibility = View.GONE
-                    }
+                    updateView()
                 }
 
                 binding.nameAndMobileTextViewMain.text =
@@ -2728,6 +2713,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         removeLoadingState()
                     }
                 }
+                getInstantOffers(type = offerType ?: "", currency = offerCurrencyCode ?: "", minAmount = offerMinAmount ?: 0, maxAmount = offerMaxAmount ?: 0, currencySymbol = currencySymbol)
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
             } catch (e: Exception) {
@@ -2757,6 +2743,200 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             // no op
         }
         queue.add(jsonObjectAll)
+    }
+
+    private fun showPaymentMethods(paymentMethodsList : List<FetchPaymentMethodPostOffer>) {
+        upiCollectMethod = false
+        upiAvailable = false
+        upiIntentMethod = false
+        upiQRMethod = false
+        cardsMethod = false
+        walletMethods = false
+        emiMethod = false
+        bnplMethod = false
+        netBankingMethods = false
+        binding.recommendedCardView.visibility = View.GONE
+
+        paymentMethodsList.map { paymentMethod ->
+            if (paymentMethod.type == "Upi") {
+                val brand = paymentMethod.brand
+                if (brand == "UpiCollect") {
+                    upiCollectMethod = true
+                    upiAvailable = true
+                }
+                if (brand == "UpiIntent") {
+                    upiIntentMethod = true
+                    upiAvailable = true
+                }
+                if (brand == "UpiQr") {
+                    val userAgentHeader =
+                        WebSettings.getDefaultUserAgent(requireContext())
+                    if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
+                        upiQRMethod = true
+                    }
+                    upiAvailable = true
+                }
+            }
+            if (paymentMethod.type == "Card") {
+                cardsMethod = true
+            }
+            if (paymentMethod.type == "Wallet") {
+                walletMethods = true
+            }
+            if (paymentMethod.type == "Emi") {
+                emiMethod = true
+            }
+            if (paymentMethod.type == "BuyNowPayLater") {
+                bnplMethod = true
+            }
+            if (paymentMethod.type == "NetBanking") {
+                netBankingMethods = true
+            }
+        }
+        updateView()
+        removeLoadingState()
+    }
+
+    private fun updateView() {
+        if (upiAvailable) {
+            binding.cardView4.visibility = View.VISIBLE
+
+            if (upiCollectMethod) {
+                binding.addNewUPIIDConstraint.visibility = View.VISIBLE
+            }
+            if (upiQRMethod) {
+                if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == true) {
+                    binding.textView21.visibility = View.GONE
+                    binding.imageView10.visibility = View.GONE
+                    showQRCode()
+                } else if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == false) {
+                    binding.textView21.visibility = View.GONE
+                    binding.imageView10.visibility = View.GONE
+                }
+                binding.UPIQRConstraint.visibility = View.VISIBLE
+            }
+        } else {
+            binding.cardView4.visibility = View.GONE
+        }
+
+        if (cardsMethod) {
+            binding.cardView5.visibility = View.VISIBLE
+        } else {
+            binding.cardView5.visibility = View.GONE
+        }
+        if (walletMethods) {
+            binding.cardView6.visibility = View.VISIBLE
+        } else {
+            binding.cardView6.visibility = View.GONE
+        }
+        if (emiMethod) {
+            binding.emiCard.visibility = View.VISIBLE
+        } else {
+            binding.emiCard.visibility = View.GONE
+        }
+        if (bnplMethod) {
+            binding.cardView9.visibility = View.VISIBLE
+        } else {
+            binding.cardView9.visibility = View.GONE
+        }
+        if (netBankingMethods) {
+            binding.cardView7.visibility = View.VISIBLE
+        } else {
+            binding.cardView7.visibility = View.GONE
+        }
+    }
+
+    private fun getInstantOffers(
+        type: String,
+        currency: String,
+        minAmount: Int,
+        maxAmount: Int,
+        currencySymbol : String
+    ) {
+
+        if(type.isNotEmpty()) {
+            val instantOfferViewModel = InstantOfferViewModel(requireContext())
+            instantOfferViewModel.getInstantOffer(type, currency, minAmount, maxAmount)
+            lifecycleScope.launch {
+                instantOfferViewModel.getInstantOfferList.collect { offers ->
+                    if(!offers.isNullOrEmpty()) {
+                        binding.instantOfferCard.visibility = View.VISIBLE
+                        binding.offerCardComposeView.setContent {
+                            ApplyCouponCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(),
+                                selectedColor = androidx.compose.ui.graphics.Color(
+                                    Color.parseColor(
+                                        sharedPreferences.getString(
+                                            "primaryButtonColor",
+                                            "#000000"
+                                        )
+                                    )
+                                ),
+                                code = offers[0].code ?: "",
+                                description = offers[0].description ?: "",
+                                onClickApply = { selectedCode ->
+                                    println("code selectred $selectedCode")
+                                    showLoadingState()
+                                    instantOfferViewModel.applyInstantOffer(
+                                        currency = currency,
+                                        maxAmount = maxAmount,
+                                        minAmount = minAmount,
+                                        selectedCode = listOf(selectedCode)
+                                    )
+                                },
+                                onClickViewAll = {
+                                    println("viewmall selected")
+                                },
+                                isCodeApplied = instantOfferViewModel.isCodeApplied.value,
+                                discountAmount = instantOfferViewModel.discountAmount.value,
+                                currencySymbol = currencySymbol,
+                                onClickRemove = { removedCode ->
+                                    showLoadingState()
+                                    println("code to be removed $removedCode")
+                                    instantOfferViewModel.removeInstantOffer()
+                                    instantOfferViewModel.updatePaymentMethods()
+                                    instantOfferViewModel.isCodeApplied.value = false
+                                    instantOfferViewModel.discountAmount.value = ""
+                                    binding.subTotalRelativeLayout.visibility = View.GONE
+                                    binding.offerAppliedLayout.visibility = View.GONE
+                                    binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
+                                    binding.ItemsPrice.text = "$currencySymbol$minAmount"
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+            lifecycleScope.launch {
+                instantOfferViewModel.appliedInstantOffer.collect { selectedOffer ->
+                    println("======selected offer $selectedOffer")
+                    if(selectedOffer != null) {
+                        instantOfferViewModel.updatePaymentMethods(code = selectedOffer.evaluatedOffers?.get(0)?.code ?: "", maxAmount = "${selectedOffer.finalAmount}")
+                        instantOfferViewModel.isCodeApplied.value = true
+                        instantOfferViewModel.discountAmount.value = "${selectedOffer.evaluatedOffers?.get(0)?.appliedDiscountAmount}"
+                        binding.subTotalRelativeLayout.visibility = View.VISIBLE
+                        binding.offerAppliedLayout.visibility = View.VISIBLE
+                        binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
+                        binding.subtotalTextView.text = "$currencySymbol${selectedOffer.originalAmount}"
+                        binding.offerCodeText.text = "Discount(${selectedOffer.evaluatedOffers?.get(0)?.code} applied)"
+                        binding.offerAmountTextView.text = "-$currencySymbol${selectedOffer.evaluatedOffers?.get(0)?.appliedDiscountAmount}"
+                        binding.ItemsPrice.text = "$currencySymbol${selectedOffer.finalAmount}"
+                        binding.blackLine.visibility = View.VISIBLE
+                    }
+                }
+            }
+
+            lifecycleScope.launch {
+                instantOfferViewModel.updatedPaymentMethods.collect { methods ->
+                    if(!methods.isNullOrEmpty()) {
+                        showPaymentMethods(methods)
+                    }
+                }
+            }
+        }
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {

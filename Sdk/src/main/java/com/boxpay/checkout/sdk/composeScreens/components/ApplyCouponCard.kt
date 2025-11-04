@@ -17,12 +17,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
 import com.boxpay.checkout.sdk.R
+import com.boxpay.checkout.sdk.composeScreens.model.interFontFamily
 
 @Composable
 fun ApplyCouponCard(
@@ -31,11 +36,15 @@ fun ApplyCouponCard(
     code : String,
     description : String ,
     onClickApply : (code : String) -> Unit,
-    onClickViewAll : () -> Unit
+    onClickViewAll : () -> Unit,
+    isCodeApplied : Boolean,
+    onClickRemove  : (code : String) -> Unit,
+    discountAmount : String,
+    currencySymbol : String
 ) {
     Column(
         modifier = modifier
-            .background(Color.White, RoundedCornerShape(8.dp))
+            .background(Color.White, RoundedCornerShape(10.dp))
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
@@ -49,28 +58,65 @@ fun ApplyCouponCard(
             )
             Column(modifier = Modifier.padding(start = 6.dp, end = 18.dp).weight(1f)) {
                 Text(
-                    text = code,
+                    text = if (isCodeApplied) "$code Applied!" else code,
                     fontFamily = defaultFontFamily,
                     fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF1C1D20),
-                    fontSize = 18.sp
+                    fontSize = 14.sp
                 )
                 Text(
-                    text = description,
-                    fontFamily = defaultFontFamily,
+                    text = buildAnnotatedString {
+                        if(isCodeApplied) {
+                            append(
+                                AnnotatedString(
+                                    text = "Yay! You saved ",
+                                    spanStyle = SpanStyle(
+                                        fontFamily = defaultFontFamily
+                                    )
+                                )
+                            )
+                            append(
+                                AnnotatedString(
+                                    text = currencySymbol,
+                                    spanStyle = SpanStyle(
+                                        fontFamily = interFontFamily
+                                    )
+                                )
+                            )
+                            append(
+                                AnnotatedString(
+                                    text = "$discountAmount on this order",
+                                    spanStyle = SpanStyle(
+                                        fontFamily = defaultFontFamily
+                                    )
+                                )
+                            )
+                        } else {
+                            append(
+                                AnnotatedString(
+                                    text = description,
+                                    spanStyle = SpanStyle(
+                                        fontFamily = defaultFontFamily,
+                                    )
+                                )
+                            )
+                        }
+                    },
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFF1C1D20),
-                    fontSize = 14.sp
+                    color = Color(if (isCodeApplied) 0xFF019939 else 0xFF1C1D20),
+                    fontSize = 12.sp,
+                    maxLines = if(isCodeApplied) 2 else 1,
+                    overflow = if (isCodeApplied) TextOverflow.Visible else TextOverflow.Ellipsis
                 )
             }
             Text(
-                text = "Apply",
+                text = if (isCodeApplied) "Remove" else "Apply",
                 fontFamily = defaultFontFamily,
                 fontWeight = FontWeight.SemiBold,
-                color = selectedColor,
-                fontSize = 18.sp,
+                color = if(isCodeApplied) Color(0xFFE84142) else selectedColor,
+                fontSize = 14.sp,
                 modifier = Modifier.clickable {
-                    onClickApply(code)
+                    if(isCodeApplied) onClickRemove(code) else onClickApply(code)
                 }
             )
         }
@@ -80,7 +126,7 @@ fun ApplyCouponCard(
             fontFamily = defaultFontFamily,
             fontWeight = FontWeight.SemiBold,
             color = selectedColor,
-            fontSize = 18.sp,
+            fontSize = 14.sp,
             modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp).clickable {
                 onClickViewAll()
             },

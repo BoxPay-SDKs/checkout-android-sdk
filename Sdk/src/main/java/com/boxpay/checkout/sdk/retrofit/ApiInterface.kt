@@ -4,6 +4,7 @@ import com.boxpay.checkout.sdk.dataclasses.ApplyInstantOfferRequest
 import com.boxpay.checkout.sdk.dataclasses.ApplyInstantOfferResponse
 import com.boxpay.checkout.sdk.dataclasses.DCCRequest
 import com.boxpay.checkout.sdk.dataclasses.DCCResponse
+import com.boxpay.checkout.sdk.dataclasses.FetchPaymentMethodPostOffer
 import com.boxpay.checkout.sdk.dataclasses.GetInstantOffersRequest
 import com.boxpay.checkout.sdk.dataclasses.GetInstantOffersResponse
 import com.boxpay.checkout.sdk.dataclasses.SessionResponse
@@ -12,6 +13,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiInterface {
     @POST(ApiUrls.DCC)
@@ -33,4 +35,11 @@ interface ApiInterface {
         @Body applyInstantOfferRequest: ApplyInstantOfferRequest,
         @Path("token") token: String
     ) : Call<ApplyInstantOfferResponse>
+
+    @GET(ApiUrls.FETCH_PAYMENT_METHODS)
+    fun fetchPaymentMethods(
+        @Path("token") token: String,
+        @Query("amount") amount : String? = null,
+        @Query("offerId") code : String? = null
+    ) : Call<List<FetchPaymentMethodPostOffer>>
 }

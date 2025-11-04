@@ -6,4 +6,5 @@ object ApiUrls {
     const val GET_INSTANT_OFFERS = "v0/checkout/sessions/{token}/offers/search"
     const val APPLY_INSTANT_OFFER = "v0/checkout/sessions/{token}/offers/evaluate"
     const val GET_SURCHARGE = "v0/checkout/sessions/{token}/surcharges/evaluate"
+    const val FETCH_PAYMENT_METHODS = "v0/checkout/sessions/{token}/payment-methods"
 }

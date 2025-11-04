@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import com.boxpay.checkout.sdk.dataclasses.ApplyInstantOfferRequest
 import com.boxpay.checkout.sdk.dataclasses.ApplyInstantOfferResponse
+import com.boxpay.checkout.sdk.dataclasses.FetchPaymentMethodPostOffer
 import com.boxpay.checkout.sdk.dataclasses.GetInstantOffersRequest
 import com.boxpay.checkout.sdk.dataclasses.GetInstantOffersResponse
 import com.boxpay.checkout.sdk.retrofit.RetrofitInstance
@@ -32,6 +33,20 @@ class InstantOfferRepo (val context: Context) {
         return try {
             val response = apiService.applyInstantOffers(
                 applyInstantOfferRequest = applyInstantOfferRequest,
+                token = getSessionToken(context)
+            ).execute()
+            if (response.isSuccessful) response.body() else null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    fun updatePaymentMethod(code : String? = null, amount : String? = null) : List<FetchPaymentMethodPostOffer>? {
+        return try {
+            val response = apiService.fetchPaymentMethods(
+                amount = amount,
+                code = code,
                 token = getSessionToken(context)
             ).execute()
             if (response.isSuccessful) response.body() else null
