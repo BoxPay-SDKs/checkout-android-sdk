@@ -11,7 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.boxpay.checkout.sdk.databinding.FragmentPaymentFailureScreenBinding
-import com.boxpay.checkout.sdk.constants.AnalyticsEvents
+import com.boxpay.checkout.sdk.constant.AnalyticsEvents
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog

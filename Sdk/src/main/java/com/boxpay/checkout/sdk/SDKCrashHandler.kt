@@ -2,7 +2,7 @@ package com.boxpay.checkout.sdk
 
 import android.content.Context
 import android.webkit.WebSettings
-import com.boxpay.checkout.sdk.constants.AnalyticsEvents
+import com.boxpay.checkout.sdk.constant.AnalyticsEvents
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType

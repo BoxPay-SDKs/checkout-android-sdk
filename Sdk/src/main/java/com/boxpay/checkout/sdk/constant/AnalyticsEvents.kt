@@ -1,4 +1,4 @@
-package com.boxpay.checkout.sdk.constants
+package com.boxpay.checkout.sdk.constant
 
 object AnalyticsEvents {
 

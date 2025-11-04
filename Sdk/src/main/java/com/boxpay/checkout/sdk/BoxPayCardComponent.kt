@@ -33,7 +33,7 @@ import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.databinding.FragmentCardComponentAloneBinding
-import com.boxpay.checkout.sdk.constants.AnalyticsEvents
+import com.boxpay.checkout.sdk.constant.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.formatToISO8601WithCurrentTime
