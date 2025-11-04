@@ -18,7 +18,6 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieDrawable
-import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
@@ -29,7 +28,7 @@ import com.boxpay.checkout.sdk.composeScreens.components.SavedAddressShimmerScre
 import com.boxpay.checkout.sdk.composeScreens.model.Address
 import com.boxpay.checkout.sdk.composeScreens.screen.SavedAddressesScreen
 import com.boxpay.checkout.sdk.databinding.FragmentChooseEmiOptionBinding
-import com.boxpay.checkout.sdk.enum.AnalyticsEvents
+import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl
