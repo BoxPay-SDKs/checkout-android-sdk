@@ -8,7 +8,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.random.Random
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -76,4 +78,10 @@ fun String?.clean(): String? =
 
 fun getAppName(context: Context): String {
     return context.applicationInfo.loadLabel(context.packageManager).toString()
+}
+
+fun formatDate(isoDate: String): String {
+    val zonedDateTime = ZonedDateTime.parse(isoDate)
+    val formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.ENGLISH)
+    return zonedDateTime.format(formatter)
 }

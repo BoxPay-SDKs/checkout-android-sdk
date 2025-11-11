@@ -175,8 +175,8 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                     tvInfo.visibility = View.GONE
                     dottedLast.visibility = View.INVISIBLE
                     proceedButton.visibility = View.VISIBLE
-                    val currencyType =  getNonDCCResponse(requireActivity(),"CURRENCY_TYPE")
-                    val amount =  getNonDCCResponse(requireActivity(),"AMOUNT")
+                    val currencyType =  getNonDCCResponse(requireActivity(),"currencyCode")
+                    val amount =  getNonDCCResponse(requireActivity(),"amount")
                     if (amount.isNotEmpty() && currencyType.isNotEmpty() && !isLowCostApplied && !isNoCostApplied){
                         transactionAmountTextView.text = "$currencyType $amount"
                     }
@@ -259,7 +259,7 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
 
     private fun getNonDCCResponse(context: Context, code:String): String {
         val sharedPreferences: SharedPreferences =
-            context.getSharedPreferences("NON_DCC_PREF", Context.MODE_PRIVATE)
+            context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         val value = sharedPreferences.getString(code, "")
         return value!!
     }

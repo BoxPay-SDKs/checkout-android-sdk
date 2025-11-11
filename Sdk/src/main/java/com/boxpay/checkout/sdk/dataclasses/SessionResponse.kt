@@ -49,9 +49,9 @@ data class ApplicableOffer (
 data class Discount (
 
     @SerializedName("percentage" ) var percentage : String? = null,
-    @SerializedName("amount"     ) var amount     : String? = null,
+    @SerializedName("amount"     ) var amount     : Double? = null,
     @SerializedName("type"       ) var type       : String? = null,
-    @SerializedName("maxAmount"  ) var maxAmount  : String? = null
+    @SerializedName("maxAmount"  ) var maxAmount  : Double? = null
 
 )
 

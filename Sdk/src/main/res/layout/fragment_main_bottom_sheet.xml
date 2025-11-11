@@ -201,6 +201,35 @@
                                         android:textSize="12sp"
                                         android:visibility="visible" />
                                 </RelativeLayout>
+                                <RelativeLayout
+                                    android:id="@+id/offerAppliedLayout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:visibility="gone">
+
+                                    <TextView
+                                        android:id="@+id/offerCodeText"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_alignParentStart="true"
+                                        android:fontFamily="@font/poppins"
+                                        android:text="Discount applied"
+                                        android:textColor="#010102"
+                                        android:textSize="12sp"
+                                        android:visibility="visible" />
+
+                                    <TextView
+                                        android:id="@+id/offerAmountTextView"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_alignParentEnd="true"
+                                        android:fontFamily="@font/inter_medium"
+                                        android:text="1234"
+                                        android:textColor="#019939"
+                                        android:textSize="12sp"
+                                        android:visibility="visible" />
+                                </RelativeLayout>
 
                                 <RelativeLayout
                                     android:id="@+id/taxesRelativeLayout"
@@ -667,6 +696,33 @@
 
 
                     </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:id="@+id/instantOfferCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/instantOfferText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"
+                            android:text="Offers"
+                            android:textSize="14sp"
+                            android:textColor="#020815"
+                            android:textFontWeight="600"/>
+
+                        <androidx.compose.ui.platform.ComposeView
+                            android:id="@+id/offerCardComposeView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginTop="8dp"/>
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/deliveryAddressText"
@@ -1787,25 +1843,31 @@
                     android:background="#FFFFFF"
                     android:visibility="gone">
 
-                    <com.airbnb.lottie.LottieAnimationView
-                        android:id="@+id/boxpayLogoLottie"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerInParent="true"
-                        android:layout_marginTop="32dp"
-                        app:lottie_fileName="boxpayLogo.json" />
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@+id/boxpayLogoLottie"
-                        android:layout_centerInParent="true"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/poppins"
-                        android:text="Loading..."
-                        android:textColor="#4F4D55" />
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:id="@+id/boxpayLogoLottie"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:layout_marginTop="32dp"
+                            app:lottie_fileName="boxpayLogo.json" />
 
-                    <!--                        app:lottie_autoPlay="true"-->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@+id/boxpayLogoLottie"
+                            android:layout_centerInParent="true"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="Loading..."
+                            android:textColor="#4F4D55" />
+                    </LinearLayout>
 
                 </RelativeLayout>
             </FrameLayout>

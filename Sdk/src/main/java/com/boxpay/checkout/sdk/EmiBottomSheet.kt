@@ -31,6 +31,7 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.VolleyError
+import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.sdk.ViewModels.EmiViewModel
@@ -407,19 +408,27 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun fetchEmiDetails() {
-        val url = "${Base_Session_API_URL}${token}"
+        val baseUrl = "$Base_Session_API_URL$token/payment-methods"
+        val amount: String? = sharedPreferences.getString("amount", null)
+        val offer: String? = sharedPreferences.getString("selectedOfferCode", null)
+        val queryParams = listOfNotNull(
+            amount?.let { "amount=$it" },
+            offer?.let { "offerId=$it" }
+        ).joinToString("&")
+
+// Append query if not empty
+        val url = if (queryParams.isNotEmpty() && offer != null) {
+            "$baseUrl?$queryParams"
+        } else {
+            baseUrl
+        }
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
-        val jsonObjectAll = JsonObjectRequest(Request.Method.GET, url, null, { response ->
+        val jsonObjectAll = JsonArrayRequest(Request.Method.GET, url, null, { response ->
 
             try {
-                // Get the payment methods array
-                val paymentMethodsArray =
-                    response.getJSONObject("configs").getJSONArray("paymentMethods")
-
-                // Filter payment methods based on type equal to "Wallet"
-                for (i in 0 until paymentMethodsArray.length()) {
+                for (i in 0 until response.length()) {
                     try {
-                        val paymentMethod = paymentMethodsArray.getJSONObject(i)
+                        val paymentMethod = response.getJSONObject(i)
                         if (paymentMethod.getString("type") == "Emi") {
                             val title = paymentMethod.getString("title")
                             val emiCardName = if (paymentMethod.getString("title")
