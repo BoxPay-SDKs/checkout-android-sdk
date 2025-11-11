@@ -39,7 +39,6 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -74,6 +73,7 @@ import com.boxpay.checkout.sdk.dataclasses.SavedCard
 import com.boxpay.checkout.sdk.dataclasses.SavedRecommended
 import com.boxpay.checkout.sdk.dataclasses.SubscriptionDetails
 import com.boxpay.checkout.sdk.constants.AnalyticsEvents
+import com.boxpay.checkout.sdk.dataclasses.GetInstantOffersResponse
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
@@ -128,6 +128,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var savedCardsInstrumentationList = mutableListOf<SavedCard>()
     private var savedUpiInstrumentationList = mutableListOf<SavedRecommended>()
     private var uniqueReference: String? = null
+
+    private var offerType : String? = null
+    private var offerMinAmount : Int? = null
+    private var offerCurrencyCode : String? = null
+    private var offerMaxAmount : Int? = null
+    private lateinit var instantOfferViewModel  : InstantOfferViewModel
     private var successScreenFullReferencePath: String? = null
     private var job: Job? = null
     private var isTablet = false
@@ -182,6 +188,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var productSummary: String? = null
     private var orderDetails: String? = null
     private var installedApps : List<String> = emptyList()
+    private var instantOffersList : List<GetInstantOffersResponse> = emptyList()
+    private var selectedCouponCode : String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -664,6 +672,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         return try {
             binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
             showLoadingState()
+            instantOfferViewModel = InstantOfferViewModel(requireContext())
 
             val imm =
                 requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -2043,6 +2052,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             .commitAllowingStateLoss()
     }
 
+    private fun openInstantOfferList() {
+        val bottomSheetFragment = InstantOffersBottomSheet.newInstance(offersList = instantOffersList, onClickCode = {callApplyInstantOfferFunction(it)}, selectedCouponCode = selectedCouponCode, onRemoveCode = {callRemoveInstantOfferFunction()})
+        parentFragmentManager.beginTransaction()
+            .add(bottomSheetFragment, "InstantOfferBottomSheet")
+            .commitAllowingStateLoss()
+    }
+
     private fun openBNPLBottomSheet() {
 
         val bottomSheetFragment = BNPLBottomSheet.newInstance(shippingEnabled)
@@ -2055,10 +2071,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         val url = "${getSessionApiUrl(context)}${token}"
         val queue: RequestQueue = Volley.newRequestQueue(requireContext())
-        var offerType : String? = null
-        var offerMinAmount : Int? = null
-        var offerCurrencyCode : String? = null
-        var offerMaxAmount : Int? = null
         val jsonObjectAll = object : JsonObjectRequest(Method.GET, url, null, { response ->
 
             try {
@@ -2713,7 +2725,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         removeLoadingState()
                     }
                 }
-                getInstantOffers(type = offerType ?: "", currency = offerCurrencyCode ?: "", minAmount = offerMinAmount ?: 0, maxAmount = offerMaxAmount ?: 0, currencySymbol = currencySymbol)
+                getInstantOffers(type = offerType ?: "", currencySymbol = currencySymbol)
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
             } catch (e: Exception) {
@@ -2846,22 +2858,52 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
     }
 
+    private fun callApplyInstantOfferFunction(
+        selectedCode : String
+    ) {
+        selectedCouponCode = selectedCode
+        showLoadingState()
+        instantOfferViewModel.applyInstantOffer(
+            currency = offerCurrencyCode ?: "",
+            maxAmount = offerMaxAmount ?: 0,
+            minAmount = offerMinAmount ?: 0,
+            selectedCode = listOf(selectedCode)
+        )
+    }
+
+    private fun callRemoveInstantOfferFunction() {
+        showLoadingState()
+        selectedCouponCode = null
+        editor.putString("selectedOfferCode", null)
+        editor.putString("amount", "$offerMinAmount")
+        editor.apply()
+        instantOfferViewModel.removeInstantOffer()
+        instantOfferViewModel.updatePaymentMethods()
+        instantOfferViewModel.isCodeApplied.value = false
+        instantOfferViewModel.discountAmount.value = ""
+        binding.subTotalRelativeLayout.visibility = View.GONE
+        binding.offerAppliedLayout.visibility = View.GONE
+        binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
+        binding.ItemsPrice.text = "${sharedPreferences.getString("currencySymbol", "")}${sharedPreferences.getString("amount", "")}"
+    }
+
     private fun getInstantOffers(
         type: String,
-        currency: String,
-        minAmount: Int,
-        maxAmount: Int,
         currencySymbol : String
     ) {
-
         if(type.isNotEmpty()) {
-            val instantOfferViewModel = InstantOfferViewModel(requireContext())
-            instantOfferViewModel.getInstantOffer(type, currency, minAmount, maxAmount)
+            instantOfferViewModel.getInstantOffer(type, offerCurrencyCode ?: "", offerMinAmount ?: 0, offerMaxAmount ?: 0)
             lifecycleScope.launch {
                 instantOfferViewModel.getInstantOfferList.collect { offers ->
+                    instantOffersList = offers ?: emptyList()
                     if(!offers.isNullOrEmpty()) {
                         binding.instantOfferCard.visibility = View.VISIBLE
                         binding.offerCardComposeView.setContent {
+                            val selectedCoupon = if(selectedCouponCode == null) {
+                                offers[0]
+                            } else {
+                                offers.find { it.code == selectedCouponCode }
+                            }
                             ApplyCouponCard(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -2874,46 +2916,33 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                         )
                                     )
                                 ),
-                                code = offers[0].code ?: "",
-                                description = offers[0].description ?: "",
+                                code = selectedCoupon?.code ?: "",
+                                description = selectedCoupon?.description ?: "",
                                 onClickApply = { selectedCode ->
-                                    println("code selectred $selectedCode")
-                                    showLoadingState()
-                                    instantOfferViewModel.applyInstantOffer(
-                                        currency = currency,
-                                        maxAmount = maxAmount,
-                                        minAmount = minAmount,
-                                        selectedCode = listOf(selectedCode)
+                                    callApplyInstantOfferFunction(
+                                        selectedCode
                                     )
                                 },
                                 onClickViewAll = {
-                                    println("viewmall selected")
+                                    openInstantOfferList()
                                 },
                                 isCodeApplied = instantOfferViewModel.isCodeApplied.value,
                                 discountAmount = instantOfferViewModel.discountAmount.value,
                                 currencySymbol = currencySymbol,
-                                onClickRemove = { removedCode ->
-                                    showLoadingState()
-                                    println("code to be removed $removedCode")
-                                    instantOfferViewModel.removeInstantOffer()
-                                    instantOfferViewModel.updatePaymentMethods()
-                                    instantOfferViewModel.isCodeApplied.value = false
-                                    instantOfferViewModel.discountAmount.value = ""
-                                    binding.subTotalRelativeLayout.visibility = View.GONE
-                                    binding.offerAppliedLayout.visibility = View.GONE
-                                    binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
-                                    binding.ItemsPrice.text = "$currencySymbol$minAmount"
+                                onClickRemove = {
+                                    callRemoveInstantOfferFunction()
                                 }
                             )
                         }
                     }
                 }
             }
-
             lifecycleScope.launch {
                 instantOfferViewModel.appliedInstantOffer.collect { selectedOffer ->
-                    println("======selected offer $selectedOffer")
                     if(selectedOffer != null) {
+                        editor.putString("selectedOfferCode", selectedOffer.evaluatedOffers?.get(0)?.code ?: "")
+                        editor.putString("amount", "${selectedOffer.finalAmount}")
+                        editor.apply()
                         instantOfferViewModel.updatePaymentMethods(code = selectedOffer.evaluatedOffers?.get(0)?.code ?: "", maxAmount = "${selectedOffer.finalAmount}")
                         instantOfferViewModel.isCodeApplied.value = true
                         instantOfferViewModel.discountAmount.value = "${selectedOffer.evaluatedOffers?.get(0)?.appliedDiscountAmount}"

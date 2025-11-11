@@ -38,7 +38,7 @@ fun ApplyCouponCard(
     onClickApply : (code : String) -> Unit,
     onClickViewAll : () -> Unit,
     isCodeApplied : Boolean,
-    onClickRemove  : (code : String) -> Unit,
+    onClickRemove  : () -> Unit,
     discountAmount : String,
     currencySymbol : String
 ) {
@@ -116,13 +116,13 @@ fun ApplyCouponCard(
                 color = if(isCodeApplied) Color(0xFFE84142) else selectedColor,
                 fontSize = 14.sp,
                 modifier = Modifier.clickable {
-                    if(isCodeApplied) onClickRemove(code) else onClickApply(code)
+                    if(isCodeApplied) onClickRemove() else onClickApply(code)
                 }
             )
         }
         Divider()
         Text(
-            text = "View All",
+            text = "View All >",
             fontFamily = defaultFontFamily,
             fontWeight = FontWeight.SemiBold,
             color = selectedColor,
