@@ -27,7 +27,7 @@ import com.boxpay.checkout.sdk.composeScreens.components.OfferCard
 import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
 import com.boxpay.checkout.sdk.dataclasses.GetInstantOffersResponse
 import com.boxpay.checkout.sdk.utils.formatDate
-@RequiresApi(Build.VERSION_CODES.N)
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun InstantOfferScreen(
     onClickCoupon : (code : String) -> Unit,

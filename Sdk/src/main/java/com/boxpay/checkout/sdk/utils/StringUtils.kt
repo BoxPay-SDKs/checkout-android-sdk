@@ -80,6 +80,7 @@ fun getAppName(context: Context): String {
     return context.applicationInfo.loadLabel(context.packageManager).toString()
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun formatDate(isoDate: String): String {
     val zonedDateTime = ZonedDateTime.parse(isoDate)
     val formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.ENGLISH)
