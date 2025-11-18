@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.KeyEvent
@@ -15,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.widget.FrameLayout
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import com.boxpay.checkout.sdk.composeScreens.screen.InstantOfferScreen
 import com.boxpay.checkout.sdk.databinding.FragmentChooseMultipleOffersBinding
@@ -137,6 +139,7 @@ internal class InstantOffersBottomSheet() : BottomSheetDialogFragment() {
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     @SuppressLint("NewApi")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

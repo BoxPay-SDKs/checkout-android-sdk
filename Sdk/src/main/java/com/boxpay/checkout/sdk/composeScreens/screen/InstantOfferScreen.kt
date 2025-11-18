@@ -1,5 +1,7 @@
 package com.boxpay.checkout.sdk.composeScreens.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +27,7 @@ import com.boxpay.checkout.sdk.composeScreens.components.OfferCard
 import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
 import com.boxpay.checkout.sdk.dataclasses.GetInstantOffersResponse
 import com.boxpay.checkout.sdk.utils.formatDate
-
+@RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun InstantOfferScreen(
     onClickCoupon : (code : String) -> Unit,
