@@ -139,7 +139,7 @@ internal class InstantOffersBottomSheet() : BottomSheetDialogFragment() {
         )
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("NewApi")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -209,12 +209,4 @@ internal class InstantOffersBottomSheet() : BottomSheetDialogFragment() {
             return fragment
         }
     }
-
-    private fun dismissAndMakeButtonsOfMainBottomSheetEnabled() {
-        val mainBottomSheetFragment =
-            parentFragmentManager.findFragmentByTag("MainBottomSheet") as? MainBottomSheet
-        mainBottomSheetFragment?.enabledButtonsForAllPaymentMethods()
-        dismiss()
-    }
-
 }
