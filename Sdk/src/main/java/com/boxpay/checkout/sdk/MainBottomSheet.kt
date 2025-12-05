@@ -2845,14 +2845,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             catch (e: Exception) {
                 callUIAnalytics(
                     context = context,
-                    message = "",
+                    message = "$e",
                     screenName = "Main Bottom Sheet",
-                    uiEvent = AnalyticsEvents.PAYMENT_INITIATED
+                    uiEvent = AnalyticsEvents.SDK_CRASH
                 )
                 removeLoadingState()
             }
         }, Response.ErrorListener { error ->
-            print("=========$error")
+            callUIAnalytics(
+                context = context,
+                message = "$error",
+                screenName = "Main Bottom Sheet",
+                uiEvent = AnalyticsEvents.SDK_CRASH
+            )
             removeLoadingState()
         }) {
             // no op
