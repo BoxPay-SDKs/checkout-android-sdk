@@ -292,6 +292,11 @@
                                         android:textSize="12sp"
                                         android:visibility="visible" />
                                 </RelativeLayout>
+                                <androidx.compose.ui.platform.ComposeView
+                                    android:id="@+id/surchargeComposeView"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="gone"/>
 
                                 <View
                                     android:id="@+id/blackLine"
