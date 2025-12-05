@@ -37,9 +37,16 @@ import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
@@ -66,6 +73,8 @@ import com.boxpay.checkout.sdk.adapters.RecommendedItemsAdapter
 import com.boxpay.checkout.sdk.adapters.SavedCardsItemsAdaptor
 import com.boxpay.checkout.sdk.adapters.SavedUpiItemsAdaptor
 import com.boxpay.checkout.sdk.composeScreens.components.ApplyCouponCard
+import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
+import com.boxpay.checkout.sdk.composeScreens.model.interFontFamily
 import com.boxpay.checkout.sdk.composeScreens.screen.RecommendedScreen
 import com.boxpay.checkout.sdk.databinding.FragmentMainBottomSheetBinding
 import com.boxpay.checkout.sdk.dataclasses.FetchPaymentMethodPostOffer
@@ -105,6 +114,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -2716,15 +2726,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     )
                     binding.addressTextViewMain.text = sharedPreferences.getString("email", "")
                 }
-                if (customerShopperToken != null && customerShopperToken != "") {
-                    getRecommendedInstrumentation()
-                } else {
-                    upiOptionsShown = true
-                    showUPIOptions()
-                    if (toLoadQrDirect == false || toLoadQrDirect == null || !upiQRMethod) {
-                        removeLoadingState()
-                    }
-                }
+                fetchSurchargeDetails(totalAmount, currencyCode, currencySymbol)
                 getInstantOffers(type = offerType ?: "", currencySymbol = currencySymbol)
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
@@ -2751,6 +2753,107 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     dismiss()
                 }
             }
+        }) {
+            // no op
+        }
+        queue.add(jsonObjectAll)
+    }
+
+    private fun fetchSurchargeDetails(amount: Int, currencyCode : String, currencySymbol : String) {
+        val url = "${getSessionApiUrl(context)}${token}/surcharges/evaluate"
+        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        val requestBody = JSONObject().apply {
+
+
+            // Create the browserData JSON object
+            val discountedMoney = JSONObject().apply {
+                put("amount", amount)
+                put("currencyCode", currencyCode)
+            }
+            put("discountedMoney", discountedMoney)
+        }
+        val jsonObjectAll = object : JsonObjectRequest(Method.POST, url, requestBody, { response ->
+
+            try {
+                val appliedSurcharges = response.optJSONArray("appliedSurcharges")
+                var surchargeDetails : List<Pair<String, String>> = emptyList()
+                appliedSurcharges?.length()?.let {
+                    surchargeDetails = (0 until appliedSurcharges.length()).map { index ->
+                        val item = appliedSurcharges.getJSONObject(index)
+
+                        val title = item
+                            .getJSONObject("surchargeDetails")
+                            .optString("title")
+
+                        val calculatedFee = item
+                            .opt("calculatedSurchargeFee")
+                            ?.toString() ?: ""
+
+                        title to calculatedFee
+                    }
+                }
+                val finalAmount = response.getJSONObject("finalAmountAfterSurcharge").getDouble("amount")
+                val indiaLocale = Locale("en", "IN")
+                val formatter = NumberFormat.getNumberInstance(indiaLocale)
+                formatter.minimumFractionDigits = 2
+                formatter.maximumFractionDigits = 2
+                val formattedAmount = formatter.format(finalAmount)
+                updateTransactionAmountInSharedPreferences(
+                    formattedAmount,
+                    currencyCode
+                )
+                binding.surchargeComposeView.setContent {
+                    Column {
+                        surchargeDetails.map { item ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = item.first,
+                                    fontFamily = defaultFontFamily,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 12.sp,
+                                    color = androidx.compose.ui.graphics.Color(0xFF010102),
+                                )
+                                Text(
+                                    text = item.second,
+                                    fontFamily = interFontFamily,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 12.sp,
+                                    color = androidx.compose.ui.graphics.Color(0xFF010102),
+                                )
+                            }
+                        }
+                    }
+                }
+                binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
+                binding.surchargeComposeView.visibility = View.VISIBLE
+                binding.ItemsPrice.text = "$currencySymbol${formattedAmount}"
+                binding.blackLine.visibility = View.VISIBLE
+                if (customerShopperToken != null && customerShopperToken != "") {
+                    getRecommendedInstrumentation()
+                } else {
+                    upiOptionsShown = true
+                    showUPIOptions()
+                    if (toLoadQrDirect == false || toLoadQrDirect == null || !upiQRMethod) {
+                        removeLoadingState()
+                    }
+                }
+            }
+            catch (e: Exception) {
+                callUIAnalytics(
+                    context = context,
+                    message = "",
+                    screenName = "Main Bottom Sheet",
+                    uiEvent = AnalyticsEvents.PAYMENT_INITIATED
+                )
+                removeLoadingState()
+            }
+        }, Response.ErrorListener { error ->
+            print("=========$error")
+            removeLoadingState()
         }) {
             // no op
         }
