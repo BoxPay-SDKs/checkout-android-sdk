@@ -22,6 +22,8 @@ class MerchantDetailsScreen : AppCompatActivity() {
     private var isUpiEnabled: Boolean = false
     private var isCardEnabled: Boolean = false
 
+    private var isShowQROnLoad : Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -48,6 +50,11 @@ class MerchantDetailsScreen : AppCompatActivity() {
         val cardRadioButton = binding.cardRadioButton
         cardRadioButton.setOnCheckedChangeListener { _, isChecked ->
             isCardEnabled = isChecked
+        }
+
+        val showQrLoad = binding.showQrOnLoad
+        showQrLoad.setOnCheckedChangeListener { _, isChecked ->
+            isShowQROnLoad = isChecked
         }
 
         binding.environmentSpinner.onItemSelectedListener =
@@ -106,7 +113,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                     boxPayElements.showPaymentMethods()
                 } else {
                     val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken, configurationOptions = mapOf(
-                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to false,
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to isShowQROnLoad,
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to false,
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                     ))
@@ -134,7 +141,7 @@ class MerchantDetailsScreen : AppCompatActivity() {
                     boxPayElements.showPaymentMethods()
                 } else {
                     val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken, configurationOptions = mapOf(
-                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to false,
+                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to isShowQROnLoad,
                         ConfigurationOptions.ENABLE_SANDBOX_ENV to true,
                         ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
                     ))

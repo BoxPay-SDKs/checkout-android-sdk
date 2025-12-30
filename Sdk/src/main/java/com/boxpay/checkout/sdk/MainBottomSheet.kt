@@ -183,7 +183,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var imagesUrls = mutableListOf<String>()
     private var prices = mutableListOf<String>()
     var queue: RequestQueue? = null
-    private lateinit var countdownTimer: CountDownTimer
+    var countdownTimer: CountDownTimer? = null
     var sessionTimer: CountDownTimer? = null
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
@@ -449,7 +449,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             PaymentFailureScreen(
                                 function = {
                                     if (qrCodeShown) {
-                                        countdownTimer.cancel()
+                                        countdownTimer?.cancel()
                                         showQRCode()
                                     }
                                 },
@@ -876,6 +876,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.addNewUPIIDConstraint.isEnabled = false
                     logMainBottomSheetUiEvents()
                     job?.cancel()
+                    hideQRCode()
                     openAddUPIIDBottomSheet()
                 }
             }
@@ -904,6 +905,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.cardConstraint.isEnabled = false
                     callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Card")
                     callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "", "Card")
+                    hideQRCode()
                     openAddCardBottomSheet()
                 }
             }
@@ -913,6 +915,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
+                    hideQRCode()
                     upiOptionsShown = false
                     hideUPIOptions()
                     if (savedCardsInstrumentationList.isEmpty()) {
@@ -932,6 +935,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!binding.loadingRelativeLayout.isVisible) {
                     recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
+                    hideQRCode()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
@@ -945,6 +949,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!binding.loadingRelativeLayout.isVisible) {
                     recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
+                    hideQRCode()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
@@ -958,6 +963,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 if (!binding.loadingRelativeLayout.isVisible) {
                     recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
+                    hideQRCode()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
@@ -973,6 +979,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     recommendedInstrumentsAdapter.checkedPosition = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideRecommendedOptions()
+                    hideQRCode()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
                     binding.netBankingConstraint.isEnabled = false
@@ -1081,7 +1088,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun hideQRCode() {
         qrCodeShown = false
-        countdownTimer.cancel()
+        countdownTimer?.cancel()
         binding.qrCodeOpenConstraint.visibility = View.GONE
     }
 
@@ -1110,7 +1117,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 blurImageView()
             }
         }
-        countdownTimer.start()
+        countdownTimer?.start()
     }
 
     private fun blurImageView() {
@@ -1934,6 +1941,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             .setDuration(500) // Set the duration of the animation in milliseconds
             .withEndAction {}
             .start()
+        hideQRCode()
     }
 
     private fun hideSavedCardOptions() {
@@ -2832,15 +2840,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.surchargeComposeView.visibility = View.VISIBLE
                 binding.ItemsPrice.text = "$currencySymbol${formattedAmount}"
                 binding.blackLine.visibility = View.VISIBLE
-                if (customerShopperToken != null && customerShopperToken != "") {
-                    getRecommendedInstrumentation()
-                } else {
-                    upiOptionsShown = true
-                    showUPIOptions()
-                    if (toLoadQrDirect == false || toLoadQrDirect == null || !upiQRMethod) {
-                        removeLoadingState()
-                    }
-                }
+                getRecommendedOrRemoveLoading()
             }
             catch (e: Exception) {
                 callUIAnalytics(
@@ -2849,7 +2849,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     screenName = "Main Bottom Sheet",
                     uiEvent = AnalyticsEvents.SDK_CRASH
                 )
-                removeLoadingState()
+                getRecommendedOrRemoveLoading()
             }
         }, Response.ErrorListener { error ->
             callUIAnalytics(
@@ -2858,11 +2858,25 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 screenName = "Main Bottom Sheet",
                 uiEvent = AnalyticsEvents.SDK_CRASH
             )
-            removeLoadingState()
+            getRecommendedOrRemoveLoading()
         }) {
             // no op
         }
         queue.add(jsonObjectAll)
+    }
+
+    private fun getRecommendedOrRemoveLoading() {
+        if (customerShopperToken != null && customerShopperToken != "") {
+            getRecommendedInstrumentation()
+        } else {
+            upiOptionsShown = true
+            showUPIOptions()
+            if (toLoadQrDirect == false || toLoadQrDirect == null || !upiQRMethod) {
+                removeLoadingState()
+            } else {
+                showQRCode()
+            }
+        }
     }
 
     private fun showPaymentMethods(paymentMethodsList : List<FetchPaymentMethodPostOffer>) {
