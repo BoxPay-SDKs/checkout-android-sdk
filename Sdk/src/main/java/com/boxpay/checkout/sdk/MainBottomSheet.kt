@@ -2654,8 +2654,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val jsonObjectAll = object : JsonObjectRequest(Method.POST, url, requestBody, { response ->
 
             try {
+                print("=========reponse $response")
                 val appliedSurcharges = response.optJSONArray("appliedSurcharges")
-                var surchargeDetails : List<Pair<String, String>> = emptyList()
+                var surchargeDetails : List<Triple<String, String, String>> = emptyList()
                 appliedSurcharges?.length()?.let {
                     surchargeDetails = (0 until appliedSurcharges.length()).map { index ->
                         val item = appliedSurcharges.getJSONObject(index)
@@ -2668,7 +2669,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             .opt("calculatedSurchargeFee")
                             ?.toString() ?: ""
 
-                        title to calculatedFee
+                        val applicableOn = item
+                            .getJSONObject("surchargeDetails")
+                            .optString("applicableOn")
+
+                        Triple(title, calculatedFee, applicableOn)
                     }
                 }
                 val finalAmount = response.getJSONObject("finalAmountAfterSurcharge").getDouble("amount")
@@ -2684,25 +2689,27 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.surchargeComposeView.setContent {
                     Column {
                         surchargeDetails.map { item ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = item.first,
-                                    fontFamily = defaultFontFamily,
-                                    fontWeight = FontWeight.Normal,
-                                    fontSize = 12.sp,
-                                    color = androidx.compose.ui.graphics.Color(0xFF010102),
-                                )
-                                Text(
-                                    text = item.second,
-                                    fontFamily = interFontFamily,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 12.sp,
-                                    color = androidx.compose.ui.graphics.Color(0xFF010102),
-                                )
+                            if(item.third.isEmpty()) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = item.first,
+                                        fontFamily = defaultFontFamily,
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = 12.sp,
+                                        color = androidx.compose.ui.graphics.Color(0xFF010102),
+                                    )
+                                    Text(
+                                        text = item.second,
+                                        fontFamily = interFontFamily,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 12.sp,
+                                        color = androidx.compose.ui.graphics.Color(0xFF010102),
+                                    )
+                                }
                             }
                         }
                     }
@@ -2714,6 +2721,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 getRecommendedOrRemoveLoading()
             }
             catch (e: Exception) {
+                print("========excetion $e")
                 callUIAnalytics(
                     context = context,
                     message = "$e",
