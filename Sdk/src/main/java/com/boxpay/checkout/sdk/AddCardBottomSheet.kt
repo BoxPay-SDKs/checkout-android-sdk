@@ -548,9 +548,13 @@ internal class AddCardBottomSheet : BottomSheetDialogFragment() {
                         if (editable.toString() != formattedText && !userDeletingChars) {
                             isFormatting = true // Set flag to prevent reformatting
                             binding.editTextCardNumber.setText(formattedText)
-                            binding.editTextCardNumber.setSelection(formattedText.length)
+                            val actualLength = binding.editTextCardNumber.text.length
+                            binding.editTextCardNumber.setSelection(actualLength)
                         } else if (editable.toString().length > 1 && editable.toString()[editable.toString().length - 1] == ' ') {
-                            editable.delete(editable.length - 1, editable.length)
+                            val selection = binding.editTextCardNumber.selectionStart
+                            if (selection == editable.length) {
+                                editable.delete(editable.length - 1, editable.length)
+                            }
                         }
 
                         isFormatting = false // Reset the flag
