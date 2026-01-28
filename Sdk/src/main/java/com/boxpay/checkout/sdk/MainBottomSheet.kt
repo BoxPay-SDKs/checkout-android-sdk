@@ -51,8 +51,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieDrawable
@@ -127,7 +129,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var isSuccessful = false
     private var qrCodeShown = false
     private var overlayViewMainBottomSheet: View? = null
-    private lateinit var context: Context
+    private val mContext: Context get() = requireContext()
     private lateinit var binding: FragmentMainBottomSheetBinding
     private var bottomSheetBehavior: BottomSheetBehavior<FrameLayout>? = null
     private val overlayViewModel: OverlayViewModel by activityViewModels()
@@ -206,6 +208,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         super.onCreate(savedInstanceState)
     }
 
+    override fun onDestroyView() {
+        removeOverlayFromActivity()
+        super.onDestroyView()
+    }
+
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         removeOverlayFromActivity()
@@ -218,7 +225,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         if (firstLoad) {
             sharedPreferences =
                 requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-            queue = Volley.newRequestQueue(requireContext())
+            queue = Volley.newRequestQueue(mContext)
             editor = sharedPreferences.edit()
             val coroutineScope = CoroutineScope(Dispatchers.Main)
             val coroutine = coroutineScope.launch {
@@ -232,7 +239,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             }
             coroutine.invokeOnCompletion {
-                val upiDetector = UPIAppDetectorAndroid(context)
+                val upiDetector = UPIAppDetectorAndroid(mContext)
                 val upiService = UPIService(upiDetector)
                 installedApps = upiService.getAvailableApps()
                 populatePopularUPIApps()
@@ -328,7 +335,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
             callUIAnalytics(
-                context = context,
+                context = mContext,
                 message = e.message ?: "",
                 screenName = "Main Bottom Sheet in function launchUpiIntent",
                 uiEvent = eventName
@@ -349,7 +356,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         job = CoroutineScope(Dispatchers.IO).launch {
             while (isActive) {
                 delay(3000)
-                fetchStatusAndReason("${getSessionApiUrl(context)}${token}/status")
+                fetchStatusAndReason("${getSessionApiUrl(mContext)}${token}/status")
                 // Delay for 4 seconds
             }
         }
@@ -513,15 +520,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         showLoadingState()
         logMainBottomSheetUiEvents()
         callUIAnalytics(
-            context = context,
+            context = mContext,
             message = "",
             screenName = "Main Bottom Sheet in function getUrlForUpiIntent",
             uiEvent = AnalyticsEvents.PAYMENT_INITIATED
         )
-        val requestQueue = Volley.newRequestQueue(context)
+        val requestQueue = Volley.newRequestQueue(mContext)
         val requestBody = JSONObject().apply {
             val browserData = JSONObject().apply {
-                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                val userAgentHeader = WebSettings.getDefaultUserAgent(mContext)
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
                 put("screenWidth", displayMetrics.widthPixels.toString())
@@ -592,7 +599,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, getSessionApiUrl(context) + token, requestBody,
+            Method.POST, getSessionApiUrl(mContext) + token, requestBody,
             Response.Listener { response ->
 
                 try {
@@ -625,7 +632,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 } catch (e: JSONException) {
                     removeLoadingState()
                     callUIAnalytics(
-                        context = context,
+                        context = mContext,
                         message = e.message ?: "",
                         screenName = "Main Bottom Sheet in function getUrlForUpiIntent in catch block",
                         uiEvent = AnalyticsEvents.ERROR_GETTING_UPI_URL
@@ -639,7 +646,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val errorResponse = String(error.networkResponse.data)
                     val errorMessage = extractMessageFromErrorResponse(errorResponse)
                     callUIAnalytics(
-                        context = context,
+                        context = mContext,
                         message = error.message ?: "",
                         screenName = "Main Bottom Sheet in function getAllInstalledApps in error response ",
                         uiEvent = AnalyticsEvents.ERROR_GETTING_UPI_URL
@@ -676,24 +683,23 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        fetchTransactionDetailsFromSharedPreferences()
         sharedPreferences =
             requireActivity().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
         return try {
             binding = FragmentMainBottomSheetBinding.inflate(inflater, container, false)
             showLoadingState()
-            instantOfferViewModel = InstantOfferViewModel(requireContext())
+            instantOfferViewModel = InstantOfferViewModel(mContext)
 
             val imm =
                 requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             binding.root.post {
                 imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
             }
-            queue = Volley.newRequestQueue(requireContext())
+            queue = Volley.newRequestQueue(mContext)
             editor = sharedPreferences.edit()
 
 
-            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+            val userAgentHeader = WebSettings.getDefaultUserAgent(mContext)
 
             if (userAgentHeader.contains("Mobile", ignoreCase = true)) {
                 isTablet = false
@@ -710,7 +716,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             fetchTransactionDetailsFromSharedPreferences()
             overlayViewModel.showOverlay.observe(this, Observer { showOverlay ->
                 if (showOverlay) {
-                    addOverlayToActivity()
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                            addOverlayToActivity()
+                        }
+                    }
                 } else {
                     removeOverlayFromActivity()
                 }
@@ -724,26 +734,26 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 callBackFunctionsForDismissing
 
             val orderSummaryAdapter =
-                OrderSummaryItemsAdapter(imagesUrls, items, prices, itemQty, requireContext())
-            binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+                OrderSummaryItemsAdapter(imagesUrls, items, prices, itemQty, mContext)
+            binding.itemsInOrderRecyclerView.layoutManager = LinearLayoutManager(mContext)
             binding.itemsInOrderRecyclerView.adapter = orderSummaryAdapter
 
             val recommendedInstrumentsAdapter = RecommendedItemsAdapter(
-                recommendedInstrumentationList, requireContext()
+                recommendedInstrumentationList, mContext
             )
-            binding.recomendedRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            binding.recomendedRecyclerView.layoutManager = LinearLayoutManager(mContext)
             binding.recomendedRecyclerView.adapter = recommendedInstrumentsAdapter
 
             val savedCardsInstrumentAdaptor = SavedCardsItemsAdaptor(
-                savedCardsInstrumentationList,context
+                savedCardsInstrumentationList,mContext
             )
-            binding.savedCardsRecyclerView.layoutManager = LinearLayoutManager(context)
+            binding.savedCardsRecyclerView.layoutManager = LinearLayoutManager(mContext)
             binding.savedCardsRecyclerView.adapter = savedCardsInstrumentAdaptor
 
             val savedUpiInstrumentAdaptor = SavedUpiItemsAdaptor(
-                savedUpiInstrumentationList, requireContext()
+                savedUpiInstrumentationList, mContext
             )
-            binding.savedUpiRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            binding.savedUpiRecyclerView.layoutManager = LinearLayoutManager(mContext)
             binding.savedUpiRecyclerView.adapter = savedUpiInstrumentAdaptor
 
             binding.orderSummaryConstraintLayout.setOnClickListener { // Toggle visibility of the price break-up card
@@ -809,7 +819,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.recommendedProceedButton.setOnClickListener {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     callUIAnalytics(
-                        context = context,
+                        context = mContext,
                         message = "",
                         screenName = "Main Bottom Sheet in function click listener on recommendedproceedbutton",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -903,8 +913,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.addNewCardLinearLayout.setOnClickListener  {
                 if (!binding.loadingRelativeLayout.isVisible) {
                     binding.cardConstraint.isEnabled = false
-                    callUIAnalytics(requireContext(), "PAYMENT_CATEGORY_SELECTED", "", "Card")
-                    callUIAnalytics(requireContext(), "PAYMENT_METHOD_SELECTED", "", "Card")
+                    callUIAnalytics(mContext, "PAYMENT_CATEGORY_SELECTED", "", "Card")
+                    callUIAnalytics(mContext, "PAYMENT_METHOD_SELECTED", "", "Card")
                     hideQRCode()
                     openAddCardBottomSheet()
                 }
@@ -1082,7 +1092,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun fetchQRCode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            postRequestForQRCode(requireContext())
+            postRequestForQRCode()
         }
     }
 
@@ -1109,7 +1119,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 binding.refreshButton.visibility = View.VISIBLE
                 job?.cancel()
                 callUIAnalytics(
-                    context = context,
+                    context = mContext,
                     message = "",
                     screenName = "Main Bottom Sheet - QR timer finished",
                     uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
@@ -1125,7 +1135,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val bitmap = (binding.qrCodeImageView.drawable as BitmapDrawable).bitmap
 
         // Apply blur transformation using Glide and BlurTransformation
-        Glide.with(context)
+        Glide.with(mContext)
             .asBitmap()
             .load(bitmap) // Load the bitmap directly
             .apply(
@@ -1139,15 +1149,15 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             .into(binding.qrCodeImageView) // Set the blurred bitmap back to the ImageView
     }
 
-    private fun callPaymentMethodRules(context: Context) {
+    private fun callPaymentMethodRules() {
         showLoadingState()
-        val requestQueue = Volley.newRequestQueue(context)
+        val requestQueue = Volley.newRequestQueue(mContext)
 
         val countryName = sharedPreferences.getString("countryCode", null)
 
         val jsonArrayRequest = object : JsonArrayRequest(
             Method.GET,
-            "${getSessionApiUrl(context)}$token/payment-methods?customerCountryCode=$countryName",
+            "${getSessionApiUrl(mContext)}$token/payment-methods?customerCountryCode=$countryName",
             null,
             Response.Listener { response ->
                 for (i in 0 until response.length()) {
@@ -1167,7 +1177,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         }
 
                         if (brand == "UpiQr") {
-                            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                            val userAgentHeader = WebSettings.getDefaultUserAgent(mContext)
 
                             if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
                                 upiQRMethod = true
@@ -1283,12 +1293,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun postRequestForQRCode(context: Context) {
+    private fun postRequestForQRCode() {
 
-        val requestQueue = Volley.newRequestQueue(context)
+        val requestQueue = Volley.newRequestQueue(mContext)
         logMainBottomSheetUiEvents()
         callUIAnalytics(
-            context = context,
+            context = mContext,
             message = "",
             screenName = "Main Bottom Sheet in function postRequestForQRCode",
             uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -1301,7 +1311,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
-                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                val userAgentHeader = WebSettings.getDefaultUserAgent(mContext)
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
                 put("screenWidth", displayMetrics.widthPixels.toString())
@@ -1365,7 +1375,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         }
 
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, getSessionApiUrl(context) + token, requestBody,
+            Method.POST, getSessionApiUrl(mContext) + token, requestBody,
             Response.Listener { response ->
 
                 transactionId = response.getString("transactionId").toString()
@@ -1415,11 +1425,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     fun getRecommendedInstrumentation() {
-        val requestQueue = Volley.newRequestQueue(context)
+        val requestQueue = Volley.newRequestQueue(mContext)
         uniqueReference = sharedPreferences.getString("uniqueReference", null)
         val jsonObjectRequest = object : JsonArrayRequest(
             Method.GET,
-            getSessionApiUrl(context) + token + "/shoppers/$uniqueReference/recommended-instruments",
+            getSessionApiUrl(mContext) + token + "/shoppers/$uniqueReference/recommended-instruments",
             null,
             Response.Listener { response ->
                 try {
@@ -1635,18 +1645,18 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             startActivityForResult(intent, 124)
         } catch (_: Exception) {
             removeLoadingState()
-            Toast.makeText(context, "No other UPI options", Toast.LENGTH_SHORT).show()
+            Toast.makeText(mContext, "No other UPI options", Toast.LENGTH_SHORT).show()
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getUrlForDefaultUPIIntent() {
         logMainBottomSheetUiEvents()
-        val requestQueue = Volley.newRequestQueue(context)
+        val requestQueue = Volley.newRequestQueue(mContext)
         // Constructing the request body
         val requestBody = JSONObject().apply {
             val browserData = JSONObject().apply {
-                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                val userAgentHeader = WebSettings.getDefaultUserAgent(mContext)
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
                 put("screenWidth", displayMetrics.widthPixels.toString())
@@ -1710,7 +1720,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, getSessionApiUrl(context) + token, requestBody,
+            Method.POST, getSessionApiUrl(mContext) + token, requestBody,
             Response.Listener { response ->
 
                 // Handle response
@@ -1786,11 +1796,27 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun addOverlayToActivity() {
         overLayPresent = true
-        overlayViewMainBottomSheet = View(requireContext())
-        overlayViewMainBottomSheet?.setBackgroundColor(Color.parseColor("#80000000")) // Adjust the color and transparency as needed
+        val activityContext = activity ?: return
+        if (activityContext.isFinishing || activityContext.isDestroyed) return
 
-        val windowManager =
-            requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val windowManager = activityContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val decorView = activityContext.window.decorView
+
+        if (overlayViewMainBottomSheet == null) {
+            overlayViewMainBottomSheet = View(activityContext).apply {
+                setBackgroundColor(Color.parseColor("#80000000"))
+            }
+        }
+
+        // 2. CHECK TOKEN: If the user just pressed the power button, decorView.windowToken will be null
+        val token = decorView.windowToken
+        if (token == null) {
+            // Window isn't ready yet. Try again in the next frame.
+            decorView.post {
+                if (isAdded && !isDetached) addOverlayToActivity()
+            }
+            return
+        }
 
         val layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -1798,30 +1824,50 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             WindowManager.LayoutParams.TYPE_APPLICATION_PANEL,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
-        )
-        val activityContext = activity
-        if (activityContext != null && !activityContext.isFinishing && !activityContext.isDestroyed) {
-            activityContext.runOnUiThread {
-                windowManager.addView(overlayViewMainBottomSheet, layoutParams)
+        ).apply {
+            this.token = token
+        }
+
+        activityContext.runOnUiThread {
+            try {
+                // 4. PREVENT MULTIPLE ADDS: Check if it's already on screen
+                if (overlayViewMainBottomSheet?.parent == null) {
+                    windowManager.addView(overlayViewMainBottomSheet, layoutParams)
+                    overLayPresent = true
+                }
+            } catch (e: Exception) {
+                callUIAnalytics(
+                    context = mContext,
+                    message = e.message ?: "${e.message}",
+                    screenName = "Main Bottom Sheet in function addOverlayToActivity",
+                    uiEvent = AnalyticsEvents.SDK_CRASH
+                )
             }
-        } else {
-            callUIAnalytics(
-                context,
-                "Activity context is null not able to add the overlay above the activity",
-                "MainBottomSheet",
-                AnalyticsEvents.SDK_CRASH
-            )
         }
     }
 
     private fun removeOverlayFromActivity() {
-        overlayViewMainBottomSheet?.let {
-            val windowManager =
-                requireContext().getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            windowManager.removeView(it)
+        val activityContext = activity ?: return
+        val view = overlayViewMainBottomSheet ?: return
+
+        try {
+            val windowManager = activityContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            if (view.parent != null) {
+                windowManager.removeViewImmediate(view)
+            }
+        } catch (e: Exception) {
+            callUIAnalytics(
+                context = mContext,
+                message = e.message ?: "${e.message}",
+                screenName = "Main Bottom Sheet in function removeOverlayFromActivity",
+                uiEvent = AnalyticsEvents.SDK_CRASH
+            )
+        } finally {
+            // Crucial: Nullify the view so we don't hold a reference to a dead context
+            overlayViewMainBottomSheet = null
+            overLayPresent = false
+            sessionTimer?.cancel()
         }
-        overlayViewMainBottomSheet = null
-        sessionTimer?.cancel()
     }
 
     fun removeOverlayFromCurrentBottomSheet() {
@@ -1851,13 +1897,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.recomendedRecyclerView.visibility = View.VISIBLE
         binding.recomendedOptionsLinearLayout.visibility = View.VISIBLE
         binding.recomendedText.typeface =
-            ResourcesCompat.getFont(context, R.font.poppins_semibold)
+            ResourcesCompat.getFont(mContext, R.font.poppins_semibold)
     }
 
     private fun hideRecommendedOptions() {
         binding.recomendedConstraint.setBackgroundColor(Color.parseColor("#FFFFFF"))
         binding.recomendedRecyclerView.visibility = View.GONE
-        binding.recomendedText.typeface = ResourcesCompat.getFont(requireContext(), R.font.poppins)
+        binding.recomendedText.typeface = ResourcesCompat.getFont(mContext, R.font.poppins)
         binding.recomendedOptionsLinearLayout.visibility = View.GONE
         recommendedCheckedPosition = null
         binding.recommendedProceedButton.visibility = View.GONE
@@ -1879,7 +1925,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.upiConstraint.setBackgroundColor(Color.parseColor("#E0F1FF"))
         binding.upiOptionsLinearLayout.visibility = View.VISIBLE
         binding.textView20.typeface =
-            ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
+            ResourcesCompat.getFont(mContext, R.font.poppins_semibold)
 
         if (installedApps.isNotEmpty() && upiIntentMethod) {
             binding.popularUPIAppsConstraint.visibility = View.VISIBLE
@@ -1894,7 +1940,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.cardConstraint.setBackgroundColor(Color.parseColor("#E0F1FF"))
         binding.savedCardsLinearLayout.visibility = View.VISIBLE
         binding.textView29.typeface =
-            ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
+            ResourcesCompat.getFont(mContext, R.font.poppins_semibold)
         if (savedCardsCheckedPosition != RecyclerView.NO_POSITION && savedCardsCheckedPosition !=  null){
             binding.recommendedProceedButtonRelativeLayout.visibility = View.VISIBLE
             binding.recommendedProceedButton.visibility = View.VISIBLE
@@ -1923,7 +1969,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.cardConstraint.setBackgroundColor(Color.parseColor("#FFFFFF"))
         binding.savedCardsLinearLayout.visibility = View.GONE
         binding.textView29.typeface =
-            ResourcesCompat.getFont(requireContext(), R.font.poppins)
+            ResourcesCompat.getFont(mContext, R.font.poppins)
         binding.recommendedCardView.visibility = View.VISIBLE
     }
 
@@ -1931,7 +1977,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun hideUPIOptions() {
         binding.upiConstraint.setBackgroundColor(Color.parseColor("#FFFFFF"))
         binding.upiOptionsLinearLayout.visibility = View.GONE
-        binding.textView20.typeface = ResourcesCompat.getFont(requireContext(), R.font.poppins)
+        binding.textView20.typeface = ResourcesCompat.getFont(mContext, R.font.poppins)
         binding.popularUPIAppsConstraint.visibility = View.GONE
         if (savedUpiInstrumentationList.isNotEmpty()) {
             binding.savedUpiRecyclerView.visibility = View.GONE
@@ -1947,7 +1993,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun hideSavedCardOptions() {
         binding.cardConstraint.setBackgroundColor(Color.parseColor("#FFFFFF"))
         binding.savedCardsLinearLayout.visibility = View.GONE
-        binding.textView29.typeface = ResourcesCompat.getFont(requireContext(), R.font.poppins)
+        binding.textView29.typeface = ResourcesCompat.getFont(mContext, R.font.poppins)
         savedCardsCheckedPosition = null
         binding.recommendedProceedButton.visibility = View.GONE
     }
@@ -1967,7 +2013,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
 
 
-            val screenHeight = requireContext().resources.displayMetrics.heightPixels
+            val screenHeight = mContext.resources.displayMetrics.heightPixels
             val percentageOfScreenHeight = 0.95 // 70%
             val desiredHeight = (screenHeight * percentageOfScreenHeight).toInt()
 
@@ -2087,8 +2133,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun makeSessionDataCall() {
 
-        val url = "${getSessionApiUrl(context)}${token}"
-        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        val url = "${getSessionApiUrl(mContext)}${token}"
+        val queue: RequestQueue = Volley.newRequestQueue(mContext)
         val jsonObjectAll = object : JsonObjectRequest(Method.GET, url, null, { response ->
 
             try {
@@ -2379,7 +2425,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         }
                     }
                 }
-                val sharedPreferences = requireContext().getSharedPreferences(
+                val sharedPreferences = mContext.getSharedPreferences(
                     "TransactionDetails",
                     Context.MODE_PRIVATE
                 )
@@ -2646,7 +2692,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             }
                             if (brand == "UpiQr") {
                                 val userAgentHeader =
-                                    WebSettings.getDefaultUserAgent(requireContext())
+                                    WebSettings.getDefaultUserAgent(mContext)
                                 if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
                                     upiQRMethod = true
                                 }
@@ -2728,7 +2774,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     binding.deliveryAddressText.text = "Personal Details"
                     binding.homeIcon.setImageDrawable(
                         ContextCompat.getDrawable(
-                            context!!,
+                            mContext,
                             R.drawable.ic_personal_details
                         )
                     )
@@ -2741,7 +2787,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             } catch (e: Exception) {
                 callUiAnalyticWithSdkCrashEvent(e.message ?: "")
                 Toast.makeText(
-                    context,
+                    mContext,
                     "Invalid token/selected environment.\nPlease press back button and try again",
                     Toast.LENGTH_LONG
                 ).show()
@@ -2754,7 +2800,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
                 } else {
                     Toast.makeText(
-                        requireContext(),
+                        mContext,
                         "Invalid token/selected environment.\nPlease press back button and try again",
                         Toast.LENGTH_LONG
                     ).show()
@@ -2768,8 +2814,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun fetchSurchargeDetails(amount: Int, currencyCode : String, currencySymbol : String) {
-        val url = "${getSessionApiUrl(context)}${token}/surcharges/evaluate"
-        val queue: RequestQueue = Volley.newRequestQueue(requireContext())
+        val url = "${getSessionApiUrl(mContext)}${token}/surcharges/evaluate"
+        val queue: RequestQueue = Volley.newRequestQueue(mContext)
         val requestBody = JSONObject().apply {
 
 
@@ -2844,7 +2890,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
             catch (e: Exception) {
                 callUIAnalytics(
-                    context = context,
+                    context = mContext,
                     message = "$e",
                     screenName = "Main Bottom Sheet",
                     uiEvent = AnalyticsEvents.SDK_CRASH
@@ -2853,7 +2899,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             }
         }, Response.ErrorListener { error ->
             callUIAnalytics(
-                context = context,
+                context = mContext,
                 message = "$error",
                 screenName = "Main Bottom Sheet",
                 uiEvent = AnalyticsEvents.SDK_CRASH
@@ -2904,7 +2950,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 if (brand == "UpiQr") {
                     val userAgentHeader =
-                        WebSettings.getDefaultUserAgent(requireContext())
+                        WebSettings.getDefaultUserAgent(mContext)
                     if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
                         upiQRMethod = true
                     }
@@ -3091,10 +3137,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun fetchTransactionDetailsFromSharedPreferences() {
-        val sharedPreferences =
-            requireContext().getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-        token = getSessionToken(context)
-        customerShopperToken = getShopperToken(context)
+        token = getSessionToken(mContext)
+        customerShopperToken = getShopperToken(mContext)
         successScreenFullReferencePath =
             sharedPreferences.getString("successScreenFullReferencePath", "empty")
     }
@@ -3164,7 +3208,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             binding.deliveryAddressText.text = "Personal Details"
             binding.homeIcon.setImageDrawable(
                 ContextCompat.getDrawable(
-                    context!!,
+                    mContext,
                     R.drawable.ic_personal_details
                 )
             )
@@ -3193,7 +3237,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             swipeToPayContent()
         }
 
-        callPaymentMethodRules(requireContext())
+        callPaymentMethodRules()
         binding.textView12.visibility = View.VISIBLE
 
     }
@@ -3201,7 +3245,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     @RequiresApi(Build.VERSION_CODES.O)
     fun postRecommendedInstruments(type: String, instrumentationRef: String, displayName: String? = null) {
         showLoadingState()
-        val requestQueue = Volley.newRequestQueue(context)
+        val requestQueue = Volley.newRequestQueue(mContext)
 
 
         // Constructing the request body
@@ -3210,7 +3254,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
             // Create the browserData JSON object
             val browserData = JSONObject().apply {
-                val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                val userAgentHeader = WebSettings.getDefaultUserAgent(mContext)
                 val displayMetrics = resources.displayMetrics
                 put("screenHeight", displayMetrics.heightPixels.toString())
                 put("screenWidth", displayMetrics.widthPixels.toString())
@@ -3285,7 +3329,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         // Request a JSONObject response from the provided URL
         val jsonObjectRequest = object : JsonObjectRequest(
-            Method.POST, getSessionApiUrl(context) + token, requestBody,
+            Method.POST, getSessionApiUrl(mContext) + token, requestBody,
             Response.Listener { response ->
 
                 binding.swipeLoader.visibility = View.GONE
@@ -3395,7 +3439,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             val jsonArray = JSONArray(jsonString)
             for (i in 0 until jsonArray.length()) {
                 val groupArray = jsonArray.getJSONArray(i)
-                val horizontalLayout = LinearLayout(container.context).apply {
+                val horizontalLayout = LinearLayout(mContext).apply {
                     orientation = LinearLayout.HORIZONTAL
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -3454,7 +3498,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         toAddWeight: Boolean = true
     ) {
         try {
-            val textView = TextView(context).apply {
+            val textView = TextView(mContext).apply {
                 layoutParams = LayoutParams(
                     if (toAddWeight) 0 else LayoutParams.WRAP_CONTENT,
                     LayoutParams.WRAP_CONTENT
@@ -3503,7 +3547,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun addImageView(container: LinearLayout, item: JSONObject) {
         try {
-            val imageView = ImageView(context).apply {
+            val imageView = ImageView(mContext).apply {
                 layoutParams = LinearLayout.LayoutParams(
                     0, // Width is 0, controlled by weight
                     LinearLayout.LayoutParams.WRAP_CONTENT
@@ -3535,7 +3579,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun addDividerView(container: LinearLayout, item: JSONObject) {
         try {
-            val divider = View(context)
+            val divider = View(mContext)
             val thickness = item.optInt("thickness", 1)
             val params = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, thickness)
             divider.layoutParams = params
@@ -3554,7 +3598,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun addLineGap(container: LinearLayout, item: JSONObject) {
         try {
-            val gap = View(context)
+            val gap = View(mContext)
             val params =
                 LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 20)
             gap.layoutParams = params
@@ -3574,7 +3618,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun addSpace(container: LinearLayout, item: JSONObject) {
-        val space = View(context)
+        val space = View(mContext)
         val width = item.optInt("width", 10)
         val weight = item.optInt("weight", 1)
         val params = LayoutParams(width, LayoutParams.MATCH_PARENT, weight.toFloat())
@@ -3585,13 +3629,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun addAccordionView(container: LinearLayout, item: JSONObject) {
         try {
-            val accordionLayout = LinearLayout(context)
+            val accordionLayout = LinearLayout(mContext)
             accordionLayout.orientation = LinearLayout.VERTICAL
             accordionLayout.layoutParams =
                 LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
 
             // Header of the Accordion
-            val headerLayout = LinearLayout(context)
+            val headerLayout = LinearLayout(mContext)
             headerLayout.orientation = LinearLayout.HORIZONTAL
             headerLayout.layoutParams =
                 LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
@@ -3616,7 +3660,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             accordionLayout.addView(headerLayout)
 
             // Content of the Accordion (hidden by default)
-            val contentLayout = LinearLayout(context).apply {
+            val contentLayout = LinearLayout(mContext).apply {
                 orientation = LinearLayout.VERTICAL
                 layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
                 visibility = View.VISIBLE // Initially visible
@@ -3627,7 +3671,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 for (i in 1 until contentArray.length()) {
                     val groupArray = contentArray.getJSONArray(i)
 
-                    val horizontalLayout = LinearLayout(container.context).apply {
+                    val horizontalLayout = LinearLayout(mContext).apply {
                         orientation = LinearLayout.HORIZONTAL
                         layoutParams = LinearLayout.LayoutParams(
                             LinearLayout.LayoutParams.MATCH_PARENT,
@@ -3638,7 +3682,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                     if (i == 1) {
                         // Add only first two items in the first row
-                        val firstRowLayout = LinearLayout(container.context).apply {
+                        val firstRowLayout = LinearLayout(mContext).apply {
                             orientation = LinearLayout.HORIZONTAL
                             layoutParams = LinearLayout.LayoutParams(
                                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -3660,7 +3704,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             }
                         }
                         contentLayout.addView(firstRowLayout)
-                        val secondRowLayout = LinearLayout(container.context).apply {
+                        val secondRowLayout = LinearLayout(mContext).apply {
                             orientation = LinearLayout.HORIZONTAL
                             layoutParams = LayoutParams(
                                 LayoutParams.MATCH_PARENT,
@@ -3724,7 +3768,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         accordionLayout: LinearLayout
     ) {
         try {
-            val toggleImageView = ImageView(context)
+            val toggleImageView = ImageView(mContext)
             val openIconUrl = headerItem.optString("openIcon")
             val closeIconUrl = headerItem.optString("closeIcon")
             val size = 40
@@ -3770,10 +3814,6 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     fun setAmount(amount: String) {
         this.railyatriAmount = amount
-    }
-
-    fun setContext(context: Context) {
-        this.context = context
     }
 
     fun extractMessageFromErrorResponse(response: String): String? {
@@ -3919,7 +3959,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 },
                 onSwipeComplete = {
                     callUIAnalytics(
-                        context = context,
+                        context = mContext,
                         message = "",
                         screenName = "Main Bottom Sheet",
                         uiEvent = AnalyticsEvents.PAYMENT_INITIATED
@@ -4105,19 +4145,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun logMainBottomSheetUiEvents() {
         callUIAnalytics(
-            context = context,
+            context = mContext,
             message = "",
             screenName = "Main Bottom Sheet",
             uiEvent = AnalyticsEvents.PAYMENT_METHOD_SELECTED
         )
         callUIAnalytics(
-            context = context,
+            context = mContext,
             message = "",
             screenName = "Main Bottom Sheet",
             uiEvent = AnalyticsEvents.PAYMENT_CATEGORY_SELECTED
         )
         callUIAnalytics(
-            context = context,
+            context = mContext,
             message = "",
             screenName = "Main Bottom Sheet",
             uiEvent = AnalyticsEvents.PAYMENT_INSTRUMENT_PROVIDED
@@ -4126,7 +4166,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun callUiAnalyticWithSdkCrashEvent(message: String) {
         callUIAnalytics(
-            context = context,
+            context = mContext,
             message = message,
             screenName = "Main Bottom Sheet in function dismissMainSheet",
             uiEvent = AnalyticsEvents.SDK_CRASH
