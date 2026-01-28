@@ -2585,7 +2585,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 } catch (e: Exception) {
                     callUIAnalytics(
-                        context = context,
+                        context = mContext,
                         message = "$e",
                         screenName = "Main Bottom Sheet in makeSession data call line no 2534",
                         uiEvent = AnalyticsEvents.SDK_CRASH
@@ -2833,7 +2833,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         "UpiCollect" -> upiCollectMethod = true
                         "UpiIntent" -> upiIntentMethod = true
                         "UpiQr" -> {
-                            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                            val userAgentHeader = WebSettings.getDefaultUserAgent(mContext)
                             if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
                                 upiQRMethod = true
                             }
@@ -2846,7 +2846,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     when (paymentMethod.brand) {
                         "UpiIntentOtm" -> upiOtmIntentMethod = true
                         "UpiQrOtm" -> {
-                            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                            val userAgentHeader = WebSettings.getDefaultUserAgent(mContext)
                             if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
                                 upiOtmQRMethod = true
                             }
