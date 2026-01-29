@@ -258,6 +258,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val statusFetched = sharedPreferences.getString("status", "")
                 val transactionIdFetched = sharedPreferences.getString("transactionId", "")
                 val operationIdFetched = sharedPreferences.getString("operationId", "")
+                job?.cancel()
+                sessionTimer?.cancel()
+                callUIAnalytics(
+                    context = mContext,
+                    message = "Pressed back or ended the checkout with this status $statusFetched",
+                    screenName = "Main Bottom Sheet in function override fun onDismiss",
+                    uiEvent = AnalyticsEvents.PAYMENT_RESULT_SCREEN_DISPLAYED
+                )
                 callback.onPaymentResult(
                     PaymentResultObject(
                         statusFetched.toString(),
@@ -352,12 +360,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
 
     private fun initiateFetchStatusCall() {
-        job?.cancel()
-        job = CoroutineScope(Dispatchers.IO).launch {
-            while (isActive) {
-                delay(3000)
-                fetchStatusAndReason("${getSessionApiUrl(mContext)}${token}/status")
-                // Delay for 4 seconds
+        if(isAdded) {
+            job?.cancel()
+            job = CoroutineScope(Dispatchers.IO).launch {
+                while (isActive) {
+                    delay(3000)
+                    fetchStatusAndReason("${getSessionApiUrl(mContext)}${token}/status")
+                    // Delay for 4 seconds
+                }
             }
         }
     }
