@@ -879,7 +879,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     hideSavedCardOptions()
                     if (!upiOptionsShown) {
                         upiOptionsShown = true
-                        if(surchargeDetails.any{it.third.equals("upi", true)}) {
+                        if(isSurchargeAppliedForMethod("upi")) {
                             showSurchargeBottomSheet("upi")
                         } else {
                             showUPIOptions()
@@ -938,13 +938,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     hideQRCode()
                     upiOptionsShown = false
                     hideUPIOptions()
-                    if(surchargeDetails.any { it.third.equals("card", true) } && !binding.savedCardsLinearLayout.isVisible && savedCardsInstrumentationList.isNotEmpty()) {
+                    if(isSurchargeAppliedForMethod("card") && !binding.savedCardsLinearLayout.isVisible && savedCardsInstrumentationList.isNotEmpty()) {
                         showCardOptions()
                     } else if (savedCardsInstrumentationList.isEmpty() && surchargeDetails.isEmpty()) {
                         binding.cardConstraint.isEnabled = false
                         logMainBottomSheetUiEvents()
                         openAddCardBottomSheet()
-                    } else if (surchargeDetails.any { it.third.equals("card", true) } && savedCardsInstrumentationList.isEmpty()) {
+                    } else if (isSurchargeAppliedForMethod("card") && savedCardsInstrumentationList.isEmpty()) {
                         showSurchargeBottomSheet("card")
                     } else if(binding.savedCardsLinearLayout.isVisible) {
                         hideCardOptions()
@@ -963,7 +963,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
-                    if(surchargeDetails.isNotEmpty() && surchargeDetails.any{it.third.equals("wallet", true)}) {
+                    if(surchargeDetails.isNotEmpty() && isSurchargeAppliedForMethod("wallet")) {
                         showSurchargeBottomSheet("wallet")
                     } else {
                         binding.walletConstraint.isEnabled = false
@@ -981,7 +981,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
-                    if(surchargeDetails.isNotEmpty() && surchargeDetails.any{it.third.equals("emi", true)}) {
+                    if(surchargeDetails.isNotEmpty() && isSurchargeAppliedForMethod("emi")) {
                         showSurchargeBottomSheet("emi")
                     } else {
                         binding.emiConstraint.isEnabled = false
@@ -999,7 +999,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
-                    if(surchargeDetails.isNotEmpty() && surchargeDetails.any{it.third.equals("bnpl", true)}) {
+                    if(surchargeDetails.isNotEmpty() && isSurchargeAppliedForMethod("bnpl")) {
                         showSurchargeBottomSheet("bnpl")
                     } else {
                         binding.bnplConstraint.isEnabled = false
@@ -1018,7 +1018,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     hideQRCode()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
-                    if(surchargeDetails.isNotEmpty() && surchargeDetails.any{it.third.equals("netbanking", true)}) {
+                    if(surchargeDetails.isNotEmpty() && isSurchargeAppliedForMethod("netbanking")) {
                         showSurchargeBottomSheet("netbanking")
                     } else {
                         binding.netBankingConstraint.isEnabled = false
@@ -1527,7 +1527,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             showRecommendedOptions()
                         } else {
                             upiOptionsShown = true
-                            if(surchargeDetails.any{it.third.equals("upi", true)}) {
+                            if(isSurchargeAppliedForMethod("upi")) {
                                 showSurchargeBottomSheet("upi")
                             } else {
                                 showUPIOptions()
@@ -1872,7 +1872,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView18.visibility = View.VISIBLE
         binding.ItemsPrice.visibility = View.VISIBLE
         binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
-        if(surchargeDetails.any { it.third.isEmpty()}) {
+        if(isSurchargeAppliedForMethod("")) {
             displaySurcharge("", false)
             binding.surchargeComposeView.visibility = View.VISIBLE
         }
@@ -2944,7 +2944,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getRecommendedInstrumentation()
         } else {
             upiOptionsShown = true
-            if(surchargeDetails.any{it.third.equals("upi", true)} && upiAvailable) {
+            if(isSurchargeAppliedForMethod("upi") && upiAvailable) {
                 showSurchargeBottomSheet("upi")
             } else if (upiAvailable){
                 showUPIOptions()
@@ -2955,6 +2955,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 showQRCode()
             }
         }
+    }
+
+    private fun isSurchargeAppliedForMethod(method:String) : Boolean {
+        return surchargeDetails.any{it.third.equals(method, true)}
     }
 
     private fun showPaymentMethods(paymentMethodsList : List<FetchPaymentMethodPostOffer>) {
@@ -3275,7 +3279,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             showRecommendedOptions()
         } else {
             upiOptionsShown = true
-            if(surchargeDetails.any{it.third.equals("upi", true)}) {
+            if(isSurchargeAppliedForMethod("upi")) {
                 showSurchargeBottomSheet("upi")
             } else {
                 showUPIOptions()
