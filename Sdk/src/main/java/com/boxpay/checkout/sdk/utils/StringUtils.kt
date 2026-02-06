@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import org.json.JSONArray
+import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -85,4 +86,12 @@ fun formatDate(isoDate: String): String {
     val zonedDateTime = ZonedDateTime.parse(isoDate)
     val formatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.ENGLISH)
     return zonedDateTime.format(formatter)
+}
+
+fun convertAmountToIndiaLocale(amount : Int) : String? {
+    val indiaLocale = Locale("en", "IN")
+    val formatter = NumberFormat.getNumberInstance(indiaLocale)
+    formatter.minimumFractionDigits = 0
+    formatter.maximumFractionDigits = 0
+    return formatter.format(amount)
 }
