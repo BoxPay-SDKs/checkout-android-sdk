@@ -66,6 +66,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
     private lateinit var editor: SharedPreferences.Editor
     private var transactionId: String? = null
     private var shippingEnabled: Boolean = false
+    private var upiOtmAvailable : Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -432,7 +433,7 @@ internal class AddUPIID : BottomSheetDialogFragment() {
             put("browserData", browserData)
 
             val instrumentDetailsObject = JSONObject().apply {
-                put("type", "upi/collect")
+                put("type", if(upiOtmAvailable) "upiotm/collect" else "upi/collect")
 
                 val upiObject = JSONObject().apply {
                     put("shopperVpa", userVPA)
@@ -714,10 +715,12 @@ internal class AddUPIID : BottomSheetDialogFragment() {
 
     companion object {
         fun newInstance(
-            shippingEnabled: Boolean
+            shippingEnabled: Boolean,
+            upiOtmAvailable : Boolean
         ): AddUPIID {
             val fragment = AddUPIID()
             fragment.shippingEnabled = shippingEnabled
+            fragment.upiOtmAvailable = upiOtmAvailable
             return fragment
         }
     }

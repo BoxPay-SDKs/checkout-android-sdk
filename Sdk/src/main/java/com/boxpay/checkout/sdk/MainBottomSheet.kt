@@ -92,6 +92,7 @@ import com.boxpay.checkout.sdk.utils.getSessionApiUrl
 import com.boxpay.checkout.sdk.utils.getSessionToken
 import com.boxpay.checkout.sdk.utils.getShopperToken
 import com.boxpay.checkout.sdk.utils.getValueAtIndexByKey
+import com.boxpay.checkout.sdk.utils.showIf
 import com.boxpay.checkout.sdk.utils.showWebOrTimerScreen
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -101,6 +102,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -169,6 +171,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var upiCollectMethod = false
     private var upiIntentMethod = false
     private var upiQRMethod = false
+    private var upiOtmAvailable = false
+    private var upiOtmQRMethod = false
+    private var upiOtmIntentMethod = false
+    private var upiOtmCollectMethod = false
     private var cardsMethod = false
     private var isNameEditable = true
     private var isPhoneEditable = true
@@ -537,7 +543,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             put("browserData", browserData)
 
             val instrumentDetailsObject = JSONObject().apply {
-                put("type", "upi/intent")
+                put("type", if(upiOtmAvailable) "upiotm/intent" else "upi/intent")
 
                 val upiAppDetails = JSONObject().apply {
                     put("upiApp", appName)
@@ -1150,106 +1156,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             "${getSessionApiUrl(context)}$token/payment-methods?customerCountryCode=$countryName",
             null,
             Response.Listener { response ->
-                for (i in 0 until response.length()) {
-                    val paymentMethod = response.getJSONObject(i)
-                    val paymentMethodName = paymentMethod.getString("type")
-                    if (paymentMethodName == "Upi") {
-                        val brand = paymentMethod.getString("brand")
-                        if (brand == "UpiCollect") {
-                            upiCollectMethod = true
-                            upiAvailable = true
-                        }
 
-
-                        if (brand == "UpiIntent") {
-                            upiIntentMethod = true
-                            upiAvailable = true
-                        }
-
-                        if (brand == "UpiQr") {
-                            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
-
-                            if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
-                                upiQRMethod = true
-                            }
-                            upiAvailable = true
-                        }
-                    }
-                    if (paymentMethodName == "Card") {
-                        cardsMethod = true
-                    }
-                    if (paymentMethodName == "Wallet") {
-                        walletMethods = true
-                    }
-                    if (paymentMethodName == "Emi") {
-                        emiMethod = true
-                    }
-                    if (paymentMethodName == "BuyNowPayLater") {
-                        bnplMethod = true
-                    }
-                    if (paymentMethodName == "NetBanking") {
-                        netBankingMethods = true
-                    }
-                }
-
-                if (upiAvailable) {
-                    binding.cardView4.visibility = View.VISIBLE
-                    binding.upiLinearLayout.visibility = View.VISIBLE
-
-                    if (upiCollectMethod) {
-                        binding.addNewUPIIDConstraint.visibility = View.VISIBLE
-                    }
-
-                    if (upiQRMethod) {
-                        if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == true) {
-                            binding.textView21.visibility = View.GONE
-                            binding.imageView10.visibility = View.GONE
-                            showQRCode()
-                        } else if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == false) {
-                            binding.textView21.visibility = View.GONE
-                            binding.imageView10.visibility = View.GONE
-                        }
-                        binding.UPIQRConstraint.visibility = View.VISIBLE
-                    }
-
-                } else {
-                    binding.cardView4.visibility = View.GONE
-                }
-
-                if (cardsMethod) {
-                    binding.cardView5.visibility = View.VISIBLE
-                    binding.cardConstraint.visibility = View.VISIBLE
-                } else {
-                    binding.cardView5.visibility = View.GONE
-                }
-
-                if (walletMethods) {
-                    binding.cardView6.visibility = View.VISIBLE
-                    binding.walletConstraint.visibility = View.VISIBLE
-                } else {
-                    binding.cardView6.visibility = View.GONE
-                }
-
-                if (emiMethod) {
-                    binding.emiCard.visibility = View.VISIBLE
-                    binding.emiConstraint.visibility = View.VISIBLE
-                } else {
-                    binding.emiCard.visibility = View.GONE
-                }
-
-                if (bnplMethod) {
-                    binding.cardView9.visibility = View.VISIBLE
-                    binding.bnplConstraint.visibility = View.VISIBLE
-                } else {
-                    binding.cardView9.visibility = View.GONE
-                }
-
-                if (netBankingMethods) {
-                    binding.cardView7.visibility = View.VISIBLE
-                    binding.netBankingConstraint.visibility = View.VISIBLE
-                } else {
-                    binding.cardView7.visibility = View.GONE
-                }
+                val gson = Gson()
+                val type = object : TypeToken<List<FetchPaymentMethodPostOffer>>() {}.type
+                val paymentMethodsList: List<FetchPaymentMethodPostOffer> =
+                    gson.fromJson(response.toString(), type)
+                showPaymentMethods(paymentMethodsList)
+                updateView()
                 removeLoadingState()
             },
             Response.ErrorListener { /* no response handling */error ->
@@ -1317,7 +1230,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             put("browserData", browserData)
 
             val instrumentDetailsObject = JSONObject().apply {
-                put("type", "upi/qr")
+                put("type", if(upiOtmAvailable) "upiotm/qr" else "upi/qr")
             }
             put("instrumentDetails", instrumentDetailsObject)
 
@@ -1881,7 +1794,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView20.typeface =
             ResourcesCompat.getFont(requireContext(), R.font.poppins_semibold)
 
-        if (installedApps.isNotEmpty() && upiIntentMethod) {
+        if (installedApps.isNotEmpty() && (upiIntentMethod || upiOtmIntentMethod)) {
             binding.popularUPIAppsConstraint.visibility = View.VISIBLE
         }
 
@@ -2033,7 +1946,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun openAddUPIIDBottomSheet() {
-        val bottomSheetFragment = AddUPIID.newInstance(shippingEnabled)
+        val bottomSheetFragment = AddUPIID.newInstance(shippingEnabled, upiOtmAvailable)
         parentFragmentManager.beginTransaction()
             .add(bottomSheetFragment, "AddUPIBottomSheet")
             .commitAllowingStateLoss()
@@ -2598,78 +2511,30 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
                 editor.apply()
 
-                if (!shippingEnabled) {
-                    val paymentMethodsArray =
-                        response.getJSONObject("configs").getJSONArray("paymentMethods")
+                val paymentMethodsArray =
+                    response.getJSONObject("configs").getJSONArray("paymentMethods")
 
-                    try {
-                        if (!paymentDetailsObject.isNull("order")) {
-                            val itemsArray = if (paymentDetailsObject.getJSONObject("order")
-                                    .optJSONArray("items") != null
-                            ) paymentDetailsObject.getJSONObject("order")
-                                .optJSONArray("items") else null
-                            if (itemsArray != null) {
-                                for (i in 0 until itemsArray.length()) {
-                                    val imageURL = itemsArray.getJSONObject(i).getString("imageUrl")
-                                    imagesUrls.add(imageURL)
-                                }
+                try {
+                    if (!paymentDetailsObject.isNull("order")) {
+                        val itemsArray = if (paymentDetailsObject.getJSONObject("order")
+                                .optJSONArray("items") != null
+                        ) paymentDetailsObject.getJSONObject("order")
+                            .optJSONArray("items") else null
+                        if (itemsArray != null) {
+                            for (i in 0 until itemsArray.length()) {
+                                val imageURL = itemsArray.getJSONObject(i).getString("imageUrl")
+                                imagesUrls.add(imageURL)
                             }
-                        }
-                    } catch (e: Exception) {
-                        binding.cardView3.visibility = View.GONE
-                    }
-
-                    for (i in 0 until paymentMethodsArray.length()) {
-                        val paymentMethod = paymentMethodsArray.getJSONObject(i)
-                        val paymentMethodName = paymentMethod.getString("type")
-                        val paymentMethodOffers = paymentMethod.optJSONArray("applicableOffers")
-                        if(offerType.isNullOrEmpty() && paymentMethodOffers != null && paymentMethodOffers.length() != 0) {
-                            val firstOffer = paymentMethodOffers.getJSONObject(0)
-                            val discountObj = firstOffer.optJSONObject("discount")
-
-                            offerType = firstOffer.optString("type", "")
-                            offerMaxAmount = if (discountObj?.isNull("maxAmount") == true) {
-                                offerMinAmount
-                            } else {
-                                discountObj?.optInt("maxAmount") ?: offerMinAmount
-                            }
-                        }
-                        if (paymentMethodName == "Upi") {
-                            val brand = paymentMethod.getString("brand")
-                            if (brand == "UpiCollect") {
-                                upiCollectMethod = true
-                                upiAvailable = true
-                            }
-                            if (brand == "UpiIntent") {
-                                upiIntentMethod = true
-                                upiAvailable = true
-                            }
-                            if (brand == "UpiQr") {
-                                val userAgentHeader =
-                                    WebSettings.getDefaultUserAgent(requireContext())
-                                if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
-                                    upiQRMethod = true
-                                }
-                                upiAvailable = true
-                            }
-                        }
-                        if (paymentMethodName == "Card") {
-                            cardsMethod = true
-                        }
-                        if (paymentMethodName == "Wallet") {
-                            walletMethods = true
-                        }
-                        if (paymentMethodName == "Emi") {
-                            emiMethod = true
-                        }
-                        if (paymentMethodName == "BuyNowPayLater") {
-                            bnplMethod = true
-                        }
-                        if (paymentMethodName == "NetBanking") {
-                            netBankingMethods = true
                         }
                     }
-                    updateView()
+                } catch (e: Exception) {
+                    callUIAnalytics(
+                        context = context,
+                        message = "$e",
+                        screenName = "Main Bottom Sheet in makeSession data call line no 2534",
+                        uiEvent = AnalyticsEvents.SDK_CRASH
+                    )
+                    binding.cardView3.visibility = View.GONE
                 }
 
                 binding.nameAndMobileTextViewMain.text =
@@ -2736,6 +2601,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 fetchSurchargeDetails(totalAmount, currencyCode, currencySymbol)
                 getInstantOffers(type = offerType ?: "", currencySymbol = currencySymbol)
+                val gson = Gson()
+                val type = object : TypeToken<List<FetchPaymentMethodPostOffer>>() {}.type
+                val paymentMethodsList: List<FetchPaymentMethodPostOffer> =
+                    gson.fromJson(paymentMethodsArray.toString(), type)
+                showPaymentMethods(paymentMethodsList)
+                updateView()
                 val expireTiming = response.getString("sessionExpiryTimestamp")
                 startCountdown(expireTiming)
             } catch (e: Exception) {
@@ -2871,7 +2742,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         } else {
             upiOptionsShown = true
             showUPIOptions()
-            if (toLoadQrDirect == false || toLoadQrDirect == null || !upiQRMethod) {
+            if (toLoadQrDirect == false || toLoadQrDirect == null || !upiQRMethod || !upiOtmQRMethod) {
                 removeLoadingState()
             } else {
                 showQRCode()
@@ -2887,97 +2758,101 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         cardsMethod = false
         walletMethods = false
         emiMethod = false
+        upiOtmAvailable = false
+        upiOtmQRMethod = false
+        upiOtmIntentMethod = false
+        upiOtmCollectMethod = false
+        upiAvailable = false
         bnplMethod = false
         netBankingMethods = false
         binding.recommendedCardView.visibility = View.GONE
 
-        paymentMethodsList.map { paymentMethod ->
-            if (paymentMethod.type == "Upi") {
-                val brand = paymentMethod.brand
-                if (brand == "UpiCollect") {
-                    upiCollectMethod = true
+        paymentMethodsList.forEach { paymentMethod ->
+
+            when (paymentMethod.type) {
+
+                "Upi" -> {
                     upiAvailable = true
-                }
-                if (brand == "UpiIntent") {
-                    upiIntentMethod = true
-                    upiAvailable = true
-                }
-                if (brand == "UpiQr") {
-                    val userAgentHeader =
-                        WebSettings.getDefaultUserAgent(requireContext())
-                    if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
-                        upiQRMethod = true
+                    when (paymentMethod.brand) {
+                        "UpiCollect" -> upiCollectMethod = true
+                        "UpiIntent" -> upiIntentMethod = true
+                        "UpiQr" -> {
+                            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                            if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
+                                upiQRMethod = true
+                            }
+                        }
                     }
-                    upiAvailable = true
                 }
-            }
-            if (paymentMethod.type == "Card") {
-                cardsMethod = true
-            }
-            if (paymentMethod.type == "Wallet") {
-                walletMethods = true
-            }
-            if (paymentMethod.type == "Emi") {
-                emiMethod = true
-            }
-            if (paymentMethod.type == "BuyNowPayLater") {
-                bnplMethod = true
-            }
-            if (paymentMethod.type == "NetBanking") {
-                netBankingMethods = true
+
+                "UpiOneTimeMandate" -> {
+                    upiOtmAvailable = true
+                    when (paymentMethod.brand) {
+                        "UpiIntentOtm" -> upiOtmIntentMethod = true
+                        "UpiQrOtm" -> {
+                            val userAgentHeader = WebSettings.getDefaultUserAgent(requireContext())
+                            if (!userAgentHeader.contains("Mobile", ignoreCase = true)) {
+                                upiOtmQRMethod = true
+                            }
+                        }
+                        "UpiCollectOtm" -> upiOtmCollectMethod = true
+                    }
+                }
+
+                "Card" -> cardsMethod = true
+                "Wallet" -> walletMethods = true
+                "Emi" -> emiMethod = true
+                "BuyNowPayLater" -> bnplMethod = true
+                "NetBanking" -> netBankingMethods = true
             }
         }
-        updateView()
-        removeLoadingState()
     }
 
     private fun updateView() {
-        if (upiAvailable) {
-            binding.cardView4.visibility = View.VISIBLE
+        // UPI Section
+        binding.cardView4.showIf(upiAvailable || upiOtmAvailable)
+        binding.upiLinearLayout.showIf(upiAvailable || upiOtmAvailable)
 
-            if (upiCollectMethod) {
-                binding.addNewUPIIDConstraint.visibility = View.VISIBLE
-            }
-            if (upiQRMethod) {
-                if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == true) {
+        binding.textView20.text = if(upiOtmAvailable) "UPI One Time Mandate" else "UPI"
+
+        if (upiAvailable || upiOtmAvailable) {
+            binding.addNewUPIIDConstraint.showIf(upiCollectMethod || upiOtmCollectMethod)
+
+            if (upiQRMethod || upiOtmQRMethod) {
+                val shouldHideHeader =((!upiIntentMethod && !upiCollectMethod) || (!upiOtmIntentMethod && !upiOtmCollectMethod)) && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod
+
+                if (shouldHideHeader) {
                     binding.textView21.visibility = View.GONE
                     binding.imageView10.visibility = View.GONE
-                    showQRCode()
-                } else if (!upiIntentMethod && !upiCollectMethod && !cardsMethod && !walletMethods && !netBankingMethods && !bnplMethod && !emiMethod && toLoadQrDirect == false) {
-                    binding.textView21.visibility = View.GONE
-                    binding.imageView10.visibility = View.GONE
+                    if (toLoadQrDirect == true) {
+                        showQRCode()
+                    }
                 }
+
                 binding.UPIQRConstraint.visibility = View.VISIBLE
+            } else {
+                binding.UPIQRConstraint.visibility = View.GONE
             }
         } else {
-            binding.cardView4.visibility = View.GONE
+            binding.UPIQRConstraint.visibility = View.GONE
         }
 
-        if (cardsMethod) {
-            binding.cardView5.visibility = View.VISIBLE
-        } else {
-            binding.cardView5.visibility = View.GONE
-        }
-        if (walletMethods) {
-            binding.cardView6.visibility = View.VISIBLE
-        } else {
-            binding.cardView6.visibility = View.GONE
-        }
-        if (emiMethod) {
-            binding.emiCard.visibility = View.VISIBLE
-        } else {
-            binding.emiCard.visibility = View.GONE
-        }
-        if (bnplMethod) {
-            binding.cardView9.visibility = View.VISIBLE
-        } else {
-            binding.cardView9.visibility = View.GONE
-        }
-        if (netBankingMethods) {
-            binding.cardView7.visibility = View.VISIBLE
-        } else {
-            binding.cardView7.visibility = View.GONE
-        }
+// Other payment methods
+        binding.cardView5.showIf(cardsMethod)
+        binding.cardConstraint.showIf(cardsMethod)
+
+        binding.cardView6.showIf(walletMethods)
+        binding.walletConstraint.showIf(walletMethods)
+
+        binding.emiCard.showIf(emiMethod)
+        binding.emiConstraint.showIf(emiMethod)
+
+        binding.cardView9.showIf(bnplMethod)
+        binding.bnplConstraint.showIf(bnplMethod)
+
+        binding.cardView7.showIf(netBankingMethods)
+        binding.netBankingConstraint.showIf(netBankingMethods)
+
     }
 
     private fun callApplyInstantOfferFunction(
@@ -3084,6 +2959,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 instantOfferViewModel.updatedPaymentMethods.collect { methods ->
                     if(!methods.isNullOrEmpty()) {
                         showPaymentMethods(methods)
+                        updateView()
+                        removeLoadingState()
                     }
                 }
             }
