@@ -2585,7 +2585,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     }
                 } catch (e: Exception) {
                     callUIAnalytics(
-                        context = context,
+                        context = mContext,
                         message = "$e",
                         screenName = "Main Bottom Sheet in makeSession data call line no 2534",
                         uiEvent = AnalyticsEvents.SDK_CRASH
