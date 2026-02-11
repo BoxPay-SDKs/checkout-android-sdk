@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.View
 import androidx.appcompat.widget.AppCompatEditText
 
 fun dpToPx(dp: Int): Int {
@@ -25,4 +26,8 @@ class NoPasteEditText(context: Context, attrs: AttributeSet?) : AppCompatEditTex
             else -> super.onTextContextMenuItem(id)
         }
     }
+}
+
+fun View.showIf(condition: Boolean) {
+    visibility = if (condition) View.VISIBLE else View.GONE
 }
