@@ -40,12 +40,16 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.toLowerCase
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
@@ -75,6 +79,7 @@ import com.boxpay.checkout.sdk.adapters.RecommendedItemsAdapter
 import com.boxpay.checkout.sdk.adapters.SavedCardsItemsAdaptor
 import com.boxpay.checkout.sdk.adapters.SavedUpiItemsAdaptor
 import com.boxpay.checkout.sdk.composeScreens.components.ApplyCouponCard
+import com.boxpay.checkout.sdk.composeScreens.components.SurchargeBottomSheet
 import com.boxpay.checkout.sdk.composeScreens.model.defaultFontFamily
 import com.boxpay.checkout.sdk.composeScreens.model.interFontFamily
 import com.boxpay.checkout.sdk.composeScreens.screen.RecommendedScreen
@@ -88,6 +93,7 @@ import com.boxpay.checkout.sdk.dataclasses.GetInstantOffersResponse
 import com.boxpay.checkout.sdk.interfaces.UpdateMainBottomSheetInterface
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
+import com.boxpay.checkout.sdk.utils.convertAmountToIndiaLocale
 import com.boxpay.checkout.sdk.utils.generateRandomAlphanumericString
 import com.boxpay.checkout.sdk.utils.getDOBAndPanEffectiveEntry
 import com.boxpay.checkout.sdk.utils.getSessionApiUrl
@@ -208,6 +214,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private var installedApps : List<String> = emptyList()
     private var instantOffersList : List<GetInstantOffersResponse> = emptyList()
     private var selectedCouponCode : String? = null
+
+    private var currencySymbol : String = "₹"
+    private var surchargeDetails : List<Triple<String, Int, String>> = emptyList()
+    private var totalAmount : Int = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -889,7 +899,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     hideSavedCardOptions()
                     if (!upiOptionsShown) {
                         upiOptionsShown = true
-                        showUPIOptions()
+                        if(isSurchargeAppliedForMethod("upi")) {
+                            showSurchargeBottomSheet("upi")
+                        } else {
+                            showUPIOptions()
+                        }
                     } else {
                         upiOptionsShown = false
                         hideUPIOptions()
@@ -944,10 +958,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     hideQRCode()
                     upiOptionsShown = false
                     hideUPIOptions()
-                    if (savedCardsInstrumentationList.isEmpty()) {
+                    if(isSurchargeAppliedForMethod("card") && !binding.savedCardsLinearLayout.isVisible && savedCardsInstrumentationList.isNotEmpty()) {
+                        showCardOptions()
+                    } else if (savedCardsInstrumentationList.isEmpty() && surchargeDetails.isEmpty()) {
                         binding.cardConstraint.isEnabled = false
                         logMainBottomSheetUiEvents()
                         openAddCardBottomSheet()
+                    } else if (isSurchargeAppliedForMethod("card") && savedCardsInstrumentationList.isEmpty()) {
+                        showSurchargeBottomSheet("card")
                     } else if(binding.savedCardsLinearLayout.isVisible) {
                         hideCardOptions()
                     } else {
@@ -965,9 +983,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
-                    binding.walletConstraint.isEnabled = false
-                    logMainBottomSheetUiEvents()
-                    openWalletBottomSheet()
+                    if(surchargeDetails.isNotEmpty() && isSurchargeAppliedForMethod("wallet")) {
+                        showSurchargeBottomSheet("wallet")
+                    } else {
+                        binding.walletConstraint.isEnabled = false
+                        logMainBottomSheetUiEvents()
+                        openWalletBottomSheet()
+                    }
                 }
             }
 
@@ -979,9 +1001,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
-                    binding.emiConstraint.isEnabled = false
-                    logMainBottomSheetUiEvents()
-                    openEmiBottomSheet()
+                    if(surchargeDetails.isNotEmpty() && isSurchargeAppliedForMethod("emi")) {
+                        showSurchargeBottomSheet("emi")
+                    } else {
+                        binding.emiConstraint.isEnabled = false
+                        logMainBottomSheetUiEvents()
+                        openEmiBottomSheet()
+                    }
                 }
             }
 
@@ -993,9 +1019,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     savedUpiInstrumentAdaptor.checkedPosition = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
-                    binding.bnplConstraint.isEnabled = false
-                    logMainBottomSheetUiEvents()
-                    openBNPLBottomSheet()
+                    if(surchargeDetails.isNotEmpty() && isSurchargeAppliedForMethod("bnpl")) {
+                        showSurchargeBottomSheet("bnpl")
+                    } else {
+                        binding.bnplConstraint.isEnabled = false
+                        logMainBottomSheetUiEvents()
+                        openBNPLBottomSheet()
+                    }
                 }
             }
 
@@ -1008,9 +1038,13 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     hideQRCode()
                     savedCardsInstrumentAdaptor.checkPositionLiveData.value = RecyclerView.NO_POSITION
                     hideSavedCardOptions()
-                    binding.netBankingConstraint.isEnabled = false
-                    logMainBottomSheetUiEvents()
-                    openNetBankingBottomSheet()
+                    if(surchargeDetails.isNotEmpty() && isSurchargeAppliedForMethod("netbanking")) {
+                        showSurchargeBottomSheet("netbanking")
+                    } else {
+                        binding.netBankingConstraint.isEnabled = false
+                        logMainBottomSheetUiEvents()
+                        openNetBankingBottomSheet()
+                    }
                 }
             }
 
@@ -1054,6 +1088,92 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 )
             )
         )
+    }
+
+    fun showSurchargeBottomSheet(method : String) {
+        binding.composeView.setContent {
+            SurchargeBottomSheet(
+                modifier = Modifier.fillMaxSize(),
+                surchargeList = surchargeDetails,
+                subTotalAmount = totalAmount,
+                currencySymbol = currencySymbol,
+                onClickProceed = { amount ->
+                    binding.swipeCtaScreen.visibility = View.GONE
+                    when(method) {
+                        "upi" -> {
+                            binding.ItemsPrice.text = "$currencySymbol${convertAmountToIndiaLocale(amount)}"
+                            editor.putString("amount", "$amount")
+                            editor.apply()
+                            showUPIOptions()
+                        }
+                        "card" -> {
+                            editor.putString("amount", "$amount")
+                            editor.apply()
+                            if(savedCardsInstrumentationList.isNotEmpty()) {
+                                binding.ItemsPrice.text = "$currencySymbol${convertAmountToIndiaLocale(amount)}"
+                                showCardOptions()
+                            } else {
+                                binding.cardConstraint.isEnabled = false
+                                logMainBottomSheetUiEvents()
+                                openAddCardBottomSheet()
+                            }
+                        }
+                        "netbanking" -> {
+                            editor.putString("amount", "$amount")
+                            editor.apply()
+                            binding.netBankingConstraint.isEnabled = false
+                            logMainBottomSheetUiEvents()
+                            openNetBankingBottomSheet()
+                        }
+                        "bnpl" -> {
+                            editor.putString("amount", "$amount")
+                            editor.apply()
+                            binding.bnplConstraint.isEnabled = false
+                            logMainBottomSheetUiEvents()
+                            openBNPLBottomSheet()
+                        }
+                        "emi" -> {
+                            editor.putString("amount", "$amount")
+                            editor.apply()
+                            binding.emiConstraint.isEnabled = false
+                            logMainBottomSheetUiEvents()
+                            openEmiBottomSheet()
+                        }
+                        "wallet" -> {
+                            editor.putString("amount", "$amount")
+                            editor.apply()
+                            binding.walletConstraint.isEnabled = false
+                            logMainBottomSheetUiEvents()
+                            openWalletBottomSheet()
+                        }
+                        else -> {
+                            // no action
+                        }
+                    }
+                },
+                method = method,
+                selectedColor = androidx.compose.ui.graphics.Color(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "primaryButtonColor",
+                            "#000000"
+                        )
+                    )
+                ),
+                selectedTextColor = androidx.compose.ui.graphics.Color(
+                    Color.parseColor(
+                        sharedPreferences.getString(
+                            "buttonTextColor",
+                            "#000000"
+                        )
+                    )
+                ),
+                onDismiss = {
+                    binding.swipeCtaScreen.visibility = View.GONE
+                }
+            )
+        }
+        binding.swipeCtaScreen.visibility = View.VISIBLE
     }
 
     fun dismissMainSheet() {
@@ -1427,7 +1547,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             showRecommendedOptions()
                         } else {
                             upiOptionsShown = true
-                            showUPIOptions()
+                            if(isSurchargeAppliedForMethod("upi")) {
+                                showSurchargeBottomSheet("upi")
+                            } else {
+                                showUPIOptions()
+                            }
                         }
                         removeLoadingState()
                     }
@@ -1804,6 +1928,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView18.visibility = View.VISIBLE
         binding.ItemsPrice.visibility = View.VISIBLE
         binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
+        if(isSurchargeAppliedForMethod("")) {
+            displaySurcharge("", false)
+            binding.surchargeComposeView.visibility = View.VISIBLE
+        }
         binding.arrowIcon.animate()
             .rotation(180f)
             .setDuration(250) // Set the duration of the animation in milliseconds
@@ -1837,6 +1965,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView18.visibility = View.GONE
         binding.ItemsPrice.visibility = View.GONE
         binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
+        binding.surchargeComposeView.visibility = View.GONE
         binding.arrowIcon.animate()
             .rotation(0f)
             .setDuration(250) // Set the duration of the animation in milliseconds
@@ -1856,6 +1985,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
         if (savedUpiInstrumentationList.isNotEmpty()) {
             binding.savedUpiRecyclerView.visibility = View.VISIBLE
+        }
+
+        if(surchargeDetails.isNotEmpty()) {
+            displaySurcharge("upi", binding.upiOptionsLinearLayout.isVisible)
+            binding.surchargeComposeView.visibility = View.VISIBLE
         }
     }
 
@@ -1885,6 +2019,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 )
             )
             binding.recommendedProceedButton.isEnabled = true
+            if(surchargeDetails.isNotEmpty()) {
+                displaySurcharge("card", binding.savedCardsLinearLayout.isVisible)
+                binding.surchargeComposeView.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -1894,6 +2032,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView29.typeface =
             ResourcesCompat.getFont(mContext, R.font.poppins)
         binding.recommendedCardView.visibility = View.VISIBLE
+        if(surchargeDetails.isNotEmpty()) {
+            displaySurcharge("", false)
+        }
+
+        binding.ItemsPrice.text = "$currencySymbol${convertAmountToIndiaLocale(totalAmount)}"
     }
 
 
@@ -1911,6 +2054,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             .withEndAction {}
             .start()
         hideQRCode()
+        if(surchargeDetails.isNotEmpty()) {
+            displaySurcharge("", false)
+        }
+
+        binding.ItemsPrice.text = "$currencySymbol${convertAmountToIndiaLocale(totalAmount)}"
     }
 
     private fun hideSavedCardOptions() {
@@ -2095,7 +2243,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
 
-                val totalAmount = paymentDetailsObject.getJSONObject("money").getInt("amount")
+                totalAmount = paymentDetailsObject.getJSONObject("money").getInt("amount") ?: 0
                 offerMinAmount = totalAmount
 
                 val formattedAmount =
@@ -2149,7 +2297,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                             "₹" + paymentDetailsObject.getJSONObject("money").getDouble("amount")
 
                         val sourceString =
-                            "· You will be charged ₹" + ("<b>$totalAmount").toString() + "</b> " + " on the next payment date"
+                            "· You will be charged ₹" + ("<b>$totalAmount") + "</b> " + " on the next payment date"
                         recurringAmount.text = Html.fromHtml(sourceString)
 
                         if (orderObject.getString("originalAmount") != "null") {
@@ -2278,7 +2426,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 }
                 productSummary?.let { parseAndRenderProductSummary(it) }
 
-                var currencySymbol = moneyObject.getString("currencySymbol")
+                currencySymbol = moneyObject.getString("currencySymbol")
                 val currencyCode = moneyObject.getString("currencyCode")
                 offerCurrencyCode = currencyCode
                 if (currencySymbol == "")
@@ -2710,86 +2858,141 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         val jsonObjectAll = object : JsonObjectRequest(Method.POST, url, requestBody, { response ->
 
             try {
+                println("=========reponse $response")
+                var surchargeAmount = 0
                 val appliedSurcharges = response.optJSONArray("appliedSurcharges")
-                var surchargeDetails : List<Pair<String, String>> = emptyList()
                 appliedSurcharges?.length()?.let {
                     surchargeDetails = (0 until appliedSurcharges.length()).map { index ->
                         val item = appliedSurcharges.getJSONObject(index)
 
                         val title = item
                             .getJSONObject("surchargeDetails")
-                            .optString("title")
+                            .optString("title") ?: ""
 
                         val calculatedFee = item
-                            .opt("calculatedSurchargeFee")
-                            ?.toString() ?: ""
+                            .optInt("calculatedSurchargeFee")
 
-                        title to calculatedFee
+                        val applicableOn = item
+                            .getJSONObject("surchargeDetails")
+                            .optString("applicableOn") ?: ""
+
+                        Triple(title, calculatedFee, applicableOn)
                     }
                 }
-                val finalAmount = response.getJSONObject("finalAmountAfterSurcharge").getDouble("amount")
-                val indiaLocale = Locale("en", "IN")
-                val formatter = NumberFormat.getNumberInstance(indiaLocale)
-                formatter.minimumFractionDigits = 2
-                formatter.maximumFractionDigits = 2
-                val formattedAmount = formatter.format(finalAmount)
-                updateTransactionAmountInSharedPreferences(
-                    formattedAmount,
-                    currencyCode
-                )
-                binding.surchargeComposeView.setContent {
-                    Column {
-                        surchargeDetails.map { item ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = item.first,
-                                    fontFamily = defaultFontFamily,
-                                    fontWeight = FontWeight.Normal,
-                                    fontSize = 12.sp,
-                                    color = androidx.compose.ui.graphics.Color(0xFF010102),
-                                )
-                                Text(
-                                    text = item.second,
-                                    fontFamily = interFontFamily,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 12.sp,
-                                    color = androidx.compose.ui.graphics.Color(0xFF010102),
-                                )
-                            }
+
+                println("======surcharge $surchargeDetails")
+
+                surchargeDetails.map { item ->
+                    when (item.third.lowercase()) {
+                        "upi" ->  {
+                            binding.surchargeUpiView.text = "$currencySymbol${item.second} extra applied as surcharge"
+                            binding.surchargeUpiView.visibility = View.VISIBLE
+                        }
+                        "card" -> {
+                            binding.surchargeCardView.text = "$currencySymbol${item.second} extra applied as surcharge"
+                            binding.surchargeCardView.visibility = View.VISIBLE
+                        }
+                        "netbanking" -> {
+                            binding.surchargeNetBankingView.text = "$currencySymbol${item.second} extra applied as surcharge"
+                            binding.surchargeNetBankingView.visibility = View.VISIBLE
+                        }
+                        "emi" -> {
+                            binding.surchargeEmiView.text = "$currencySymbol${item.second} extra applied as surcharge"
+                            binding.surchargeEmiView.visibility = View.VISIBLE
+                        }
+                        "wallet" -> {
+                            binding.surchargeWalletView.text = "$currencySymbol${item.second} extra applied as surcharge"
+                            binding.surchargeWalletView.visibility = View.VISIBLE
+                        }
+                        "bnpl" -> {
+                            binding.surchargeBnplView.text = "$currencySymbol${item.second} extra applied as surcharge"
+                            binding.surchargeBnplView.visibility = View.VISIBLE
+                        }
+                        else -> {
+                            surchargeAmount += item.second
                         }
                     }
                 }
-                binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
-                binding.surchargeComposeView.visibility = View.VISIBLE
-                binding.ItemsPrice.text = "$currencySymbol${formattedAmount}"
-                binding.blackLine.visibility = View.VISIBLE
+
+                val amountBeforeSurcharge = response.getJSONObject("amountBeforeSurcharge").getInt("amount") ?: 0
+                if (surchargeAmount > 0) {
+                    if(items.isEmpty()) {
+                        binding.priceBreakUpDetailsLinearLayout.visibility = View.VISIBLE
+                        binding.surchargeComposeView.visibility = View.VISIBLE
+                        binding.subtotalTextView.text = "$currencySymbol${convertAmountToIndiaLocale(if(!binding.offerAppliedLayout.isVisible) amountBeforeSurcharge else (offerMinAmount ?: 0)) }"
+                        binding.subTotalRelativeLayout.visibility = View.VISIBLE
+                        displaySurcharge("upi", binding.upiOptionsLinearLayout.isVisible)
+                        binding.blackLine.visibility = View.VISIBLE
+                    }
+                    totalAmount = amountBeforeSurcharge + surchargeAmount
+                    binding.ItemsPrice.text = "$currencySymbol${convertAmountToIndiaLocale(totalAmount)}"
+                    binding.unopenedTotalValue.text = "$currencySymbol${convertAmountToIndiaLocale(totalAmount)}"
+                    editor.putString("amount", "${convertAmountToIndiaLocale(totalAmount)}")
+                    editor.putString("currencyCode", currencyCode)
+                    editor.apply()
+                    updateTransactionAmountInSharedPreferences(
+                        "${convertAmountToIndiaLocale(totalAmount)}",
+                        currencyCode
+                    )
+                }
                 getRecommendedOrRemoveLoading()
             }
             catch (e: Exception) {
+                println("========excetion $e")
                 callUIAnalytics(
                     context = mContext,
                     message = "$e",
                     screenName = "Main Bottom Sheet",
                     uiEvent = AnalyticsEvents.SDK_CRASH
                 )
-                getRecommendedOrRemoveLoading()
             }
         }, Response.ErrorListener { error ->
+            println("========excetion $error")
             callUIAnalytics(
                 context = mContext,
                 message = "$error",
                 screenName = "Main Bottom Sheet",
                 uiEvent = AnalyticsEvents.SDK_CRASH
             )
-            getRecommendedOrRemoveLoading()
         }) {
             // no op
         }
         queue.add(jsonObjectAll)
+    }
+
+    private fun displaySurcharge(method : String, isVisible : Boolean) {
+        binding.surchargeComposeView.setContent {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()) {
+                surchargeDetails.map { item ->
+                    if((isVisible && item.third.equals(method, true)) || item.third.isEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = item.first,
+                                fontFamily = defaultFontFamily,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 12.sp,
+                                color = androidx.compose.ui.graphics.Color(0xFF010102),
+                            )
+                            Text(
+                                text = "+ $currencySymbol${convertAmountToIndiaLocale(item.second)}",
+                                fontFamily = interFontFamily,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 12.sp,
+                                color = androidx.compose.ui.graphics.Color(0xFF010102),
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun getRecommendedOrRemoveLoading() {
@@ -2797,13 +3000,21 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             getRecommendedInstrumentation()
         } else {
             upiOptionsShown = true
-            showUPIOptions()
+            if(isSurchargeAppliedForMethod("upi") && upiAvailable) {
+                showSurchargeBottomSheet("upi")
+            } else if (upiAvailable){
+                showUPIOptions()
+            }
             if (toLoadQrDirect == false || toLoadQrDirect == null || !upiQRMethod || !upiOtmQRMethod) {
                 removeLoadingState()
             } else {
                 showQRCode()
             }
         }
+    }
+
+    private fun isSurchargeAppliedForMethod(method:String) : Boolean {
+        return surchargeDetails.any{it.third.equals(method, true)}
     }
 
     private fun showPaymentMethods(paymentMethodsList : List<FetchPaymentMethodPostOffer>) {
@@ -2927,17 +3138,14 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     private fun callRemoveInstantOfferFunction() {
         showLoadingState()
         selectedCouponCode = null
+        binding.offerAppliedLayout.visibility = View.GONE
         editor.putString("selectedOfferCode", null)
-        editor.putString("amount", "$offerMinAmount")
+        editor.putString("amount", "$totalAmount")
         editor.apply()
         instantOfferViewModel.removeInstantOffer()
         instantOfferViewModel.updatePaymentMethods()
         instantOfferViewModel.isCodeApplied.value = false
         instantOfferViewModel.discountAmount.value = ""
-        binding.subTotalRelativeLayout.visibility = View.GONE
-        binding.offerAppliedLayout.visibility = View.GONE
-        binding.priceBreakUpDetailsLinearLayout.visibility = View.GONE
-        binding.ItemsPrice.text = "${sharedPreferences.getString("currencySymbol", "")}${sharedPreferences.getString("amount", "")}"
     }
 
     private fun getInstantOffers(
@@ -2945,6 +3153,8 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         currencySymbol : String
     ) {
         if(type.isNotEmpty()) {
+            println("total Amoint $totalAmount")
+            var finalAmount = 0
             instantOfferViewModel.getInstantOffer(type, offerCurrencyCode ?: "", offerMinAmount ?: 0, offerMaxAmount ?: 0)
             lifecycleScope.launch {
                 instantOfferViewModel.getInstantOfferList.collect { offers ->
@@ -2983,6 +3193,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 discountAmount = instantOfferViewModel.discountAmount.value,
                                 currencySymbol = currencySymbol,
                                 onClickRemove = {
+                                    finalAmount = offerMinAmount ?: 0
                                     callRemoveInstantOfferFunction()
                                 }
                             )
@@ -2993,6 +3204,12 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             lifecycleScope.launch {
                 instantOfferViewModel.appliedInstantOffer.collect { selectedOffer ->
                     if(selectedOffer != null) {
+                        if(surchargeDetails.isNotEmpty()) {
+                            binding.upiOptionsLinearLayout.visibility = View.GONE
+                            binding.savedCardsLinearLayout.visibility = View.GONE
+                            displaySurcharge("", false)
+                        }
+                        finalAmount = selectedOffer.finalAmount ?: 0
                         editor.putString("selectedOfferCode", selectedOffer.evaluatedOffers?.get(0)?.code ?: "")
                         editor.putString("amount", "${selectedOffer.finalAmount}")
                         editor.apply()
@@ -3005,7 +3222,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         binding.subtotalTextView.text = "$currencySymbol${selectedOffer.originalAmount}"
                         binding.offerCodeText.text = "Discount(${selectedOffer.evaluatedOffers?.get(0)?.code} applied)"
                         binding.offerAmountTextView.text = "-$currencySymbol${selectedOffer.evaluatedOffers?.get(0)?.appliedDiscountAmount}"
-                        binding.ItemsPrice.text = "$currencySymbol${selectedOffer.finalAmount}"
+                        binding.ItemsPrice.text = "$currencySymbol${convertAmountToIndiaLocale(selectedOffer.finalAmount ?: 0)}"
                         binding.blackLine.visibility = View.VISIBLE
                     }
                 }
@@ -3014,6 +3231,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             lifecycleScope.launch {
                 instantOfferViewModel.updatedPaymentMethods.collect { methods ->
                     if(!methods.isNullOrEmpty()) {
+                        fetchSurchargeDetails(finalAmount, offerCurrencyCode ?: "", currencySymbol)
                         showPaymentMethods(methods)
                         updateView()
                         removeLoadingState()
@@ -3115,7 +3333,11 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             showRecommendedOptions()
         } else {
             upiOptionsShown = true
-            showUPIOptions()
+            if(isSurchargeAppliedForMethod("upi")) {
+                showSurchargeBottomSheet("upi")
+            } else {
+                showUPIOptions()
+            }
         }
 
         if (recommendedInstrumentationList.isNotEmpty() && (moreOptionsClicked == null || moreOptionsClicked == false)) {
