@@ -92,7 +92,6 @@ class BoxPayCheckout(
                 val activity = context as AppCompatActivity
                 val fragmentManager = activity.supportFragmentManager
                 val bottomSheet = MainBottomSheet()
-                bottomSheet.setContext(activity.applicationContext)
                 bottomSheet.loadQrDirect(configurationOptions?.get(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD) == true)
                 bottomSheet.show(fragmentManager, "MainBottomSheet")
             }
