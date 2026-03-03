@@ -65,8 +65,13 @@ class EmiViewModel : ViewModel() {
         } ?: _emiBankList.value.cards.find { it.cardType.equals("others", ignoreCase = true) }?.let {
             selectedCard.value = "Others"
         }
+
+        val selectedCardType = _emiBankList.value.cards.find { it.cardType == selectedCard.value }
+        val hasNoCostApplied = selectedCardType?.banks?.any { it.noCostApplied } ?: false
+
+        // You can now use `hasNoCostApplied` for further logic or UI updates
+        isFilterExisted.value = hasNoCostApplied
         if (bank.noCostApplied) {
-            isFilterExisted.value = true
             if (!filterList.value.contains(Pair("No Cost EMI", false))) {
                 filterList.value += Pair("No Cost EMI", false)
             }

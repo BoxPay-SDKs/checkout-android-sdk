@@ -21,6 +21,7 @@ import com.boxpay.checkout.sdk.dataclasses.DCCResponse
 import com.boxpay.checkout.sdk.constants.AnalyticsEvents
 import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
 import com.boxpay.checkout.sdk.utils.callUIAnalytics
+import com.boxpay.checkout.sdk.utils.convertAmountToIndiaLocale
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -176,11 +177,11 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                     dottedLast.visibility = View.INVISIBLE
                     proceedButton.visibility = View.VISIBLE
                     val currencyType =  getNonDCCResponse(requireActivity(),"currencyCode")
-                    val amount =  getNonDCCResponse(requireActivity(),"amount")
-                    if (amount.isNotEmpty() && currencyType.isNotEmpty() && !isLowCostApplied && !isNoCostApplied){
+                    val amount = convertAmountToIndiaLocale((getNonDCCResponse(requireActivity(),"amount").toInt()))
+                    if (amount?.isNotEmpty() == true && currencyType.isNotEmpty() && !isLowCostApplied && !isNoCostApplied){
                         transactionAmountTextView.text = "$currencyType $amount"
                     }
-                if (amount.isNotEmpty() && currencyType.isNotEmpty()) {
+                if (amount?.isNotEmpty() == true && currencyType.isNotEmpty()) {
                     transactionAmountTextView.text = "$currencyType $amount"
                 }
             }
