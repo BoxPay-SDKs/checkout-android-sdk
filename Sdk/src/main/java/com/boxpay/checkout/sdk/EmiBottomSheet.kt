@@ -417,7 +417,7 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
         ).joinToString("&")
 
 // Append query if not empty
-        val url = if (queryParams.isNotEmpty() && offer != null) {
+        val url = if (queryParams.isNotEmpty()) {
             "$baseUrl?$queryParams"
         } else {
             baseUrl
@@ -430,7 +430,6 @@ internal class EmiBottomSheet : BottomSheetDialogFragment() {
                     try {
                         val paymentMethod = response.getJSONObject(i)
                         if (paymentMethod.getString("type") == "Emi") {
-                            val title = paymentMethod.getString("title")
                             val emiCardName = if (paymentMethod.getString("title")
                                     .contains("credit", true)
                             ) "Credit Card" else if (paymentMethod.getString("title")

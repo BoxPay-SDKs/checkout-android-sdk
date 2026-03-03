@@ -259,7 +259,7 @@ class DeliveryAddressBottomSheet : BottomSheetDialogFragment() {
         }
 
         binding.ccpPhoneNumber.setOnCountryChangeListener {
-            countryCodePhoneNum = binding.ccpPhoneNumber.selectedCountryCode
+            countryCodePhoneNum = "+${binding.ccpPhoneNumber.selectedCountryCode}"
             selectedCountryNameCode = binding.ccpPhoneNumber.selectedCountryNameCode
             binding.ccpCountry.setCountryForNameCode(binding.ccpPhoneNumber.selectedCountryNameCode)
         }
