@@ -2235,19 +2235,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         )
                     }
                 }
-//                if (status.equals(
-//                        "expired",
-//                        ignoreCase = true
-//                    )
-//                ) {
-//                    editor.putString("status", "Expired")
-//                    editor.putString("transactionId", transactionId)
-//                    editor.apply()
-//
-//                    if (isAdded && isResumed) {
-//                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
-//                    }
-//                }
+                if (status.equals(
+                        "expired",
+                        ignoreCase = true
+                    )
+                ) {
+                    editor.putString("status", "Expired")
+                    editor.putString("transactionId", transactionId)
+                    editor.apply()
+
+                    if (isAdded && isResumed) {
+                        SessionExpireScreen().show(parentFragmentManager, "SessionScreen")
+                    }
+                }
                 val paymentDetailsObject = response.getJSONObject("paymentDetails")
 
                 totalAmount = paymentDetailsObject.getJSONObject("money").getInt("amount") ?: 0
