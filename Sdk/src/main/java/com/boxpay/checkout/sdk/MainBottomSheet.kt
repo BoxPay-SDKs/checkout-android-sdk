@@ -1647,7 +1647,9 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         getPopularConstraintLayoutByNum(i).setOnClickListener() {
             if (!binding.loadingRelativeLayout.isVisible) {
                 showLoadingState()
-                getUrlForDefaultUPIIntent()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    getUrlForDefaultUPIIntent()
+                }
             }
         }
     }
