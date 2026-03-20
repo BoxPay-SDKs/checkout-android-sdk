@@ -162,7 +162,7 @@ class Check : AppCompatActivity() {
         },
   "order" : null,
   "frontendBackUrl" : "https://www.boxpay.tech",
-  "createShopperToken" : true,
+  "createShopperToken" : false,
   "expiryDurationSec" : 900
 }"""
         )

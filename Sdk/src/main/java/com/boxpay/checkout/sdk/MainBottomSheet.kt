@@ -119,6 +119,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.internal.platform.Platform
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -1589,6 +1590,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
     }
 
     private fun populatePopularUPIApps() {
+        resetPopularUPIViews()
         var i = 1
         if (installedApps.contains("phonepe")) {
             val imageView = getPopularImageViewByNum(i)
@@ -1645,14 +1647,19 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         getPopularConstraintLayoutByNum(i).setOnClickListener() {
             if (!binding.loadingRelativeLayout.isVisible) {
                 showLoadingState()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    getUrlForDefaultUPIIntent()
-                }
+                getUrlForDefaultUPIIntent()
             }
         }
+    }
 
-        if (i == 1 || i < 1) {
-            binding.popularUPIAppsConstraint.visibility = View.GONE
+    private fun resetPopularUPIViews() {
+        for (i in 1..4) {
+            val imageView = getPopularImageViewByNum(i)
+            val textView = getPopularTextViewByNum(i)
+
+            imageView.setImageDrawable(null) // remove loading drawable
+            imageView.setBackgroundResource(0)
+            textView.text = ""
         }
     }
 
@@ -1980,7 +1987,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
         binding.textView20.typeface =
             ResourcesCompat.getFont(mContext, R.font.poppins_semibold)
 
-        if (installedApps.isNotEmpty() && (upiIntentMethod || upiOtmIntentMethod)) {
+        if ((installedApps.isNotEmpty() || Platform.isAndroid) && (upiIntentMethod || upiOtmIntentMethod)) {
             binding.popularUPIAppsConstraint.visibility = View.VISIBLE
         }
 
