@@ -227,14 +227,20 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     override fun onDestroyView() {
         removeOverlayFromActivity()
+        cancelAllRunningTimers()
         super.onDestroyView()
     }
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         removeOverlayFromActivity()
-        sessionTimer?.cancel()
+        cancelAllRunningTimers()
         dismiss()
+    }
+
+    private fun cancelAllRunningTimers() {
+        countdownTimer?.cancel()
+        sessionTimer?.cancel()
     }
 
     override fun onStart() {
@@ -276,7 +282,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                 val transactionIdFetched = sharedPreferences.getString("transactionId", "")
                 val operationIdFetched = sharedPreferences.getString("operationId", "")
                 job?.cancel()
-                sessionTimer?.cancel()
+                cancelAllRunningTimers()
                 callUIAnalytics(
                     context = mContext,
                     message = "Pressed back or ended the checkout with this status $statusFetched",
@@ -480,10 +486,10 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                                 cleanedMessage =
                                     "Please retry using other payment method or try again in sometime"
                             }
+                            countdownTimer?.cancel()
                             PaymentFailureScreen(
                                 function = {
                                     if (qrCodeShown) {
-                                        countdownTimer?.cancel()
                                         showQRCode()
                                     }
                                 },
@@ -501,7 +507,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         ) {
                             editor.putString("status", "Success")
                             editor.apply()
-
+                            countdownTimer?.cancel()
                             if (isAdded && isResumed && !isStateSaved) {
                                 val bottomSheet = PaymentSuccessfulWithDetailsBottomSheet()
                                 bottomSheet.show(
@@ -1209,7 +1215,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                     val emiBottomSheet =
                         parentFragmentManager.findFragmentByTag("EmiBottomSheet") as? EmiBottomSheet
                     emiBottomSheet?.dismissFunction()
-                    sessionTimer?.cancel()
+                    cancelAllRunningTimers()
 
                     dismiss()
                 }, 500)
@@ -1269,6 +1275,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
 
     private fun blurImageView() {
         // Get the current Bitmap from the ImageView
+        countdownTimer?.cancel()
         val bitmap = (binding.qrCodeImageView.drawable as BitmapDrawable).bitmap
 
         // Apply blur transformation using Glide and BlurTransformation
@@ -1923,7 +1930,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
             // Crucial: Nullify the view so we don't hold a reference to a dead context
             overlayViewMainBottomSheet = null
             overLayPresent = false
-            sessionTimer?.cancel()
+            cancelAllRunningTimers()
         }
     }
 
@@ -2127,7 +2134,7 @@ internal class MainBottomSheet : BottomSheetDialogFragment(), UpdateMainBottomSh
                         BottomSheetBehavior.STATE_HIDDEN -> {
                             //Hidden
                             dismiss()
-                            sessionTimer?.cancel()
+                            cancelAllRunningTimers()
                             val callback = SingletonClass.getInstance().getYourObject()
                             if (callback != null) {
                                 val status = sharedPreferences.getString("status", "")
