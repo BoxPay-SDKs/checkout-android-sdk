@@ -122,7 +122,7 @@ class Check : AppCompatActivity() {
   "context" : {
     "countryCode" : "IN",
     "legalEntity" : {
-      "code" : "razorpay"
+      "code" : "payu"
     },
     "orderId" : "test12"
   },

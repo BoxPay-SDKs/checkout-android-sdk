@@ -177,11 +177,11 @@ internal class PaymentSuccessfulWithDetailsBottomSheet : BottomSheetDialogFragme
                     dottedLast.visibility = View.INVISIBLE
                     proceedButton.visibility = View.VISIBLE
                     val currencyType =  getNonDCCResponse(requireActivity(),"currencyCode")
-                    val amount = convertAmountToIndiaLocale((getNonDCCResponse(requireActivity(),"amount").toInt()))
-                    if (amount?.isNotEmpty() == true && currencyType.isNotEmpty() && !isLowCostApplied && !isNoCostApplied){
+                    val amount = getNonDCCResponse(requireActivity(),"amount")
+                    if (amount.isNotEmpty() && currencyType.isNotEmpty() && !isLowCostApplied && !isNoCostApplied){
                         transactionAmountTextView.text = "$currencyType $amount"
                     }
-                if (amount?.isNotEmpty() == true && currencyType.isNotEmpty()) {
+                if (amount.isNotEmpty() && currencyType.isNotEmpty()) {
                     transactionAmountTextView.text = "$currencyType $amount"
                 }
             }
