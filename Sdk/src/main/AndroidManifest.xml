@@ -2,38 +2,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.boxpay.checkout.sdk">
 
-    <!-- Queries section for UPI apps like GPay, PhonePe, and Paytm -->
-    <queries>
-        <!-- Example Store and Services (existing entries) -->
-        <package android:name="com.example.store" />
-        <package android:name="com.example.services" />
+<!--    &lt;!&ndash; Queries section for UPI apps like GPay, PhonePe, and Paytm &ndash;&gt;-->
+<!--    <queries>-->
+<!--        &lt;!&ndash; Example Store and Services (existing entries) &ndash;&gt;-->
+<!--        <package android:name="com.example.store" />-->
+<!--        <package android:name="com.example.services" />-->
 
-        <!-- GPay -->
-        <package android:name="com.google.android.apps.nbu.paisa.user" />
+<!--        &lt;!&ndash; GPay &ndash;&gt;-->
+<!--        <package android:name="com.google.android.apps.nbu.paisa.user" />-->
 
-        <!-- PhonePe -->
-        <package android:name="com.phonepe.app" />
+<!--        &lt;!&ndash; PhonePe &ndash;&gt;-->
+<!--        <package android:name="com.phonepe.app" />-->
 
-        <!-- Paytm -->
-        <package android:name="net.one97.paytm" />
-    </queries>
+<!--        &lt;!&ndash; Paytm &ndash;&gt;-->
+<!--        <package android:name="net.one97.paytm" />-->
+<!--    </queries>-->
     <uses-feature
     android:name="android.hardware.telephony"
     android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-
-    <application
-        android:theme="@style/AppTheme">
-        <activity
-            android:name=".OTPScreenWebView"
-            android:exported="false" />
-        <meta-data
-            android:name="preloaded_fonts"
-            android:resource="@array/preloaded_fonts" />
-
-    </application>
 
 </manifest>

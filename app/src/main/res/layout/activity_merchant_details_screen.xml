@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginTop="70dp"
     android:id="@+id/main_container"
     tools:context=".MerchantDetailsScreen">
 
@@ -84,6 +85,6 @@
         app:layout_constraintStart_toStartOf="parent"
         android:background="@drawable/button_bg"
         android:textColor="#FFFFFF"
-        android:fontFamily="@font/poppins_semibold"
+        android:fontFamily="@font/poppins_semi_bold"
         app:layout_constraintTop_toBottomOf="@+id/showQrOnLoad" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,7 +8,8 @@
         android:id="@+id/card_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white">
+        android:background="@android:color/white"
+        android:layout_marginTop="70dp">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/upiOpenButon"
@@ -35,7 +36,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:fontFamily="@font/poppins_semibold"
+                    android:fontFamily="@font/poppins_semi_bold"
                     android:gravity="center"
                     android:text="Open Bottom Sheet"
                     android:textColor="#FFFFFF"
@@ -69,7 +70,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:fontFamily="@font/poppins_semibold"
+                    android:fontFamily="@font/poppins_semi_bold"
                     android:gravity="center"
                     android:text="Open Bottom Sheet"
                     android:textColor="#FFFFFF"
@@ -105,7 +106,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
-                    android:fontFamily="@font/poppins_semibold"
+                    android:fontFamily="@font/poppins_semi_bold"
                     android:gravity="center"
                     android:text="Proceed"
                     android:textColor="#FFFFFF"

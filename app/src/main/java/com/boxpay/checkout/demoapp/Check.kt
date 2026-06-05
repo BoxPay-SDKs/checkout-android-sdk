@@ -14,10 +14,11 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.boxpay.checkout.demoapp.databinding.ActivityCheckBinding
 import com.boxpay.checkout.sdk.BoxPayCheckout
-import com.boxpay.checkout.sdk.BoxPayElements
 import com.boxpay.checkout.sdk.BuildConfig
-import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.constants.ConfigurationOptions
+import com.boxpay.checkout.sdk.ConfigurationOptions
+import com.crossplatform.sdk.data.model.SDKPaymentResponse
+//import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
+//import com.boxpay.checkout.sdk.constants.ConfigurationOptions
 import org.json.JSONObject
 
 class Check : AppCompatActivity() {
@@ -69,27 +70,27 @@ class Check : AppCompatActivity() {
             } else {
                 listOf("card")
             }
-            val boxPayElements = BoxPayElements(
-                tokenLiveData.value ?: "",
-                ::onPaymentResultCallback,
-                paymentMethod,
-            )
-            boxPayElements.setContext(this)
-            boxPayElements.setTestEnv(true)
-            boxPayElements.setUPILayoutId(R.id.upiOpenButon)
-            boxPayElements.setCardLayoutId(R.id.cardOpenButton)
-            binding.cardOpenButton.removeAllViews()
-            binding.upiOpenButon.removeAllViews()
-            boxPayElements.setProceedButtonVisibility(false)
-            boxPayElements.setCardValidityCallback(::handleCardValidity)
-            boxPayElements.setUpiValidityCallback(::handleUpiValidity)
-            boxPayElements.showPaymentMethods()
-            disableProceedButton()
-
-            binding.proceedButtonBottom.visibility = View.VISIBLE
-            binding.proceedButtonBottom.setOnClickListener {
-                boxPayElements.initiatePayment()
-            }
+//            val boxPayElements = BoxPayElements(
+//                tokenLiveData.value ?: "",
+//                ::onPaymentResultCallback,
+//                paymentMethod,
+//            )
+//            boxPayElements.setContext(this)
+//            boxPayElements.setTestEnv(true)
+//            boxPayElements.setUPILayoutId(R.id.upiOpenButon)
+//            boxPayElements.setCardLayoutId(R.id.cardOpenButton)
+//            binding.cardOpenButton.removeAllViews()
+//            binding.upiOpenButon.removeAllViews()
+//            boxPayElements.setProceedButtonVisibility(false)
+//            boxPayElements.setCardValidityCallback(::handleCardValidity)
+//            boxPayElements.setUpiValidityCallback(::handleUpiValidity)
+//            boxPayElements.showPaymentMethods()
+//            disableProceedButton()
+//
+//            binding.proceedButtonBottom.visibility = View.VISIBLE
+//            binding.proceedButtonBottom.setOnClickListener {
+//                boxPayElements.initiatePayment() 968233
+//            }
         } else {
             val boxPayCheckout =
                 BoxPayCheckout(
@@ -108,7 +109,7 @@ class Check : AppCompatActivity() {
     }
 
 
-    fun onPaymentResultCallback(result: PaymentResultObject) {
+    fun onPaymentResultCallback(result: SDKPaymentResponse) {
         Toast.makeText(this, result.status, Toast.LENGTH_SHORT).show()
         binding.proceedButtonBottom.isEnabled = true
     }
@@ -128,7 +129,7 @@ class Check : AppCompatActivity() {
   },
   "paymentType" : "S",
   "money" : {
-    "amount" : "55000",
+    "amount" : "500",
     "currencyCode" : "INR"
   },
   "descriptor" : {
@@ -207,8 +208,8 @@ class Check : AppCompatActivity() {
     private fun disableProceedButton() {
         binding.bottomProceedButtonText.visibility = View.VISIBLE
         binding.proceedButtonBottom.isEnabled = false
-        binding.bottomProceedButtonLayout.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.disable_button)
-        binding.proceedButtonBottom.setBackgroundResource(com.boxpay.checkout.sdk.R.drawable.disable_button)
+        binding.bottomProceedButtonLayout.setBackgroundResource(R.drawable.disable_button)
+        binding.proceedButtonBottom.setBackgroundResource(R.drawable.disable_button)
         binding.bottomProceedButtonText.setTextColor(Color.parseColor("#ADACB0"))
     }
 

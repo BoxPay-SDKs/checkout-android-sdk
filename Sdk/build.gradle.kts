@@ -2,11 +2,12 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id("maven-publish")
+    kotlin("plugin.compose") version "2.1.0"
 }
 
 android {
     namespace = "com.boxpay.checkout.sdk"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 21
@@ -43,25 +44,22 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures{
         viewBinding = true
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15" // Use the appropriate version
     }
 }
 
 
 dependencies {
     implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.appcompat:appcompat:1.4.0")
+////    implementation("androidx.appcompat:appcompat:1.4.0")
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
@@ -106,7 +104,7 @@ dependencies {
     implementation("io.coil-kt:coil-svg:2.2.2")
     implementation("androidx.activity:activity-compose:1.5.1")
     implementation("com.github.simformsolutions:SSCustomEditTextOutLineBorder:1.0.16")
-    implementation("com.github.BoxPay-SDKs.cross-platform-sdk:cross-platform-sdk:1.0.0-beta19")
+    api("com.github.BoxPay-SDKs.cross-platform-sdk:cross-platform-sdk:1.0.0-beta23")
     implementation("com.hbb20:ccp:2.7.3")
 }
 

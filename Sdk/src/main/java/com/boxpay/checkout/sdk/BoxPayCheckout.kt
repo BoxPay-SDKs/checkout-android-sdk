@@ -1,119 +1,66 @@
 package com.boxpay.checkout.sdk
 
-import android.app.Activity
 import android.content.Context
-import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatActivity
-import com.boxpay.checkout.sdk.ViewModels.CallBackFunctions
-import com.boxpay.checkout.sdk.constants.AnalyticsEvents
-import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.constants.ConfigurationOptions
-import com.boxpay.checkout.sdk.utils.callUIAnalytics
-import com.boxpay.checkout.sdk.utils.getAnalyticsUrl
+import com.crossplatform.BoxPayActivity
+import com.crossplatform.sdk.data.handler.SDKPaymentResponseHandler
+import com.crossplatform.sdk.data.model.SDKPaymentResponse
 
 class BoxPayCheckout(
     private val context: Context,
     private val token: String,
-    val onPaymentResult: ((PaymentResultObject) -> Unit)?,
+    val onPaymentResult: (SDKPaymentResponse) -> Unit,
     private val customerShopperToken: String = "",
-    private val configurationOptions: Map<ConfigurationOptions, Any>? = null
+    private val configurationOptions: Map<ConfigurationOptions, Boolean>? = null,
+    private val uiConfiguration : UIConfiguration? = null
 ) {
     constructor(
         context: Context,
         token: String,
-        onPaymentResult: ((PaymentResultObject) -> Unit)?,
-        configurationOptions: Map<ConfigurationOptions, Any>,
+        onPaymentResult: (SDKPaymentResponse) -> Unit,
+        configurationOptions: Map<ConfigurationOptions, Boolean>,
         customerShopperToken: String = "",
+        uiConfiguration: UIConfiguration?
     ) : this(
         context,
         token,
         onPaymentResult,
         customerShopperToken,
-        configurationOptions
+        configurationOptions,
+        uiConfiguration
     )
 
-    private var sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("TransactionDetails", Context.MODE_PRIVATE)
-    private var editor: SharedPreferences.Editor = sharedPreferences.edit()
-
     fun display() {
-        if (configurationOptions != null) {
-            if (configurationOptions[ConfigurationOptions.ENABLE_SANDBOX_ENV] == true) {
-                editor.putString("baseUrl", "test-apis.boxpay.tech")
-            } else {
-                editor.putString("baseUrl", "apis.boxpay.in")
-            }
-            editor.putBoolean(
-                "isSuccessScreenVisible",
-                configurationOptions[ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN] == true
-            )
-        } else {
-            editor.putBoolean("isSuccessScreenVisible", false)
-            editor.putString("baseUrl", "apis.boxpay.in")
-        }
-        editor.apply()
-        putTransactionDetailsInSharedPreferences()
+        SDKPaymentResponseHandler.set(onPaymentResult)
 
-        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()!!
-        Thread.setDefaultUncaughtExceptionHandler(SDKCrashHandler(context,
-            token, getAnalyticsUrl(context), defaultHandler))
-
-        try {
-            if (token.isNotEmpty()) {
-                callUIAnalytics(
-                    context = context,
-                    message = "checkout loaded",
-                    screenName = "BoxPayCheckout",
-                    uiEvent = AnalyticsEvents.CHECKOUT_LOADED
-                )
-                openBottomSheet()
-            } else {
-                callUIAnalytics(
-                    context = context,
-                    message = "Token is null or empty",
-                    screenName = "BoxPayCheckout",
-                    uiEvent = AnalyticsEvents.SDK_CRASH
-                )
-            }
-        } catch (e: Exception) {
-            callUIAnalytics(
-                context = context,
-                message = e.message ?: "",
-                screenName = "BoxPayCheckout",
-                uiEvent = AnalyticsEvents.SDK_CRASH
-            )
-        }
-    }
-
-    private fun openBottomSheet() {
-        try {
-            initializingCallBackFunctions()
-            if (context is Activity) {
-                val activity = context as AppCompatActivity
-                val fragmentManager = activity.supportFragmentManager
-                val bottomSheet = MainBottomSheet()
-                bottomSheet.loadQrDirect(configurationOptions?.get(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD) == true)
-                bottomSheet.show(fragmentManager, "MainBottomSheet")
-            }
-        } catch (e: Exception) {
-            callUIAnalytics(
-                context = context,
-                message = e.message ?: "",
-                screenName = "BoxPayCheckout",
-                uiEvent = AnalyticsEvents.SDK_CRASH
-            )
-        }
-    }
-
-    private fun initializingCallBackFunctions() {
-        val callBackFunctions = onPaymentResult?.let { CallBackFunctions(it) }
-        SingletonClass.getInstance().callBackFunctions = callBackFunctions
-    }
-
-
-    private fun putTransactionDetailsInSharedPreferences() {
-        editor.putString("token", token)
-        editor.putString("shopperToken", customerShopperToken)
-        editor.apply()
+        val intent = BoxPayActivity.createIntent(
+            context = context,
+            token = token,
+            isTestEnv = configurationOptions?.get(ConfigurationOptions.ENABLE_SANDBOX_ENV) == true,
+            shopperToken = customerShopperToken,
+            showQROnLoad = configurationOptions?.get(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD) == true,
+            isSICheckBoxEnabled = configurationOptions?.get(ConfigurationOptions.IS_SI_CHECKBOX_ENABLED) == true,
+            isSICheckBoxChecked = configurationOptions?.get(ConfigurationOptions.IS_SI_CHECKBOX_CHECKED) == true,
+            isFailedScreenVisible = configurationOptions?.get(ConfigurationOptions.SHOW_BOXPAY_FAILED_SCREEN) == true,
+            isSuccessScreenVisible = configurationOptions?.get(ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN) == true,
+            ctaBorderRadius = uiConfiguration?.ctaBorderRadius ?: 12,
+            focusedTextInputBorderColor = uiConfiguration?.focusedTextInputBorderColor ?: "",
+            unfocusedTextInputBorderColor = uiConfiguration?.unfocusedTextInputBorderColor ?: ""
+        )
+        context.startActivity(intent)
     }
 }
+
+enum class ConfigurationOptions {
+    ENABLE_SANDBOX_ENV,
+    SHOW_BOXPAY_SUCCESS_SCREEN,
+    SHOW_BOXPAY_FAILED_SCREEN,
+    SHOW_UPI_QR_ON_LOAD,
+    IS_SI_CHECKBOX_ENABLED,
+    IS_SI_CHECKBOX_CHECKED,
+}
+
+data class UIConfiguration (
+    val ctaBorderRadius: Int,
+    val focusedTextInputBorderColor : String,
+    val unfocusedTextInputBorderColor : String
+)
