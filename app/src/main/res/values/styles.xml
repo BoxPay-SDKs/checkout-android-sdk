@@ -6,8 +6,5 @@
         <item name="colorPrimaryVariant">#3700B3</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="android:statusBarColor" >?attr/colorPrimaryVariant</item>
-
-        <!-- Add materialCalendarTheme attribute -->
-        <item name="materialCalendarTheme">@style/CustomCalendarTheme</item>
     </style>
 </resources>

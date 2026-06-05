@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.boxpay.checkout.demoapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.boxpay.checkout.demoapp"
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -99,8 +99,9 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 }
 
 dependencies {
+    implementation(project(":Sdk"))
     implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.appcompat:appcompat:1.4.0")
+//    implementation("androidx.appcompat:appcompat:1.4.0")
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation(project(mapOf("path" to ":Sdk")))
@@ -111,8 +112,8 @@ dependencies {
     implementation ("com.android.volley:volley:1.2.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     androidTestImplementation("androidx.test:rules:1.4.0")
-    implementation("com.github.bumptech.glide:glide:4.15.1")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
+//    implementation("com.github.bumptech.glide:glide:4.15.1")
+//    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 
 }
 

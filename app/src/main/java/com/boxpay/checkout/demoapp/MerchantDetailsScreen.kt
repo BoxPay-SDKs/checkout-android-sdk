@@ -9,9 +9,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.boxpay.checkout.demoapp.databinding.ActivityMerchantDetailsScreenBinding
 import com.boxpay.checkout.sdk.BoxPayCheckout
-import com.boxpay.checkout.sdk.BoxPayElements
-import com.boxpay.checkout.sdk.paymentResult.PaymentResultObject
-import com.boxpay.checkout.sdk.constants.ConfigurationOptions
+import com.boxpay.checkout.sdk.ConfigurationOptions
+import com.crossplatform.sdk.data.model.SDKPaymentResponse
 
 class MerchantDetailsScreen : AppCompatActivity() {
 
@@ -101,16 +100,16 @@ class MerchantDetailsScreen : AppCompatActivity() {
                     } else {
                         listOf("card")
                     }
-                    val boxPayElements = BoxPayElements(
-                        token,
-                        ::onPaymentResult,
-                        paymentMethod,
-                    )
-                    boxPayElements.setContext(this)
-                    boxPayElements.setUPILayoutId(R.id.upiOpenButon)
-                    boxPayElements.setCardLayoutId(R.id.cardOpenButton)
-                    binding.mainContainer.removeAllViews()
-                    boxPayElements.showPaymentMethods()
+//                    val boxPayElements = BoxPayElements(
+//                        token,
+//                        ::onPaymentResult,
+//                        paymentMethod,
+//                    )
+//                    boxPayElements.setContext(this)
+//                    boxPayElements.setUPILayoutId(R.id.upiOpenButon)
+//                    boxPayElements.setCardLayoutId(R.id.cardOpenButton)
+//                    binding.mainContainer.removeAllViews()
+//                    boxPayElements.showPaymentMethods()
                 } else {
                     val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken, configurationOptions = mapOf(
                         ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to isShowQROnLoad,
@@ -128,29 +127,35 @@ class MerchantDetailsScreen : AppCompatActivity() {
                     } else {
                         listOf("card")
                     }
-                    val boxPayElements = BoxPayElements(
+//                    val boxPayElements = BoxPayElements(
+//                        token,
+//                        ::onPaymentResult,
+//                        paymentMethod,
+//                    )
+//                    boxPayElements.setContext(this)
+//                    boxPayElements.setTestEnv(true)
+//                    boxPayElements.setUPILayoutId(R.id.upiOpenButon)
+//                    boxPayElements.setCardLayoutId(R.id.cardOpenButton)
+//                    binding.mainContainer.removeAllViews()
+//                    boxPayElements.showPaymentMethods()
+                } else {
+                    val checkout = BoxPayCheckout(
+                        this,
                         token,
                         ::onPaymentResult,
-                        paymentMethod,
-                    )
-                    boxPayElements.setContext(this)
-                    boxPayElements.setTestEnv(true)
-                    boxPayElements.setUPILayoutId(R.id.upiOpenButon)
-                    boxPayElements.setCardLayoutId(R.id.cardOpenButton)
-                    binding.mainContainer.removeAllViews()
-                    boxPayElements.showPaymentMethods()
-                } else {
-                    val checkout = BoxPayCheckout(this, token, ::onPaymentResult, customerShopperToken = shopperToken, configurationOptions = mapOf(
-                        ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to isShowQROnLoad,
-                        ConfigurationOptions.ENABLE_SANDBOX_ENV to true,
-                        ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true
-                    ))
+                        customerShopperToken = shopperToken,
+                        configurationOptions = mapOf(
+                            ConfigurationOptions.SHOW_UPI_QR_ON_LOAD to isShowQROnLoad,
+                            ConfigurationOptions.ENABLE_SANDBOX_ENV to true,
+                            ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN to true,
+
+                        ))
                     checkout.display()
                 }
             }
         }
     }
-    fun onPaymentResult(result: PaymentResultObject) {
+    fun onPaymentResult(result: SDKPaymentResponse) {
         Toast.makeText(this, result.status, Toast.LENGTH_SHORT).show()
     }
 }
