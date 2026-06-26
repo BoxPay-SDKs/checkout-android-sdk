@@ -1,7 +1,0 @@
-<resources>
-    <string name="app_name">BoxPay Checkout Demo</string>
-    <string-array name="environment_options">
-        <item>test</item>
-        <item>prod</item>
-    </string-array>
-</resources>

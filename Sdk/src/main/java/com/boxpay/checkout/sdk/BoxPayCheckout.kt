@@ -1,7 +1,10 @@
 package com.boxpay.checkout.sdk
 
 import android.content.Context
+import android.view.View
 import com.crossplatform.BoxPayActivity
+import com.crossplatform.BoxPayElementsView
+import com.crossplatform.sdk.data.handler.BoxPayElementsHandler
 import com.crossplatform.sdk.data.handler.SDKPaymentResponseHandler
 import com.crossplatform.sdk.data.model.SDKPaymentResponse
 
@@ -35,19 +38,46 @@ class BoxPayCheckout(
         val intent = BoxPayActivity.createIntent(
             context = context,
             token = token,
-            isTestEnv = configurationOptions?.get(ConfigurationOptions.ENABLE_SANDBOX_ENV) == true,
+            isTestEnv = flag(ConfigurationOptions.ENABLE_SANDBOX_ENV),
             shopperToken = customerShopperToken,
-            showQROnLoad = configurationOptions?.get(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD) == true,
-            isSICheckBoxEnabled = configurationOptions?.get(ConfigurationOptions.IS_SI_CHECKBOX_ENABLED) == true,
-            isSICheckBoxChecked = configurationOptions?.get(ConfigurationOptions.IS_SI_CHECKBOX_CHECKED) == true,
-            isFailedScreenVisible = configurationOptions?.get(ConfigurationOptions.SHOW_BOXPAY_FAILED_SCREEN) == true,
-            isSuccessScreenVisible = configurationOptions?.get(ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN) == true,
+            showQROnLoad = flag(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD),
+            isSICheckBoxEnabled = flag(ConfigurationOptions.IS_SI_CHECKBOX_ENABLED),
+            isSICheckBoxChecked = flag(ConfigurationOptions.IS_SI_CHECKBOX_CHECKED),
+            isFailedScreenVisible = flag(ConfigurationOptions.SHOW_BOXPAY_FAILED_SCREEN),
+            isSuccessScreenVisible = flag(ConfigurationOptions.SHOW_BOXPAY_SUCCESS_SCREEN),
             ctaBorderRadius = uiConfiguration?.ctaBorderRadius ?: 12,
             focusedTextInputBorderColor = uiConfiguration?.focusedTextInputBorderColor ?: "",
-            unfocusedTextInputBorderColor = uiConfiguration?.unfocusedTextInputBorderColor ?: ""
+            unfocusedTextInputBorderColor = uiConfiguration?.unfocusedTextInputBorderColor ?: "",
+            fontFamily = uiConfiguration?.fontFamily,
         )
         context.startActivity(intent)
     }
+
+    fun createElementsView(
+        handler: BoxPayElementsHandler,
+        paymentMethodList: List<String>,
+    ): View {
+        SDKPaymentResponseHandler.set(onPaymentResult)
+
+        return BoxPayElementsView.create(
+            context = context,
+            handler = handler,
+            token = token,
+            isTestEnv = flag(ConfigurationOptions.ENABLE_SANDBOX_ENV),
+            shopperToken = customerShopperToken,
+            showQROnLoad = flag(ConfigurationOptions.SHOW_UPI_QR_ON_LOAD),
+            isSICheckBoxEnabled = flag(ConfigurationOptions.IS_SI_CHECKBOX_ENABLED),
+            isSICheckBoxChecked = flag(ConfigurationOptions.IS_SI_CHECKBOX_CHECKED),
+            ctaBorderRadius = uiConfiguration?.ctaBorderRadius ?: 12,
+            focusedTextInputBorderColor = uiConfiguration?.focusedTextInputBorderColor ?: "",
+            unfocusedTextInputBorderColor = uiConfiguration?.unfocusedTextInputBorderColor ?: "",
+            fontFamily = uiConfiguration?.fontFamily,
+            paymentMethodList = paymentMethodList,
+        )
+    }
+
+    private fun flag(option: ConfigurationOptions): Boolean =
+        configurationOptions?.get(option) == true
 }
 
 enum class ConfigurationOptions {
@@ -62,5 +92,6 @@ enum class ConfigurationOptions {
 data class UIConfiguration (
     val ctaBorderRadius: Int,
     val focusedTextInputBorderColor : String,
-    val unfocusedTextInputBorderColor : String
+    val unfocusedTextInputBorderColor : String,
+    val fontFamily : String
 )
