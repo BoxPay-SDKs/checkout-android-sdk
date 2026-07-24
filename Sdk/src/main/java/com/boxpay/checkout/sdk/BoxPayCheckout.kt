@@ -73,6 +73,7 @@ class BoxPayCheckout(
             unfocusedTextInputBorderColor = uiConfiguration?.unfocusedTextInputBorderColor ?: "",
             fontFamily = uiConfiguration?.fontFamily,
             paymentMethodList = paymentMethodList,
+            isBoxPayProceedButtonVisible = flag(ConfigurationOptions.IS_BOXPAY_PROCEED_BUTTON_VISIBLE)
         )
     }
 
@@ -87,6 +88,8 @@ enum class ConfigurationOptions {
     SHOW_UPI_QR_ON_LOAD,
     IS_SI_CHECKBOX_ENABLED,
     IS_SI_CHECKBOX_CHECKED,
+    IS_BOXPAY_PROCEED_BUTTON_VISIBLE
+
 }
 
 data class UIConfiguration (

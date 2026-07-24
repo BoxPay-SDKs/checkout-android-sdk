@@ -71,7 +71,7 @@ dependencies {
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
     testImplementation("org.mockito:mockito-core:5.7.0")
     implementation("androidx.activity:activity-compose:1.5.1")
-    api("com.github.BoxPay-SDKs.cross-platform-sdk:cross-platform-sdk:1.0.1-beta2")
+    api("com.github.BoxPay-SDKs.cross-platform-sdk:cross-platform-sdk:1.0.2-beta3")
 }
 
 
