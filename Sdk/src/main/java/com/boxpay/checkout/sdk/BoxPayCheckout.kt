@@ -7,6 +7,7 @@ import com.crossplatform.BoxPayElementsView
 import com.crossplatform.sdk.data.handler.BoxPayElementsHandler
 import com.crossplatform.sdk.data.handler.SDKPaymentResponseHandler
 import com.crossplatform.sdk.data.model.SDKPaymentResponse
+import com.crossplatform.sdk.presentation.theme.BoxPayThemeMode
 
 class BoxPayCheckout(
     private val context: Context,
@@ -35,6 +36,13 @@ class BoxPayCheckout(
     fun display() {
         SDKPaymentResponseHandler.set(onPaymentResult)
 
+        val theme = when(uiConfiguration?.themeMode) {
+            BoxPayTheme.DEFAULT -> BoxPayThemeMode.DEFAULT
+            BoxPayTheme.DARK -> BoxPayThemeMode.DARK
+            BoxPayTheme.SYSTEM -> BoxPayThemeMode.SYSTEM
+            null -> BoxPayThemeMode.SYSTEM
+        }
+
         val intent = BoxPayActivity.createIntent(
             context = context,
             token = token,
@@ -49,6 +57,7 @@ class BoxPayCheckout(
             focusedTextInputBorderColor = uiConfiguration?.focusedTextInputBorderColor ?: "",
             unfocusedTextInputBorderColor = uiConfiguration?.unfocusedTextInputBorderColor ?: "",
             fontFamily = uiConfiguration?.fontFamily,
+            themeMode = theme
         )
         context.startActivity(intent)
     }
@@ -93,8 +102,15 @@ enum class ConfigurationOptions {
 }
 
 data class UIConfiguration (
-    val ctaBorderRadius: Int,
-    val focusedTextInputBorderColor : String,
-    val unfocusedTextInputBorderColor : String,
-    val fontFamily : String
+    val ctaBorderRadius: Int?,
+    val focusedTextInputBorderColor : String?,
+    val unfocusedTextInputBorderColor : String?,
+    val fontFamily : String?,
+    val themeMode : BoxPayTheme?
 )
+
+enum class BoxPayTheme {
+    DEFAULT,
+    DARK,
+    SYSTEM
+}
